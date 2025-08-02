@@ -21,7 +21,12 @@
       "Bash(git -C \"C:\\Users\\ikizler1\\OneDrive\\Belgeler\\GitHub\\TavlApp10_2\" pull)",
       "Bash(node:*)",
       "Bash(rd:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(python:*)",
+      "Bash(where python)",
+      "Bash(\"C:\\Users\\ikizler1\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" \"C:\\Users\\ikizler1\\OneDrive\\Belgeler\\GitHub\\Ranking\\emre_usulu_test.py\")",
+      "Bash(kotlinc:*)",
+      "Bash(java:*)"
     ],
     "deny": []
   }
