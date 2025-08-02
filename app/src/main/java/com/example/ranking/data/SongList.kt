@@ -2,7 +2,6 @@ package com.example.ranking.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
 
 @Entity(tableName = "song_lists")
 data class SongList(

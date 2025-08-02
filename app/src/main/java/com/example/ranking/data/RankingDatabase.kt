@@ -24,9 +24,9 @@ abstract class RankingDatabase : RoomDatabase() {
         private var INSTANCE: RankingDatabase? = null
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE songs ADD COLUMN album TEXT NOT NULL DEFAULT ''")
-                database.execSQL("ALTER TABLE songs ADD COLUMN trackNumber INTEGER NOT NULL DEFAULT 0")
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE songs ADD COLUMN album TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE songs ADD COLUMN trackNumber INTEGER NOT NULL DEFAULT 0")
             }
         }
 

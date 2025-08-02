@@ -89,6 +89,7 @@ object RankingEngine {
             // Create groups for preliminary round
             val groupSize = 5
             val groupCount = ceil(songCount.toDouble() / groupSize).toInt()
+            @Suppress("UNUSED_VARIABLE")
             val songsToEliminate = songCount - (targetSize / 2) * 2
             
             // Create group stage matches

@@ -261,7 +261,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         updateDirectScoringUI()
     }
     
-    fun submitMatchResult(matchId: Long, winnerId: Long?) {
+    fun submitMatchResult(@Suppress("UNUSED_PARAMETER") matchId: Long, winnerId: Long?) {
         viewModelScope.launch {
             val currentState = _uiState.value
             currentState.currentMatch?.let { match ->
