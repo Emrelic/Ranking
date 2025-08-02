@@ -9,7 +9,9 @@
       "Bash(./gradlew:*)",
       "Bash(git rm:*)",
       "Bash(git commit:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git remote add:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
