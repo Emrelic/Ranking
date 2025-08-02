@@ -26,7 +26,10 @@
       "Bash(where python)",
       "Bash(\"C:\\Users\\ikizler1\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" \"C:\\Users\\ikizler1\\OneDrive\\Belgeler\\GitHub\\Ranking\\emre_usulu_test.py\")",
       "Bash(kotlinc:*)",
-      "Bash(java:*)"
+      "Bash(java:*)",
+      "Bash(.gradlew assembleDebug)",
+      "Bash(gradlew.bat assembleDebug)",
+      "Bash(cmd /c gradlew.bat assembleDebug)"
     ],
     "deny": []
   }
