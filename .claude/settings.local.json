@@ -8,7 +8,8 @@
       "Bash(chmod:*)",
       "Bash(./gradlew:*)",
       "Bash(git rm:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
