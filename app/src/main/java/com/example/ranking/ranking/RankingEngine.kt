@@ -291,7 +291,7 @@ object RankingEngine {
                 }
             }
             
-            // Insert winner at calculated position 1453
+            // Insert winner at calculated position 14531
             newOrder.add(insertPosition, winner)
             
             // Find correct position for loser (among other losers)
