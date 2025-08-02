@@ -275,7 +275,7 @@ object RankingEngine {
             newOrder.removeAt(winnerIndex)
             newOrder.removeAt(if (loserIndex > winnerIndex) loserIndex - 1 else loserIndex)
             
-            // Find correct position for winner
+            // Find correct position for winner 1452
             // Winner should move up in ranking (lower index = higher rank)
             val originalWinnerIndex = songs.indexOfFirst { it.id == winner.id }
             val originalLoserIndex = songs.indexOfFirst { it.id == loser.id }
