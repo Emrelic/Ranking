@@ -6,7 +6,9 @@
       "Bash(gradlew.bat build:*)",
       "Bash(ls:*)",
       "Bash(chmod:*)",
-      "Bash(./gradlew:*)"
+      "Bash(./gradlew:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
