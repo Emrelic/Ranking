@@ -13,7 +13,15 @@
       "Bash(git remote add:*)",
       "Bash(git push:*)",
       "Bash(find:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(dir:*)",
+      "Bash(git -C \"C:\\Users\\ikizler1\\OneDrive\\Belgeler\\GitHub\\TavlApp-10.1\" status)",
+      "Bash(git -C \"C:\\Users\\ikizler1\\OneDrive\\Belgeler\\GitHub\\TavlApp10_2\" status)",
+      "Bash(git -C \"C:\\Users\\ikizler1\\OneDrive\\Belgeler\\GitHub\\TavlApp-10.1\" pull)",
+      "Bash(git -C \"C:\\Users\\ikizler1\\OneDrive\\Belgeler\\GitHub\\TavlApp10_2\" pull)",
+      "Bash(node:*)",
+      "Bash(rd:*)",
+      "Bash(powershell:*)"
     ],
     "deny": []
   }
