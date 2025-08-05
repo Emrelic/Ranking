@@ -82,43 +82,306 @@ object RankingEngine {
         val matches = mutableListOf<Match>()
         val songCount = songs.size
         
-        // Find next power of 2
-        val targetSize = 2.0.pow(ceil(log2(songCount.toDouble()))).toInt()
+        if (songCount <= 1) return matches
         
-        if (songCount < targetSize) {
-            // Create groups for preliminary round
-            val groupSize = 5
-            val groupCount = ceil(songCount.toDouble() / groupSize).toInt()
-            @Suppress("UNUSED_VARIABLE")
-            val songsToEliminate = songCount - (targetSize / 2) * 2
+        // Find the largest power of 2 that is less than or equal to songCount
+        val targetSize = 2.0.pow(kotlin.math.floor(log2(songCount.toDouble()))).toInt()
+        
+        // If already a power of 2, start direct elimination
+        if (songCount == targetSize) {
+            return createDirectEliminationMatches(songs, 1)
+        }
+        
+        // Calculate teams to eliminate and optimal group configuration
+        val teamsToEliminate = songCount - targetSize
+        val groupConfig = calculateOptimalGroupConfig(songCount, teamsToEliminate)
+        
+        // Create group stage matches
+        val shuffledSongs = songs.shuffled()
+        var songIndex = 0
+        
+        for (groupId in 0 until groupConfig.groupCount) {
+            val groupSize = if (groupId < groupConfig.remainderGroups) {
+                groupConfig.baseGroupSize + 1
+            } else {
+                groupConfig.baseGroupSize
+            }
             
-            // Create group stage matches
-            val shuffledSongs = songs.shuffled()
-            for (groupId in 0 until groupCount) {
-                val groupStart = groupId * groupSize
-                val groupEnd = minOf(groupStart + groupSize, songCount)
-                val groupSongs = shuffledSongs.subList(groupStart, groupEnd)
-                
-                // Create all vs all matches in group
-                for (i in groupSongs.indices) {
-                    for (j in i + 1 until groupSongs.size) {
-                        matches.add(
-                            Match(
-                                listId = songs[0].listId,
-                                rankingMethod = "ELIMINATION",
-                                songId1 = groupSongs[i].id,
-                                songId2 = groupSongs[j].id,
-                                winnerId = null,
-                                round = 0, // Group stage
-                                groupId = groupId
-                            )
+            val groupSongs = shuffledSongs.subList(songIndex, songIndex + groupSize)
+            songIndex += groupSize
+            
+            // Create round-robin matches within group
+            for (i in groupSongs.indices) {
+                for (j in i + 1 until groupSongs.size) {
+                    matches.add(
+                        Match(
+                            listId = songs[0].listId,
+                            rankingMethod = "ELIMINATION",
+                            songId1 = groupSongs[i].id,
+                            songId2 = groupSongs[j].id,
+                            winnerId = null,
+                            round = 0, // Group stage
+                            groupId = groupId
                         )
-                    }
+                    )
                 }
             }
         }
         
         return matches
+    }
+    
+    data class GroupConfig(
+        val groupCount: Int,
+        val baseGroupSize: Int,
+        val remainderGroups: Int,
+        val eliminationsPerGroup: Int
+    )
+    
+    fun calculateOptimalGroupConfig(totalTeams: Int, teamsToEliminate: Int): GroupConfig {
+        // Try 1 elimination per group first
+        var groupCount = teamsToEliminate
+        var baseGroupSize = totalTeams / groupCount
+        var remainder = totalTeams % groupCount
+        
+        // Check if group sizes are within acceptable range (3-6)
+        val minGroupSize = if (remainder > 0) baseGroupSize else baseGroupSize
+        val maxGroupSize = if (remainder > 0) baseGroupSize + 1 else baseGroupSize
+        
+        if (minGroupSize >= 3 && maxGroupSize <= 6) {
+            return GroupConfig(groupCount, baseGroupSize, remainder, 1)
+        }
+        
+        // If 1 elimination per group doesn't work, try 2 eliminations per group
+        groupCount = (teamsToEliminate + 1) / 2  // Round up division
+        val actualEliminations = groupCount * 2
+        
+        // Adjust if we eliminate too many
+        if (actualEliminations > teamsToEliminate) {
+            // Some groups eliminate 1, others eliminate 2
+            val groupsEliminating2 = teamsToEliminate - (groupCount * 2 - groupCount)
+            val groupsEliminating1 = groupCount - groupsEliminating2
+            
+            baseGroupSize = totalTeams / groupCount
+            remainder = totalTeams % groupCount
+            
+            return GroupConfig(groupCount, baseGroupSize, remainder, 2)
+        }
+        
+        baseGroupSize = totalTeams / groupCount
+        remainder = totalTeams % groupCount
+        
+        return GroupConfig(groupCount, baseGroupSize, remainder, 2)
+    }
+    
+    private fun createDirectEliminationMatches(songs: List<Song>, startRound: Int): List<Match> {
+        val matches = mutableListOf<Match>()
+        val currentRoundSongs = songs.toMutableList()
+        
+        for (round in startRound until startRound + log2(songs.size.toDouble()).toInt()) {
+            for (i in 0 until currentRoundSongs.size step 2) {
+                if (i + 1 < currentRoundSongs.size) {
+                    matches.add(
+                        Match(
+                            listId = songs[0].listId,
+                            rankingMethod = "ELIMINATION",
+                            songId1 = currentRoundSongs[i].id,
+                            songId2 = currentRoundSongs[i + 1].id,
+                            winnerId = null,
+                            round = round
+                        )
+                    )
+                }
+            }
+            // For next iteration, we'd have half the songs (winners)
+            if (currentRoundSongs.size <= 2) break
+            // Note: We don't actually update currentRoundSongs here as we don't know winners yet
+            // This is just for creating the bracket structure
+        }
+        
+        return matches
+    }
+    
+    fun getGroupQualifiers(songs: List<Song>, groupMatches: List<Match>, groupConfig: GroupConfig): List<Song> {
+        val qualifiers = mutableListOf<Song>()
+        
+        for (groupId in 0 until groupConfig.groupCount) {
+            val groupSongs = getGroupSongs(songs, groupId, groupConfig)
+            val groupResults = calculateGroupStandings(groupSongs, groupMatches.filter { it.groupId == groupId })
+            
+            // Advance top teams (eliminate bottom teams based on eliminationsPerGroup)
+            val teamsToAdvance = groupSongs.size - groupConfig.eliminationsPerGroup
+            qualifiers.addAll(groupResults.take(teamsToAdvance).map { it.first })
+        }
+        
+        return qualifiers
+    }
+    
+    private fun getGroupSongs(allSongs: List<Song>, groupId: Int, groupConfig: GroupConfig): List<Song> {
+        val shuffledSongs = allSongs.shuffled() // Should use same shuffle as createEliminationMatches
+        var songIndex = 0
+        
+        for (currentGroupId in 0 until groupId) {
+            val groupSize = if (currentGroupId < groupConfig.remainderGroups) {
+                groupConfig.baseGroupSize + 1
+            } else {
+                groupConfig.baseGroupSize
+            }
+            songIndex += groupSize
+        }
+        
+        val groupSize = if (groupId < groupConfig.remainderGroups) {
+            groupConfig.baseGroupSize + 1
+        } else {
+            groupConfig.baseGroupSize
+        }
+        
+        return shuffledSongs.subList(songIndex, songIndex + groupSize)
+    }
+    
+    private fun calculateGroupStandings(groupSongs: List<Song>, groupMatches: List<Match>): List<Pair<Song, Double>> {
+        val points = mutableMapOf<Long, Double>()
+        
+        groupSongs.forEach { song ->
+            points[song.id] = 0.0
+        }
+        
+        groupMatches.filter { it.isCompleted }.forEach { match ->
+            when (match.winnerId) {
+                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 3.0
+                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 3.0
+                null -> { // Draw
+                    points[match.songId1] = points[match.songId1]!! + 1.0
+                    points[match.songId2] = points[match.songId2]!! + 1.0
+                }
+            }
+        }
+        
+        return groupSongs.map { song ->
+            Pair(song, points[song.id] ?: 0.0)
+        }.sortedByDescending { it.second }
+    }
+    
+    fun createEliminationKnockoutMatches(qualifierSongs: List<Song>, startRound: Int): List<Match> {
+        return createDirectEliminationMatches(qualifierSongs, startRound)
+    }
+    
+    fun calculateEliminationResults(songs: List<Song>, allMatches: List<Match>): List<RankingResult> {
+        val songCount = songs.size
+        val targetSize = 2.0.pow(kotlin.math.floor(log2(songCount.toDouble()))).toInt()
+        
+        if (songCount == targetSize) {
+            // Direct elimination - calculate based on elimination round
+            return calculateDirectEliminationResults(songs, allMatches)
+        }
+        
+        // Group stage + knockout
+        val groupMatches = allMatches.filter { it.round == 0 }
+        val knockoutMatches = allMatches.filter { it.round > 0 }
+        
+        val teamsToEliminate = songCount - targetSize
+        val groupConfig = calculateOptimalGroupConfig(songCount, teamsToEliminate)
+        
+        // Get group standings for eliminated teams
+        val results = mutableListOf<RankingResult>()
+        var currentPosition = songCount
+        
+        // Process each group to rank eliminated teams
+        for (groupId in 0 until groupConfig.groupCount) {
+            val groupSongs = getGroupSongs(songs, groupId, groupConfig)
+            val groupStandings = calculateGroupStandings(groupSongs, groupMatches.filter { it.groupId == groupId })
+            
+            // Add eliminated teams (bottom teams in group)
+            val eliminatedTeams = groupStandings.takeLast(groupConfig.eliminationsPerGroup)
+            eliminatedTeams.reversed().forEach { (song, score) ->
+                results.add(
+                    RankingResult(
+                        songId = song.id,
+                        listId = song.listId,
+                        rankingMethod = "ELIMINATION",
+                        score = score,
+                        position = currentPosition--
+                    )
+                )
+            }
+        }
+        
+        // Get qualifiers and their knockout results
+        val qualifiers = getGroupQualifiers(songs, groupMatches, groupConfig)
+        val knockoutResults = calculateDirectEliminationResults(qualifiers, knockoutMatches)
+        
+        // Adjust positions for knockout results
+        knockoutResults.forEach { result ->
+            results.add(result.copy(position = result.position))
+        }
+        
+        return results.sortedBy { it.position }
+    }
+    
+    private fun calculateDirectEliminationResults(songs: List<Song>, matches: List<Match>): List<RankingResult> {
+        val eliminated = mutableSetOf<Long>()
+        val roundResults = mutableMapOf<Int, List<Long>>() // round -> eliminated song IDs
+        
+        // Process each round to find eliminated teams
+        val maxRound = matches.maxOfOrNull { it.round } ?: 0
+        for (round in 1..maxRound) {
+            val roundMatches = matches.filter { it.round == round && it.isCompleted }
+            val roundEliminated = mutableListOf<Long>()
+            
+            roundMatches.forEach { match ->
+                val loser = when (match.winnerId) {
+                    match.songId1 -> match.songId2
+                    match.songId2 -> match.songId1
+                    else -> null
+                }
+                loser?.let { 
+                    roundEliminated.add(it)
+                    eliminated.add(it)
+                }
+            }
+            
+            if (roundEliminated.isNotEmpty()) {
+                roundResults[round] = roundEliminated
+            }
+        }
+        
+        // Create results based on elimination round (later elimination = higher rank) 
+        val results = mutableListOf<RankingResult>()
+        var currentPosition = songs.size
+        
+        // Add eliminated teams by round (reverse order - last eliminated get better positions)
+        for (round in 1..maxRound) {
+            roundResults[round]?.forEach { songId ->
+                val song = songs.find { it.id == songId }
+                if (song != null) {
+                    results.add(
+                        RankingResult(
+                            songId = song.id,
+                            listId = song.listId,
+                            rankingMethod = "ELIMINATION",
+                            score = (maxRound - round + 1).toDouble(),
+                            position = currentPosition--
+                        )
+                    )
+                }
+            }
+        }
+        
+        // Add winner (not eliminated)
+        val winner = songs.find { it.id !in eliminated }
+        winner?.let {
+            results.add(
+                RankingResult(
+                    songId = it.id,
+                    listId = it.listId,
+                    rankingMethod = "ELIMINATION", 
+                    score = (maxRound + 1).toDouble(),
+                    position = 1
+                )
+            )
+        }
+        
+        return results.sortedBy { it.position }
     }
     
     fun createSwissMatches(songs: List<Song>, roundNumber: Int, completedMatches: List<Match>): List<Match> {
