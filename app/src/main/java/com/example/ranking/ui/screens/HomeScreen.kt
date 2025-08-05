@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import com.example.ranking.ui.viewmodel.HomeViewModel
 fun HomeScreen(
     onNavigateToCreateList: () -> Unit,
     onNavigateToSongList: (Long) -> Unit,
+    onNavigateToTest: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
     val songLists by viewModel.songLists.collectAsState()
@@ -40,11 +42,16 @@ fun HomeScreen(
                 fontWeight = FontWeight.Bold
             )
             
-            FloatingActionButton(
-                onClick = onNavigateToCreateList,
-                modifier = Modifier.size(56.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Yeni Liste")
+            Row {
+                IconButton(onClick = onNavigateToTest) {
+                    Icon(Icons.Default.Settings, contentDescription = "Test")
+                }
+                FloatingActionButton(
+                    onClick = onNavigateToCreateList,
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Yeni Liste")
+                }
             }
         }
         

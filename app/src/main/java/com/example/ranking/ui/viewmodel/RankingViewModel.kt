@@ -130,6 +130,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     private fun initializeEmre() {
+        // Reset Emre state variables
+        emreFirstConsecutiveWin = false
+        emreSecondConsecutiveWin = false
+        emreConsecutiveWinCount = 0
+        
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
             val matches = RankingEngine.createEmreMatches(songs, 1)
@@ -164,11 +169,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 "EMRE" -> {
                     val currentRound = getCurrentEmreRound(completed)
-                    val maxRounds = RankingEngine.getEmreRoundCount(songs.size)
-                    if (currentRound <= maxRounds) {
-                        createNextEmreRound(currentRound)
-                        return
-                    }
+                    // Emre usulünde sabit maksimum tur yok - sadece durma koşuluna bak
+                    createNextEmreRound(currentRound)
+                    return
                 }
             }
             
@@ -209,22 +212,46 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
+    private var emreFirstConsecutiveWin = false
+    private var emreSecondConsecutiveWin = false
+    private var emreConsecutiveWinCount = 0
+    
     private suspend fun createNextEmreRound(round: Int) {
         try {
-            // Recalculate song order based on previous round results
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
-            val completedMatches = allMatches.filter { it.isCompleted }
-            val results = RankingEngine.calculateEmreResults(songs, completedMatches)
-            val reorderedSongs = results.sortedBy { it.position }.mapNotNull { result ->
-                songs.find { it.id == result.songId }
-            }
             
-            val newMatches = RankingEngine.createEmreMatches(reorderedSongs, round)
-            if (newMatches.isNotEmpty()) {
-                repository.createMatches(newMatches)
+            // Check if current round is complete and satisfies stopping condition
+            if (RankingEngine.checkEmreCompletion(songs, allMatches, round - 1)) {
+                // Bir tur daha tüm birinciler kazandı
+                emreConsecutiveWinCount++
+                
+                if (emreConsecutiveWinCount == 1) {
+                    // İlk kez üstüste kazanma - devam et
+                    emreFirstConsecutiveWin = true
+                    val newMatches = RankingEngine.createEmreMatchesWithOrdering(songs, round, allMatches)
+                    if (newMatches.isNotEmpty()) {
+                        repository.createMatches(newMatches)
+                    }
+                    loadNextMatch()
+                } else if (emreConsecutiveWinCount >= 2) {
+                    // İki kez üstüste kazanma - sıralamayı tamamla
+                    emreSecondConsecutiveWin = true
+                    completeRanking()
+                    return
+                }
+            } else {
+                // Bu turda tüm birinciler kazanmadı - sayacı sıfırla
+                emreConsecutiveWinCount = 0
+                emreFirstConsecutiveWin = false
+                emreSecondConsecutiveWin = false
+                
+                // Sonraki tur için eşleştirme oluştur
+                val newMatches = RankingEngine.createEmreMatchesWithOrdering(songs, round, allMatches)
+                if (newMatches.isNotEmpty()) {
+                    repository.createMatches(newMatches)
+                }
+                loadNextMatch()
             }
-            
-            loadNextMatch()
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
                 error = "Emre round oluşturma hatası: ${e.message}"
@@ -282,7 +309,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     private fun getCurrentEmreRound(completedMatches: Int): Int {
-        val matchesPerRound = songs.size / 2
-        return (completedMatches / matchesPerRound) + 1
+        if (completedMatches == 0) return 1
+        
+        var currentSongCount = songs.size
+        var totalMatchesSoFar = 0
+        var round = 1
+        
+        while (totalMatchesSoFar < completedMatches) {
+            val matchesInThisRound = currentSongCount / 2
+            totalMatchesSoFar += matchesInThisRound
+            if (totalMatchesSoFar <= completedMatches) {
+                round++
+                currentSongCount = matchesInThisRound * 2 // Only winners go to next round
+            }
+        }
+        
+        return round
     }
 }

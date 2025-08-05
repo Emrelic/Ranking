@@ -239,33 +239,91 @@ object RankingEngine {
         return matches
     }
     
-    fun calculateEmreResults(songs: List<Song>, allMatches: List<Match>): List<RankingResult> {
-        var currentSongs = songs.toMutableList()
-        val roundCount = ceil(log2(songs.size.toDouble())).toInt()
+    fun createEmreMatchesWithOrdering(songs: List<Song>, roundNumber: Int, allMatches: List<Match>): List<Match> {
+        // First round uses original order
+        if (roundNumber == 1) {
+            return createEmreMatches(songs, roundNumber)
+        }
         
-        for (round in 1..roundCount) {
-            val roundMatches = allMatches.filter { it.round == round && it.isCompleted }
-            val winners = mutableListOf<Song>()
-            val losers = mutableListOf<Song>()
+        // Get previous round results and reorder songs
+        val reorderedSongs = reorderSongsAfterEmreRound(songs, allMatches, roundNumber - 1)
+        return createEmreMatches(reorderedSongs, roundNumber)
+    }
+    
+    private fun reorderSongsAfterEmreRound(songs: List<Song>, allMatches: List<Match>, completedRound: Int): List<Song> {
+        val roundMatches = allMatches.filter { it.round == completedRound && it.isCompleted }
+        val newOrder = songs.toMutableList()
+        
+        // Process each match result and reorder accordingly
+        for (match in roundMatches) {
+            val song1 = songs.find { it.id == match.songId1 } ?: continue
+            val song2 = songs.find { it.id == match.songId2 } ?: continue
             
-            roundMatches.forEach { match ->
-                val song1 = currentSongs.find { it.id == match.songId1 }
-                val song2 = currentSongs.find { it.id == match.songId2 }
-                
-                when (match.winnerId) {
-                    match.songId1 -> {
-                        song1?.let { winners.add(it) }
-                        song2?.let { losers.add(it) }
-                    }
-                    match.songId2 -> {
-                        song2?.let { winners.add(it) }
-                        song1?.let { losers.add(it) }
-                    }
+            val winner = when (match.winnerId) {
+                match.songId1 -> song1
+                match.songId2 -> song2
+                else -> continue // No winner, skip
+            }
+            val loser = if (winner.id == song1.id) song2 else song1
+            
+            // Remove both songs from current positions
+            val winnerIndex = newOrder.indexOfFirst { it.id == winner.id }
+            val loserIndex = newOrder.indexOfFirst { it.id == loser.id }
+            
+            if (winnerIndex == -1 || loserIndex == -1) continue
+            
+            newOrder.removeAt(winnerIndex)
+            newOrder.removeAt(if (loserIndex > winnerIndex) loserIndex - 1 else loserIndex)
+            
+            // Find correct position for winner 1452
+            // Winner should move up in ranking (lower index = higher rank)
+            val originalWinnerIndex = songs.indexOfFirst { it.id == winner.id }
+            val originalLoserIndex = songs.indexOfFirst { it.id == loser.id }
+            
+            var insertPosition = 0
+            for (i in newOrder.indices) {
+                val currentSong = newOrder[i]
+                val currentOriginalIndex = songs.indexOfFirst { it.id == currentSong.id }
+                if (currentOriginalIndex < originalWinnerIndex) {
+                    insertPosition = i + 1
+                } else {
+                    break
                 }
             }
             
-            // Reorganize: winners first, then losers
-            currentSongs = (winners + losers).toMutableList()
+            // Insert winner at calculated position 14531
+            newOrder.add(insertPosition, winner)
+            
+            // Find correct position for loser (among other losers)
+            var loserPosition = newOrder.size
+            for (i in newOrder.indices.reversed()) {
+                val currentSong = newOrder[i]
+                val currentOriginalIndex = songs.indexOfFirst { it.id == currentSong.id }
+                if (currentOriginalIndex < originalLoserIndex) {
+                    loserPosition = i + 1
+                    break
+                } else if (currentOriginalIndex > originalLoserIndex) {
+                    loserPosition = i
+                }
+            }
+            
+            // Insert loser at calculated position
+            newOrder.add(loserPosition, loser)
+        }
+        
+        return newOrder
+    }
+    
+    fun calculateEmreResults(songs: List<Song>, allMatches: List<Match>): List<RankingResult> {
+        var currentSongs = songs.toMutableList()
+        val maxRounds = ceil(log2(songs.size.toDouble())).toInt()
+        
+        // Apply each completed round's reordering
+        for (round in 1..maxRounds) {
+            val roundMatches = allMatches.filter { it.round == round && it.isCompleted }
+            if (roundMatches.isEmpty()) break
+            
+            currentSongs = reorderSongsAfterEmreRound(currentSongs, allMatches, round).toMutableList()
         }
         
         return currentSongs.mapIndexed { index, song ->
@@ -277,6 +335,42 @@ object RankingEngine {
                 position = index + 1
             )
         }
+    }
+    
+    fun checkEmreCompletion(songs: List<Song>, allMatches: List<Match>, currentRound: Int): Boolean {
+        val roundMatches = allMatches.filter { it.round == currentRound && it.isCompleted }
+        if (roundMatches.isEmpty()) return false
+        
+        // Get current ordering before this round
+        var currentSongs = songs.toList()
+        for (round in 1 until currentRound) {
+            currentSongs = reorderSongsAfterEmreRound(currentSongs, allMatches, round)
+        }
+        
+        // Check if all first-position songs in consecutive pairs won
+        var allFirstWon = true
+        var i = 0
+        while (i < currentSongs.size - 1) {
+            val song1 = currentSongs[i]
+            val song2 = currentSongs[i + 1]
+            
+            // Find the match between these consecutive songs
+            val match = roundMatches.find { 
+                (it.songId1 == song1.id && it.songId2 == song2.id) ||
+                (it.songId1 == song2.id && it.songId2 == song1.id)
+            }
+            
+            if (match != null) {
+                // First song (higher ranked) should have won
+                if (match.winnerId != song1.id) {
+                    allFirstWon = false
+                    break
+                }
+            }
+            i += 2 // Move to next pair
+        }
+        
+        return allFirstWon
     }
     
     fun getSwissRoundCount(songCount: Int): Int {
@@ -291,6 +385,8 @@ object RankingEngine {
     }
     
     fun getEmreRoundCount(songCount: Int): Int {
-        return ceil(log2(songCount.toDouble())).toInt()
+        // Emre usulünde sabit tur sayısı yok - sıralama bitene kadar devam eder
+        // Bu fonksiyon artık kullanılmıyor, maksimum güvenlik için yüksek sayı döner
+        return songCount
     }
 }

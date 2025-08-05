@@ -18,7 +18,8 @@ fun RankingNavigation(
         composable("home") {
             HomeScreen(
                 onNavigateToCreateList = { navController.navigate("create_list") },
-                onNavigateToSongList = { listId -> navController.navigate("song_list/$listId") }
+                onNavigateToSongList = { listId -> navController.navigate("song_list/$listId") },
+                onNavigateToTest = { navController.navigate("test") }
             )
         }
         
@@ -65,6 +66,10 @@ fun RankingNavigation(
                 method = method,
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+        
+        composable("test") {
+            TestScreen()
         }
     }
 }
