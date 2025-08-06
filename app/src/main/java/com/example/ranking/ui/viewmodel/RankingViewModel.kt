@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.math.floor
+import kotlin.math.log2
+import kotlin.math.pow
 
 class RankingViewModel(application: Application) : AndroidViewModel(application) {
     
@@ -111,6 +114,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private fun completeDirectScoring() {
         viewModelScope.launch {
             val results = RankingEngine.createDirectScoringResults(songs, directScores)
+            repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
             
             _uiState.value = _uiState.value.copy(
@@ -168,7 +172,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val (completed, total) = repository.getMatchProgress(currentListId, currentMethod)
         
         if (nextMatch == null) {
-            // Check if we need more rounds (for Swiss or Emre)
+            // Check if we need more rounds (for Swiss, Emre, or Elimination)
             when (currentMethod) {
                 "SWISS" -> {
                     val currentRound = getCurrentSwissRound(completed)
@@ -182,6 +186,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     val currentRound = getCurrentEmreRound(completed)
                     // Emre usulünde sabit maksimum tur yok - sadece durma koşuluna bak
                     createNextEmreRound(currentRound)
+                    return
+                }
+                "ELIMINATION" -> {
+                    // Check if we need to start knockout rounds after group stage
+                    val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                    createNextEliminationRound(allMatches)
                     return
                 }
             }
@@ -277,9 +287,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "LEAGUE" -> RankingEngine.calculateLeagueResults(songs, allMatches)
                 "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
                 "EMRE" -> RankingEngine.calculateEmreResults(songs, allMatches)
+                "ELIMINATION" -> RankingEngine.calculateEliminationResults(songs, allMatches)
                 else -> emptyList()
             }
             
+            repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
             
             _uiState.value = _uiState.value.copy(
@@ -353,5 +365,42 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
         
         return round
+    }
+    
+    private suspend fun createNextEliminationRound(allMatches: List<Match>) {
+        try {
+            val songCount = songs.size
+            val targetSize = 2.0.pow(kotlin.math.floor(log2(songCount.toDouble()))).toInt()
+            
+            // If already a power of 2, all matches are already created in direct elimination
+            if (songCount == targetSize) {
+                // All matches should be created, just complete ranking
+                completeRanking()
+                return
+            }
+            
+            // Check if group stage is complete
+            val groupMatches = allMatches.filter { it.round == 0 }
+            val groupsComplete = groupMatches.all { it.isCompleted }
+            
+            if (groupsComplete && allMatches.none { it.round > 0 }) {
+                // Group stage done, need to create knockout rounds
+                val teamsToEliminate = songCount - targetSize
+                val groupConfig = RankingEngine.calculateOptimalGroupConfig(songCount, teamsToEliminate)
+                val qualifiers = RankingEngine.getGroupQualifiers(songs, groupMatches, groupConfig)
+                
+                // Create knockout matches
+                val knockoutMatches = RankingEngine.createEliminationKnockoutMatches(qualifiers, 1)
+                repository.createMatches(knockoutMatches)
+                loadNextMatch()
+            } else {
+                // All rounds complete
+                completeRanking()
+            }
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                error = "Eleme turu oluşturma hatası: ${e.message}"
+            )
+        }
     }
 }

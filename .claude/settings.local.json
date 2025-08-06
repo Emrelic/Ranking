@@ -36,7 +36,8 @@
       "Bash(mv:*)",
       "Bash(cmd /c gradlew.bat build:*)",
       "Bash(adb shell am start:*)",
-      "Bash(adb shell:*)"
+      "Bash(adb shell:*)",
+      "Bash(gradlew:*)"
     ],
     "deny": []
   }
