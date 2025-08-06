@@ -1,24 +1,36 @@
 package com.example.ranking.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ranking.data.LeagueSettings
+import com.example.ranking.data.RankingDatabase
 import com.example.ranking.repository.RankingRepository
+import com.example.ranking.utils.CsvReader
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LeagueSettingsViewModel(
-    private val repository: RankingRepository
-) : ViewModel() {
+class LeagueSettingsViewModel(application: Application) : AndroidViewModel(application) {
+    
+    private val database = RankingDatabase.getDatabase(application)
+    private val repository = RankingRepository(
+        songDao = database.songDao(),
+        songListDao = database.songListDao(),
+        rankingResultDao = database.rankingResultDao(),
+        matchDao = database.matchDao(),
+        leagueSettingsDao = database.leagueSettingsDao(),
+        archiveDao = database.archiveDao(),
+        csvReader = CsvReader()
+    )
 
     data class LeagueSettingsUiState(
         val useScores: Boolean = false,
         val winPoints: Int = 3,
         val drawPoints: Int = 1,
         val allowDraws: Boolean = true,
+        val doubleRoundRobin: Boolean = false,
         val isLoading: Boolean = false,
         val errorMessage: String? = null
     )
@@ -45,6 +57,7 @@ class LeagueSettingsViewModel(
                         winPoints = existingSettings.winPoints,
                         drawPoints = existingSettings.drawPoints,
                         allowDraws = existingSettings.allowDraws,
+                        doubleRoundRobin = existingSettings.doubleRoundRobin,
                         isLoading = false
                     )
                 } else {
@@ -79,6 +92,10 @@ class LeagueSettingsViewModel(
         _uiState.value = _uiState.value.copy(allowDraws = allowDraws)
     }
 
+    fun updateDoubleRoundRobin(doubleRoundRobin: Boolean) {
+        _uiState.value = _uiState.value.copy(doubleRoundRobin = doubleRoundRobin)
+    }
+
     fun saveSettings() {
         viewModelScope.launch {
             try {
@@ -89,7 +106,8 @@ class LeagueSettingsViewModel(
                     winPoints = _uiState.value.winPoints,
                     drawPoints = _uiState.value.drawPoints,
                     losePoints = 0, // Always 0 for loss
-                    allowDraws = _uiState.value.allowDraws
+                    allowDraws = _uiState.value.allowDraws,
+                    doubleRoundRobin = _uiState.value.doubleRoundRobin
                 )
                 
                 repository.saveLeagueSettings(settings)
@@ -99,13 +117,4 @@ class LeagueSettingsViewModel(
         }
     }
 
-    companion object {
-        fun provideFactory(repository: RankingRepository): ViewModelProvider.Factory =
-            object : ViewModelProvider.Factory {
-                @Suppress("UNCHECKED_CAST")
-                override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return LeagueSettingsViewModel(repository) as T
-                }
-            }
-    }
 }

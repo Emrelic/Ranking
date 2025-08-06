@@ -14,5 +14,6 @@ data class LeagueSettings(
     val drawPoints: Int = 1, // Points for a draw
     val losePoints: Int = 0, // Points for a loss
     val allowDraws: Boolean = true, // Whether draws are allowed
+    val doubleRoundRobin: Boolean = false, // Whether to play home and away matches
     val createdAt: Long = System.currentTimeMillis()
 )

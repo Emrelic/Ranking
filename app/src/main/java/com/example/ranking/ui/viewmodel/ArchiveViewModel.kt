@@ -74,7 +74,8 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
         val useScores: Boolean,
         val winPoints: Int,
         val drawPoints: Int,
-        val allowDraws: Boolean
+        val allowDraws: Boolean,
+        val doubleRoundRobin: Boolean
     )
     
     private val _uiState = MutableStateFlow(ArchiveUiState())

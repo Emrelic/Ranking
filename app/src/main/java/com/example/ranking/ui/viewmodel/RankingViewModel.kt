@@ -123,7 +123,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private fun initializeLeague() {
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
-            val matches = RankingEngine.createLeagueMatches(songs)
+            val settings = _uiState.value.leagueSettings
+            val doubleRoundRobin = settings?.doubleRoundRobin ?: false
+            val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
             repository.createMatches(matches)
             loadNextMatch()
         }

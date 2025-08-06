@@ -1,7 +1,9 @@
 package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
@@ -29,23 +31,27 @@ fun LeagueSettingsScreen(
     
     val uiState by viewModel.uiState.collectAsState()
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        TopAppBar(
-            title = { 
-                Text("Lig Ayarları")
-            },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Text("Lig Ayarları")
+                },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
                 }
-            }
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
         
         Card(
             modifier = Modifier.fillMaxWidth()
@@ -178,19 +184,65 @@ fun LeagueSettingsScreen(
                         }
                     }
                 }
+                
+                HorizontalDivider()
+                
+                Text(
+                    text = "Fikstür Ayarları",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = uiState.doubleRoundRobin,
+                        onCheckedChange = { viewModel.updateDoubleRoundRobin(it) }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column {
+                        Text("Rövanşlı lig (Çift devreli)")
+                        Text(
+                            text = "Her takım diğerleriyle hem evinde hem deplasmanda oynayacak",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                
+                if (uiState.doubleRoundRobin) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+                            Text(
+                                text = "Örnek: Fenerbahçe vs Galatasaray eşleşmesi hem Fenerbahçe evinde hem Galatasaray evinde oynanacak.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
             }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        Button(
-            onClick = {
-                viewModel.saveSettings()
-                onNavigateToRanking(listId, method)
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Ayarları Kaydet ve Devam Et")
+            Button(
+                onClick = {
+                    viewModel.saveSettings()
+                    onNavigateToRanking(listId, method)
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Ayarları Kaydet ve Devam Et")
+            }
         }
     }
 }

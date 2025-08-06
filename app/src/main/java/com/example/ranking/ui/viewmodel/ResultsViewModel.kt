@@ -84,7 +84,8 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
         val useScores: Boolean,
         val winPoints: Int,
         val drawPoints: Int,
-        val allowDraws: Boolean
+        val allowDraws: Boolean,
+        val doubleRoundRobin: Boolean
     )
     
     fun loadResults(listId: Long, method: String) {
@@ -273,7 +274,8 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                         useScores = it.useScores,
                         winPoints = it.winPoints,
                         drawPoints = it.drawPoints,
-                        allowDraws = it.allowDraws
+                        allowDraws = it.allowDraws,
+                        doubleRoundRobin = it.doubleRoundRobin
                     )
                 }
                 

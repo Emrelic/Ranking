@@ -128,24 +128,40 @@ fun FixtureScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Group matches by round if applicable
-            val matchesByRound = if (method == "SWISS" || method == "EMRE") {
-                uiState.matches.groupBy { it.round }
-            } else {
-                mapOf(1 to uiState.matches)
-            }
+            // Group matches by round for all methods
+            val matchesByRound = uiState.matches.groupBy { it.round }.toSortedMap()
             
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 matchesByRound.forEach { (round, matches) ->
-                    if (method == "SWISS" || method == "EMRE") {
-                        item {
+                    item {
+                        val roundTitle = when (method) {
+                            "LEAGUE" -> {
+                                val maxRound = matchesByRound.keys.maxOrNull() ?: 1
+                                val firstHalfRounds = (maxRound + 1) / 2
+                                if (round <= firstHalfRounds) {
+                                    "Hafta $round"
+                                } else {
+                                    "Hafta ${round - firstHalfRounds} (Rövanş)"
+                                }
+                            }
+                            "SWISS", "EMRE" -> "Tur $round"
+                            else -> "Tur $round"
+                        }
+                        
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
                             Text(
-                                text = "Tur $round",
-                                style = MaterialTheme.typography.titleLarge,
+                                text = roundTitle,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(vertical = 8.dp)
+                                modifier = Modifier.padding(16.dp),
+                                textAlign = TextAlign.Center
                             )
                         }
                     }

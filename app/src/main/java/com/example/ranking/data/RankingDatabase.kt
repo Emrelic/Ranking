@@ -10,7 +10,7 @@ import com.example.ranking.data.dao.*
 
 @Database(
     entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -79,6 +79,13 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add doubleRoundRobin column to league_settings table
+                db.execSQL("ALTER TABLE league_settings ADD COLUMN doubleRoundRobin INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -86,7 +93,8 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
                 instance

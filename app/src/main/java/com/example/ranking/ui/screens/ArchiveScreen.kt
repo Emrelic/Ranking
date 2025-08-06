@@ -312,7 +312,8 @@ fun ArchiveDetailView(
                 archiveSettings?.let { settings ->
                     Text(
                         text = "Ayarlar: ${if (settings.useScores) "Skor girişi" else "Sadece kazanan"}, " +
-                                "Kazanma: ${settings.winPoints}pt, Beraberlik: ${settings.drawPoints}pt",
+                                "Kazanma: ${settings.winPoints}pt, Beraberlik: ${settings.drawPoints}pt" +
+                                if (settings.doubleRoundRobin) ", Rövanşlı lig" else ", Tek devre",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

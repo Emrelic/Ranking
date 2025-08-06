@@ -25,19 +25,65 @@ object RankingEngine {
             }
     }
     
-    fun createLeagueMatches(songs: List<Song>): List<Match> {
-        val matches = mutableListOf<Match>()
+    fun createLeagueMatches(songs: List<Song>, doubleRoundRobin: Boolean = false): List<Match> {
+        if (songs.size < 2) return emptyList()
         
-        for (i in songs.indices) {
-            for (j in i + 1 until songs.size) {
+        val matches = mutableListOf<Match>()
+        val teams = songs.toMutableList()
+        
+        // Eğer takım sayısı tek sayıysa, "BYE" takımı ekle (geçer)
+        val hasOddTeams = teams.size % 2 != 0
+        if (hasOddTeams) {
+            teams.add(Song(id = -1, name = "BYE", artist = "", album = "", trackNumber = 0, listId = teams[0].listId))
+        }
+        
+        val numTeams = teams.size
+        val numRounds = numTeams - 1
+        val matchesPerRound = numTeams / 2
+        
+        // Round-robin algoritması (Circle method)
+        for (round in 1..numRounds) {
+            val roundMatches = mutableListOf<Match>()
+            
+            for (match in 0 until matchesPerRound) {
+                val home = (round - 1 + match) % (numTeams - 1)
+                val away = (numTeams - 1 - match + round - 1) % (numTeams - 1)
+                
+                val homeTeam = if (match == 0) teams.last() else teams[home]
+                val awayTeam = teams[away]
+                
+                // BYE takımıyla olan maçları atla
+                if (homeTeam.id != -1L && awayTeam.id != -1L) {
+                    roundMatches.add(
+                        Match(
+                            listId = songs[0].listId,
+                            rankingMethod = "LEAGUE",
+                            songId1 = homeTeam.id,
+                            songId2 = awayTeam.id,
+                            winnerId = null,
+                            round = round
+                        )
+                    )
+                }
+            }
+            
+            matches.addAll(roundMatches)
+        }
+        
+        // Rövanşlı lig (İkinci devre)
+        if (doubleRoundRobin) {
+            val firstLegMatches = matches.toList() // Kopyala
+            
+            for (originalMatch in firstLegMatches) {
+                // Ev sahibi ve misafir takımları yer değiştir
                 matches.add(
                     Match(
-                        listId = songs[i].listId,
-                        rankingMethod = "LEAGUE",
-                        songId1 = songs[i].id,
-                        songId2 = songs[j].id,
+                        listId = originalMatch.listId,
+                        rankingMethod = originalMatch.rankingMethod,
+                        songId1 = originalMatch.songId2, // Yer değişimi
+                        songId2 = originalMatch.songId1, // Yer değişimi
                         winnerId = null,
-                        round = 1
+                        round = originalMatch.round + numRounds // İkinci devreye round ekle
                     )
                 )
             }
