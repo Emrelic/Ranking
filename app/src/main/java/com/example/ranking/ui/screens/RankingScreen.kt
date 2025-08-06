@@ -1,6 +1,7 @@
 package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -22,6 +23,7 @@ fun RankingScreen(
     method: String,
     onNavigateBack: () -> Unit,
     onNavigateToResults: (Long, String) -> Unit,
+    onNavigateToFixture: (Long, String) -> Unit = { _, _ -> },
     viewModel: RankingViewModel = viewModel()
 ) {
     LaunchedEffect(listId, method) {
@@ -43,6 +45,30 @@ fun RankingScreen(
                 IconButton(onClick = onNavigateBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
                 }
+            },
+            actions = {
+                if (method in listOf("LEAGUE", "SWISS", "EMRE", "ELIMINATION")) {
+                    TextButton(
+                        onClick = { onNavigateToFixture(listId, method) }
+                    ) {
+                        Text("Fikstür")
+                    }
+                }
+                if (method == "LEAGUE") {
+                    var showStandings by remember { mutableStateOf(false) }
+                    TextButton(
+                        onClick = { showStandings = !showStandings }
+                    ) {
+                        Text(if (showStandings) "Maçlar" else "Puan Durumu")
+                    }
+                    
+                    if (showStandings) {
+                        StandingsDialog(
+                            uiState = uiState,
+                            onDismiss = { showStandings = false }
+                        )
+                    }
+                }
             }
         )
         
@@ -58,6 +84,7 @@ fun RankingScreen(
                 uiState = uiState,
                 method = method,
                 onMatchResult = viewModel::submitMatchResult,
+                onMatchResultWithScore = viewModel::submitMatchResultWithScore,
                 onComplete = { onNavigateToResults(listId, method) }
             )
             "ELIMINATION" -> EliminationContent(
@@ -197,6 +224,7 @@ private fun MatchBasedContent(
     uiState: RankingViewModel.RankingUiState,
     method: String,
     onMatchResult: (Long, Long?) -> Unit,
+    onMatchResultWithScore: (Long, Long?, Int?, Int?) -> Unit = { id, winner, _, _ -> onMatchResult(id, winner) },
     onComplete: () -> Unit
 ) {
     if (uiState.isComplete) {
@@ -219,6 +247,10 @@ private fun MatchBasedContent(
     }
     
     uiState.currentMatch?.let { match ->
+        var score1Text by remember { mutableStateOf("") }
+        var score2Text by remember { mutableStateOf("") }
+        val useScores = uiState.leagueSettings?.useScores ?: false
+        
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -246,94 +278,220 @@ private fun MatchBasedContent(
             Spacer(modifier = Modifier.height(32.dp))
             
             Text(
-                text = "Hangisi daha iyi?",
+                text = if (useScores) "Maç Skoru Girin" else "Hangisi daha iyi?",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                uiState.song1?.let { song1 ->
-                    Button(
-                        onClick = { onMatchResult(match.id, song1.id) },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+            if (useScores) {
+                // Score input mode
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    uiState.song1?.let { song1 ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = song1.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (song1.artist.isNotBlank()) {
-                                Text(
-                                    text = song1.artist,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                            if (song1.album.isNotBlank()) {
-                                Text(
-                                    text = song1.album,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = song1.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (song1.artist.isNotBlank()) {
+                                        Text(
+                                            text = song1.artist,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                }
+                                OutlinedTextField(
+                                    value = score1Text,
+                                    onValueChange = { 
+                                        if (it.all { char -> char.isDigit() }) {
+                                            score1Text = it
+                                        }
+                                    },
+                                    label = { Text("Skor") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.width(80.dp),
+                                    singleLine = true
                                 )
                             }
                         }
                     }
-                }
-                
-                Text(
-                    text = "VS",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
-                
-                uiState.song2?.let { song2 ->
-                    Button(
-                        onClick = { onMatchResult(match.id, song2.id) },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                    
+                    Text(
+                        text = "VS",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    
+                    uiState.song2?.let { song2 ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(
-                                text = song2.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (song2.artist.isNotBlank()) {
-                                Text(
-                                    text = song2.artist,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                            if (song2.album.isNotBlank()) {
-                                Text(
-                                    text = song2.album,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = song2.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (song2.artist.isNotBlank()) {
+                                        Text(
+                                            text = song2.artist,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    }
+                                }
+                                OutlinedTextField(
+                                    value = score2Text,
+                                    onValueChange = { 
+                                        if (it.all { char -> char.isDigit() }) {
+                                            score2Text = it
+                                        }
+                                    },
+                                    label = { Text("Skor") },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    modifier = Modifier.width(80.dp),
+                                    singleLine = true
                                 )
                             }
                         }
                     }
-                }
-                
-                if (method == "LEAGUE" || method == "SWISS") {
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
                     Button(
-                        onClick = { onMatchResult(match.id, null) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary
-                        )
+                        onClick = {
+                            val score1 = score1Text.toIntOrNull()
+                            val score2 = score2Text.toIntOrNull()
+                            
+                            if (score1 != null && score2 != null) {
+                                val winner = when {
+                                    score1 > score2 -> uiState.song1?.id
+                                    score2 > score1 -> uiState.song2?.id
+                                    else -> null // Draw
+                                }
+                                onMatchResultWithScore(match.id, winner, score1, score2)
+                                score1Text = ""
+                                score2Text = ""
+                            }
+                        },
+                        enabled = score1Text.toIntOrNull() != null && score2Text.toIntOrNull() != null,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Berabere")
+                        Text("Skoru Kaydet")
+                    }
+                }
+            } else {
+                // Traditional winner selection mode  
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    uiState.song1?.let { song1 ->
+                        Button(
+                            onClick = { onMatchResult(match.id, song1.id) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = song1.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (song1.artist.isNotBlank()) {
+                                    Text(
+                                        text = song1.artist,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                                if (song1.album.isNotBlank()) {
+                                    Text(
+                                        text = song1.album,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                
+                    Text(
+                        text = "VS",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                    
+                    uiState.song2?.let { song2 ->
+                        Button(
+                            onClick = { onMatchResult(match.id, song2.id) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = song2.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                if (song2.artist.isNotBlank()) {
+                                    Text(
+                                        text = song2.artist,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                                if (song2.album.isNotBlank()) {
+                                    Text(
+                                        text = song2.album,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (method == "LEAGUE" || method == "SWISS") {
+                        val allowDraws = uiState.leagueSettings?.allowDraws ?: true
+                        if (allowDraws) {
+                            Button(
+                                onClick = { onMatchResult(match.id, null) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+                                Text("Berabere")
+                            }
+                        }
                     }
                 }
             }
@@ -348,7 +506,91 @@ private fun EliminationContent(
     onComplete: () -> Unit
 ) {
     // Similar to MatchBasedContent but with elimination-specific UI
-    MatchBasedContent(uiState, "ELIMINATION", onMatchResult, onComplete)
+    MatchBasedContent(
+        uiState = uiState,
+        method = "ELIMINATION",
+        onMatchResult = onMatchResult,
+        onComplete = onComplete
+    )
+}
+
+@Composable
+private fun StandingsDialog(
+    uiState: RankingViewModel.RankingUiState,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Anlık Puan Durumu") },
+        text = {
+            LazyColumn {
+                item {
+                    // Header
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Takım",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(2f)
+                        )
+                        Text(
+                            text = "O",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                        Text(
+                            text = "G",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                        Text(
+                            text = "B",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                        Text(
+                            text = "M",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                        Text(
+                            text = "A",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                        Text(
+                            text = "Y",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                        Text(
+                            text = "P",
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(0.5f)
+                        )
+                    }
+                }
+                
+                // Calculate standings would need to be implemented in ViewModel
+                // This is a placeholder for the current standings
+                item {
+                    Text(
+                        text = "Puan tablosu hesaplanıyor...",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Kapat")
+            }
+        }
+    )
 }
 
 private fun getMethodTitle(method: String): String {

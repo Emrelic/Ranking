@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -21,6 +22,7 @@ import com.example.ranking.ui.viewmodel.HomeViewModel
 fun HomeScreen(
     onNavigateToCreateList: () -> Unit,
     onNavigateToSongList: (Long) -> Unit,
+    onNavigateToArchive: () -> Unit,
     onNavigateToTest: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
@@ -43,6 +45,9 @@ fun HomeScreen(
             )
             
             Row {
+                IconButton(onClick = onNavigateToArchive) {
+                    Icon(Icons.Default.List, contentDescription = "Arşiv")
+                }
                 IconButton(onClick = onNavigateToTest) {
                     Icon(Icons.Default.Settings, contentDescription = "Test")
                 }

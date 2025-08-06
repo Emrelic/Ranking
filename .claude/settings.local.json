@@ -30,7 +30,11 @@
       "Bash(.gradlew assembleDebug)",
       "Bash(gradlew.bat assembleDebug)",
       "Bash(cmd /c gradlew.bat assembleDebug)",
-      "Bash(kotlin:*)"
+      "Bash(kotlin:*)",
+      "Bash(del:*)",
+      "Bash(ren:*)",
+      "Bash(mv:*)",
+      "Bash(cmd /c gradlew.bat build:*)"
     ],
     "deny": []
   }

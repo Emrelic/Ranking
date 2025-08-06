@@ -21,6 +21,8 @@ class SongListViewModel(application: Application) : AndroidViewModel(application
         songListDao = database.songListDao(),
         rankingResultDao = database.rankingResultDao(),
         matchDao = database.matchDao(),
+        leagueSettingsDao = database.leagueSettingsDao(),
+        archiveDao = database.archiveDao(),
         csvReader = CsvReader()
     )
     

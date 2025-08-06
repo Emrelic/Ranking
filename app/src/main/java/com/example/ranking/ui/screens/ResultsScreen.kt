@@ -22,6 +22,7 @@ fun ResultsScreen(
     listId: Long,
     method: String,
     onNavigateBack: () -> Unit,
+    onNavigateToFixture: (Long, String) -> Unit = { _, _ -> },
     viewModel: ResultsViewModel = viewModel()
 ) {
     LaunchedEffect(listId, method) {
@@ -43,6 +44,35 @@ fun ResultsScreen(
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                }
+            },
+            actions = {
+                if (method in listOf("LEAGUE", "SWISS", "EMRE", "ELIMINATION")) {
+                    TextButton(
+                        onClick = { onNavigateToFixture(listId, method) }
+                    ) {
+                        Text("Fikstür")
+                    }
+                }
+                
+                var showArchiveDialog by remember { mutableStateOf(false) }
+                TextButton(
+                    onClick = { showArchiveDialog = true }
+                ) {
+                    Text("Arşive Kaydet")
+                }
+                
+                if (showArchiveDialog) {
+                    ArchiveDialog(
+                        listId = listId,
+                        method = method,
+                        viewModel = viewModel,
+                        onDismiss = { showArchiveDialog = false },
+                        onConfirm = { name ->
+                            viewModel.archiveResults(listId, method, name)
+                            showArchiveDialog = false
+                        }
+                    )
                 }
             }
         )
@@ -67,27 +97,303 @@ fun ResultsScreen(
                 )
             }
         } else {
-            Text(
-                text = "Final Sıralaması",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            LazyColumn {
-                itemsIndexed(results) { index, resultWithSong ->
-                    ResultCard(
-                        position = index + 1,
-                        song = resultWithSong.second,
-                        score = resultWithSong.first.score,
-                        method = method
-                    )
-                    
-                    if (index < results.size - 1) {
-                        Spacer(modifier = Modifier.height(8.dp))
+            if (method == "LEAGUE") {
+                LeagueResultsTabs(
+                    listId = listId,
+                    results = results,
+                    method = method,
+                    viewModel = viewModel
+                )
+            } else {
+                Text(
+                    text = "Final Sıralaması",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                LazyColumn {
+                    itemsIndexed(results) { index, resultWithSong ->
+                        ResultCard(
+                            position = index + 1,
+                            song = resultWithSong.second,
+                            score = resultWithSong.first.score,
+                            method = method
+                        )
+                        
+                        if (index < results.size - 1) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LeagueResultsTabs(
+    listId: Long,
+    results: List<Pair<com.example.ranking.data.RankingResult, com.example.ranking.data.Song>>,
+    method: String,
+    viewModel: ResultsViewModel
+) {
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabTitles = listOf("Final Sıralaması", "Puan Durumu", "Maç Özeti")
+    
+    Column {
+        TabRow(selectedTabIndex = selectedTab) {
+            tabTitles.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = { Text(title) }
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        when (selectedTab) {
+            0 -> {
+                // Final Sıralaması
+                Text(
+                    text = "Final Sıralaması",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                LazyColumn {
+                    itemsIndexed(results) { index, resultWithSong ->
+                        ResultCard(
+                            position = index + 1,
+                            song = resultWithSong.second,
+                            score = resultWithSong.first.score,
+                            method = method
+                        )
+                        
+                        if (index < results.size - 1) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
+                }
+            }
+            1 -> {
+                // Puan Durumu - detailed league table
+                LeagueTable(
+                    listId = listId,
+                    viewModel = viewModel
+                )
+            }
+            2 -> {
+                // Maç Özeti
+                MatchSummary(
+                    listId = listId,
+                    viewModel = viewModel
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun LeagueTable(
+    listId: Long,
+    viewModel: ResultsViewModel
+) {
+    LaunchedEffect(listId) {
+        viewModel.loadLeagueTable(listId)
+    }
+    
+    val leagueTable by viewModel.leagueTable.collectAsState()
+    
+    if (leagueTable.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        Text(
+            text = "Detaylı Puan Durumu",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Header row
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Sıra", modifier = Modifier.width(40.dp), fontWeight = FontWeight.Bold)
+                Text("Takım", modifier = Modifier.weight(2f), fontWeight = FontWeight.Bold)
+                Text("O", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text("G", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text("B", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text("M", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text("A", modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
+                Text("Y", modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
+                Text("P", modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        LazyColumn {
+            itemsIndexed(leagueTable) { index, tableEntry ->
+                LeagueTableRow(
+                    position = index + 1,
+                    entry = tableEntry
+                )
+                
+                if (index < leagueTable.size - 1) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable  
+private fun LeagueTableRow(
+    position: Int,
+    entry: ResultsViewModel.LeagueTableEntry
+) {
+    val backgroundColor = when (position) {
+        1 -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.surface
+    }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("$position", modifier = Modifier.width(40.dp), fontWeight = FontWeight.Bold)
+            Text(entry.teamName, modifier = Modifier.weight(2f))
+            Text("${entry.played}", modifier = Modifier.width(30.dp))
+            Text("${entry.won}", modifier = Modifier.width(30.dp))
+            Text("${entry.drawn}", modifier = Modifier.width(30.dp))
+            Text("${entry.lost}", modifier = Modifier.width(30.dp))
+            Text("${entry.goalsFor}", modifier = Modifier.width(35.dp))
+            Text("${entry.goalsAgainst}", modifier = Modifier.width(35.dp))
+            Text("${entry.points}", modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun MatchSummary(
+    listId: Long,
+    viewModel: ResultsViewModel
+) {
+    LaunchedEffect(listId) {
+        viewModel.loadMatchSummary(listId)
+    }
+    
+    val matchSummary by viewModel.matchSummary.collectAsState()
+    
+    Text(
+        text = "Maç Özeti",
+        style = MaterialTheme.typography.headlineSmall,
+        fontWeight = FontWeight.Bold
+    )
+    
+    Spacer(modifier = Modifier.height(16.dp))
+    
+    if (matchSummary.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+    } else {
+        LazyColumn {
+            items(matchSummary.size) { index ->
+                val match = matchSummary[index]
+                MatchSummaryCard(match = match)
+                if (index < matchSummary.size - 1) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MatchSummaryCard(
+    match: ResultsViewModel.MatchSummaryItem
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = match.team1Name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = if (match.winnerId == match.team1Id) FontWeight.Bold else FontWeight.Normal
+                )
+                
+                Text(
+                    text = if (match.score1 != null && match.score2 != null) {
+                        "${match.score1} - ${match.score2}"
+                    } else {
+                        when (match.winnerId) {
+                            match.team1Id -> "1 - 0"
+                            match.team2Id -> "0 - 1" 
+                            null -> "0 - 0"
+                            else -> "- - -"
+                        }
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Text(
+                    text = match.team2Name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = if (match.winnerId == match.team2Id) FontWeight.Bold else FontWeight.Normal
+                )
+            }
+            
+            if (match.winnerId != null || (match.score1 == match.score2 && match.score1 != null)) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = when {
+                        match.winnerId == match.team1Id -> "${match.team1Name} Kazandı"
+                        match.winnerId == match.team2Id -> "${match.team2Name} Kazandı"
+                        else -> "Berabere"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
@@ -212,6 +518,51 @@ private fun getScoreLabel(method: String): String {
         "EMRE" -> "sıra puanı"
         else -> ""
     }
+}
+
+@Composable
+private fun ArchiveDialog(
+    listId: Long,
+    method: String,
+    viewModel: ResultsViewModel,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var archiveName by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Arşive Kaydet") },
+        text = {
+            Column {
+                Text("Bu sıralamanın sonuçlarını arşive kaydetmek için bir isim girin:")
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                OutlinedTextField(
+                    value = archiveName,
+                    onValueChange = { archiveName = it },
+                    label = { Text("Arşiv İsmi") },
+                    placeholder = { Text("Örn: Yılbaşı Listesi 2024") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(archiveName) },
+                enabled = archiveName.isNotBlank()
+            ) {
+                Text("Kaydet")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal")
+            }
+        }
+    )
 }
 
 private fun getMethodTitle(method: String): String {

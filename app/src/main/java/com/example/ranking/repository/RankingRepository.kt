@@ -13,6 +13,8 @@ class RankingRepository(
     private val songListDao: SongListDao,
     private val rankingResultDao: RankingResultDao,
     private val matchDao: MatchDao,
+    private val leagueSettingsDao: LeagueSettingsDao,
+    private val archiveDao: ArchiveDao,
     private val csvReader: CsvReader
 ) {
     
@@ -120,4 +122,29 @@ class RankingRepository(
         val total = matchDao.getTotalMatchCount(listId, method)
         return Pair(completed, total)
     }
+    
+    // League Settings operations
+    suspend fun getLeagueSettings(listId: Long, method: String): LeagueSettings? =
+        leagueSettingsDao.getByListAndMethod(listId, method)
+    
+    suspend fun saveLeagueSettings(settings: LeagueSettings) {
+        val existing = leagueSettingsDao.getByListAndMethod(settings.listId, settings.rankingMethod)
+        if (existing != null) {
+            leagueSettingsDao.update(settings.copy(id = existing.id))
+        } else {
+            leagueSettingsDao.insert(settings)
+        }
+    }
+    
+    // Archive operations
+    fun getAllArchives(): Flow<List<Archive>> = archiveDao.getAllArchives()
+    
+    suspend fun saveArchive(archive: Archive): Long = archiveDao.insert(archive)
+    
+    suspend fun getArchiveById(id: Long): Archive? = archiveDao.getArchiveById(id)
+    
+    suspend fun deleteArchive(archive: Archive) = archiveDao.delete(archive)
+    
+    fun getArchivesByMethod(method: String): Flow<List<Archive>> = 
+        archiveDao.getArchivesByMethod(method)
 }

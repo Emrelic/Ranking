@@ -20,6 +20,7 @@ fun SongListScreen(
     listId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToRanking: (Long, String) -> Unit,
+    onNavigateToLeagueSettings: (Long, String) -> Unit = { _, _ -> },
     viewModel: SongListViewModel = viewModel()
 ) {
     LaunchedEffect(listId) {
@@ -86,7 +87,7 @@ fun SongListScreen(
                 RankingMethodButton(
                     title = "Lig Sistemi",
                     description = "Öğeler birbiri ile eşleşir, kazanan 2 puan alır",
-                    onClick = { onNavigateToRanking(listId, "LEAGUE") }
+                    onClick = { onNavigateToLeagueSettings(listId, "LEAGUE") }
                 )
                 
                 RankingMethodButton(

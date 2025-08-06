@@ -12,6 +12,8 @@ data class Match(
     val songId1: Long,
     val songId2: Long,
     val winnerId: Long?, // null for draw, songId for winner
+    val score1: Int? = null, // Score for player/team 1
+    val score2: Int? = null, // Score for player/team 2
     val round: Int = 1,
     val groupId: Int? = null, // for group stage matches
     val isCompleted: Boolean = false,

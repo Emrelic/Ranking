@@ -19,6 +19,7 @@ fun RankingNavigation(
             HomeScreen(
                 onNavigateToCreateList = { navController.navigate("create_list") },
                 onNavigateToSongList = { listId -> navController.navigate("song_list/$listId") },
+                onNavigateToArchive = { navController.navigate("archive") },
                 onNavigateToTest = { navController.navigate("test") }
             )
         }
@@ -41,10 +42,39 @@ fun RankingNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToRanking = { id, method -> 
                     navController.navigate("ranking/$id/$method")
+                },
+                onNavigateToLeagueSettings = { id, method ->
+                    navController.navigate("league_settings/$id/$method")
                 }
             )
         }
         
+        composable("league_settings/{listId}/{method}") { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
+            val method = backStackEntry.arguments?.getString("method") ?: ""
+            LeagueSettingsScreen(
+                listId = listId,
+                method = method,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToRanking = { id, m -> 
+                    navController.navigate("ranking/$id/$m")
+                }
+            )
+        }
+
+        composable("fixture/{listId}/{method}") { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
+            val method = backStackEntry.arguments?.getString("method") ?: ""
+            FixtureScreen(
+                listId = listId,
+                method = method,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToRanking = { id, m -> 
+                    navController.navigate("ranking/$id/$m")
+                }
+            )
+        }
+
         composable("ranking/{listId}/{method}") { backStackEntry ->
             val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
             val method = backStackEntry.arguments?.getString("method") ?: ""
@@ -54,6 +84,9 @@ fun RankingNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { id, m -> 
                     navController.navigate("results/$id/$m")
+                },
+                onNavigateToFixture = { id, m ->
+                    navController.navigate("fixture/$id/$m")
                 }
             )
         }
@@ -64,6 +97,15 @@ fun RankingNavigation(
             ResultsScreen(
                 listId = listId,
                 method = method,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToFixture = { id, m ->
+                    navController.navigate("fixture/$id/$m")
+                }
+            )
+        }
+        
+        composable("archive") {
+            ArchiveScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

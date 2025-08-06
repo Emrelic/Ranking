@@ -21,6 +21,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         songListDao = database.songListDao(),
         rankingResultDao = database.rankingResultDao(),
         matchDao = database.matchDao(),
+        leagueSettingsDao = database.leagueSettingsDao(),
+        archiveDao = database.archiveDao(),
         csvReader = CsvReader()
     )
     
@@ -37,6 +39,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val completedMatches: Int = 0,
         val totalMatches: Int = 0,
         val currentRound: Int = 1,
+        val leagueSettings: LeagueSettings? = null,
         val error: String? = null
     )
     
@@ -55,9 +58,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         
         viewModelScope.launch {
             try {
+                // Load league settings if applicable
+                val settings = if (method == "LEAGUE") {
+                    repository.getLeagueSettings(listId, method)
+                } else null
+                
                 repository.getSongsByListId(listId).collect { songList ->
                     songs = songList
                     if (songs.isNotEmpty()) {
+                        _uiState.value = _uiState.value.copy(leagueSettings = settings)
                         when (method) {
                             "DIRECT_SCORING" -> initializeDirectScoring()
                             "LEAGUE" -> initializeLeague()
@@ -294,6 +303,23 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             currentState.currentMatch?.let { match ->
                 val updatedMatch = match.copy(
                     winnerId = winnerId,
+                    isCompleted = true
+                )
+                repository.updateMatch(updatedMatch)
+                
+                loadNextMatch()
+            }
+        }
+    }
+    
+    fun submitMatchResultWithScore(@Suppress("UNUSED_PARAMETER") matchId: Long, winnerId: Long?, score1: Int?, score2: Int?) {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            currentState.currentMatch?.let { match ->
+                val updatedMatch = match.copy(
+                    winnerId = winnerId,
+                    score1 = score1,
+                    score2 = score2,
                     isCompleted = true
                 )
                 repository.updateMatch(updatedMatch)
