@@ -91,9 +91,15 @@ fun SongListScreen(
                 )
                 
                 RankingMethodButton(
-                    title = "Eleme Sistemi",
-                    description = "Final, yarı final şeklinde elemeli turnuva",
+                    title = "Ön Eleme + Gruplu Eleme",
+                    description = "Önce gruplar, sonra elemeli turnuva",
                     onClick = { onNavigateToRanking(listId, "ELIMINATION") }
+                )
+                
+                RankingMethodButton(
+                    title = "Tam Eleme Sistemi",
+                    description = "Tamamı elemeli turnuva sistemi",
+                    onClick = { onNavigateToRanking(listId, "FULL_ELIMINATION") }
                 )
                 
                 RankingMethodButton(

@@ -47,7 +47,7 @@ fun RankingScreen(
                 }
             },
             actions = {
-                if (method in listOf("LEAGUE", "SWISS", "EMRE", "ELIMINATION")) {
+                if (method in listOf("LEAGUE", "SWISS", "EMRE", "ELIMINATION", "FULL_ELIMINATION")) {
                     TextButton(
                         onClick = { onNavigateToFixture(listId, method) }
                     ) {
@@ -88,6 +88,11 @@ fun RankingScreen(
                 onComplete = { onNavigateToResults(listId, method) }
             )
             "ELIMINATION" -> EliminationContent(
+                uiState = uiState,
+                onMatchResult = viewModel::submitMatchResult,
+                onComplete = { onNavigateToResults(listId, method) }
+            )
+            "FULL_ELIMINATION" -> EliminationContent(
                 uiState = uiState,
                 onMatchResult = viewModel::submitMatchResult,
                 onComplete = { onNavigateToResults(listId, method) }
@@ -598,6 +603,7 @@ private fun getMethodTitle(method: String): String {
         "DIRECT_SCORING" -> "Direkt Puanlama"
         "LEAGUE" -> "Lig Sistemi"
         "ELIMINATION" -> "Eleme Sistemi"
+        "FULL_ELIMINATION" -> "Tam Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
         "EMRE" -> "Emre Usulü"
         else -> "Sıralama"

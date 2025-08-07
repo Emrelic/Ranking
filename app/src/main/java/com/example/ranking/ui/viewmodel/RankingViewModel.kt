@@ -74,6 +74,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             "DIRECT_SCORING" -> initializeDirectScoring()
                             "LEAGUE" -> initializeLeague()
                             "ELIMINATION" -> initializeElimination()
+                            "FULL_ELIMINATION" -> initializeFullElimination()
                             "SWISS" -> initializeSwiss()
                             "EMRE" -> initializeEmre()
                         }
@@ -167,6 +168,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
+    private fun initializeFullElimination() {
+        viewModelScope.launch {
+            repository.clearMatches(currentListId, currentMethod)
+            val matches = RankingEngine.createFullEliminationMatches(songs)
+            repository.createMatches(matches)
+            loadNextMatch()
+        }
+    }
+    
     private suspend fun loadNextMatch() {
         val nextMatch = repository.getNextUncompletedMatch(currentListId, currentMethod)
         val (completed, total) = repository.getMatchProgress(currentListId, currentMethod)
@@ -192,6 +202,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     // Check if we need to start knockout rounds after group stage
                     val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
                     createNextEliminationRound(allMatches)
+                    return
+                }
+                "FULL_ELIMINATION" -> {
+                    // Check if we need to create final bracket
+                    val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                    createNextFullEliminationRound(allMatches)
                     return
                 }
             }
@@ -288,6 +304,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
                 "EMRE" -> RankingEngine.calculateEmreResults(songs, allMatches)
                 "ELIMINATION" -> RankingEngine.calculateEliminationResults(songs, allMatches)
+                "FULL_ELIMINATION" -> RankingEngine.calculateFullEliminationResults(songs, allMatches)
                 else -> emptyList()
             }
             
@@ -402,5 +419,67 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 error = "Eleme turu oluşturma hatası: ${e.message}"
             )
         }
+    }
+    
+    private suspend fun createNextFullEliminationRound(allMatches: List<Match>) {
+        try {
+            // Ön eleme aşamasından sonra final bracket'ını kontrol et
+            val preEliminationComplete = allMatches.filter { it.round <= 100 }.all { it.isCompleted }
+            val hasKnockoutMatches = allMatches.any { it.round > 100 }
+            
+            if (preEliminationComplete && !hasKnockoutMatches) {
+                // Ön eleme tamamlandı, final bracket'ını oluştur
+                val songCount = songs.size
+                val targetSize = getPreviousPowerOfTwo(songCount)
+                
+                // Kazananları al ve final bracket'ını oluştur
+                val qualifiers = getFullEliminationQualifiers(allMatches)
+                
+                if (qualifiers.size == targetSize) {
+                    // Final bracket matches'ları oluştur
+                    val finalMatches = RankingEngine.createDirectEliminationMatches(qualifiers, 101) // Round > 100 for finals
+                    repository.createMatches(finalMatches)
+                    loadNextMatch()
+                } else {
+                    // Hata durumu - qualifier sayısı yanlış
+                    _uiState.value = _uiState.value.copy(
+                        error = "Tam eleme qualifier sayısı hatalı: ${qualifiers.size}, beklenen: $targetSize"
+                    )
+                }
+            } else {
+                // Tüm turlar tamamlandı
+                completeRanking()
+            }
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                error = "Tam eleme turu oluşturma hatası: ${e.message}"
+            )
+        }
+    }
+    
+    private fun getFullEliminationQualifiers(allMatches: List<Match>): List<Song> {
+        // Bu fonksiyon ön elemeden kalan takımları bulur
+        // Gerçek implementasyonda maç sonuçlarına göre kazananlar belirlenir
+        val eliminatedSongs = mutableSetOf<Long>()
+        
+        // Ön eleme maçlarında kaybedenleri bul
+        allMatches.filter { it.round <= 100 && it.isCompleted }.forEach { match ->
+            when (match.winnerId) {
+                match.songId1 -> eliminatedSongs.add(match.songId2)
+                match.songId2 -> eliminatedSongs.add(match.songId1)
+            }
+        }
+        
+        // Kalan takımları döndür
+        return songs.filter { it.id !in eliminatedSongs }
+    }
+    
+    private fun getPreviousPowerOfTwo(n: Int): Int {
+        if (n <= 1) return 1
+        var result = 1
+        while (result * 2 <= n) {
+            result *= 2
+        }
+        return result
     }
 }
