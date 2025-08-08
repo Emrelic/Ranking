@@ -728,10 +728,24 @@ object RankingEngine {
         val matches = mutableListOf<Match>()
         val shuffledSongs = songs.shuffled().toMutableList()
         
-        // İlk turda ikili eşleşmeler yap
-        while (shuffledSongs.size >= 2) {
+        // Doğru eşleştirme: Çift sayıda ise hepsi ikili, tek sayıda ise son 3 üçlü
+        if (shuffledSongs.size % 2 == 0) {
+            // Çift sayı - hepsi ikili eşleşme
+            while (shuffledSongs.size >= 2) {
+                val team1 = shuffledSongs.removeAt(0)
+                val team2 = shuffledSongs.removeAt(0)
+                matches.add(createMatch(team1, team2, 1, "FULL_ELIMINATION"))
+            }
+        } else {
+            // Tek sayı - son 3 üçlü grup
+            while (shuffledSongs.size > 3) {
+                val team1 = shuffledSongs.removeAt(0)
+                val team2 = shuffledSongs.removeAt(0)
+                matches.add(createMatch(team1, team2, 1, "FULL_ELIMINATION"))
+            }
+            
+            // Son 3 takım üçlü grup
             if (shuffledSongs.size == 3) {
-                // Son üç takım - üçlü grup maçı
                 val team1 = shuffledSongs[0]
                 val team2 = shuffledSongs[1] 
                 val team3 = shuffledSongs[2]
@@ -739,12 +753,6 @@ object RankingEngine {
                 matches.add(createMatch(team1, team2, 1, "FULL_ELIMINATION"))
                 matches.add(createMatch(team1, team3, 1, "FULL_ELIMINATION"))
                 matches.add(createMatch(team2, team3, 1, "FULL_ELIMINATION"))
-                
-                shuffledSongs.clear()
-            } else {
-                val team1 = shuffledSongs.removeAt(0)
-                val team2 = shuffledSongs.removeAt(0)
-                matches.add(createMatch(team1, team2, 1, "FULL_ELIMINATION"))
             }
         }
         

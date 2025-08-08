@@ -620,7 +620,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val winners = mutableListOf<Song>()
         val losers = mutableListOf<Song>()
         
-        // Üçlü grup var mı kontrol et (aynı 3 takım birbiriyle oynuyorsa)
+        // Üçlü grup tespiti: Aynı 3 takım birbiriyle 3 maç yapıyorsa
         val allSongIds = mutableSetOf<Long>()
         matches.forEach { match ->
             allSongIds.add(match.songId1)
@@ -628,7 +628,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
         
         if (allSongIds.size == 3 && matches.size == 3) {
-            // Üçlü grup - puan hesapla
+            // Üçlü grup - lig usulü puan hesapla
             val points = mutableMapOf<Long, Int>()
             allSongIds.forEach { points[it] = 0 }
             
@@ -651,7 +651,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             losers.addAll(groupLosers)
             
         } else {
-            // Normal ikili eşleşmeler
+            // Normal ikili eşleşmeler veya karışık durumlar
+            // Her ikili eşleşmeyi ayrı ayrı işle
             matches.forEach { match ->
                 val song1 = songs.find { it.id == match.songId1 }
                 val song2 = songs.find { it.id == match.songId2 }
@@ -665,7 +666,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         song2?.let { winners.add(it) }
                         song1?.let { losers.add(it) }
                     }
-                    // null (berabere) durumunda kimse kazanmıyor/kaybetmiyor
+                    // null (berabere) durumunda kimse kazanmıyor/kaybetmiyor - ancak tam elemede berabere olmaz
                 }
             }
         }
@@ -677,9 +678,38 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val matches = mutableListOf<Match>()
         val teamList = teams.toMutableList()
         
-        while (teamList.size >= 2) {
+        // Doğru eşleştirme mantığı: Çift sayıda ise hepsi ikili, tek sayıda ise son 3 üçlü
+        if (teamList.size % 2 == 0) {
+            // Çift sayı - hepsi ikili eşleşme
+            while (teamList.size >= 2) {
+                val team1 = teamList.removeAt(0)
+                val team2 = teamList.removeAt(0)
+                matches.add(Match(
+                    listId = songs[0].listId,
+                    rankingMethod = "FULL_ELIMINATION",
+                    songId1 = team1.id,
+                    songId2 = team2.id,
+                    winnerId = null,
+                    round = round
+                ))
+            }
+        } else {
+            // Tek sayı - son 3 üçlü grup
+            while (teamList.size > 3) {
+                val team1 = teamList.removeAt(0)
+                val team2 = teamList.removeAt(0)
+                matches.add(Match(
+                    listId = songs[0].listId,
+                    rankingMethod = "FULL_ELIMINATION",
+                    songId1 = team1.id,
+                    songId2 = team2.id,
+                    winnerId = null,
+                    round = round
+                ))
+            }
+            
+            // Son 3 takım üçlü grup
             if (teamList.size == 3) {
-                // Son üç takım - üçlü grup maçı
                 val team1 = teamList[0]
                 val team2 = teamList[1] 
                 val team3 = teamList[2]
@@ -705,19 +735,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     rankingMethod = "FULL_ELIMINATION",
                     songId1 = team2.id,
                     songId2 = team3.id,
-                    winnerId = null,
-                    round = round
-                ))
-                
-                teamList.clear()
-            } else {
-                val team1 = teamList.removeAt(0)
-                val team2 = teamList.removeAt(0)
-                matches.add(Match(
-                    listId = songs[0].listId,
-                    rankingMethod = "FULL_ELIMINATION",
-                    songId1 = team1.id,
-                    songId2 = team2.id,
                     winnerId = null,
                     round = round
                 ))
