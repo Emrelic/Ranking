@@ -38,10 +38,14 @@
       "Bash(adb shell am start:*)",
       "Bash(adb shell:*)",
       "Bash(gradlew:*)",
+<<<<<<< HEAD
       "Bash(.\\gradlew.bat:*)",
       "Bash(.\\gradlew.bat clean:*)",
       "Bash(cmd /c gradlew.bat clean:*)",
       "Bash(cmd /c gradlew.bat:*)"
+=======
+      "Bash(.\\gradlew.bat:*)"
+>>>>>>> bbbe56e7bef509cf83a420dcb65648fb7562379b
     ],
     "deny": []
   }
