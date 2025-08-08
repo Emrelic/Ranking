@@ -706,7 +706,9 @@ object RankingEngine {
         
         if (songCount <= 1) return matches
         
-        // X = songCount, Y = targetSize, Z = teamsToEliminate
+        // X = songCount (toplam takım sayısı)
+        // Y = targetSize (X'den küçük en büyük 2'nin üssü)  
+        // Z = teamsToEliminate (ön elemede elenecek sayı)
         val targetSize = getPreviousPowerOfTwo(songCount)
         val teamsToEliminate = songCount - targetSize
         
@@ -715,9 +717,36 @@ object RankingEngine {
             return createDirectEliminationMatches(songs, 1)
         }
         
-        // Ön eleme aşaması
-        val preEliminationMatches = createPreEliminationMatches(songs, teamsToEliminate)
-        matches.addAll(preEliminationMatches)
+        // Sadece ilk turın maçlarını yarat
+        val firstRoundMatches = createFirstRoundFullEliminationMatches(songs)
+        matches.addAll(firstRoundMatches)
+        
+        return matches
+    }
+    
+    private fun createFirstRoundFullEliminationMatches(songs: List<Song>): List<Match> {
+        val matches = mutableListOf<Match>()
+        val shuffledSongs = songs.shuffled().toMutableList()
+        
+        // İlk turda ikili eşleşmeler yap
+        while (shuffledSongs.size >= 2) {
+            if (shuffledSongs.size == 3) {
+                // Son üç takım - üçlü grup maçı
+                val team1 = shuffledSongs[0]
+                val team2 = shuffledSongs[1] 
+                val team3 = shuffledSongs[2]
+                
+                matches.add(createMatch(team1, team2, 1, "FULL_ELIMINATION"))
+                matches.add(createMatch(team1, team3, 1, "FULL_ELIMINATION"))
+                matches.add(createMatch(team2, team3, 1, "FULL_ELIMINATION"))
+                
+                shuffledSongs.clear()
+            } else {
+                val team1 = shuffledSongs.removeAt(0)
+                val team2 = shuffledSongs.removeAt(0)
+                matches.add(createMatch(team1, team2, 1, "FULL_ELIMINATION"))
+            }
+        }
         
         return matches
     }
@@ -878,5 +907,21 @@ object RankingEngine {
             result *= 2
         }
         return result
+    }
+    
+    // X'den küçük en büyük 2'nin üssünü bul (doğru tam eleme için)
+    private fun getNextPowerOfTwo(n: Int): Int {
+        if (n <= 1) return 1
+        if (n <= 2) return 2
+        if (n <= 4) return 4
+        if (n <= 8) return 8
+        if (n <= 16) return 16
+        if (n <= 32) return 32
+        if (n <= 64) return 64
+        if (n <= 128) return 128
+        if (n <= 256) return 256
+        if (n <= 512) return 512
+        if (n <= 1024) return 1024
+        return 1024 // Maksimum desteklenen
     }
 }
