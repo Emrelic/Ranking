@@ -2,6 +2,7 @@ package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -14,6 +15,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.data.Song
 import com.example.ranking.ui.viewmodel.RankingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +49,21 @@ fun RankingScreen(
                 }
             },
             actions = {
+                // Session management buttons
+                if (uiState.hasActiveSession) {
+                    TextButton(
+                        onClick = { viewModel.pauseSession() }
+                    ) {
+                        Text("Duraklat")
+                    }
+                    
+                    TextButton(
+                        onClick = { viewModel.deleteCurrentSession() }
+                    ) {
+                        Text("Sıfırla")
+                    }
+                }
+                
                 if (method in listOf("LEAGUE", "SWISS", "EMRE", "ELIMINATION", "FULL_ELIMINATION")) {
                     TextButton(
                         onClick = { onNavigateToFixture(listId, method) }
@@ -77,7 +94,9 @@ fun RankingScreen(
         when (method) {
             "DIRECT_SCORING" -> DirectScoringContent(
                 uiState = uiState,
+                allSongs = uiState.allSongs,
                 onScoreSubmit = viewModel::submitDirectScore,
+                onScoreUpdate = viewModel::updateScoreInSession,
                 onComplete = { onNavigateToResults(listId, method) }
             )
             "LEAGUE", "SWISS", "EMRE" -> MatchBasedContent(
@@ -104,7 +123,9 @@ fun RankingScreen(
 @Composable
 private fun DirectScoringContent(
     uiState: RankingViewModel.RankingUiState,
+    allSongs: List<Song> = emptyList(),
     onScoreSubmit: (Long, Double) -> Unit,
+    onScoreUpdate: (Long, Double) -> Unit = { _, _ -> },
     onComplete: () -> Unit
 ) {
     if (uiState.isComplete) {
@@ -219,6 +240,130 @@ private fun DirectScoringContent(
                 modifier = Modifier.fillMaxWidth(0.5f)
             ) {
                 Text("Puanı Kaydet")
+            }
+            
+            // Show completed scores if there are any
+            if (uiState.hasActiveSession && uiState.currentIndex > 0) {
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                Text(
+                    text = "Verilen Puanlar",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 200.dp)
+                ) {
+                    items(uiState.completedScores.toList()) { (songId, score) ->
+                        val song = allSongs.find { it.id == songId }
+                        song?.let {
+                            CompletedScoreItem(
+                                song = it,
+                                score = score,
+                                onScoreUpdate = onScoreUpdate
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompletedScoreItem(
+    song: Song,
+    score: Double,
+    onScoreUpdate: (Long, Double) -> Unit
+) {
+    var isEditing by remember { mutableStateOf(false) }
+    var editScore by remember { mutableStateOf(score.toString()) }
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = song.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                if (song.artist.isNotBlank()) {
+                    Text(
+                        text = song.artist,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            if (isEditing) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = editScore,
+                        onValueChange = { 
+                            if (it.all { char -> char.isDigit() || char == '.' }) {
+                                editScore = it
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.width(80.dp),
+                        singleLine = true
+                    )
+                    
+                    IconButton(
+                        onClick = {
+                            val newScore = editScore.toDoubleOrNull()
+                            if (newScore != null && newScore in 0.0..100.0) {
+                                onScoreUpdate(song.id, newScore)
+                                isEditing = false
+                            }
+                        }
+                    ) {
+                        Text("✓", style = MaterialTheme.typography.bodyLarge)
+                    }
+                    
+                    IconButton(
+                        onClick = { 
+                            editScore = score.toString()
+                            isEditing = false 
+                        }
+                    ) {
+                        Text("✗", style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            } else {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = score.toString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    IconButton(
+                        onClick = { isEditing = true }
+                    ) {
+                        Text("✏️")
+                    }
+                }
             }
         }
     }

@@ -241,13 +241,15 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                 
                 val songsMap = songs.associateBy { it.id }
                 
-                // Create archivable results from current results
-                val archivableResults = _results.value.mapIndexed { index, (result, song) ->
+                // Create archivable results - Get fresh results from database
+                val rankingResults = repository.getRankingResultsSync(listId, method)
+                val archivableResults = rankingResults.mapIndexed { index, result ->
+                    val song = songsMap[result.songId]
                     ArchivableResult(
-                        songId = song.id,
-                        songName = song.name,
-                        artist = song.artist,
-                        album = song.album,
+                        songId = result.songId,
+                        songName = song?.name ?: "Unknown",
+                        artist = song?.artist ?: "",
+                        album = song?.album ?: "",
                         score = result.score,
                         position = index + 1
                     )
@@ -301,13 +303,18 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                     leagueTable = archivableLeagueTable?.let { Gson().toJson(it) },
                     matchResults = Gson().toJson(archivableMatches),
                     leagueSettings = archivableSettings?.let { Gson().toJson(it) },
-                    isCompleted = matches.all { it.isCompleted }
+                    isCompleted = if (method == "DIRECT_SCORING") archivableResults.isNotEmpty() else matches.all { it.isCompleted }
                 )
                 
                 repository.saveArchive(archive)
                 
+                // Log success (you can add UI feedback here)
+                android.util.Log.d("ResultsViewModel", "Archive saved successfully: $archiveName")
+                
             } catch (e: Exception) {
                 // Handle archiving error - could emit error state
+                android.util.Log.e("ResultsViewModel", "Archive failed: ${e.message}", e)
+                e.printStackTrace()
             }
         }
     }

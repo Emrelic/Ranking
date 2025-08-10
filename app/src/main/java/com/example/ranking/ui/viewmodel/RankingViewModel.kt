@@ -29,6 +29,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         csvReader = CsvReader()
     )
     
+    private val votingSessionDao = database.votingSessionDao()
+    private val votingScoreDao = database.votingScoreDao()
+    
     data class RankingUiState(
         val isLoading: Boolean = true,
         val isComplete: Boolean = false,
@@ -43,7 +46,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val totalMatches: Int = 0,
         val currentRound: Int = 1,
         val leagueSettings: LeagueSettings? = null,
-        val error: String? = null
+        val error: String? = null,
+        val currentSession: VotingSession? = null,
+        val hasActiveSession: Boolean = false,
+        val completedScores: Map<Long, Double> = emptyMap(),
+        val allSongs: List<Song> = emptyList()
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -54,6 +61,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private var currentListId: Long = 0L
     private var directScores: MutableMap<Long, Double> = mutableMapOf()
     private var currentSongIndex: Int = 0
+    private var currentVotingSession: VotingSession? = null
     
     fun initializeRanking(listId: Long, method: String) {
         currentListId = listId
@@ -61,6 +69,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         
         viewModelScope.launch {
             try {
+                // Check for existing active session
+                val activeSession = votingSessionDao.getActiveSession(listId, method)
+                currentVotingSession = activeSession
+                
                 // Load league settings if applicable
                 val settings = if (method == "LEAGUE") {
                     repository.getLeagueSettings(listId, method)
@@ -69,14 +81,35 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 repository.getSongsByListId(listId).collect { songList ->
                     songs = songList
                     if (songs.isNotEmpty()) {
-                        _uiState.value = _uiState.value.copy(leagueSettings = settings)
-                        when (method) {
-                            "DIRECT_SCORING" -> initializeDirectScoring()
-                            "LEAGUE" -> initializeLeague()
-                            "ELIMINATION" -> initializeElimination()
-                            "FULL_ELIMINATION" -> initializeFullElimination()
-                            "SWISS" -> initializeSwiss()
-                            "EMRE" -> initializeEmre()
+                        // Load completed scores if resuming a session
+                        val completedScores = if (activeSession != null) {
+                            val scores = votingScoreDao.getScoresForSessionSync(activeSession.id)
+                            scores.associate { it.songId to it.score }
+                        } else {
+                            emptyMap()
+                        }
+                        
+                        _uiState.value = _uiState.value.copy(
+                            leagueSettings = settings,
+                            currentSession = activeSession,
+                            hasActiveSession = activeSession != null,
+                            completedScores = completedScores,
+                            allSongs = songList
+                        )
+                        
+                        if (activeSession != null) {
+                            // Resume existing session
+                            resumeSession(activeSession)
+                        } else {
+                            // Start new session
+                            when (method) {
+                                "DIRECT_SCORING" -> initializeDirectScoring()
+                                "LEAGUE" -> initializeLeague()
+                                "ELIMINATION" -> initializeElimination()
+                                "FULL_ELIMINATION" -> initializeFullElimination()
+                                "SWISS" -> initializeSwiss()
+                                "EMRE" -> initializeEmre()
+                            }
                         }
                     }
                 }
@@ -90,9 +123,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     private fun initializeDirectScoring() {
-        directScores.clear()
-        currentSongIndex = 0
-        updateDirectScoringUI()
+        viewModelScope.launch {
+            directScores.clear()
+            currentSongIndex = 0
+            createOrUpdateSession()
+            updateDirectScoringUI()
+        }
     }
     
     private fun updateDirectScoringUI() {
@@ -117,6 +153,18 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val results = RankingEngine.createDirectScoringResults(songs, directScores)
             repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
+            
+            // Complete the session
+            currentVotingSession?.let { session ->
+                val completedSession = session.copy(
+                    isCompleted = true,
+                    progress = 1f,
+                    completedAt = System.currentTimeMillis(),
+                    lastModified = System.currentTimeMillis()
+                )
+                votingSessionDao.updateSession(completedSession)
+                currentVotingSession = completedSession
+            }
             
             _uiState.value = _uiState.value.copy(
                 isComplete = true,
@@ -327,9 +375,28 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     fun submitDirectScore(songId: Long, score: Double) {
-        directScores[songId] = score
-        currentSongIndex++
-        updateDirectScoringUI()
+        viewModelScope.launch {
+            directScores[songId] = score
+            
+            // Save score to session
+            currentVotingSession?.let { session ->
+                val votingScore = VotingScore(
+                    sessionId = session.id,
+                    songId = songId,
+                    score = score
+                )
+                votingScoreDao.insertOrUpdateScore(votingScore)
+            }
+            
+            // Update UI state with new completed scores
+            val updatedScores = _uiState.value.completedScores.toMutableMap()
+            updatedScores[songId] = score
+            _uiState.value = _uiState.value.copy(completedScores = updatedScores)
+            
+            currentSongIndex++
+            createOrUpdateSession()
+            updateDirectScoringUI()
+        }
     }
     
     fun submitMatchResult(@Suppress("UNUSED_PARAMETER") matchId: Long, winnerId: Long?) {
@@ -769,5 +836,122 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             result *= 2
         }
         return result
+    }
+    
+    private suspend fun resumeSession(session: VotingSession) {
+        when (session.rankingMethod) {
+            "DIRECT_SCORING" -> {
+                // Load existing scores
+                val existingScores = votingScoreDao.getScoresForSessionSync(session.id)
+                directScores.clear()
+                existingScores.forEach { score ->
+                    directScores[score.songId] = score.score
+                }
+                currentSongIndex = session.currentIndex
+                updateDirectScoringUI()
+            }
+            else -> {
+                // For match-based methods, resume from current match
+                loadNextMatch()
+            }
+        }
+    }
+    
+    private suspend fun createOrUpdateSession() {
+        val session = currentVotingSession
+        if (session == null) {
+            // Create new session
+            val newSession = VotingSession(
+                listId = currentListId,
+                rankingMethod = currentMethod,
+                sessionName = "Oturum ${System.currentTimeMillis()}",
+                currentIndex = currentSongIndex,
+                totalItems = songs.size,
+                progress = if (songs.isNotEmpty()) currentSongIndex.toFloat() / songs.size else 0f,
+                currentSongId = songs.getOrNull(currentSongIndex)?.id,
+                currentRound = 1,
+                completedMatches = 0,
+                totalMatches = 0
+            )
+            val sessionId = votingSessionDao.createSession(newSession)
+            currentVotingSession = newSession.copy(id = sessionId)
+        } else {
+            // Update existing session
+            val updatedSession = session.copy(
+                currentIndex = currentSongIndex,
+                progress = if (songs.isNotEmpty()) currentSongIndex.toFloat() / songs.size else 0f,
+                currentSongId = songs.getOrNull(currentSongIndex)?.id,
+                lastModified = System.currentTimeMillis()
+            )
+            votingSessionDao.updateSession(updatedSession)
+            currentVotingSession = updatedSession
+        }
+    }
+    
+    fun pauseSession() {
+        viewModelScope.launch {
+            currentVotingSession?.let { session ->
+                val pausedSession = session.copy(
+                    isPaused = true,
+                    lastModified = System.currentTimeMillis()
+                )
+                votingSessionDao.updateSession(pausedSession)
+                currentVotingSession = pausedSession
+            }
+        }
+    }
+    
+    fun resumeSession() {
+        viewModelScope.launch {
+            currentVotingSession?.let { session ->
+                val resumedSession = session.copy(
+                    isPaused = false,
+                    lastModified = System.currentTimeMillis()
+                )
+                votingSessionDao.updateSession(resumedSession)
+                currentVotingSession = resumedSession
+            }
+        }
+    }
+    
+    fun deleteCurrentSession() {
+        viewModelScope.launch {
+            currentVotingSession?.let { session ->
+                votingSessionDao.deleteSession(session)
+                currentVotingSession = null
+                _uiState.value = _uiState.value.copy(
+                    currentSession = null,
+                    hasActiveSession = false
+                )
+            }
+        }
+    }
+    
+    fun updateScoreInSession(songId: Long, newScore: Double) {
+        viewModelScope.launch {
+            currentVotingSession?.let { session ->
+                val votingScore = VotingScore(
+                    sessionId = session.id,
+                    songId = songId,
+                    score = newScore
+                )
+                votingScoreDao.insertOrUpdateScore(votingScore)
+                
+                // Update local scores map
+                directScores[songId] = newScore
+                
+                // Update UI state with new completed scores
+                val updatedScores = _uiState.value.completedScores.toMutableMap()
+                updatedScores[songId] = newScore
+                _uiState.value = _uiState.value.copy(completedScores = updatedScores)
+                
+                // Recalculate results if needed
+                if (currentMethod == "DIRECT_SCORING") {
+                    val results = RankingEngine.createDirectScoringResults(songs, directScores)
+                    repository.clearRankingResults(currentListId, currentMethod)
+                    repository.saveRankingResults(results)
+                }
+            }
+        }
     }
 }

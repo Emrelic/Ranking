@@ -87,6 +87,9 @@ class RankingRepository(
     fun getRankingResults(listId: Long, method: String): Flow<List<RankingResult>> =
         rankingResultDao.getRankingResults(listId, method)
     
+    suspend fun getRankingResultsSync(listId: Long, method: String): List<RankingResult> =
+        rankingResultDao.getRankingResultsSync(listId, method)
+    
     suspend fun saveRankingResults(results: List<RankingResult>) {
         rankingResultDao.insertRankingResults(results)
     }

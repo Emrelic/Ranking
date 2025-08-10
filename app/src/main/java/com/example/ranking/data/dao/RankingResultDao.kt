@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 interface RankingResultDao {
     @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY position ASC")
     fun getRankingResults(listId: Long, method: String): Flow<List<RankingResult>>
+    
+    @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY position ASC")
+    suspend fun getRankingResultsSync(listId: Long, method: String): List<RankingResult>
 
     @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY score DESC")
     suspend fun getRankingResultsByScore(listId: Long, method: String): List<RankingResult>
