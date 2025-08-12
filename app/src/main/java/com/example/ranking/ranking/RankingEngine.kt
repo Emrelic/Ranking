@@ -699,29 +699,105 @@ object RankingEngine {
         return songCount
     }
     
-    // TAM ELEME SISTEMI FONKSIYONLARI
+    // TAM ELEME SISTEMI FONKSIYONLARI - YENİ ALGORITMA
     fun createFullEliminationMatches(songs: List<Song>): List<Match> {
         val matches = mutableListOf<Match>()
         val songCount = songs.size
         
         if (songCount <= 1) return matches
         
-        // X = songCount (toplam takım sayısı)
-        // Y = targetSize (X'den küçük en büyük 2'nin üssü)  
-        // Z = teamsToEliminate (ön elemede elenecek sayı)
+        // İkinin üssü kontrolü - istediğiniz algoritma için doğru hedef
         val targetSize = getPreviousPowerOfTwo(songCount)
-        val teamsToEliminate = songCount - targetSize
         
-        if (teamsToEliminate == 0) {
+        if (isPowerOfTwo(songCount)) {
             // Zaten 2'nin üssü, direkt eleme yapılır
             return createDirectEliminationMatches(songs, 1)
         }
         
-        // Sadece ilk turın maçlarını yarat
-        val firstRoundMatches = createFirstRoundFullEliminationMatches(songs)
+        // Sadece ilk turın maçlarını yarat - ön eleme
+        val firstRoundMatches = createAdvancedPreEliminationMatches(songs, targetSize)
         matches.addAll(firstRoundMatches)
         
         return matches
+    }
+    
+    // Gelişmiş ön eleme sistemi - birden fazla tur destekli
+    private fun createAdvancedPreEliminationMatches(songs: List<Song>, targetSize: Int): List<Match> {
+        val matches = mutableListOf<Match>()
+        val shuffledSongs = songs.shuffled().toMutableList()
+        var round = 1
+        
+        // İlk tur: İkili ve üçlü eşleşmeler
+        val firstRoundMatches = createFirstPreEliminationRound(shuffledSongs, round)
+        matches.addAll(firstRoundMatches)
+        
+        return matches
+    }
+    
+    // İlk ön eleme turu
+    private fun createFirstPreEliminationRound(teams: MutableList<Song>, round: Int): List<Match> {
+        val matches = mutableListOf<Match>()
+        val teamList = teams.toMutableList()
+        
+        if (teamList.size % 2 == 0) {
+            // Çift sayı - hepsi ikili eşleşme
+            while (teamList.size >= 2) {
+                val team1 = teamList.removeAt(0)
+                val team2 = teamList.removeAt(0)
+                matches.add(createPreEliminationMatch(team1, team2, round))
+            }
+        } else {
+            // Tek sayı - son 3 takım üçlü grup
+            while (teamList.size > 3) {
+                val team1 = teamList.removeAt(0)
+                val team2 = teamList.removeAt(0)
+                matches.add(createPreEliminationMatch(team1, team2, round))
+            }
+            
+            // Son 3 takım üçlü grup (lig usulü)
+            if (teamList.size == 3) {
+                val team1 = teamList[0]
+                val team2 = teamList[1] 
+                val team3 = teamList[2]
+                
+                matches.add(createPreEliminationMatch(team1, team2, round))
+                matches.add(createPreEliminationMatch(team1, team3, round))
+                matches.add(createPreEliminationMatch(team2, team3, round))
+            }
+        }
+        
+        return matches
+    }
+    
+    private fun createPreEliminationMatch(song1: Song, song2: Song, round: Int): Match {
+        return Match(
+            listId = song1.listId,
+            rankingMethod = "FULL_ELIMINATION",
+            songId1 = song1.id,
+            songId2 = song2.id,
+            winnerId = null,
+            round = round
+        )
+    }
+    
+    // Ana fonksiyon: Birden fazla tur için tam eleme sistemi
+    fun createFullEliminationMatchesWithMultipleRounds(songs: List<Song>, completedMatches: List<Match>): List<Match> {
+        val progress = checkFullEliminationProgress(songs, completedMatches)
+        val targetSize = if (isPowerOfTwo(songs.size)) songs.size else getPreviousPowerOfTwo(songs.size)
+        
+        return when (progress) {
+            FullEliminationStatus.DIRECT_ELIMINATION -> {
+                createDirectEliminationMatches(songs, 1)
+            }
+            FullEliminationStatus.NEED_MORE_PRE_ELIMINATION -> {
+                createNextPreEliminationRound(songs, completedMatches, targetSize)
+            }
+            FullEliminationStatus.READY_FOR_FINAL_BRACKET -> {
+                val qualifiedTeams = getQualifiedTeamsFromMatches(songs, completedMatches.filter { it.round < 101 })
+                createDirectEliminationMatches(qualifiedTeams, 101)
+            }
+            else -> emptyList()
+        }
     }
     
     private fun createFirstRoundFullEliminationMatches(songs: List<Song>): List<Match> {
@@ -853,16 +929,134 @@ object RankingEngine {
     
     fun calculateFullEliminationResults(songs: List<Song>, matches: List<Match>): List<RankingResult> {
         // Ön eleme sonuçlarını hesapla
-        val preEliminationResults = calculatePreEliminationResults(songs, matches)
+        val preEliminationResults = calculateAdvancedPreEliminationResults(songs, matches)
         
         // Final bracket sonuçlarını ekle
-        val finalMatches = matches.filter { it.round > 100 } // Final aşaması round > 100
+        val finalMatches = matches.filter { it.round >= 101 } // Final aşaması round >= 101
         if (finalMatches.isNotEmpty()) {
-            val finalResults = calculateDirectEliminationResults(songs, finalMatches)
-            return mergeEliminationResults(preEliminationResults, finalResults)
+            val qualifiedTeams = getQualifiedTeamsFromMatches(songs, matches.filter { it.round < 101 })
+            val finalResults = calculateDirectEliminationResults(qualifiedTeams, finalMatches)
+            return mergeAdvancedEliminationResults(preEliminationResults, finalResults)
         }
         
         return preEliminationResults
+    }
+    
+    // Gelişmiş ön eleme sonuçları hesaplama
+    private fun calculateAdvancedPreEliminationResults(songs: List<Song>, matches: List<Match>): List<RankingResult> {
+        val results = mutableListOf<RankingResult>()
+        val preEliminationMatches = matches.filter { it.round < 101 }
+        
+        if (preEliminationMatches.isEmpty()) {
+            return emptyList()
+        }
+        
+        var position = songs.size
+        val processedTeams = mutableSetOf<Long>()
+        
+        // Her turu tersden işle (son elenen ilk sırada)
+        val maxRound = preEliminationMatches.maxOfOrNull { it.round } ?: 0
+        for (round in maxRound downTo 1) {
+            val roundMatches = preEliminationMatches.filter { it.round == round && it.isCompleted }
+            
+            // Bu turdaki kaybedenler
+            val roundLosers = mutableSetOf<Long>()
+            roundMatches.forEach { match ->
+                when (match.winnerId) {
+                    match.songId1 -> roundLosers.add(match.songId2)
+                    match.songId2 -> roundLosers.add(match.songId1)
+                }
+            }
+            
+            // Üçlü grup kaybedenlerini ekle
+            val tripleGroupLosers = getTripleGroupLosers(roundMatches)
+            roundLosers.addAll(tripleGroupLosers)
+            
+            // Bu round'da elenen takımları sonuçlara ekle
+            roundLosers.filter { it !in processedTeams }.forEach { loserId ->
+                val song = songs.find { it.id == loserId }
+                song?.let {
+                    results.add(
+                        RankingResult(
+                            songId = it.id,
+                            listId = it.listId,
+                            rankingMethod = "FULL_ELIMINATION",
+                            score = round.toDouble(),
+                            position = position--
+                        )
+                    )
+                    processedTeams.add(it.id)
+                }
+            }
+        }
+        
+        return results.sortedBy { it.position }
+    }
+    
+    // Üçlü gruplardan kaybedenları al
+    private fun getTripleGroupLosers(matches: List<Match>): Set<Long> {
+        val losers = mutableSetOf<Long>()
+        val tripleGroups = identifyTripleGroups(matches)
+        
+        tripleGroups.forEach { groupMatches ->
+            if (groupMatches.size == 3 && groupMatches.all { it.isCompleted }) {
+                val points = calculateTripleGroupPoints(groupMatches)
+                val sortedByPoints = points.toList().sortedByDescending { it.second }
+                
+                // En düşük 2 puanlı takım kaybeder
+                if (sortedByPoints.size >= 3) {
+                    losers.add(sortedByPoints[1].first) // 2. sıra
+                    losers.add(sortedByPoints[2].first) // 3. sıra
+                }
+            }
+        }
+        
+        return losers
+    }
+    
+    // Gelişmiş eleme sonuçlarını birleştir
+    private fun mergeAdvancedEliminationResults(preResults: List<RankingResult>, finalResults: List<RankingResult>): List<RankingResult> {
+        val mergedResults = mutableListOf<RankingResult>()
+        
+        // Final bracket sonuçları üstte
+        mergedResults.addAll(finalResults)
+        
+        // Ön eleme sonuçları altta (pozisyonları ayarla)
+        val finalCount = finalResults.size
+        preResults.forEach { result ->
+            mergedResults.add(result.copy(position = result.position + finalCount))
+        }
+        
+        return mergedResults.sortedBy { it.position }
+    }
+    
+    // Tam sistem durum kontrolü
+    fun checkFullEliminationProgress(songs: List<Song>, completedMatches: List<Match>): FullEliminationStatus {
+        val songCount = songs.size
+        val targetSize = if (isPowerOfTwo(songCount)) songCount else getPreviousPowerOfTwo(songCount)
+        
+        if (isPowerOfTwo(songCount)) {
+            // Direkt eleme sistemi
+            return FullEliminationStatus.DIRECT_ELIMINATION
+        }
+        
+        val qualifiedTeams = getQualifiedTeamsFromMatches(songs, completedMatches.filter { it.round < 101 })
+        
+        return when {
+            qualifiedTeams.size > targetSize -> FullEliminationStatus.NEED_MORE_PRE_ELIMINATION
+            qualifiedTeams.size == targetSize -> FullEliminationStatus.READY_FOR_FINAL_BRACKET
+            qualifiedTeams.size < targetSize -> FullEliminationStatus.INSUFFICIENT_QUALIFIED
+            else -> FullEliminationStatus.IN_PROGRESS
+        }
+    }
+    
+    // Tam eleme durumu enum
+    enum class FullEliminationStatus {
+        DIRECT_ELIMINATION,           // Zaten 2'nin üssü, direkt eleme
+        NEED_MORE_PRE_ELIMINATION,    // Daha fazla ön eleme gerekli
+        READY_FOR_FINAL_BRACKET,      // Final bracket için hazır  
+        INSUFFICIENT_QUALIFIED,       // Yetersiz kalifiye takım
+        IN_PROGRESS                   // İşlem devam ediyor
     }
     
     private fun calculatePreEliminationResults(songs: List<Song>, matches: List<Match>): List<RankingResult> {
@@ -931,5 +1125,188 @@ object RankingEngine {
         if (n <= 512) return 512
         if (n <= 1024) return 1024
         return 1024 // Maksimum desteklenen
+    }
+    
+    // Sayının 2'nin üssü olup olmadığını kontrol et
+    internal fun isPowerOfTwo(n: Int): Boolean {
+        return n > 0 && (n and (n - 1)) == 0
+    }
+    
+    // Sonraki tur için ön eleme maçları oluştur
+    fun createNextPreEliminationRound(songs: List<Song>, completedMatches: List<Match>, targetSize: Int): List<Match> {
+        val matches = mutableListOf<Match>()
+        
+        // Mevcut durumu analiz et
+        val qualifiedTeams = getQualifiedTeamsFromMatches(songs, completedMatches)
+        val eliminatedTeams = getEliminatedTeamsFromMatches(songs, completedMatches)
+        
+        // Hedef sayıya ulaşıp ulaşmadığını kontrol et
+        if (qualifiedTeams.size <= targetSize) {
+            // Hedef sayıya ulaştık, direkt eleme aşamasına geç
+            return createDirectEliminationMatches(qualifiedTeams, 101) // Round 101+ = final bracket
+        }
+        
+        // Hala çok takım var, bir sonraki ön eleme turu gerekli
+        val nextRound = (completedMatches.maxOfOrNull { it.round } ?: 0) + 1
+        val teamsToProcess = getLosingTeamsForNextRound(eliminatedTeams, qualifiedTeams.size - targetSize)
+        
+        // Kaybeden takımlar arasında yeni eşleşmeler
+        val losersMatches = createRoundFromTeams(teamsToProcess, nextRound)
+        matches.addAll(losersMatches)
+        
+        return matches
+    }
+    
+    // Tamamlanmış maçlardan kazanan takımları al
+    private fun getQualifiedTeamsFromMatches(songs: List<Song>, completedMatches: List<Match>): List<Song> {
+        val qualified = mutableSetOf<Long>()
+        val eliminated = mutableSetOf<Long>()
+        
+        // İkili maçlardan kazananları al
+        completedMatches.filter { it.isCompleted }.forEach { match ->
+            when (match.winnerId) {
+                match.songId1 -> {
+                    qualified.add(match.songId1)
+                    eliminated.add(match.songId2)
+                }
+                match.songId2 -> {
+                    qualified.add(match.songId2) 
+                    eliminated.add(match.songId1)
+                }
+            }
+        }
+        
+        // Üçlü gruplardan kazananları al
+        val tripleGroupWinners = getTripleGroupWinners(songs, completedMatches)
+        qualified.addAll(tripleGroupWinners)
+        
+        return songs.filter { it.id in qualified }
+    }
+    
+    // Tamamlanmış maçlardan kaybeden takımları al
+    private fun getEliminatedTeamsFromMatches(songs: List<Song>, completedMatches: List<Match>): List<Song> {
+        val eliminated = mutableSetOf<Long>()
+        
+        completedMatches.filter { it.isCompleted }.forEach { match ->
+            when (match.winnerId) {
+                match.songId1 -> eliminated.add(match.songId2)
+                match.songId2 -> eliminated.add(match.songId1)
+            }
+        }
+        
+        return songs.filter { it.id in eliminated }
+    }
+    
+    // Üçlü gruplardan kazananları belirle (lig usulü)
+    private fun getTripleGroupWinners(songs: List<Song>, completedMatches: List<Match>): Set<Long> {
+        val winners = mutableSetOf<Long>()
+        
+        // Üçlü grup maçlarını grupla (aynı 3 takım arasındaki maçlar)
+        val tripleGroups = identifyTripleGroups(completedMatches)
+        
+        tripleGroups.forEach { groupMatches ->
+            if (groupMatches.size == 3 && groupMatches.all { it.isCompleted }) {
+                val points = calculateTripleGroupPoints(groupMatches)
+                val sortedByPoints = points.toList().sortedByDescending { it.second }
+                if (sortedByPoints.isNotEmpty()) {
+                    winners.add(sortedByPoints.first().first) // En yüksek puanlı kazanır
+                }
+            }
+        }
+        
+        return winners
+    }
+    
+    // Üçlü grupları tanımla
+    private fun identifyTripleGroups(matches: List<Match>): List<List<Match>> {
+        val groups = mutableListOf<List<Match>>()
+        val processedMatches = mutableSetOf<Match>()
+        
+        matches.forEach { match1 ->
+            if (match1 in processedMatches) return@forEach
+            
+            val relatedMatches = mutableListOf(match1)
+            val participants = setOf(match1.songId1, match1.songId2)
+            
+            // Bu maçla aynı takımları içeren diğer maçları bul
+            matches.forEach { match2 ->
+                if (match2 != match1 && match2 !in processedMatches) {
+                    if (participants.contains(match2.songId1) || participants.contains(match2.songId2)) {
+                        relatedMatches.add(match2)
+                    }
+                }
+            }
+            
+            if (relatedMatches.size == 3) {
+                groups.add(relatedMatches)
+                processedMatches.addAll(relatedMatches)
+            }
+        }
+        
+        return groups
+    }
+    
+    // Üçlü grup puanlarını hesapla
+    private fun calculateTripleGroupPoints(matches: List<Match>): Map<Long, Double> {
+        val points = mutableMapOf<Long, Double>()
+        
+        // Tüm katılımcıları bul
+        matches.forEach { match ->
+            points[match.songId1] = points[match.songId1] ?: 0.0
+            points[match.songId2] = points[match.songId2] ?: 0.0
+        }
+        
+        // Puanları hesapla
+        matches.filter { it.isCompleted }.forEach { match ->
+            when (match.winnerId) {
+                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 3.0
+                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 3.0
+                null -> { // Beraberlik
+                    points[match.songId1] = points[match.songId1]!! + 1.0
+                    points[match.songId2] = points[match.songId2]!! + 1.0
+                }
+            }
+        }
+        
+        return points
+    }
+    
+    // Sonraki tur için kaybeden takımları seç
+    private fun getLosingTeamsForNextRound(eliminatedTeams: List<Song>, neededCount: Int): List<Song> {
+        return eliminatedTeams.take(neededCount)
+    }
+    
+    // Belirli takımlardan yeni tur oluştur
+    private fun createRoundFromTeams(teams: List<Song>, round: Int): List<Match> {
+        val matches = mutableListOf<Match>()
+        val teamList = teams.toMutableList()
+        
+        if (teamList.size % 2 == 0) {
+            // Çift sayı - ikili eşleşmeler
+            while (teamList.size >= 2) {
+                val team1 = teamList.removeAt(0)
+                val team2 = teamList.removeAt(0)
+                matches.add(createPreEliminationMatch(team1, team2, round))
+            }
+        } else {
+            // Tek sayı - son 3 üçlü grup
+            while (teamList.size > 3) {
+                val team1 = teamList.removeAt(0)
+                val team2 = teamList.removeAt(0)
+                matches.add(createPreEliminationMatch(team1, team2, round))
+            }
+            
+            if (teamList.size == 3) {
+                val team1 = teamList[0]
+                val team2 = teamList[1] 
+                val team3 = teamList[2]
+                
+                matches.add(createPreEliminationMatch(team1, team2, round))
+                matches.add(createPreEliminationMatch(team1, team3, round))
+                matches.add(createPreEliminationMatch(team2, team3, round))
+            }
+        }
+        
+        return matches
     }
 }
