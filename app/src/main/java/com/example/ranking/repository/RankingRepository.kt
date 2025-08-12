@@ -15,7 +15,9 @@ class RankingRepository(
     private val matchDao: MatchDao,
     private val leagueSettingsDao: LeagueSettingsDao,
     private val archiveDao: ArchiveDao,
-    private val csvReader: CsvReader
+    private val csvReader: CsvReader,
+    private val swissStateDao: SwissStateDao? = null,
+    private val swissMatchStateDao: SwissMatchStateDao? = null
 ) {
     
     // Song List operations
@@ -152,4 +154,233 @@ class RankingRepository(
     
     fun getArchivesByMethod(method: String): Flow<List<Archive>> = 
         archiveDao.getArchivesByMethod(method)
+    
+    // Swiss State operations
+    suspend fun saveSwissState(
+        sessionId: Long,
+        currentRound: Int,
+        maxRounds: Int,
+        standings: Map<Long, Double>,
+        pairingHistory: Set<Pair<Long, Long>>,
+        roundHistory: List<com.example.ranking.data.RoundResult>
+    ): Long? {
+        return swissStateDao?.let { dao ->
+            val standingsJson = com.example.ranking.utils.SwissStateSerializer.serializeStandings(standings)
+            val pairingHistoryJson = com.example.ranking.utils.SwissStateSerializer.serializePairingHistory(pairingHistory)
+            val roundHistoryJson = com.example.ranking.utils.SwissStateSerializer.serializeRoundHistory(roundHistory)
+            
+            val swissState = SwissState(
+                sessionId = sessionId,
+                currentRound = currentRound,
+                maxRounds = maxRounds,
+                standings = standingsJson,
+                pairingHistory = pairingHistoryJson,
+                roundHistory = roundHistoryJson
+            )
+            dao.insertOrUpdateSwissState(swissState)
+        }
+    }
+    
+    suspend fun loadSwissState(sessionId: Long): com.example.ranking.data.SwissStandings? {
+        return swissStateDao?.getSwissStateBySession(sessionId)?.let { swissState ->
+            val standings = com.example.ranking.utils.SwissStateSerializer.deserializeStandings(swissState.standings)
+            val pairingHistory = com.example.ranking.utils.SwissStateSerializer.deserializePairingHistory(swissState.pairingHistory)
+            val roundHistory = com.example.ranking.utils.SwissStateSerializer.deserializeRoundHistory(swissState.roundHistory)
+            
+            com.example.ranking.data.SwissStandings(
+                standings = standings,
+                pairingHistory = pairingHistory,
+                roundHistory = roundHistory
+            )
+        }
+    }
+    
+    suspend fun deleteSwissState(sessionId: Long) {
+        swissStateDao?.deleteSwissStateBySession(sessionId)
+    }
+    
+    // Advanced Swiss Match State operations - Real-time persistence
+    suspend fun saveCurrentMatchState(
+        sessionId: Long,
+        match: Match,
+        song1Name: String,
+        song2Name: String,
+        preliminaryWinnerId: Long? = null,
+        preliminaryScore1: Int? = null,
+        preliminaryScore2: Int? = null
+    ) {
+        swissMatchStateDao?.let { dao ->
+            val matchState = SwissMatchState(
+                sessionId = sessionId,
+                matchId = match.id,
+                currentRound = match.round,
+                song1Id = match.songId1,
+                song2Id = match.songId2,
+                song1Name = song1Name,
+                song2Name = song2Name,
+                isMatchInProgress = true,
+                preliminaryWinnerId = preliminaryWinnerId,
+                preliminaryScore1 = preliminaryScore1,
+                preliminaryScore2 = preliminaryScore2,
+                lastUpdateTime = System.currentTimeMillis()
+            )
+            dao.insertOrUpdateMatchState(matchState)
+        }
+    }
+    
+    suspend fun updateMatchProgress(
+        sessionId: Long,
+        preliminaryWinnerId: Long?,
+        preliminaryScore1: Int? = null,
+        preliminaryScore2: Int? = null
+    ) {
+        swissMatchStateDao?.let { dao ->
+            val currentState = dao.getCurrentMatchState(sessionId)
+            currentState?.let { state ->
+                val updatedState = state.copy(
+                    preliminaryWinnerId = preliminaryWinnerId,
+                    preliminaryScore1 = preliminaryScore1,
+                    preliminaryScore2 = preliminaryScore2,
+                    lastUpdateTime = System.currentTimeMillis()
+                )
+                dao.updateMatchState(updatedState)
+            }
+        }
+    }
+    
+    suspend fun getCurrentMatchState(sessionId: Long): SwissMatchState? {
+        return swissMatchStateDao?.getCurrentMatchState(sessionId)
+    }
+    
+    suspend fun completeCurrentMatch(sessionId: Long) {
+        swissMatchStateDao?.markAllMatchesComplete(sessionId)
+    }
+    
+    suspend fun saveCompleteFixture(
+        sessionId: Long,
+        currentRound: Int,
+        totalRounds: Int,
+        allMatches: List<Match>,
+        currentStandings: Map<Long, Double>
+    ) {
+        swissMatchStateDao?.let { dao ->
+            // Create fixture data
+            val fixtureData = com.example.ranking.utils.SwissFixtureData(
+                allMatches = allMatches,
+                currentRoundMatches = allMatches.filter { it.round == currentRound },
+                completedMatches = allMatches.filter { it.isCompleted },
+                upcomingMatches = allMatches.filter { !it.isCompleted },
+                roundsData = createRoundsData(allMatches, currentStandings)
+            )
+            
+            // Create live standings
+            val liveStandings = createLiveStandings(allMatches, currentStandings)
+            
+            val fixture = SwissFixture(
+                sessionId = sessionId,
+                currentRound = currentRound,
+                totalRounds = totalRounds,
+                fixtureData = com.example.ranking.utils.SwissFixtureSerializer.serializeFixtureData(fixtureData),
+                currentStandings = com.example.ranking.utils.SwissFixtureSerializer.serializeLiveStandings(liveStandings),
+                nextMatchIndex = allMatches.indexOfFirst { !it.isCompleted },
+                isRoundComplete = allMatches.filter { it.round == currentRound }.all { it.isCompleted },
+                lastUpdated = System.currentTimeMillis()
+            )
+            
+            dao.insertOrUpdateFixture(fixture)
+        }
+    }
+    
+    suspend fun loadCompleteFixture(sessionId: Long): SwissFixture? {
+        return swissMatchStateDao?.getFixture(sessionId)
+    }
+    
+    private fun createRoundsData(allMatches: List<Match>, currentStandings: Map<Long, Double>): Map<Int, com.example.ranking.utils.RoundData> {
+        val roundsData = mutableMapOf<Int, com.example.ranking.utils.RoundData>()
+        
+        val matchesByRound = allMatches.groupBy { it.round }
+        matchesByRound.forEach { (round, matches) ->
+            val isComplete = matches.all { it.isCompleted }
+            roundsData[round] = com.example.ranking.utils.RoundData(
+                roundNumber = round,
+                matches = matches,
+                isComplete = isComplete,
+                standingsAfterRound = if (isComplete) currentStandings else emptyMap()
+            )
+        }
+        
+        return roundsData
+    }
+    
+    private fun createLiveStandings(allMatches: List<Match>, currentStandings: Map<Long, Double>): com.example.ranking.utils.LiveStandings {
+        // Get all unique song IDs
+        val allSongIds = mutableSetOf<Long>()
+        allMatches.forEach { match ->
+            allSongIds.add(match.songId1)
+            allSongIds.add(match.songId2)
+        }
+        
+        // Create ranking entries
+        val rankings = allSongIds.mapIndexed { index, songId ->
+            val points = currentStandings[songId] ?: 0.0
+            val matchesPlayed = allMatches.count { (it.songId1 == songId || it.songId2 == songId) && it.isCompleted }
+            
+            // Calculate win/draw/loss stats
+            var wins = 0
+            var draws = 0
+            var losses = 0
+            
+            allMatches.filter { it.isCompleted && (it.songId1 == songId || it.songId2 == songId) }.forEach { match ->
+                when (match.winnerId) {
+                    songId -> wins++
+                    null -> draws++
+                    else -> losses++
+                }
+            }
+            
+            com.example.ranking.utils.RankingEntry(
+                songId = songId,
+                songName = "Song $songId", // Will be populated by caller
+                points = points,
+                position = index + 1, // Will be recalculated
+                matchesPlayed = matchesPlayed,
+                wins = wins,
+                draws = draws,
+                losses = losses
+            )
+        }.sortedByDescending { it.points }.mapIndexed { index, entry ->
+            entry.copy(position = index + 1)
+        }
+        
+        // Round by round progress
+        val roundByRoundProgress = mutableMapOf<Int, Map<Long, Double>>()
+        val matchesByRound = allMatches.groupBy { it.round }
+        matchesByRound.forEach { (round, matches) ->
+            val roundPoints = mutableMapOf<Long, Double>()
+            allSongIds.forEach { songId -> roundPoints[songId] = 0.0 }
+            
+            matches.filter { it.isCompleted }.forEach { match ->
+                when (match.winnerId) {
+                    match.songId1 -> roundPoints[match.songId1] = roundPoints[match.songId1]!! + 1.0
+                    match.songId2 -> roundPoints[match.songId2] = roundPoints[match.songId2]!! + 1.0
+                    null -> {
+                        roundPoints[match.songId1] = roundPoints[match.songId1]!! + 0.5
+                        roundPoints[match.songId2] = roundPoints[match.songId2]!! + 0.5
+                    }
+                }
+            }
+            roundByRoundProgress[round] = roundPoints
+        }
+        
+        return com.example.ranking.utils.LiveStandings(
+            currentStandings = currentStandings,
+            rankings = rankings,
+            roundByRoundProgress = roundByRoundProgress
+        )
+    }
+    
+    suspend fun deleteAllSwissMatchStates(sessionId: Long) {
+        swissMatchStateDao?.deleteAllMatchStates(sessionId)
+        swissMatchStateDao?.deleteFixture(sessionId)
+    }
 }

@@ -9,8 +9,8 @@ import android.content.Context
 import com.example.ranking.data.dao.*
 
 @Database(
-    entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class],
-    version = 6,
+    entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class],
+    version = 9,
     exportSchema = false
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -22,6 +22,8 @@ abstract class RankingDatabase : RoomDatabase() {
     abstract fun archiveDao(): ArchiveDao
     abstract fun votingSessionDao(): VotingSessionDao
     abstract fun votingScoreDao(): VotingScoreDao
+    abstract fun swissStateDao(): SwissStateDao
+    abstract fun swissMatchStateDao(): SwissMatchStateDao
 
     companion object {
         @Volatile
@@ -134,6 +136,83 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create swiss_states table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS swiss_states (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        sessionId INTEGER NOT NULL,
+                        currentRound INTEGER NOT NULL DEFAULT 1,
+                        maxRounds INTEGER NOT NULL,
+                        standings TEXT NOT NULL,
+                        pairingHistory TEXT NOT NULL,
+                        roundHistory TEXT NOT NULL,
+                        lastUpdated INTEGER NOT NULL,
+                        FOREIGN KEY(sessionId) REFERENCES voting_sessions(id) ON DELETE CASCADE
+                    )
+                """)
+                
+                // Create index for swiss_states
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_states_sessionId ON swiss_states (sessionId)")
+            }
+        }
+
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create swiss_match_states table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS swiss_match_states (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        sessionId INTEGER NOT NULL,
+                        matchId INTEGER NOT NULL,
+                        currentRound INTEGER NOT NULL,
+                        song1Id INTEGER NOT NULL,
+                        song2Id INTEGER NOT NULL,
+                        song1Name TEXT NOT NULL,
+                        song2Name TEXT NOT NULL,
+                        isMatchInProgress INTEGER NOT NULL DEFAULT 1,
+                        preliminaryWinnerId INTEGER,
+                        preliminaryScore1 INTEGER,
+                        preliminaryScore2 INTEGER,
+                        matchStartTime INTEGER NOT NULL,
+                        lastUpdateTime INTEGER NOT NULL,
+                        FOREIGN KEY(matchId) REFERENCES matches(id) ON DELETE CASCADE,
+                        FOREIGN KEY(sessionId) REFERENCES voting_sessions(id) ON DELETE CASCADE
+                    )
+                """)
+                
+                // Create swiss_fixtures table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS swiss_fixtures (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        sessionId INTEGER NOT NULL,
+                        currentRound INTEGER NOT NULL,
+                        totalRounds INTEGER NOT NULL,
+                        fixtureData TEXT NOT NULL,
+                        currentStandings TEXT NOT NULL,
+                        nextMatchIndex INTEGER NOT NULL DEFAULT 0,
+                        isRoundComplete INTEGER NOT NULL DEFAULT 0,
+                        lastUpdated INTEGER NOT NULL,
+                        FOREIGN KEY(sessionId) REFERENCES voting_sessions(id) ON DELETE CASCADE
+                    )
+                """)
+                
+                // Create indices for performance
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_match_states_sessionId ON swiss_match_states (sessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_match_states_matchId ON swiss_match_states (matchId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_fixtures_sessionId ON swiss_fixtures (sessionId)")
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // This is a safe migration - just version bump
+                // All tables already exist from v8, no schema changes needed
+                // This forces database reset for existing users with problematic migrations
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -141,7 +220,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

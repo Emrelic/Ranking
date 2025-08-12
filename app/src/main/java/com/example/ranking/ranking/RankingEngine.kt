@@ -430,6 +430,11 @@ object RankingEngine {
         return results.sortedBy { it.position }
     }
     
+    fun createSwissMatchesWithState(songs: List<Song>, swissState: com.example.ranking.data.SwissStandings): List<Match> {
+        val roundNumber = swissState.roundHistory.size + 1
+        return createSwissMatchesAdvanced(songs, roundNumber, swissState.standings, swissState.pairingHistory)
+    }
+    
     fun createSwissMatches(songs: List<Song>, roundNumber: Int, completedMatches: List<Match>): List<Match> {
         if (roundNumber == 1) {
             // First round: pair by initial seeding
@@ -490,6 +495,105 @@ object RankingEngine {
         return matches
     }
     
+    private fun createSwissMatchesAdvanced(
+        songs: List<Song>, 
+        roundNumber: Int, 
+        currentStandings: Map<Long, Double>, 
+        pairingHistory: Set<Pair<Long, Long>>
+    ): List<Match> {
+        if (roundNumber == 1) {
+            // First round: pair by initial seeding
+            val matches = mutableListOf<Match>()
+            val shuffledSongs = songs.shuffled()
+            val half = shuffledSongs.size / 2
+            
+            for (i in 0 until half) {
+                if (i + half < shuffledSongs.size) {
+                    matches.add(
+                        Match(
+                            listId = songs[0].listId,
+                            rankingMethod = "SWISS",
+                            songId1 = shuffledSongs[i].id,
+                            songId2 = shuffledSongs[i + half].id,
+                            winnerId = null,
+                            round = roundNumber
+                        )
+                    )
+                }
+            }
+            return matches
+        }
+        
+        // Group songs by points
+        val songsByPoints = songs.groupBy { currentStandings[it.id] ?: 0.0 }
+            .toSortedMap(compareByDescending { it })
+        
+        val matches = mutableListOf<Match>()
+        val pairedSongs = mutableSetOf<Long>()
+        
+        // Pair within same point groups, avoiding previous opponents
+        songsByPoints.values.forEach { songsWithSamePoints ->
+            val availableSongs = songsWithSamePoints.filter { it.id !in pairedSongs }.toMutableList()
+            
+            while (availableSongs.size >= 2) {
+                var paired = false
+                
+                // Try to find a pairing that hasn't played before
+                for (i in availableSongs.indices) {
+                    for (j in i + 1 until availableSongs.size) {
+                        val song1 = availableSongs[i]
+                        val song2 = availableSongs[j]
+                        val pair1 = Pair(song1.id, song2.id)
+                        val pair2 = Pair(song2.id, song1.id)
+                        
+                        if (pair1 !in pairingHistory && pair2 !in pairingHistory) {
+                            matches.add(
+                                Match(
+                                    listId = songs[0].listId,
+                                    rankingMethod = "SWISS",
+                                    songId1 = song1.id,
+                                    songId2 = song2.id,
+                                    winnerId = null,
+                                    round = roundNumber
+                                )
+                            )
+                            
+                            pairedSongs.add(song1.id)
+                            pairedSongs.add(song2.id)
+                            availableSongs.removeAt(j) // Remove larger index first
+                            availableSongs.removeAt(i)
+                            paired = true
+                            break
+                        }
+                    }
+                    if (paired) break
+                }
+                
+                // If no fresh pairing found, pair the first two available
+                if (!paired && availableSongs.size >= 2) {
+                    val song1 = availableSongs.removeAt(0)
+                    val song2 = availableSongs.removeAt(0)
+                    
+                    matches.add(
+                        Match(
+                            listId = songs[0].listId,
+                            rankingMethod = "SWISS",
+                            songId1 = song1.id,
+                            songId2 = song2.id,
+                            winnerId = null,
+                            round = roundNumber
+                        )
+                    )
+                    
+                    pairedSongs.add(song1.id)
+                    pairedSongs.add(song2.id)
+                }
+            }
+        }
+        
+        return matches
+    }
+    
     fun calculateSwissResults(songs: List<Song>, matches: List<Match>): List<RankingResult> {
         val points = calculateSwissPoints(songs, matches)
         
@@ -526,6 +630,52 @@ object RankingEngine {
         }
         
         return points
+    }
+    
+    fun createSwissStandingsFromMatches(songs: List<Song>, matches: List<Match>): com.example.ranking.data.SwissStandings {
+        val standings = calculateSwissPoints(songs, matches)
+        val pairingHistory = mutableSetOf<Pair<Long, Long>>()
+        val roundHistory = mutableListOf<com.example.ranking.data.RoundResult>()
+        
+        // Build pairing history and round history
+        val matchesByRound = matches.filter { it.isCompleted }.groupBy { it.round }
+        
+        matchesByRound.toSortedMap().forEach { (round, roundMatches) ->
+            val pointsThisRound = mutableMapOf<Long, Double>()
+            
+            // Initialize points for this round
+            songs.forEach { song -> pointsThisRound[song.id] = 0.0 }
+            
+            roundMatches.forEach { match ->
+                // Add to pairing history
+                pairingHistory.add(Pair(match.songId1, match.songId2))
+                pairingHistory.add(Pair(match.songId2, match.songId1))
+                
+                // Calculate points for this round
+                when (match.winnerId) {
+                    match.songId1 -> pointsThisRound[match.songId1] = pointsThisRound[match.songId1]!! + 1.0
+                    match.songId2 -> pointsThisRound[match.songId2] = pointsThisRound[match.songId2]!! + 1.0
+                    null -> { // Draw
+                        pointsThisRound[match.songId1] = pointsThisRound[match.songId1]!! + 0.5
+                        pointsThisRound[match.songId2] = pointsThisRound[match.songId2]!! + 0.5
+                    }
+                }
+            }
+            
+            roundHistory.add(
+                com.example.ranking.data.RoundResult(
+                    roundNumber = round,
+                    matches = roundMatches,
+                    pointsThisRound = pointsThisRound
+                )
+            )
+        }
+        
+        return com.example.ranking.data.SwissStandings(
+            standings = standings,
+            pairingHistory = pairingHistory,
+            roundHistory = roundHistory
+        )
     }
     
     fun createEmreMatches(songs: List<Song>, roundNumber: Int): List<Match> {
