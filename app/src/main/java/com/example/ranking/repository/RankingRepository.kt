@@ -37,6 +37,8 @@ class RankingRepository(
     // Song operations
     fun getSongsByListId(listId: Long): Flow<List<Song>> = songDao.getSongsByListId(listId)
     
+    suspend fun getSongsByListIdSync(listId: Long): List<Song> = songDao.getSongsByListIdSync(listId)
+    
     suspend fun addSong(listId: Long, name: String, artist: String = "", album: String = "", trackNumber: Int = 0): Long {
         val song = Song(name = name, artist = artist, album = album, trackNumber = trackNumber, listId = listId)
         val songId = songDao.insertSong(song)

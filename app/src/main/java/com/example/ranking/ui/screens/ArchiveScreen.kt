@@ -197,9 +197,10 @@ fun ArchiveListItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Yöntem: ${getMethodDisplayName(archive.method)}",
+                        text = "Sıralama: ${getMethodDisplayName(archive.method)}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = dateFormatter.format(archive.archivedAt),
@@ -301,12 +302,28 @@ fun ArchiveDetailView(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Yöntem: ${getMethodDisplayName(archive.method)}",
+                    text = "Sıralama Yöntemi: ${getMethodDisplayName(archive.method)}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "Liste: ${archive.listName}",
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "${archive.totalSongs} takım, ${archive.completedMatches}/${archive.totalMatches} maç",
+                    text = "Takım Sayısı: ${archive.totalSongs} takım",
                     style = MaterialTheme.typography.bodyMedium
+                )
+                if (archive.totalMatches > 0) {
+                    Text(
+                        text = "Maç Durumu: ${archive.completedMatches}/${archive.totalMatches} maç tamamlandı",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Text(
+                    text = "Durum: ${if (archive.isCompleted) "Tamamlandı" else "Yarım kaldı"}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (archive.isCompleted) Color(0xFF4CAF50) else Color(0xFFFF9800)
                 )
                 
                 archiveSettings?.let { settings ->

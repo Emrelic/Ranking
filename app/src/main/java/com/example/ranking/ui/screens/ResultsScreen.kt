@@ -31,6 +31,7 @@ fun ResultsScreen(
     
     val results by viewModel.results.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val archiveStatus by viewModel.archiveStatus.collectAsState()
     
     Column(
         modifier = Modifier
@@ -76,6 +77,56 @@ fun ResultsScreen(
                 }
             }
         )
+        
+        // Archive status handling
+        archiveStatus?.let { status ->
+            when (status) {
+                is ResultsViewModel.ArchiveStatus.Loading -> {
+                    AlertDialog(
+                        onDismissRequest = { },
+                        title = { Text("Arşivleniyor...") },
+                        text = { 
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator()
+                                Text("Sonuçlar arşive kaydediliyor...")
+                            }
+                        },
+                        confirmButton = { }
+                    )
+                }
+                is ResultsViewModel.ArchiveStatus.Success -> {
+                    AlertDialog(
+                        onDismissRequest = { viewModel.clearArchiveStatus() },
+                        title = { Text("Başarılı!") },
+                        text = { Text("\"${status.archiveName}\" başarıyla arşive kaydedildi.") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = { viewModel.clearArchiveStatus() }
+                            ) {
+                                Text("Tamam")
+                            }
+                        }
+                    )
+                }
+                is ResultsViewModel.ArchiveStatus.Error -> {
+                    AlertDialog(
+                        onDismissRequest = { viewModel.clearArchiveStatus() },
+                        title = { Text("Hata!") },
+                        text = { Text(status.message) },
+                        confirmButton = {
+                            TextButton(
+                                onClick = { viewModel.clearArchiveStatus() }
+                            ) {
+                                Text("Tamam")
+                            }
+                        }
+                    )
+                }
+            }
+        }
         
         Spacer(modifier = Modifier.height(16.dp))
         
