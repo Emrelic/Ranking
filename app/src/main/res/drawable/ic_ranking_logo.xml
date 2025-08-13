@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Background -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M0,0h108v108h-108z" />
+    
+    <!-- Main Container -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,25h68c4,0 8,4 8,8v42c0,4 -4,8 -8,8h-68c-4,0 -8,-4 -8,-8v-42c0,-4 4,-8 8,-8z" />
+    
+    <!-- Thumbs Up -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M70,15c3,0 6,2 7,5l2,8c0,2 -1,4 -3,4h-8l1,6c0,3 -2,5 -5,5h-3c-1,0 -2,-1 -2,-2l-3,-8c-1,-2 -2,-3 -4,-3h-2v-15h12c2,0 4,-1 5,-3l3,-2z" />
+    
+    <!-- Check mark -->
+    <path
+        android:fillColor="#4CAF50"
+        android:pathData="M20,45a8,8 0,1,1 16,0a8,8 0,1,1 -16,0z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M25,45l2,2 4,-4"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    
+    <!-- 3 Stars Row -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,40l2,4h4l-3,3 1,4 -4,-2 -4,2 1,-4 -3,-3h4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,40l2,4h4l-3,3 1,4 -4,-2 -4,2 1,-4 -3,-3h4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M78,40l2,4h4l-3,3 1,4 -4,-2 -4,2 1,-4 -3,-3h4z" />
+    
+    <!-- Empty circles for other rows -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#4CAF50"
+        android:strokeWidth="2"
+        android:pathData="M22,60a6,6 0,1,1 12,0a6,6 0,1,1 -12,0z" />
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#4CAF50"
+        android:strokeWidth="2"
+        android:pathData="M22,75a6,6 0,1,1 12,0a6,6 0,1,1 -12,0z" />
+    
+    <!-- 2 Stars Row -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,55l2,4h4l-3,3 1,4 -4,-2 -4,2 1,-4 -3,-3h4z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,55l2,4h4l-3,3 1,4 -4,-2 -4,2 1,-4 -3,-3h4z" />
+    
+    <!-- 1 Star Row -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,70l2,4h4l-3,3 1,4 -4,-2 -4,2 1,-4 -3,-3h4z" />
+    
+</vector>

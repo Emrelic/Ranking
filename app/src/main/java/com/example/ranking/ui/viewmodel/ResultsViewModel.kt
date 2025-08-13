@@ -37,6 +37,15 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
     private val _matchSummary = MutableStateFlow<List<MatchSummaryItem>>(emptyList())
     val matchSummary: StateFlow<List<MatchSummaryItem>> = _matchSummary.asStateFlow()
     
+    private val _archiveStatus = MutableStateFlow<ArchiveStatus?>(null)
+    val archiveStatus: StateFlow<ArchiveStatus?> = _archiveStatus.asStateFlow()
+    
+    sealed class ArchiveStatus {
+        object Loading : ArchiveStatus()
+        data class Success(val archiveName: String) : ArchiveStatus()
+        data class Error(val message: String) : ArchiveStatus()
+    }
+    
     data class LeagueTableEntry(
         val teamName: String,
         val played: Int,
@@ -225,6 +234,7 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
     
     fun archiveResults(listId: Long, method: String, archiveName: String) {
         viewModelScope.launch {
+            _archiveStatus.value = ArchiveStatus.Loading
             try {
                 // Get all data needed for archiving
                 val songList = repository.getSongListById(listId)
@@ -233,17 +243,21 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                     repository.getLeagueSettings(listId, method)
                 } else null
                 
-                val songs = mutableListOf<Song>()
-                repository.getSongsByListId(listId).collect { songsList ->
-                    songs.clear()
-                    songs.addAll(songsList)
-                }
+                val songs = repository.getSongsByListIdSync(listId)
                 
                 val songsMap = songs.associateBy { it.id }
                 
                 // Create archivable results - Get fresh results from database
                 val rankingResults = repository.getRankingResultsSync(listId, method)
-                val archivableResults = rankingResults.mapIndexed { index, result ->
+                val sortedResults = if (method == "DIRECT_SCORING") {
+                    // For direct scoring, sort by score descending
+                    rankingResults.sortedByDescending { it.score }
+                } else {
+                    // For other methods, keep the order from database
+                    rankingResults
+                }
+                
+                val archivableResults = sortedResults.mapIndexed { index, result ->
                     val song = songsMap[result.songId]
                     ArchivableResult(
                         songId = result.songId,
@@ -283,11 +297,8 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                 
                 // Create archivable league table for league method
                 val archivableLeagueTable = if (method == "LEAGUE") {
-                    _leagueTable.value.ifEmpty { 
-                        // If not loaded yet, load it now
-                        loadLeagueTable(listId)
-                        _leagueTable.value 
-                    }
+                    // Calculate league table directly for archiving
+                    calculateLeagueTable(listId, matches, songs, settings)
                 } else null
                 
                 // Create archive entry
@@ -306,16 +317,95 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                     isCompleted = if (method == "DIRECT_SCORING") archivableResults.isNotEmpty() else matches.all { it.isCompleted }
                 )
                 
-                repository.saveArchive(archive)
+                val archiveId = repository.saveArchive(archive)
                 
-                // Log success (you can add UI feedback here)
-                android.util.Log.d("ResultsViewModel", "Archive saved successfully: $archiveName")
+                // Log success
+                android.util.Log.d("ResultsViewModel", "Archive saved successfully: $archiveName with ID: $archiveId")
+                _archiveStatus.value = ArchiveStatus.Success(archiveName)
                 
             } catch (e: Exception) {
-                // Handle archiving error - could emit error state
+                // Handle archiving error
                 android.util.Log.e("ResultsViewModel", "Archive failed: ${e.message}", e)
                 e.printStackTrace()
+                _archiveStatus.value = ArchiveStatus.Error("Arşivleme hatası: ${e.message}")
             }
         }
+    }
+    
+    fun clearArchiveStatus() {
+        _archiveStatus.value = null
+    }
+    
+    private fun calculateLeagueTable(
+        listId: Long,
+        matches: List<Match>,
+        songs: List<Song>,
+        settings: LeagueSettings?
+    ): List<LeagueTableEntry> {
+        // Calculate table entries
+        val tableEntries = mutableMapOf<Long, LeagueTableEntry>()
+        
+        // Initialize entries for all teams
+        songs.forEach { song ->
+            tableEntries[song.id] = LeagueTableEntry(
+                teamName = song.name,
+                played = 0,
+                won = 0,
+                drawn = 0,
+                lost = 0,
+                goalsFor = 0,
+                goalsAgainst = 0,
+                goalDifference = 0,
+                points = 0
+            )
+        }
+        
+        // Process completed matches
+        matches.filter { it.isCompleted }.forEach { match ->
+            val team1Entry = tableEntries[match.songId1]!!
+            val team2Entry = tableEntries[match.songId2]!!
+            
+            val score1 = match.score1 ?: 0
+            val score2 = match.score2 ?: 0
+            
+            // Update team 1
+            tableEntries[match.songId1] = team1Entry.copy(
+                played = team1Entry.played + 1,
+                won = team1Entry.won + if (match.winnerId == match.songId1) 1 else 0,
+                drawn = team1Entry.drawn + if (match.winnerId == null) 1 else 0,
+                lost = team1Entry.lost + if (match.winnerId == match.songId2) 1 else 0,
+                goalsFor = team1Entry.goalsFor + score1,
+                goalsAgainst = team1Entry.goalsAgainst + score2,
+                points = team1Entry.points + when (match.winnerId) {
+                    match.songId1 -> settings?.winPoints ?: 3
+                    null -> settings?.drawPoints ?: 1
+                    else -> 0
+                }
+            )
+            
+            // Update team 2
+            tableEntries[match.songId2] = team2Entry.copy(
+                played = team2Entry.played + 1,
+                won = team2Entry.won + if (match.winnerId == match.songId2) 1 else 0,
+                drawn = team2Entry.drawn + if (match.winnerId == null) 1 else 0,
+                lost = team2Entry.lost + if (match.winnerId == match.songId1) 1 else 0,
+                goalsFor = team2Entry.goalsFor + score2,
+                goalsAgainst = team2Entry.goalsAgainst + score1,
+                points = team2Entry.points + when (match.winnerId) {
+                    match.songId2 -> settings?.winPoints ?: 3
+                    null -> settings?.drawPoints ?: 1
+                    else -> 0
+                }
+            )
+        }
+        
+        // Sort by points, then goal difference, then goals for
+        return tableEntries.values
+            .map { entry -> entry.copy(goalDifference = entry.goalsFor - entry.goalsAgainst) }
+            .sortedWith(
+                compareByDescending<LeagueTableEntry> { it.points }
+                    .thenByDescending { it.goalDifference }
+                    .thenByDescending { it.goalsFor }
+            )
     }
 }

@@ -9,7 +9,7 @@ interface RankingResultDao {
     @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY position ASC")
     fun getRankingResults(listId: Long, method: String): Flow<List<RankingResult>>
     
-    @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY position ASC")
+    @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY score DESC, position ASC")
     suspend fun getRankingResultsSync(listId: Long, method: String): List<RankingResult>
 
     @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY score DESC")

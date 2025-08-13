@@ -26,7 +26,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         matchDao = database.matchDao(),
         leagueSettingsDao = database.leagueSettingsDao(),
         archiveDao = database.archiveDao(),
-        csvReader = CsvReader()
+        csvReader = CsvReader(),
+        swissStateDao = database.swissStateDao(),
+        swissMatchStateDao = database.swissMatchStateDao()
     )
     
     private val votingSessionDao = database.votingSessionDao()
@@ -187,6 +189,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private fun initializeSwiss() {
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
+            
+            // Initialize Swiss state for first round
+            currentVotingSession?.let { session ->
+                val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
+                val initialStandings = songs.associate { it.id to 0.0 }
+                repository.saveSwissState(
+                    sessionId = session.id,
+                    currentRound = 1,
+                    maxRounds = maxRounds,
+                    standings = initialStandings,
+                    pairingHistory = emptySet(),
+                    roundHistory = emptyList()
+                )
+            }
+            
             val matches = RankingEngine.createSwissMatches(songs, 1, emptyList())
             repository.createMatches(matches)
             loadNextMatch()
@@ -272,6 +289,31 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val song1 = songs.find { it.id == nextMatch.songId1 }
         val song2 = songs.find { it.id == nextMatch.songId2 }
         
+        // Save current match state for Swiss system (real-time persistence)
+        if (currentMethod == "SWISS") {
+            currentVotingSession?.let { session ->
+                repository.saveCurrentMatchState(
+                    sessionId = session.id,
+                    match = nextMatch,
+                    song1Name = song1?.name ?: "Unknown",
+                    song2Name = song2?.name ?: "Unknown"
+                )
+                
+                // Save complete fixture state
+                val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                val swissStandings = RankingEngine.createSwissStandingsFromMatches(songs, allMatches.filter { it.isCompleted })
+                val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
+                
+                repository.saveCompleteFixture(
+                    sessionId = session.id,
+                    currentRound = nextMatch.round,
+                    totalRounds = maxRounds,
+                    allMatches = allMatches,
+                    currentStandings = swissStandings.standings
+                )
+            }
+        }
+        
         _uiState.value = _uiState.value.copy(
             isLoading = false,
             currentMatch = nextMatch,
@@ -287,10 +329,28 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         try {
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             val completedMatches = allMatches.filter { it.isCompleted }
-            val newMatches = RankingEngine.createSwissMatches(songs, round, completedMatches)
+            
+            // Create Swiss standings from completed matches
+            val swissStandings = RankingEngine.createSwissStandingsFromMatches(songs, completedMatches)
+            
+            // Create new matches using advanced pairing
+            val newMatches = RankingEngine.createSwissMatchesWithState(songs, swissStandings)
             
             if (newMatches.isNotEmpty()) {
                 repository.createMatches(newMatches)
+                
+                // Save updated Swiss state
+                currentVotingSession?.let { session ->
+                    val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
+                    repository.saveSwissState(
+                        sessionId = session.id,
+                        currentRound = round,
+                        maxRounds = maxRounds,
+                        standings = swissStandings.standings,
+                        pairingHistory = swissStandings.pairingHistory,
+                        roundHistory = swissStandings.roundHistory
+                    )
+                }
             }
             
             loadNextMatch()
@@ -409,6 +469,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 )
                 repository.updateMatch(updatedMatch)
                 
+                // Update Swiss state if this is a Swiss tournament
+                if (currentMethod == "SWISS") {
+                    updateSwissStateAfterMatch(updatedMatch)
+                }
+                
                 loadNextMatch()
             }
         }
@@ -425,6 +490,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     isCompleted = true
                 )
                 repository.updateMatch(updatedMatch)
+                
+                // Update Swiss state if this is a Swiss tournament
+                if (currentMethod == "SWISS") {
+                    updateSwissStateAfterMatch(updatedMatch)
+                }
                 
                 loadNextMatch()
             }
@@ -850,8 +920,76 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 currentSongIndex = session.currentIndex
                 updateDirectScoringUI()
             }
+            "SWISS" -> {
+                // Load comprehensive Swiss state and resume from exact position
+                val savedMatchState = repository.getCurrentMatchState(session.id)
+                val savedFixture = repository.loadCompleteFixture(session.id)
+                
+                if (savedMatchState != null && savedMatchState.isMatchInProgress) {
+                    // Resume from middle of a match
+                    val match = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                        .find { it.id == savedMatchState.matchId }
+                    
+                    if (match != null) {
+                        val song1 = songs.find { it.id == match.songId1 }
+                        val song2 = songs.find { it.id == match.songId2 }
+                        
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            currentMatch = match,
+                            song1 = song1,
+                            song2 = song2,
+                            progress = savedFixture?.let { fixture ->
+                                val completed = repository.getMatchProgress(currentListId, currentMethod).first
+                                val total = repository.getMatchProgress(currentListId, currentMethod).second
+                                if (total > 0) completed.toFloat() / total else 0f
+                            } ?: 0f
+                        )
+                        
+                        // Restore preliminary selections if any
+                        savedMatchState.preliminaryWinnerId?.let { winnerId ->
+                            // UI should show the preliminary selection
+                            // This can be handled by the UI layer observing the match state
+                        }
+                        return
+                    }
+                }
+                
+                if (savedFixture != null) {
+                    // Resume from saved fixture state
+                    loadNextMatch()
+                } else {
+                    // Fallback: recreate from matches
+                    val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                    if (allMatches.isNotEmpty()) {
+                        val completedMatches = allMatches.filter { it.isCompleted }
+                        val swissStandings = RankingEngine.createSwissStandingsFromMatches(songs, completedMatches)
+                        val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
+                        
+                        // Save recreated state
+                        repository.saveSwissState(
+                            sessionId = session.id,
+                            currentRound = (completedMatches.maxOfOrNull { it.round } ?: 0) + 1,
+                            maxRounds = maxRounds,
+                            standings = swissStandings.standings,
+                            pairingHistory = swissStandings.pairingHistory,
+                            roundHistory = swissStandings.roundHistory
+                        )
+                        
+                        // Save complete fixture for future resumes
+                        repository.saveCompleteFixture(
+                            sessionId = session.id,
+                            currentRound = (completedMatches.maxOfOrNull { it.round } ?: 0) + 1,
+                            totalRounds = maxRounds,
+                            allMatches = allMatches,
+                            currentStandings = swissStandings.standings
+                        )
+                    }
+                    loadNextMatch()
+                }
+            }
             else -> {
-                // For match-based methods, resume from current match
+                // For other match-based methods, resume from current match
                 loadNextMatch()
             }
         }
@@ -917,6 +1055,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     fun deleteCurrentSession() {
         viewModelScope.launch {
             currentVotingSession?.let { session ->
+                // Delete all Swiss-related state if exists
+                if (currentMethod == "SWISS") {
+                    repository.deleteSwissState(session.id)
+                    repository.deleteAllSwissMatchStates(session.id)
+                }
+                
                 votingSessionDao.deleteSession(session)
                 currentVotingSession = null
                 _uiState.value = _uiState.value.copy(
@@ -951,6 +1095,63 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     repository.clearRankingResults(currentListId, currentMethod)
                     repository.saveRankingResults(results)
                 }
+            }
+        }
+    }
+    
+    // Real-time match state updates (called while user is selecting winner/scores)
+    fun updateMatchSelection(songId: Long) {
+        if (currentMethod == "SWISS") {
+            viewModelScope.launch {
+                currentVotingSession?.let { session ->
+                    repository.updateMatchProgress(
+                        sessionId = session.id,
+                        preliminaryWinnerId = songId
+                    )
+                }
+            }
+        }
+    }
+    
+    fun updateMatchScores(score1: Int?, score2: Int?) {
+        if (currentMethod == "SWISS") {
+            viewModelScope.launch {
+                currentVotingSession?.let { session ->
+                    val currentState = repository.getCurrentMatchState(session.id)
+                    repository.updateMatchProgress(
+                        sessionId = session.id,
+                        preliminaryWinnerId = currentState?.preliminaryWinnerId,
+                        preliminaryScore1 = score1,
+                        preliminaryScore2 = score2
+                    )
+                }
+            }
+        }
+    }
+    
+    private suspend fun updateSwissStateAfterMatch(completedMatch: Match) {
+        currentVotingSession?.let { session ->
+            try {
+                val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                val completedMatches = allMatches.filter { it.isCompleted }
+                
+                // Recreate Swiss standings with the new completed match
+                val swissStandings = RankingEngine.createSwissStandingsFromMatches(songs, completedMatches)
+                val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
+                
+                // Update Swiss state in database
+                repository.saveSwissState(
+                    sessionId = session.id,
+                    currentRound = completedMatch.round,
+                    maxRounds = maxRounds,
+                    standings = swissStandings.standings,
+                    pairingHistory = swissStandings.pairingHistory,
+                    roundHistory = swissStandings.roundHistory
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "Swiss durumu güncelleme hatası: ${e.message}"
+                )
             }
         }
     }
