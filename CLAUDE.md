@@ -18,11 +18,13 @@ Bu proje için tam olarak doğru Emre Usulü algoritması implement edildi. Önc
 - **Bye geçen**: +1 puan
 
 ### 3. ÖNEMLİ: Emre Usulü Sıralama Mantığı
-Her tur sonunda takımlar şu sırayla yeniden sıralanır:
-1. **Galipler** (maç sırasına göre): 1-2 galibi, 3-4 galibi, 5-6 galibi...
-2. **Berabere kalanlar** (maç sırasına göre): 1-2 berabere, 3-4 berabere...
-3. **Bye geçenler** (eğer varsa)
-4. **Kaybedenler** (maç sırasına göre): 1-2 kaybedeni, 3-4 kaybedeni...
+Her tur eşleşme ve puanlamalardan sonra:
+1. **Yeni kazanılan puanlara göre toplam puan hesaplanır**
+2. **Takımlar toplam puanına göre en yüksekten en düşüğe sıralanır**
+
+#### Eşit Puanlı Takımlar İçin Tiebreaker Kuralları:
+- **Önce**: Eğer birbirleri ile maç yaptılarsa → kazananlar yukarıya, kaybedenler aşağıya
+- **Sonra**: Maç yapmamışlarsa → bir önceki turda kimin sıralaması daha yüksekte ise o üstte olur
 
 ### 4. Aynı Puan Kontrolü ve Turnuva Bitirme
 - **Her turda kontrol**: En az bir eşleşme aynı puanlı takımlar arasında mı?
