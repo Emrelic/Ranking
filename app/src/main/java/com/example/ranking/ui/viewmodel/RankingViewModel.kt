@@ -218,8 +218,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
-            val matches = RankingEngine.createEmreMatches(songs, 1)
-            repository.createMatches(matches)
+            // DOĞRU Emre Usulü algoritmasını kullan
+            val pairingResult = RankingEngine.createCorrectEmreMatches(songs, null)
+            repository.createMatches(pairingResult.matches)
             loadNextMatch()
         }
     }
@@ -368,39 +369,34 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private suspend fun createNextEmreRound(round: Int) {
         try {
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+            val completedMatches = allMatches.filter { it.isCompleted }
             
-            // Check if current round is complete and satisfies stopping condition
-            if (RankingEngine.checkEmreCompletion(songs, allMatches, round - 1)) {
-                // Bir tur daha tüm birinciler kazandı
-                emreConsecutiveWinCount++
-                
-                if (emreConsecutiveWinCount == 1) {
-                    // İlk kez üstüste kazanma - devam et
-                    emreFirstConsecutiveWin = true
-                    val newMatches = RankingEngine.createEmreMatchesWithOrdering(songs, round, allMatches)
-                    if (newMatches.isNotEmpty()) {
-                        repository.createMatches(newMatches)
-                    }
-                    loadNextMatch()
-                } else if (emreConsecutiveWinCount >= 2) {
-                    // İki kez üstüste kazanma - sıralamayı tamamla
-                    emreSecondConsecutiveWin = true
-                    completeRanking()
-                    return
-                }
-            } else {
-                // Bu turda tüm birinciler kazanmadı - sayacı sıfırla
-                emreConsecutiveWinCount = 0
-                emreFirstConsecutiveWin = false
-                emreSecondConsecutiveWin = false
-                
-                // Sonraki tur için eşleştirme oluştur
-                val newMatches = RankingEngine.createEmreMatchesWithOrdering(songs, round, allMatches)
-                if (newMatches.isNotEmpty()) {
-                    repository.createMatches(newMatches)
-                }
-                loadNextMatch()
+            // DOĞRU Emre Usulü ile sonraki tur oluştur
+            // Önceki state'i yeniden oluştur
+            var emreState = com.example.ranking.ranking.EmreSystemCorrect.initializeEmreTournament(songs)
+            
+            // Tamamlanmış maçları işle
+            for (match in completedMatches.groupBy { it.round }.toSortedMap()) {
+                val (roundNum, roundMatches) = match
+                emreState = RankingEngine.processCorrectEmreResults(emreState, roundMatches, null)
             }
+            
+            // Sonraki tur için maç oluştur
+            val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
+            
+            if (pairingResult.isComplete) {
+                // Turnuva tamamlandı
+                completeRanking()
+                return
+            }
+            
+            if (pairingResult.matches.isNotEmpty()) {
+                repository.createMatches(pairingResult.matches)
+                loadNextMatch()
+            } else {
+                completeRanking()
+            }
+            
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
                 error = "Emre round oluşturma hatası: ${e.message}"
@@ -414,7 +410,19 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val results = when (currentMethod) {
                 "LEAGUE" -> RankingEngine.calculateLeagueResults(songs, allMatches)
                 "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
-                "EMRE" -> RankingEngine.calculateEmreResults(songs, allMatches)
+                "EMRE" -> {
+                    // DOĞRU Emre Usulü sonuçları
+                    val completedMatches = allMatches.filter { it.isCompleted }
+                    var emreState = com.example.ranking.ranking.EmreSystemCorrect.initializeEmreTournament(songs)
+                    
+                    // Tüm tamamlanmış maçları işle
+                    for (match in completedMatches.groupBy { it.round }.toSortedMap()) {
+                        val (roundNum, roundMatches) = match
+                        emreState = RankingEngine.processCorrectEmreResults(emreState, roundMatches, null)
+                    }
+                    
+                    RankingEngine.calculateCorrectEmreResults(emreState)
+                }
                 "ELIMINATION" -> RankingEngine.calculateEliminationResults(songs, allMatches)
                 "FULL_ELIMINATION" -> RankingEngine.calculateFullEliminationResults(songs, allMatches)
                 else -> emptyList()
