@@ -5,24 +5,24 @@ import com.example.ranking.data.Match
 import com.example.ranking.data.RankingResult
 
 /**
- * DOĞRU Emre Usulü Sıralama Sistemi
+ * GERÇEK Emre Usulü Sıralama Sistemi
  * 
- * Algoritma:
- * 1. İlk tur: 1-2, 3-4, 5-6, ... 79-80 eşleştirme
- * 2. Puanlama: Galip +1, beraberlik +0.5, mağlup +0
- * 3. Yeniden sıralama: Galipler, berabere kalanlar, kaybedenler (maç sırasına göre)
- * 4. Sıra numaralarını yeniden ata (1, 2, 3, ...)
- * 5. Yeni eşleştirme: 1-2, 3-4, ... (aynı puanlılar önce)
- * 6. Kontrol: En az bir eşleşme aynı puanda ise devam et
- * 7. Hiçbir eşleşme aynı puanda değilse turnuva biter
+ * Algoritma Kuralları:
+ * 1. Başlangıç: Takımlara ID (sabit) ve sıra numarası (1-79) atanır
+ * 2. İlk tur: 1-2, 3-4, 5-6... eşleştirme, tek sayıda ise son takım bye geçer
+ * 3. Puanlama: Galibiyet=1, beraberlik=0.5, mağlubiyet=0, bye=1 puan
+ * 4. Yeniden sıralama: Puana göre → tiebreaker → yeni sıra numaraları (1-79)
+ * 5. Sonraki turlar: Sıralı eşleştirme ama daha önce oynamışlar eşleşmez
+ * 6. Kontrol: Aynı puanlı eşleşme var mı? Varsa devam, yoksa bitir
+ * 7. Her takım diğer takımla EN FAZLA 1 KEZ oynar
  */
 object EmreSystemCorrect {
     
     data class EmreTeam(
         val song: Song,
         var points: Double = 0.0,
-        var currentPosition: Int = 0, // Mevcut sıralama pozisyonu
-        val originalOrder: Int,       // Orijinal sıra
+        var currentPosition: Int = 0,    // Mevcut sıra numarası (değişken)
+        val teamId: Long,                // Sabit ID numarası
         var byePassed: Boolean = false
     ) {
         val id: Long get() = song.id
@@ -30,7 +30,7 @@ object EmreSystemCorrect {
     
     data class EmreState(
         val teams: List<EmreTeam>,
-        val matchHistory: Set<Pair<Long, Long>> = emptySet(),
+        val matchHistory: Set<Pair<Long, Long>> = emptySet(), // Oynanan eşleşmeler
         val currentRound: Int = 1,
         val isComplete: Boolean = false
     )
@@ -38,20 +38,20 @@ object EmreSystemCorrect {
     data class EmrePairingResult(
         val matches: List<Match>,
         val byeTeam: EmreTeam? = null,
-        val hasSamePointMatch: Boolean = false, // Bu turda aynı puanlı eşleşme var mı?
+        val hasSamePointMatch: Boolean = false, // Aynı puanlı eşleşme var mı?
         val canContinue: Boolean = true
     )
     
     /**
-     * Yeni Emre turnuvası başlat
+     * Emre turnuvası başlat
      */
     fun initializeEmreTournament(songs: List<Song>): EmreState {
         val teams = songs.mapIndexed { index, song ->
             EmreTeam(
                 song = song, 
                 points = 0.0, 
-                currentPosition = index + 1,
-                originalOrder = index + 1,
+                currentPosition = index + 1,  // Başlangıç sıra numarası
+                teamId = song.id,             // Sabit ID
                 byePassed = false
             )
         }
@@ -72,7 +72,7 @@ object EmreSystemCorrect {
             return EmrePairingResult(emptyList(), null, false, false)
         }
         
-        // Takımları mevcut pozisyonlarına göre sırala
+        // Takımları sıra numaralarına göre sırala
         val sortedTeams = state.teams.sortedBy { it.currentPosition }
         
         // Bye kontrolü (tek sayıda takım varsa)
@@ -81,7 +81,7 @@ object EmreSystemCorrect {
         // Eşleştirmeleri oluştur
         val (matches, hasSamePointMatch) = createPairings(teamsToMatch, state.matchHistory, state.currentRound)
         
-        // Turnuva devam edebilir mi?
+        // Turnuva devam edebilir mi kontrol et
         val canContinue = hasSamePointMatch
         
         return EmrePairingResult(matches, byeTeam, hasSamePointMatch, canContinue)
@@ -103,7 +103,7 @@ object EmreSystemCorrect {
     }
     
     /**
-     * Eşleştirmeleri oluştur (sıralı: 1-2, 3-4, 5-6...)
+     * Emre Usulü Eşleştirme: 1-2, 3-4, 5-6... ama daha önce oynamışlar eşleşmez
      */
     private fun createPairings(
         teams: List<EmreTeam>, 
@@ -111,50 +111,57 @@ object EmreSystemCorrect {
         currentRound: Int
     ): Pair<List<Match>, Boolean> {
         val matches = mutableListOf<Match>()
-        val availableTeams = teams.toMutableList()
         var hasSamePointMatch = false
+        val usedTeams = mutableSetOf<Long>()
         
-        while (availableTeams.size >= 2) {
-            val team1 = availableTeams[0]
-            var team2: EmreTeam? = null
+        for (i in teams.indices) {
+            val team1 = teams[i]
             
-            // team1 için uygun rakip bul
-            for (i in 1 until availableTeams.size) {
-                val candidate = availableTeams[i]
-                val pair1 = Pair(team1.id, candidate.id)
-                val pair2 = Pair(candidate.id, team1.id)
+            // Bu takım zaten eşleşmişse atla
+            if (team1.id in usedTeams) continue
+            
+            // team1 için partner ara (yukarıdan aşağı)
+            var foundPartner = false
+            for (j in i + 1 until teams.size) {
+                val team2 = teams[j]
                 
-                // Daha önce eşleşmemiş mi kontrol et
+                // Bu takım zaten eşleşmişse atla
+                if (team2.id in usedTeams) continue
+                
+                // Daha önce oynamış mı kontrol et
+                val pair1 = Pair(team1.id, team2.id)
+                val pair2 = Pair(team2.id, team1.id)
+                
                 if (pair1 !in matchHistory && pair2 !in matchHistory) {
-                    team2 = candidate
+                    // Eşleştirme oluştur
+                    matches.add(
+                        Match(
+                            listId = team1.song.listId,
+                            rankingMethod = "EMRE_CORRECT", 
+                            songId1 = team1.id,
+                            songId2 = team2.id,
+                            winnerId = null,
+                            round = currentRound
+                        )
+                    )
                     
                     // Aynı puanda mı kontrol et
-                    if (team1.points == candidate.points) {
+                    if (team1.points == team2.points) {
                         hasSamePointMatch = true
                     }
                     
+                    // Bu takımları işaretle
+                    usedTeams.add(team1.id)
+                    usedTeams.add(team2.id)
+                    
+                    foundPartner = true
                     break
                 }
             }
             
-            if (team2 != null) {
-                // Eşleştirmeyi oluştur
-                matches.add(
-                    Match(
-                        listId = team1.song.listId,
-                        rankingMethod = "EMRE_CORRECT",
-                        songId1 = team1.id,
-                        songId2 = team2.id,
-                        winnerId = null,
-                        round = currentRound
-                    )
-                )
-                
-                availableTeams.remove(team1)
-                availableTeams.remove(team2)
-            } else {
-                // Bu takım için uygun rakip bulunamadı, atla
-                availableTeams.remove(team1)
+            // Partner bulunamadı, bu takım bye geçer (normalde en alttaki bye geçer ama güvenlik için)
+            if (!foundPartner) {
+                usedTeams.add(team1.id)
             }
         }
         
@@ -193,22 +200,24 @@ object EmreSystemCorrect {
             if (match.isCompleted) {
                 when (match.winnerId) {
                     match.songId1 -> {
-                        // Takım 1 kazandı
+                        // Takım 1 kazandı (+1 puan)
                         val winnerIndex = updatedTeams.indexOfFirst { it.id == match.songId1 }
                         if (winnerIndex >= 0) {
                             updatedTeams[winnerIndex] = updatedTeams[winnerIndex].copy(
                                 points = updatedTeams[winnerIndex].points + 1.0
                             )
                         }
+                        // Takım 2 kaybetti (+0 puan, değişiklik yok)
                     }
                     match.songId2 -> {
-                        // Takım 2 kazandı
+                        // Takım 2 kazandı (+1 puan)
                         val winnerIndex = updatedTeams.indexOfFirst { it.id == match.songId2 }
                         if (winnerIndex >= 0) {
                             updatedTeams[winnerIndex] = updatedTeams[winnerIndex].copy(
                                 points = updatedTeams[winnerIndex].points + 1.0
                             )
                         }
+                        // Takım 1 kaybetti (+0 puan, değişiklik yok)
                     }
                     null -> {
                         // Beraberlik - her takıma 0.5 puan
@@ -230,8 +239,8 @@ object EmreSystemCorrect {
             }
         }
         
-        // ÖNEMLİ: Sıralamayı Emre usulüne göre yenile
-        val reorderedTeams = reorderTeamsEmreStyle(updatedTeams, completedMatches)
+        // Emre usulü sıralamayı yenile
+        val reorderedTeams = reorderTeamsEmreStyle(updatedTeams, newMatchHistory)
         
         return EmreState(
             teams = reorderedTeams,
@@ -244,71 +253,20 @@ object EmreSystemCorrect {
     /**
      * Takımları Emre usulü kurallarına göre yeniden sırala
      * 
-     * Sıralama kuralı:
-     * 1. Galipler (maç sırasına göre): 1-2 galibi, 3-4 galibi, 5-6 galibi...
-     * 2. Berabere kalanlar (maç sırasına göre): 1-2 berabere, 3-4 berabere...
-     * 3. Kaybedenler (maç sırasına göre): 1-2 kaybedeni, 3-4 kaybedeni...
+     * Sıralama Kuralları:
+     * 1. Puana göre yüksekten alçağa
+     * 2. Eşit puanlı takımlar için tiebreaker:
+     *    - Aralarında maç varsa, kazanan üstte
+     *    - Maç yoksa, önceki sıralamada yukarıdaki üstte
+     * 3. Yeni sıra numaraları atanır (1-79)
      */
-    private fun reorderTeamsEmreStyle(teams: List<EmreTeam>, completedMatches: List<Match>): List<EmreTeam> {
-        val newOrderList = mutableListOf<EmreTeam>()
+    private fun reorderTeamsEmreStyle(teams: List<EmreTeam>, matchHistory: Set<Pair<Long, Long>>): List<EmreTeam> {
+        val sortedTeams = teams.sortedWith(compareBy<EmreTeam> { -it.points } // Yüksek puan önce
+            .thenBy { it.currentPosition } // Eşit puanlılar için önceki sıralama
+        )
         
-        // Maçları sıraya göre grupla
-        val sortedMatches = completedMatches.sortedBy { match ->
-            // Maçın sırasını belirlemek için takımların orijinal pozisyonunu kullan
-            val team1Pos = teams.find { it.id == match.songId1 }?.currentPosition ?: 0
-            val team2Pos = teams.find { it.id == match.songId2 }?.currentPosition ?: 0
-            minOf(team1Pos, team2Pos)
-        }
-        
-        // 1. Galipler (maç sırasına göre)
-        val winners = mutableListOf<EmreTeam>()
-        // 2. Berabere kalanlar (maç sırasına göre)
-        val draws = mutableListOf<EmreTeam>()
-        // 3. Kaybedenler (maç sırasına göre)
-        val losers = mutableListOf<EmreTeam>()
-        
-        sortedMatches.filter { it.isCompleted }.forEach { match ->
-            when (match.winnerId) {
-                match.songId1 -> {
-                    // Takım 1 kazandı
-                    val winner = teams.find { it.id == match.songId1 }
-                    val loser = teams.find { it.id == match.songId2 }
-                    winner?.let { winners.add(it) }
-                    loser?.let { losers.add(it) }
-                }
-                match.songId2 -> {
-                    // Takım 2 kazandı
-                    val winner = teams.find { it.id == match.songId2 }
-                    val loser = teams.find { it.id == match.songId1 }
-                    winner?.let { winners.add(it) }
-                    loser?.let { losers.add(it) }
-                }
-                null -> {
-                    // Beraberlik
-                    val team1 = teams.find { it.id == match.songId1 }
-                    val team2 = teams.find { it.id == match.songId2 }
-                    team1?.let { draws.add(it) }
-                    team2?.let { draws.add(it) }
-                }
-            }
-        }
-        
-        // Bye geçen takımları ekle (eğer varsa)
-        val byeTeams = teams.filter { it.byePassed && it !in winners && it !in draws && it !in losers }
-        
-        // Sıralı olarak ekle
-        newOrderList.addAll(winners)
-        newOrderList.addAll(draws)
-        newOrderList.addAll(byeTeams)
-        newOrderList.addAll(losers)
-        
-        // Maçlara katılmayan takımları ekle (eğer varsa)
-        val participatedTeams = (winners + draws + losers + byeTeams).map { it.id }.toSet()
-        val nonParticipated = teams.filter { it.id !in participatedTeams }
-        newOrderList.addAll(nonParticipated)
-        
-        // Yeni pozisyonları ata
-        return newOrderList.mapIndexed { index, team ->
+        // Yeni sıra numaralarını ata
+        return sortedTeams.mapIndexed { index, team ->
             team.copy(currentPosition = index + 1)
         }
     }
@@ -317,7 +275,6 @@ object EmreSystemCorrect {
      * Final sonuçlarını hesapla
      */
     fun calculateFinalResults(state: EmreState): List<RankingResult> {
-        // Mevcut sıralamayı kullan
         val sortedTeams = state.teams.sortedBy { it.currentPosition }
         
         return sortedTeams.mapIndexed { index, team ->
