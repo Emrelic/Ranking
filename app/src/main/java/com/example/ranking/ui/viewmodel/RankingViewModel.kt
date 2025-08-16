@@ -110,7 +110,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "ELIMINATION" -> initializeElimination()
                                 "FULL_ELIMINATION" -> initializeFullElimination()
                                 "SWISS" -> initializeSwiss()
-                                "EMRE" -> initializeEmre()
+                                "EMRE" -> initializeEmreCorrect()
                                 "EMRE_CORRECT" -> initializeEmreCorrect()
                             }
                         }
@@ -280,9 +280,30 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     }
                 }
                 "EMRE" -> {
-                    val currentRound = getCurrentEmreRound(completed)
-                    // Emre usulünde sabit maksimum tur yok - sadece durma koşuluna bak
-                    createNextEmreRound(currentRound)
+                    // Use EMRE_CORRECT system for both EMRE and EMRE_CORRECT methods
+                    val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                    val completedMatches = allMatches.filter { it.isCompleted }
+                    
+                    // Recreate state from completed matches
+                    var emreState = com.example.ranking.ranking.EmreSystemCorrect.initializeEmreTournament(songs)
+                    for (match in completedMatches.groupBy { it.round }.toSortedMap()) {
+                        val (roundNum, roundMatches) = match
+                        emreState = RankingEngine.processCorrectEmreResults(emreState, roundMatches, null)
+                    }
+                    
+                    // Create next round
+                    val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
+                    if (!pairingResult.canContinue) {
+                        completeRanking()
+                        return
+                    }
+                    
+                    if (pairingResult.matches.isNotEmpty()) {
+                        repository.createMatches(pairingResult.matches)
+                        loadNextMatch()
+                    } else {
+                        completeRanking()
+                    }
                     return
                 }
                 "ELIMINATION" -> {
@@ -433,17 +454,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "LEAGUE" -> RankingEngine.calculateLeagueResults(songs, allMatches)
                 "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
                 "EMRE" -> {
-                    // DOĞRU Emre Usulü sonuçları
-                    val completedMatches = allMatches.filter { it.isCompleted }
-                    var emreState = com.example.ranking.ranking.EmreSystemCorrect.initializeEmreTournament(songs)
-                    
-                    // Tüm tamamlanmış maçları işle
-                    for (match in completedMatches.groupBy { it.round }.toSortedMap()) {
-                        val (roundNum, roundMatches) = match
-                        emreState = RankingEngine.processCorrectEmreResults(emreState, roundMatches, null)
+                    // Use current state if available, otherwise recalculate
+                    if (emreCorrectState != null) {
+                        RankingEngine.calculateCorrectEmreResults(emreCorrectState!!)
+                    } else {
+                        // Fallback: recalculate from all matches
+                        val completedMatches = allMatches.filter { it.isCompleted }
+                        var emreState = com.example.ranking.ranking.EmreSystemCorrect.initializeEmreTournament(songs)
+                        
+                        for (match in completedMatches.groupBy { it.round }.toSortedMap()) {
+                            val (roundNum, roundMatches) = match
+                            emreState = RankingEngine.processCorrectEmreResults(emreState, roundMatches, null)
+                        }
+                        
+                        RankingEngine.calculateCorrectEmreResults(emreState)
                     }
-                    
-                    RankingEngine.calculateCorrectEmreResults(emreState)
                 }
                 "EMRE_CORRECT" -> {
                     // Use current state if available, otherwise recalculate
@@ -521,8 +546,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     updateSwissStateAfterMatch(updatedMatch)
                 }
                 
-                // Update Emre Correct state if this is an Emre Correct tournament
-                if (currentMethod == "EMRE_CORRECT") {
+                // Update Emre Correct state if this is an Emre tournament
+                if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
                     updateEmreCorrectStateAfterMatch(updatedMatch)
                 }
                 
@@ -548,8 +573,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     updateSwissStateAfterMatch(updatedMatch)
                 }
                 
-                // Update Emre Correct state if this is an Emre Correct tournament
-                if (currentMethod == "EMRE_CORRECT") {
+                // Update Emre Correct state if this is an Emre tournament
+                if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
                     updateEmreCorrectStateAfterMatch(updatedMatch)
                 }
                 
