@@ -164,3 +164,9 @@ val results = RankingEngine.calculateAdvancedEmreResults(finalState)
 - Kullanıcı CLAUDE.md dosyasının her açılışta okunmasını istedi
 - Konuşmaların ve geliştirmelerin kayıt altına alınması talimatı verildi
 - Bu bölüm eklendi ve gelecek konuşmalar buraya kaydedilecek
+
+#### 2025-08-16 - Git Merge Conflict Çözümü
+- GitHub Desktop'ta current_screen.png dosyasında merge conflict oluştu
+- "both added" tipinde conflict: hem local hem remote'ta aynı dosya eklenmiş
+- Local versiyonu kabul edilerek conflict çözüldü
+- Merge commit tamamlandı (commit: 2eeeee7)
