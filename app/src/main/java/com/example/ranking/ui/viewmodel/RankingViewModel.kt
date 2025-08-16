@@ -111,6 +111,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "FULL_ELIMINATION" -> initializeFullElimination()
                                 "SWISS" -> initializeSwiss()
                                 "EMRE" -> initializeEmre()
+                                "EMRE_CORRECT" -> initializeEmreCorrect()
                             }
                         }
                     }
@@ -222,6 +223,26 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val pairingResult = RankingEngine.createCorrectEmreMatches(songs, null)
             repository.createMatches(pairingResult.matches)
             loadNextMatch()
+        }
+    }
+    
+    private fun initializeEmreCorrect() {
+        viewModelScope.launch {
+            repository.clearMatches(currentListId, currentMethod)
+            
+            // Initialize EmreSystemCorrect state
+            emreCorrectState = com.example.ranking.ranking.EmreSystemCorrect.initializeEmreTournament(songs)
+            
+            // Create first round matches
+            val pairingResult = com.example.ranking.ranking.EmreSystemCorrect.createNextRound(emreCorrectState!!)
+            
+            if (pairingResult.matches.isNotEmpty()) {
+                repository.createMatches(pairingResult.matches)
+                loadNextMatch()
+            } else {
+                // Tournament complete
+                completeRanking()
+            }
         }
     }
     
@@ -365,6 +386,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private var emreFirstConsecutiveWin = false
     private var emreSecondConsecutiveWin = false
     private var emreConsecutiveWinCount = 0
+    private var emreCorrectState: com.example.ranking.ranking.EmreSystemCorrect.EmreState? = null
     
     private suspend fun createNextEmreRound(round: Int) {
         try {

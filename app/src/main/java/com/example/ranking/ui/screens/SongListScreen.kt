@@ -111,7 +111,7 @@ fun SongListScreen(
                 RankingMethodButton(
                     title = "Emre Usulü",
                     description = "İkili karşılaştırma ile sıralama",
-                    onClick = { onNavigateToRanking(listId, "EMRE") }
+                    onClick = { onNavigateToRanking(listId, "EMRE_CORRECT") }
                 )
             }
             
