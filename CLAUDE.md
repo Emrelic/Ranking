@@ -143,3 +143,24 @@ val results = RankingEngine.calculateAdvancedEmreResults(finalState)
 3. Real-time turnuva takibi
 4. Multi-threaded eşleştirme
 5. Export/import functionality
+
+---
+
+# Claude Talimatları ve Konuşma Geçmişi
+
+## Her açılışta yapılacaklar:
+1. **CLAUDE.md dosyasını oku** ve projeyi anla
+2. Önceki konuşmaları ve gelişmeleri kontrol et
+3. Güncel proje durumunu değerlendir
+
+## Konuşma ve geliştirme kayıtları:
+- Tüm konuşmalar, istekler ve geliştirmeler bu bölüme kaydedilecek
+- Her önemli değişiklik sonrası dosya güncellenecek
+- Proje geçmişi ve context korunacak
+
+### Konuşma Geçmişi
+
+#### 2025-08-16 - Claude Talimatları Eklendi
+- Kullanıcı CLAUDE.md dosyasının her açılışta okunmasını istedi
+- Konuşmaların ve geliştirmelerin kayıt altına alınması talimatı verildi
+- Bu bölüm eklendi ve gelecek konuşmalar buraya kaydedilecek
