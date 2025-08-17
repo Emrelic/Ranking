@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.ranking.data.*
 import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
+import com.example.ranking.ranking.EmreSystemCorrect
 import com.example.ranking.repository.RankingRepository
 import com.example.ranking.utils.CsvReader
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -211,16 +212,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     private fun initializeEmre() {
-        // Reset Emre state variables
-        emreFirstConsecutiveWin = false
-        emreSecondConsecutiveWin = false
-        emreConsecutiveWinCount = 0
-        
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
-            val matches = RankingEngine.createEmreMatches(songs, 1)
-            repository.createMatches(matches)
-            loadNextMatch()
+            
+            // Doğru Emre usulü sistem başlatma
+            emreState = EmreSystemCorrect.initializeEmreTournament(songs)
+            
+            val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
+            
+            if (pairingResult.matches.isNotEmpty()) {
+                repository.createMatches(pairingResult.matches)
+                loadNextMatch()
+            } else {
+                // Hiç maç oluşturulamadıysa turnuva bitmiş
+                completeRanking()
+            }
         }
     }
     
@@ -361,50 +367,58 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
-    private var emreFirstConsecutiveWin = false
-    private var emreSecondConsecutiveWin = false
-    private var emreConsecutiveWinCount = 0
+    // Doğru Emre usulü state
+    private var emreState: EmreSystemCorrect.EmreState? = null
     
     private suspend fun createNextEmreRound(round: Int) {
         try {
+            val currentState = emreState ?: return
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             
-            // Check if current round is complete and satisfies stopping condition
-            if (RankingEngine.checkEmreCompletion(songs, allMatches, round - 1)) {
-                // Bir tur daha tüm birinciler kazandı
-                emreConsecutiveWinCount++
+            // Tamamlanmış maçları işle ve yeni state oluştur
+            val completedMatches = allMatches.filter { it.isCompleted && it.round == round - 1 }
+            
+            if (completedMatches.isNotEmpty()) {
+                // Bye geçen takımı bul (varsa)
+                val byeTeam = findByeTeam(currentState, completedMatches)
                 
-                if (emreConsecutiveWinCount == 1) {
-                    // İlk kez üstüste kazanma - devam et
-                    emreFirstConsecutiveWin = true
-                    val newMatches = RankingEngine.createEmreMatchesWithOrdering(songs, round, allMatches)
-                    if (newMatches.isNotEmpty()) {
-                        repository.createMatches(newMatches)
-                    }
-                    loadNextMatch()
-                } else if (emreConsecutiveWinCount >= 2) {
-                    // İki kez üstüste kazanma - sıralamayı tamamla
-                    emreSecondConsecutiveWin = true
-                    completeRanking()
-                    return
-                }
-            } else {
-                // Bu turda tüm birinciler kazanmadı - sayacı sıfırla
-                emreConsecutiveWinCount = 0
-                emreFirstConsecutiveWin = false
-                emreSecondConsecutiveWin = false
-                
-                // Sonraki tur için eşleştirme oluştur
-                val newMatches = RankingEngine.createEmreMatchesWithOrdering(songs, round, allMatches)
-                if (newMatches.isNotEmpty()) {
-                    repository.createMatches(newMatches)
-                }
+                // State'i güncelle
+                emreState = RankingEngine.processCorrectEmreResults(currentState, completedMatches, byeTeam)
+            }
+            
+            // Sonraki tur için eşleştirme oluştur
+            val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
+            
+            if (!pairingResult.canContinue) {
+                // Turnuva tamamlandı
+                completeRanking()
+                return
+            }
+            
+            if (pairingResult.matches.isNotEmpty()) {
+                repository.createMatches(pairingResult.matches)
                 loadNextMatch()
+            } else {
+                completeRanking()
             }
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
                 error = "Emre round oluşturma hatası: ${e.message}"
             )
+        }
+    }
+    
+    private fun findByeTeam(state: EmreSystemCorrect.EmreState, matches: List<Match>): EmreSystemCorrect.EmreTeam? {
+        val playedTeamIds = matches.flatMap { listOf(it.songId1, it.songId2) }.toSet()
+        val byeTeam = state.teams.find { it.song.id !in playedTeamIds }
+        return byeTeam
+    }
+    
+    private fun findByeTeamFromMatches(state: EmreSystemCorrect.EmreState, matches: List<Match>, songs: List<Song>): EmreSystemCorrect.EmreTeam? {
+        val playedTeamIds = matches.flatMap { listOf(it.songId1, it.songId2) }.toSet()
+        val byeSong = songs.find { it.id !in playedTeamIds }
+        return byeSong?.let { song ->
+            state.teams.find { it.song.id == song.id }
         }
     }
     
@@ -414,7 +428,22 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val results = when (currentMethod) {
                 "LEAGUE" -> RankingEngine.calculateLeagueResults(songs, allMatches)
                 "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
-                "EMRE" -> RankingEngine.calculateEmreResults(songs, allMatches)
+                "EMRE" -> {
+                    if (emreState != null) {
+                        RankingEngine.calculateCorrectEmreResults(emreState!!)
+                    } else {
+                        // Fallback: State yoksa tüm maçları yeniden işle
+                        var state = EmreSystemCorrect.initializeEmreTournament(songs)
+                        val matchesByRound = allMatches.filter { it.isCompleted }.groupBy { it.round }
+                        
+                        for ((round, roundMatches) in matchesByRound.toSortedMap()) {
+                            val byeTeam = findByeTeamFromMatches(state, roundMatches, songs)
+                            state = RankingEngine.processCorrectEmreResults(state, roundMatches, byeTeam)
+                        }
+                        
+                        RankingEngine.calculateCorrectEmreResults(state)
+                    }
+                }
                 "ELIMINATION" -> RankingEngine.calculateEliminationResults(songs, allMatches)
                 "FULL_ELIMINATION" -> RankingEngine.calculateFullEliminationResults(songs, allMatches)
                 else -> emptyList()
@@ -474,6 +503,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     updateSwissStateAfterMatch(updatedMatch)
                 }
                 
+                // Update Emre state if this is an Emre tournament
+                if (currentMethod == "EMRE") {
+                    updateEmreStateAfterMatch(updatedMatch)
+                }
+                
                 loadNextMatch()
             }
         }
@@ -494,6 +528,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 // Update Swiss state if this is a Swiss tournament
                 if (currentMethod == "SWISS") {
                     updateSwissStateAfterMatch(updatedMatch)
+                }
+                
+                // Update Emre state if this is an Emre tournament
+                if (currentMethod == "EMRE") {
+                    updateEmreStateAfterMatch(updatedMatch)
                 }
                 
                 loadNextMatch()
@@ -1153,6 +1192,43 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     error = "Swiss durumu güncelleme hatası: ${e.message}"
                 )
             }
+        }
+    }
+    
+    private suspend fun updateEmreStateAfterMatch(completedMatch: Match) {
+        try {
+            val currentState = emreState ?: return
+            val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+            
+            // Bu turda tamamlanan tüm maçları al
+            val currentRoundMatches = allMatches.filter { 
+                it.isCompleted && it.round == completedMatch.round 
+            }
+            
+            // Tur tamamlandı mı kontrol et
+            val expectedMatchesInRound = (currentState.teams.size + 1) / 2
+            if (currentRoundMatches.size >= expectedMatchesInRound) {
+                // Tur tamamlandı, sonuçları işle
+                val byeTeam = findByeTeam(currentState, currentRoundMatches)
+                emreState = RankingEngine.processCorrectEmreResults(currentState, currentRoundMatches, byeTeam)
+                
+                // Sonraki tur için eşleştirme oluştur
+                val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
+                
+                if (!pairingResult.canContinue) {
+                    // Turnuva tamamlandı
+                    completeRanking()
+                    return
+                }
+                
+                if (pairingResult.matches.isNotEmpty()) {
+                    repository.createMatches(pairingResult.matches)
+                }
+            }
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                error = "Emre durumu güncelleme hatası: ${e.message}"
+            )
         }
     }
 }
