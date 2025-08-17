@@ -110,9 +110,15 @@ fun SongListScreen(
                 )
                 
                 RankingMethodButton(
+<<<<<<< HEAD
                     title = "Geliştirilmiş İsviçre Sistemi",
                     description = "Puan bazlı eşleştirme ile adil sıralama - İlk tur eşleştirme seçeneği",
                     onClick = { onNavigateToEmrePairingSettings(listId) }
+=======
+                    title = "Emre Usulü",
+                    description = "İkili karşılaştırma ile sıralama",
+                    onClick = { onNavigateToRanking(listId, "EMRE_CORRECT") }
+>>>>>>> bf1b6b7411b9d4284631176ddb268f736eb5d438
                 )
             }
             
