@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongDao {
-    @Query("SELECT * FROM songs WHERE listId = :listId ORDER BY name ASC")
+    @Query("SELECT * FROM songs WHERE listId = :listId ORDER BY id ASC")
     fun getSongsByListId(listId: Long): Flow<List<Song>>
     
-    @Query("SELECT * FROM songs WHERE listId = :listId ORDER BY name ASC")
+    @Query("SELECT * FROM songs WHERE listId = :listId ORDER BY id ASC")
     suspend fun getSongsByListIdSync(listId: Long): List<Song>
 
     @Query("SELECT * FROM songs WHERE id = :id")

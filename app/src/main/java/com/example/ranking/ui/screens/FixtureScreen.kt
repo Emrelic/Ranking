@@ -289,10 +289,10 @@ private fun MatchCard(
                                 text = when (match.winnerId) {
                                     song1?.id -> "1-0"
                                     song2?.id -> "0-1"
-                                    null -> "0-0"
+                                    null -> "½-½"
                                     else -> "-"
                                 },
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
                         }

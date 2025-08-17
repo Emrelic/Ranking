@@ -622,7 +622,7 @@ private fun getMethodTitle(method: String): String {
         "LEAGUE" -> "Lig Sistemi"
         "ELIMINATION" -> "Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
-        "EMRE" -> "Emre Usulü"
+        "EMRE" -> "Geliştirilmiş İsviçre Sistemi"
         else -> "Sıralama"
     }
 }

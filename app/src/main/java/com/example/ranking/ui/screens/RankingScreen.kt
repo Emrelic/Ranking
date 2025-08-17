@@ -23,13 +23,14 @@ import com.example.ranking.ui.viewmodel.RankingViewModel
 fun RankingScreen(
     listId: Long,
     method: String,
+    pairingMethodName: String = "SEQUENTIAL",
     onNavigateBack: () -> Unit,
     onNavigateToResults: (Long, String) -> Unit,
     onNavigateToFixture: (Long, String) -> Unit = { _, _ -> },
     viewModel: RankingViewModel = viewModel()
 ) {
-    LaunchedEffect(listId, method) {
-        viewModel.initializeRanking(listId, method)
+    LaunchedEffect(listId, method, pairingMethodName) {
+        viewModel.initializeRanking(listId, method, pairingMethodName)
     }
     
     val uiState by viewModel.uiState.collectAsState()
@@ -71,7 +72,7 @@ fun RankingScreen(
                         Text("Fikstür")
                     }
                 }
-                if (method == "LEAGUE") {
+                if (method == "LEAGUE" || method == "EMRE") {
                     var showStandings by remember { mutableStateOf(false) }
                     TextButton(
                         onClick = { showStandings = !showStandings }
@@ -90,6 +91,21 @@ fun RankingScreen(
         )
         
         Spacer(modifier = Modifier.height(16.dp))
+        
+        // Error handling
+        uiState.error?.let { error ->
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+            ) {
+                Text(
+                    text = "Hata: $error",
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onErrorContainer
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         
         when (method) {
             "DIRECT_SCORING" -> DirectScoringContent(
@@ -629,7 +645,7 @@ private fun MatchBasedContent(
                         }
                     }
                     
-                    if (method == "LEAGUE" || method == "SWISS") {
+                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE") {
                         val allowDraws = uiState.leagueSettings?.allowDraws ?: true
                         if (allowDraws) {
                             Button(
@@ -725,13 +741,56 @@ private fun StandingsDialog(
                     }
                 }
                 
-                // Calculate standings would need to be implemented in ViewModel
-                // This is a placeholder for the current standings
-                item {
-                    Text(
-                        text = "Puan tablosu hesaplanıyor...",
-                        modifier = Modifier.padding(16.dp)
-                    )
+                // Real standings data
+                items(uiState.currentStandings) { standing ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp, horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "${standing.position}. ${standing.song.name}",
+                            modifier = Modifier.weight(2f),
+                            maxLines = 1
+                        )
+                        Text(
+                            text = standing.played.toString(),
+                            modifier = Modifier.weight(0.5f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = standing.won.toString(),
+                            modifier = Modifier.weight(0.5f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = standing.drawn.toString(),
+                            modifier = Modifier.weight(0.5f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = standing.lost.toString(),
+                            modifier = Modifier.weight(0.5f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "-",
+                            modifier = Modifier.weight(0.5f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "-",
+                            modifier = Modifier.weight(0.5f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = String.format("%.1f", standing.points),
+                            modifier = Modifier.weight(0.5f),
+                            textAlign = TextAlign.Center,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         },
@@ -750,7 +809,7 @@ private fun getMethodTitle(method: String): String {
         "ELIMINATION" -> "Eleme Sistemi"
         "FULL_ELIMINATION" -> "Tam Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
-        "EMRE" -> "Emre Usulü"
+        "EMRE" -> "Geliştirilmiş İsviçre Sistemi"
         else -> "Sıralama"
     }
 }

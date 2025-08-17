@@ -21,6 +21,7 @@ fun SongListScreen(
     onNavigateBack: () -> Unit,
     onNavigateToRanking: (Long, String) -> Unit,
     onNavigateToLeagueSettings: (Long, String) -> Unit = { _, _ -> },
+    onNavigateToEmrePairingSettings: (Long) -> Unit = { },
     viewModel: SongListViewModel = viewModel()
 ) {
     LaunchedEffect(listId) {
@@ -109,9 +110,9 @@ fun SongListScreen(
                 )
                 
                 RankingMethodButton(
-                    title = "Emre Usulü",
-                    description = "İkili karşılaştırma ile sıralama",
-                    onClick = { onNavigateToRanking(listId, "EMRE") }
+                    title = "Geliştirilmiş İsviçre Sistemi",
+                    description = "Puan bazlı eşleştirme ile adil sıralama - İlk tur eşleştirme seçeneği",
+                    onClick = { onNavigateToEmrePairingSettings(listId) }
                 )
             }
             

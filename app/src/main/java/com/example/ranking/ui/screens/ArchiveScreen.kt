@@ -554,7 +554,7 @@ private fun getMethodDisplayName(method: String): String {
         "LEAGUE" -> "Lig"
         "ELIMINATION" -> "Eleme"
         "SWISS" -> "İsviçre"
-        "EMRE" -> "Emre Usulü"
+        "EMRE" -> "Geliştirilmiş İsviçre"
         "DIRECT_SCORING" -> "Direkt Puanlama"
         else -> method
     }

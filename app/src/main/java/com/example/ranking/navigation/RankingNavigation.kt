@@ -5,6 +5,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.ranking.ui.screens.*
 
 @Composable
@@ -45,6 +47,9 @@ fun RankingNavigation(
                 },
                 onNavigateToLeagueSettings = { id, method ->
                     navController.navigate("league_settings/$id/$method")
+                },
+                onNavigateToEmrePairingSettings = { id ->
+                    navController.navigate("emre_pairing_settings/$id")
                 }
             )
         }
@@ -75,12 +80,33 @@ fun RankingNavigation(
             )
         }
 
-        composable("ranking/{listId}/{method}") { backStackEntry ->
+        composable("emre_pairing_settings/{listId}") { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
+            EmrePairingSettingsScreen(
+                listId = listId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToRanking = { id, method, pairingMethod -> 
+                    navController.navigate("ranking/$id/$method?pairingMethod=${pairingMethod.name}")
+                }
+            )
+        }
+
+        composable(
+            "ranking/{listId}/{method}?pairingMethod={pairingMethod}",
+            arguments = listOf(
+                navArgument("pairingMethod") { 
+                    type = NavType.StringType
+                    defaultValue = "SEQUENTIAL"
+                }
+            )
+        ) { backStackEntry ->
             val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
             val method = backStackEntry.arguments?.getString("method") ?: ""
+            val pairingMethodName = backStackEntry.arguments?.getString("pairingMethod") ?: "SEQUENTIAL"
             RankingScreen(
                 listId = listId,
                 method = method,
+                pairingMethodName = pairingMethodName,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { id, m -> 
                     navController.navigate("results/$id/$m")
