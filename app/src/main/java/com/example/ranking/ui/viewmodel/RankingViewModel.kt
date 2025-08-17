@@ -816,6 +816,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     winnerId = null,
                     round = round
                 ))
+
+
                 
                 teamList.clear()
             } else {
