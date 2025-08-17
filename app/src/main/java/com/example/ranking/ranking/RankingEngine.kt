@@ -678,17 +678,8 @@ object RankingEngine {
         )
     }
     
-<<<<<<< HEAD
-    // DOĞRU EMRE USULÜ ALGORİTMASI - YENİ SİSTEM
+    // EMRE USULÜ SİSTEMLERİ - TÜM VERSİYONLAR
     
-    fun createCorrectEmreMatches(songs: List<Song>, state: EmreSystemCorrect.EmreState?): EmreSystemCorrect.EmrePairingResult {
-        val emreState = state ?: EmreSystemCorrect.initializeEmreTournament(songs)
-        return EmreSystemCorrect.createNextRound(emreState)
-    }
-    
-    fun processCorrectEmreResults(state: EmreSystemCorrect.EmreState, matches: List<Match>, byeTeam: EmreSystemCorrect.EmreTeam?): EmreSystemCorrect.EmreState {
-        return EmreSystemCorrect.processRoundResults(state, matches, byeTeam)
-=======
     fun createEmreMatches(songs: List<Song>, roundNumber: Int): List<Match> {
         // Eski basit Emre sistemi - geriye dönük uyumluluk için korundu
         val matches = mutableListOf<Match>()
@@ -772,7 +763,18 @@ object RankingEngine {
         // Get previous round results and reorder songs
         val reorderedSongs = reorderSongsAfterEmreRound(songs, allMatches, roundNumber - 1)
         return createEmreMatches(reorderedSongs, roundNumber)
->>>>>>> bf1b6b7411b9d4284631176ddb268f736eb5d438
+    }
+    
+    /**
+     * DOĞRU EMRE USULÜ ALGORİTMASI - YENİ SİSTEM
+     */
+    fun createCorrectEmreMatches(songs: List<Song>, state: EmreSystemCorrect.EmreState?): EmreSystemCorrect.EmrePairingResult {
+        val emreState = state ?: EmreSystemCorrect.initializeEmreTournament(songs)
+        return EmreSystemCorrect.createNextRound(emreState)
+    }
+    
+    fun processCorrectEmreResults(state: EmreSystemCorrect.EmreState, matches: List<Match>, byeTeam: EmreSystemCorrect.EmreTeam?): EmreSystemCorrect.EmreState {
+        return EmreSystemCorrect.processRoundResults(state, matches, byeTeam)
     }
     
     fun calculateCorrectEmreResults(state: EmreSystemCorrect.EmreState): List<RankingResult> {
