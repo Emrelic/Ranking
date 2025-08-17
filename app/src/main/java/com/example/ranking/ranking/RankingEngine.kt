@@ -765,21 +765,32 @@ object RankingEngine {
         return createEmreMatches(reorderedSongs, roundNumber)
     }
     
-    /**
-     * DOĞRU EMRE USULÜ ALGORİTMASI - YENİ SİSTEM
-     */
-    fun createCorrectEmreMatches(songs: List<Song>, state: EmreSystemCorrect.EmreState?): EmreSystemCorrect.EmrePairingResult {
-        val emreState = state ?: EmreSystemCorrect.initializeEmreTournament(songs)
-        return EmreSystemCorrect.createNextRound(emreState)
+    private fun reorderSongsAfterEmreRound(songs: List<Song>, allMatches: List<Match>, round: Int): List<Song> {
+        // Calculate points from completed matches in this round
+        val points = mutableMapOf<Long, Double>()
+        songs.forEach { song -> points[song.id] = 0.0 }
+        
+        allMatches.filter { it.round <= round && it.isCompleted }.forEach { match ->
+            when (match.winnerId) {
+                match.songId1 -> {
+                    points[match.songId1] = (points[match.songId1] ?: 0.0) + 1.0
+                }
+                match.songId2 -> {
+                    points[match.songId2] = (points[match.songId2] ?: 0.0) + 1.0
+                }
+                null -> {
+                    // Draw
+                    points[match.songId1] = (points[match.songId1] ?: 0.0) + 0.5
+                    points[match.songId2] = (points[match.songId2] ?: 0.0) + 0.5
+                }
+            }
+        }
+        
+        // Sort songs by points (highest first), then by original order
+        return songs.sortedWith(compareByDescending<Song> { points[it.id] ?: 0.0 }
+            .thenBy { songs.indexOf(it) })
     }
     
-    fun processCorrectEmreResults(state: EmreSystemCorrect.EmreState, matches: List<Match>, byeTeam: EmreSystemCorrect.EmreTeam?): EmreSystemCorrect.EmreState {
-        return EmreSystemCorrect.processRoundResults(state, matches, byeTeam)
-    }
-    
-    fun calculateCorrectEmreResults(state: EmreSystemCorrect.EmreState): List<RankingResult> {
-        return EmreSystemCorrect.calculateFinalResults(state)
-    }
     
     fun getSwissRoundCount(songCount: Int): Int {
         return when {
