@@ -94,8 +94,8 @@ object EmreSystemCorrect {
         // KULLANICININ BELİRTTİĞİ DOĞRU ALGORİTMA İLE EŞLEŞTİRME
         val (matches, hasSamePointMatch) = createCorrectEmrePairings(teamsToMatch, state.matchHistory, state.currentRound)
         
-        // Aynı puanlı eşleşme var mı kontrol → turnuva devam edebilir mi?
-        val canContinue = hasSamePointMatch
+        // Turnuva devam edebilir mi? (Eşleştirme yapılabildiğinde devam eder)
+        val canContinue = matches.isNotEmpty()
         
         return EmrePairingResult(matches, byeTeam, hasSamePointMatch, canContinue)
     }
@@ -160,7 +160,7 @@ object EmreSystemCorrect {
                     matches.add(
                         Match(
                             listId = team1.song.listId,
-                            rankingMethod = "EMRE_CORRECT", 
+                            rankingMethod = "EMRE", 
                             songId1 = team1.id,
                             songId2 = team2.id,
                             winnerId = null,

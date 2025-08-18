@@ -64,7 +64,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val hasActiveSession: Boolean = false,
         val completedScores: Map<Long, Double> = emptyMap(),
         val allSongs: List<Song> = emptyList(),
-        val currentStandings: List<StandingEntry> = emptyList()
+        val currentStandings: List<StandingEntry> = emptyList(),
+        val emreState: EmreSystemCorrect.EmreState? = null
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -133,6 +134,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "FULL_ELIMINATION" -> initializeFullElimination()
                                 "SWISS" -> initializeSwiss()
                                 "EMRE_CORRECT" -> initializeEmre()
+                                "EMRE" -> initializeEmre()
                             }
                         }
                     } else {
@@ -300,7 +302,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             completedMatches = completed,
                             totalMatches = total,
                             progress = if (total > 0) completed.toFloat() / total else 0f,
-                            currentRound = nextMatch.round
+                            currentRound = nextMatch.round,
+                            emreState = emreState
                         )
                     } else {
                         android.util.Log.w("RankingViewModel", "Next match NULL - calling loadNextMatch()")
@@ -363,7 +366,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         return
                     }
                 }
-                "EMRE_CORRECT" -> {
+                "EMRE_CORRECT", "EMRE" -> {
                     val currentRound = getCurrentEmreRound(completed)
                     // İlk tur ise ve hiç maç yoksa, sorun var - initialize tekrar çağırmayız
                     if (currentRound == 1 && completed == 0) {
@@ -433,7 +436,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             song2 = song2,
             completedMatches = completed,
             totalMatches = total,
-            progress = if (total > 0) completed.toFloat() / total else 0f
+            progress = if (total > 0) completed.toFloat() / total else 0f,
+            emreState = if (currentMethod.contains("EMRE")) emreState else null
         )
     }
     
@@ -534,7 +538,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val results = when (currentMethod) {
                 "LEAGUE" -> RankingEngine.calculateLeagueResults(songs, allMatches)
                 "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
-                "EMRE_CORRECT" -> {
+                "EMRE_CORRECT", "EMRE" -> {
                     if (emreState != null) {
                         RankingEngine.calculateCorrectEmreResults(emreState!!)
                     } else {
@@ -610,7 +614,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 
                 // Update Emre state if this is an Emre tournament
-                if (currentMethod == "EMRE_CORRECT") {
+                if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
                     updateEmreCorrectStateAfterMatch(updatedMatch)
                 }
                 
@@ -637,7 +641,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 
                 // Update Emre state if this is an Emre tournament
-                if (currentMethod == "EMRE_CORRECT") {
+                if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
                     updateEmreCorrectStateAfterMatch(updatedMatch)
                 }
                 
@@ -654,20 +658,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private fun getCurrentEmreRound(completedMatches: Int): Int {
         if (completedMatches == 0) return 1
         
-        var currentSongCount = songs.size
-        var totalMatchesSoFar = 0
-        var round = 1
+        // Emre usulünde her turda aynı sayıda maç oynanır (tüm takımlar katılır)
+        val matchesPerRound = songs.size / 2
+        if (matchesPerRound == 0) return 1
         
-        while (totalMatchesSoFar < completedMatches) {
-            val matchesInThisRound = currentSongCount / 2
-            totalMatchesSoFar += matchesInThisRound
-            if (totalMatchesSoFar <= completedMatches) {
-                round++
-                currentSongCount = matchesInThisRound * 2 // Only winners go to next round
-            }
-        }
-        
-        return round
+        return (completedMatches / matchesPerRound) + 1
     }
     
     private suspend fun createNextEliminationRound(allMatches: List<Match>) {
@@ -1340,7 +1335,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             val completedMatches = allMatches.filter { it.isCompleted }
             
-            if (currentMethod == "EMRE_CORRECT") {
+            if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
                 // Emre sistemi için puan hesaplama
                 val standings = songs.map { song ->
                     var points = 0.0
@@ -1405,8 +1400,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 it.isCompleted && it.round == completedMatch.round 
             }
             
-            // Tur tamamlandı mı kontrol et
-            val expectedMatchesInRound = (currentState.teams.size + 1) / 2
+            // Tur tamamlandı mı kontrol et  
+            val expectedMatchesInRound = songs.size / 2
             if (currentRoundMatches.size >= expectedMatchesInRound) {
                 // Tur tamamlandı, sonuçları işle
                 val byeTeam = findByeTeam(currentState, currentRoundMatches)
