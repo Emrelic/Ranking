@@ -237,3 +237,79 @@ Box(
 - Turuncu renk ile mükemmel kontrast
 
 **Sonuç:** ✅ Geliştirilmiş İsviçre Sistemi artık modern UI ile tam çalışıyor - sağ alt köşe turuncu puan rozetleri ile
+
+### 2025-08-19 - İKİ KADEMELİ KONTROLLU SİSTEM - KULLANICININ DOĞRU ALGORİTMASI
+**Kullanıcı Geri Bildirimi:** Sistem çalışmıyor, kullanıcının tarif ettiği algoritma yanlış anlaşıldı
+
+**Sorun Tespiti:**
+- Benim anladığım algoritma yanlıştı
+- Kullanıcı **tek tek takım bazında** sıralı eşleştirme istiyordu
+- Geri dönüş mekanizması yanlış implement edilmişti
+- Aday listede duplicate kontrol yoktu
+
+**KULLANICININ TARİF ETTİĞİ DOĞRU ALGORİTMA:**
+1. **Liste aktarıldıktan sonra** → "Geliştirilmiş İsviçre Sistemi" seçilince
+2. **"1. Tur eşleştirmeleri yapılacaktır"** onay mesajı → kullanıcı tamam der
+3. **En üst takım** → eşleştirme arayan statüsü alır
+4. **Kendinden sonraki** ilk uygun takımla → aday listeye eklenir
+5. **Henüz aday listede olmayan** en üst takım → yeni arama döngüsü
+6. **Eğer sonrakilerle eşleşemiyorsa** → geriye dön (94,93,92,91...)
+7. **İlk uygun bulunca** → önceki eşleşmesini boz
+8. **Bozulan takım** → yeniden arama döngüsüne girer
+9. **Tüm aday eşleşmeler hazır** → aynı puanlı kontrol
+10. **En az bir aynı puanlı varsa** → tur onaylanır ve oynanır
+11. **Hiçbir aynı puanlı yoksa** → tur iptal, şampiyona biter
+
+**İmplement Edilen Yeni Sistem:**
+```kotlin
+// SIRA SIRA EŞLEŞTİRME ALGORİTMASI
+while (searchIndex < teams.size) {
+    val searchingTeam = teams.find { it.currentPosition == searchIndex + 1 && it.id !in usedTeams }
+    
+    val partnerResult = findPartnerSequentially(
+        searchingTeam, teams, usedTeams, matchHistory, candidateMatches
+    )
+    
+    when (partnerResult) {
+        is Found -> candidateMatches.add(CandidateMatch(...))
+        is NeedsBacktrack -> breakExistingMatch(...); searchIndex = 0
+        is Bye -> byeTeam = searchingTeam
+    }
+}
+```
+
+**Kritik Düzeltmeler:**
+- `findPartnerSequentially()` - Önce sonraki, sonra önceki takımları kontrol eder
+- `breakExistingMatch()` - Mevcut eşleşmeyi bozar, yenisini oluşturur
+- `checkAndApproveRound()` - Aynı puanlı kontrol ve tur onay sistemi
+
+### 2025-08-19 - DUPLICATE PAIRING SORUNU ÇÖZÜLDÜ
+**Problem:** Hala aynı takımlar birbiri ile eşleşiyordu
+**Kök Neden:** Aday listede duplicate kontrol yoktu
+
+**Çözüm:**
+1. **Çifte kontrol sistemi eklendi:**
+   ```kotlin
+   // 1. Match history kontrolü
+   if (hasTeamsPlayedBefore(team1Id, team2Id, matchHistory)) continue
+   
+   // 2. Aday listede duplicate kontrol  
+   if (candidateMatches.any { 
+       (it.team1.id == team1Id && it.team2.id == team2Id) ||
+       (it.team1.id == team2Id && it.team2.id == team1Id)
+   }) continue
+   ```
+
+2. **Debug logları eklendi:**
+   ```kotlin
+   if (hasPlayed) {
+       android.util.Log.w("EmreSystemCorrect", "🚫 DUPLICATE DETECTED: Team $team1Id and $team2Id have played before!")
+   }
+   ```
+
+3. **Aday listede duplicate engelleme:**
+   - Partner ararken hem match history hem de candidate matches kontrol edilir
+   - Aynı takımlar aday listeye tekrar eklenmez
+
+**APK Test:** Build başarılı, telefona yüklendi
+**Sonuç:** ✅ Duplicate pairing problemi çözülmüş olmalı - kullanıcının doğru algoritması implement edildi

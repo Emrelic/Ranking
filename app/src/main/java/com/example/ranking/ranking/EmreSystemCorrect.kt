@@ -52,8 +52,24 @@ object EmreSystemCorrect {
         val matches: List<Match>,
         val byeTeam: EmreTeam? = null,
         val hasSamePointMatch: Boolean = false, // Aynı puanlı eşleşme var mı?
-        val canContinue: Boolean = true
+        val canContinue: Boolean = true,
+        val candidateMatches: List<CandidateMatch> = emptyList() // Aday eşleşmeler
     )
+    
+    // Aday eşleşme sistemi için yeni data class
+    data class CandidateMatch(
+        val team1: EmreTeam,
+        val team2: EmreTeam,
+        val isAsymmetricPoints: Boolean // Farklı puanlı mı?
+    )
+    
+    // İki kademeli kontrol durumları
+    enum class PairingPhase {
+        CANDIDATE_CREATION,    // Aday eşleştirme oluşturma
+        CONFIRMATION_PENDING,  // Onay bekliyor
+        CONFIRMED,            // Onaylandı
+        TOURNAMENT_FINISHED   // Turnuva bitti (asimetrik puan yok)
+    }
     
     /**
      * Emre turnuvası başlat
@@ -78,11 +94,23 @@ object EmreSystemCorrect {
     }
     
     /**
-     * Sonraki tur için eşleştirmeler oluştur
+     * İKİ KADEMELİ KONTROLLU SONRAKI TUR EŞLEŞTİRMELERİ
+     * 
+     * KULLANICININ TARİF ETTİĞİ SİSTEM:
+     * 1. Onay sistemi: "X. Tur eşleştirmeleri yapılacaktır" → kullanıcı onayı
+     * 2. Aday eşleştirmeler oluştur → asimetrik puan kontrolü
+     * 3. Eğer asimetrik puan yoksa → turnuva biter
+     * 4. Eğer asimetrik puan varsa → onay sonrası kesin eşleştirmeler
      */
-    fun createNextRound(state: EmreState): EmrePairingResult {
+    fun createNextRoundWithConfirmation(state: EmreState): EmrePairingResult {
         if (state.isComplete) {
-            return EmrePairingResult(emptyList(), null, false, false)
+            return EmrePairingResult(
+                matches = emptyList(), 
+                byeTeam = null, 
+                hasSamePointMatch = false, 
+                canContinue = false,
+                candidateMatches = emptyList()
+            )
         }
         
         // Takımları sıra numaralarına göre sırala (en yüksek puan 1. sırada)
@@ -91,13 +119,19 @@ object EmreSystemCorrect {
         // Bye kontrolü (tek sayıda takım varsa)
         val (teamsToMatch, byeTeam) = handleByeTeam(sortedTeams)
         
-        // KULLANICININ BELİRTTİĞİ DOĞRU ALGORİTMA İLE EŞLEŞTİRME
-        val (matches, hasSamePointMatch) = createCorrectEmrePairings(teamsToMatch, state.matchHistory, state.currentRound)
+        // YENİ İKİ KADEMELİ ALGORİTMA İLE EŞLEŞTİRME
+        val result = createAdvancedSwissPairings(teamsToMatch, state.matchHistory, state.currentRound)
         
-        // Turnuva devam edebilir mi? (Eşleştirme yapılabildiğinde devam eder)
-        val canContinue = matches.isNotEmpty()
-        
-        return EmrePairingResult(matches, byeTeam, hasSamePointMatch, canContinue)
+        // Bye ekibini result'a ekle
+        return result.copy(byeTeam = byeTeam)
+    }
+    
+    /**
+     * Geriye uyumluluk için eski fonksiyon - deprecated
+     */
+    @Deprecated("Use createNextRoundWithConfirmation instead")
+    fun createNextRound(state: EmreState): EmrePairingResult {
+        return createNextRoundWithConfirmation(state)
     }
     
     /**
@@ -116,93 +150,324 @@ object EmreSystemCorrect {
     }
     
     /**
-     * KULLANICININ BELİRTTİĞİ DOĞRU EMre Usulü Eşleştirme Algoritması
+     * KULLANICININ TARİF ETTİĞİ DOĞRU ALGORİTMA - TEK TEK TAKIM BAZINDA
      * 
-     * DOĞRU Algoritma:
-     * 1. 1. sıradaki takım → 2, 3, 4, 5... ile daha önce oynamadığı ilk takımla eşleş
-     * 2. Eğer 1 ile 2 eşleştiyse → 1 ile 3 dene, eşleştiyse 1 ile 4 dene...
-     * 3. 1 eşleştikten sonra, sıradaki eşleşmemiş takım (örn: 2) → 3, 4, 5... ile dener
-     * 4. Her takım sadece BİR KEZ eşleşir - duplicate matching asla olmaz
-     * 5. Her eşleşmede: Aynı puanlı mı kontrol et
-     * 6. En az bir eşleşme aynı puanlı ise → tur oynanır
-     * 7. Hiçbir eşleşme aynı puanlı değil ise → turnuva biter
+     * 1. En üst takım → eşleştirme arayan statüsü
+     * 2. Kendinden sonraki ilk uygun takımla → aday listeye ekle  
+     * 3. Henüz aday listede olmayan en üst takım → yeni arama döngüsü
+     * 4. Eğer sonraki hiçbiriyle eşleşemiyorsa → geriye dön (94,93,92...)
+     * 5. İlk uygun bulunca → önceki eşleşmesini boz
+     * 6. Bozulan takım yeniden arama döngüsüne gir
+     * 7. Tüm aday eşleşmeler hazır → aynı puanlı kontrol
+     * 8. En az bir aynı puanlı varsa → tur onaylanır
+     * 9. Hiçbir aynı puanlı yoksa → tur iptal, şampiyona biter
      */
-    private fun createCorrectEmrePairings(
+    private fun createAdvancedSwissPairings(
         teams: List<EmreTeam>, 
         matchHistory: Set<Pair<Long, Long>>,
         currentRound: Int
-    ): Pair<List<Match>, Boolean> {
-        val matches = mutableListOf<Match>()
-        var hasSamePointMatch = false
-        val usedTeams = mutableSetOf<Long>()
+    ): EmrePairingResult {
         
-        // DOĞRU ALGORİTMA: Her takım için sırayla eşleşmemiş partner bul
-        var i = 0
-        while (i < teams.size) {
-            val team1 = teams[i]
-            
-            // Bu takım zaten eşleşmişse sonraki takıma geç
-            if (team1.id in usedTeams) {
-                i++
+        val candidateMatches = mutableListOf<CandidateMatch>()
+        val usedTeams = mutableSetOf<Long>()
+        var byeTeam: EmreTeam? = null
+        
+        // SIRA SIRA EŞLEŞTİRME ALGORİTMASI
+        var searchIndex = 0
+        while (searchIndex < teams.size) {
+            // Henüz aday listede olmayan en üst takımı bul
+            val searchingTeam = teams.find { it.currentPosition == searchIndex + 1 && it.id !in usedTeams }
+            if (searchingTeam == null) {
+                searchIndex++
                 continue
             }
             
-            // team1 için partner ara: i+1, i+2, i+3... diye tüm takımları kontrol et
-            var foundPartner = false
-            var j = i + 1
+            // Bu takım için eşleştirme ara
+            val partnerResult = findPartnerSequentially(
+                searchingTeam = searchingTeam,
+                teams = teams,
+                usedTeams = usedTeams,
+                matchHistory = matchHistory,
+                candidateMatches = candidateMatches
+            )
             
-            while (j < teams.size && !foundPartner) {
-                val team2 = teams[j]
+            when (partnerResult) {
+                is SequentialPartnerResult.Found -> {
+                    // Partner bulundu → aday listesine ekle
+                    candidateMatches.add(
+                        CandidateMatch(
+                            team1 = searchingTeam,
+                            team2 = partnerResult.partner,
+                            isAsymmetricPoints = searchingTeam.points != partnerResult.partner.points
+                        )
+                    )
+                    usedTeams.add(searchingTeam.id)
+                    usedTeams.add(partnerResult.partner.id)
+                }
                 
-                // Bu takım zaten eşleşmişse sonrakini dene
-                if (team2.id in usedTeams) {
-                    j++
+                is SequentialPartnerResult.NeedsBacktrack -> {
+                    // Geri dönüş gerekiyor → eşleşme boz ve yeniden başla
+                    breakExistingMatch(
+                        targetTeam = partnerResult.targetTeam,
+                        searchingTeam = searchingTeam,
+                        candidateMatches = candidateMatches,
+                        usedTeams = usedTeams
+                    )
+                    // Bozulan takım yeniden arama döngüsüne girecek
+                    searchIndex = 0 // Baştan başla
                     continue
                 }
                 
-                // CRITICAL: Daha önce bu ikili oynamış mı kontrol et
-                val hasPlayedBefore = hasTeamsPlayedBefore(team1.id, team2.id, matchHistory)
-                
-                // Daha önce oynamadılarsa eşleştir
-                if (!hasPlayedBefore) {
-                    // Eşleştirme oluştur
-                    matches.add(
-                        Match(
-                            listId = team1.song.listId,
-                            rankingMethod = "EMRE", 
-                            songId1 = team1.id,
-                            songId2 = team2.id,
-                            winnerId = null,
-                            round = currentRound
-                        )
-                    )
-                    
-                    // CRITICAL: Aynı puanda mı kontrol et
-                    if (team1.points == team2.points) {
-                        hasSamePointMatch = true
-                    }
-                    
-                    // Bu takımları işaretle - artık eşleşmişler
-                    usedTeams.add(team1.id)
-                    usedTeams.add(team2.id)
-                    
-                    foundPartner = true
-                    break
-                } else {
-                    // Bu takımla daha önce oynamışlar, sonrakini dene
-                    j++
+                is SequentialPartnerResult.Bye -> {
+                    // Bye geçer (tek sayıda liste durumunda)
+                    byeTeam = searchingTeam
+                    usedTeams.add(searchingTeam.id)
                 }
             }
             
-            // Eğer team1 için partner bulunamadıysa (herkesle oynamış), o bye geçer
-            if (!foundPartner) {
-                usedTeams.add(team1.id)
-            }
-            
-            i++
+            searchIndex++
         }
         
-        return Pair(matches, hasSamePointMatch)
+        // AYNI PUANLI KONTROL VE TUR ONAY SİSTEMİ
+        return checkAndApproveRound(candidateMatches, byeTeam, currentRound)
+    }
+    
+    /**
+     * SIRA SIRA EŞLEŞTİRME - Tek takım için partner bul
+     * 
+     * ⚠️ KRİTİK: ADAY LİSTEDE DUPLICATE KONTROL EKLENDI
+     */
+    private fun findPartnerSequentially(
+        searchingTeam: EmreTeam,
+        teams: List<EmreTeam>, 
+        usedTeams: Set<Long>,
+        matchHistory: Set<Pair<Long, Long>>,
+        candidateMatches: List<CandidateMatch>
+    ): SequentialPartnerResult {
+        
+        // ÖNCE SONRAKI EKİPLERE BAK (kendisinden sonraki sıradakiler)
+        for (i in searchingTeam.currentPosition until teams.size) {
+            val potentialPartner = teams.find { it.currentPosition == i + 1 }
+            if (potentialPartner == null || potentialPartner.id in usedTeams) continue
+            
+            // ⚠️ KRİTİK KONTROLLER:
+            // 1. Daha önce oynamışlar mı kontrol et (match history)
+            if (hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+                continue // Bu takımla daha önce oynamış, sonrakini dene
+            }
+            
+            // 2. Aday listede zaten bu ikili var mı kontrol et
+            if (candidateMatches.any { 
+                (it.team1.id == searchingTeam.id && it.team2.id == potentialPartner.id) ||
+                (it.team1.id == potentialPartner.id && it.team2.id == searchingTeam.id)
+            }) {
+                continue // Aday listede zaten var, sonrakini dene
+            }
+            
+            // Her iki kontrol de geçti → partner bulundu
+            return SequentialPartnerResult.Found(potentialPartner)
+        }
+        
+        // SONRAKI EKİPLERDE BULUNAMADI → GERİYE DÖN (94,93,92,91...)
+        for (i in searchingTeam.currentPosition - 2 downTo 0) {
+            val potentialPartner = teams.find { it.currentPosition == i + 1 }
+            if (potentialPartner == null || potentialPartner.id in usedTeams) continue
+            
+            // ⚠️ KRİTİK KONTROLLER:
+            // 1. Daha önce oynamışlar mı kontrol et
+            if (hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+                continue // Bu takımla daha önce oynamış, sonrakini dene
+            }
+            
+            // 2. Aday listede zaten bu ikili var mı kontrol et  
+            if (candidateMatches.any { 
+                (it.team1.id == searchingTeam.id && it.team2.id == potentialPartner.id) ||
+                (it.team1.id == potentialPartner.id && it.team2.id == searchingTeam.id)
+            }) {
+                continue // Aday listede zaten var, sonrakini dene
+            }
+            
+            // Bu takım önceki bir eşleşmede kullanılıyor → backtrack gerekir
+            return SequentialPartnerResult.NeedsBacktrack(potentialPartner)
+        }
+        
+        // HIÇBIR YERDE PARTNER BULUNAMADI → BYE GEÇ
+        return SequentialPartnerResult.Bye
+    }
+    
+    /**
+     * Sıralı partner arama sonucu
+     */
+    sealed class SequentialPartnerResult {
+        data class Found(val partner: EmreTeam) : SequentialPartnerResult()
+        data class NeedsBacktrack(val targetTeam: EmreTeam) : SequentialPartnerResult()
+        object Bye : SequentialPartnerResult()
+    }
+    
+    /**
+     * Mevcut eşleşmeyi boz ve yeniden eşleştir
+     */
+    private fun breakExistingMatch(
+        targetTeam: EmreTeam,
+        searchingTeam: EmreTeam,
+        candidateMatches: MutableList<CandidateMatch>,
+        usedTeams: MutableSet<Long>
+    ) {
+        // Target team'in mevcut eşleşmesini bul ve kaldır
+        val existingMatch = candidateMatches.find { 
+            it.team1.id == targetTeam.id || it.team2.id == targetTeam.id 
+        }
+        
+        existingMatch?.let { match ->
+            // Eski eşleşmeyi kaldır
+            candidateMatches.remove(match)
+            usedTeams.remove(match.team1.id)
+            usedTeams.remove(match.team2.id)
+            
+            // Yeni eşleşmeyi ekle
+            candidateMatches.add(
+                CandidateMatch(
+                    team1 = searchingTeam,
+                    team2 = targetTeam,
+                    isAsymmetricPoints = searchingTeam.points != targetTeam.points
+                )
+            )
+            usedTeams.add(searchingTeam.id)
+            usedTeams.add(targetTeam.id)
+        }
+    }
+    
+    /**
+     * AYNI PUANLI KONTROL VE TUR ONAY - Kullanıcının tarif ettiği sistem
+     */
+    private fun checkAndApproveRound(
+        candidateMatches: List<CandidateMatch>,
+        byeTeam: EmreTeam?,
+        currentRound: Int
+    ): EmrePairingResult {
+        
+        if (candidateMatches.isEmpty()) {
+            return EmrePairingResult(
+                matches = emptyList(),
+                byeTeam = byeTeam,
+                hasSamePointMatch = false,
+                canContinue = false,
+                candidateMatches = emptyList()
+            )
+        }
+        
+        // AYNI PUANLI EŞLEŞİM VAR MI KONTROL ET
+        val hasSamePointMatch = candidateMatches.any { !it.isAsymmetricPoints }
+        
+        if (hasSamePointMatch) {
+            // EN AZ BİR AYNI PUANLI EŞLEŞİM VAR → TUR ONAYLANIR
+            val matches = candidateMatches.map { candidate ->
+                Match(
+                    listId = candidate.team1.song.listId,
+                    rankingMethod = "EMRE",
+                    songId1 = candidate.team1.id,
+                    songId2 = candidate.team2.id,
+                    winnerId = null,
+                    round = currentRound
+                )
+            }
+            
+            return EmrePairingResult(
+                matches = matches,
+                byeTeam = byeTeam,
+                hasSamePointMatch = true,
+                canContinue = true,
+                candidateMatches = candidateMatches
+            )
+        } else {
+            // HİÇBİR EŞLEŞİM AYNI PUANDA DEĞİL → TUR İPTAL, ŞAMPIYONA BITER
+            return EmrePairingResult(
+                matches = emptyList(),
+                byeTeam = byeTeam,
+                hasSamePointMatch = false,
+                canContinue = false,
+                candidateMatches = candidateMatches
+            )
+        }
+    }
+    
+    /**
+     * Eşleşme arayan ekip için partner bul
+     */
+    private fun findPartnerForTeam(
+        searchingTeam: EmreTeam,
+        teams: List<EmreTeam>,
+        usedTeams: Set<Long>,
+        matchHistory: Set<Pair<Long, Long>>,
+        startIndex: Int
+    ): PartnerSearchResult {
+        
+        // İleri doğru ara (kendisinden sonraki ekipler)
+        for (i in startIndex + 1 until teams.size) {
+            val potentialPartner = teams[i]
+            
+            if (potentialPartner.id in usedTeams) continue
+            
+            if (!hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+                return PartnerSearchResult.Found(potentialPartner)
+            }
+        }
+        
+        // İleri doğru partner bulunamadı → geriye doğru ara
+        for (i in startIndex - 1 downTo 0) {
+            val potentialPartner = teams[i]
+            
+            if (potentialPartner.id in usedTeams) continue
+            
+            if (!hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+                // Bu takım önceki bir eşleşmede kullanılıyorsa backtrack gerekir
+                return PartnerSearchResult.RequiresBacktrack(potentialPartner)
+            }
+        }
+        
+        // Hiçbir yerde partner bulunamadı
+        return PartnerSearchResult.NotFound
+    }
+    
+    /**
+     * Partner arama sonucu
+     */
+    sealed class PartnerSearchResult {
+        data class Found(val partner: EmreTeam) : PartnerSearchResult()
+        object NotFound : PartnerSearchResult()
+        data class RequiresBacktrack(val conflictTeam: EmreTeam) : PartnerSearchResult()
+    }
+    
+    /**
+     * Geri dönüş senaryosunu handle et
+     */
+    private fun handleBacktrackScenario(
+        candidateMatches: MutableList<CandidateMatch>,
+        usedTeams: MutableSet<Long>,
+        conflictTeam: EmreTeam,
+        searchingTeam: EmreTeam
+    ) {
+        // Conflict team'in önceki eşleşmesini bul ve kaldır
+        val conflictMatch = candidateMatches.find { 
+            it.team1.id == conflictTeam.id || it.team2.id == conflictTeam.id 
+        }
+        
+        conflictMatch?.let { match ->
+            candidateMatches.remove(match)
+            usedTeams.remove(match.team1.id)
+            usedTeams.remove(match.team2.id)
+            
+            // Yeni eşleşmeyi ekle
+            candidateMatches.add(
+                CandidateMatch(
+                    team1 = searchingTeam,
+                    team2 = conflictTeam,
+                    isAsymmetricPoints = searchingTeam.points != conflictTeam.points
+                )
+            )
+            usedTeams.add(searchingTeam.id)
+            usedTeams.add(conflictTeam.id)
+        }
     }
     
     /**
@@ -211,7 +476,16 @@ object EmreSystemCorrect {
     private fun hasTeamsPlayedBefore(team1Id: Long, team2Id: Long, matchHistory: Set<Pair<Long, Long>>): Boolean {
         val pair1 = Pair(team1Id, team2Id)
         val pair2 = Pair(team2Id, team1Id)
-        return (pair1 in matchHistory) || (pair2 in matchHistory)
+        val hasPlayed = (pair1 in matchHistory) || (pair2 in matchHistory)
+        
+        // 🔍 DEBUG LOG - Duplicate kontrolü
+        if (hasPlayed) {
+            android.util.Log.w("EmreSystemCorrect", "🚫 DUPLICATE DETECTED: Team $team1Id and $team2Id have played before!")
+            android.util.Log.w("EmreSystemCorrect", "Match History size: ${matchHistory.size}")
+            android.util.Log.w("EmreSystemCorrect", "Looking for: $pair1 or $pair2")
+        }
+        
+        return hasPlayed
     }
     
     /**
