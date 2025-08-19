@@ -118,13 +118,14 @@ object EmreSystemCorrect {
     /**
      * KULLANICININ BELİRTTİĞİ DOĞRU EMre Usulü Eşleştirme Algoritması
      * 
-     * Algoritma:
+     * DOĞRU Algoritma:
      * 1. 1. sıradaki takım → 2, 3, 4, 5... ile daha önce oynamadığı ilk takımla eşleş
-     * 2. 2. sıradaki takım → 3, 4, 5... ile daha önce oynamadığı ilk takımla eşleş
-     * 3. Bu şekilde devam et
-     * 4. Her eşleşmede: Aynı puanlı mı kontrol et
-     * 5. En az bir eşleşme aynı puanlı ise → tur oynanır
-     * 6. Hiçbir eşleşme aynı puanlı değil ise → turnuva biter
+     * 2. Eğer 1 ile 2 eşleştiyse → 1 ile 3 dene, eşleştiyse 1 ile 4 dene...
+     * 3. 1 eşleştikten sonra, sıradaki eşleşmemiş takım (örn: 2) → 3, 4, 5... ile dener
+     * 4. Her takım sadece BİR KEZ eşleşir - duplicate matching asla olmaz
+     * 5. Her eşleşmede: Aynı puanlı mı kontrol et
+     * 6. En az bir eşleşme aynı puanlı ise → tur oynanır
+     * 7. Hiçbir eşleşme aynı puanlı değil ise → turnuva biter
      */
     private fun createCorrectEmrePairings(
         teams: List<EmreTeam>, 
@@ -135,27 +136,35 @@ object EmreSystemCorrect {
         var hasSamePointMatch = false
         val usedTeams = mutableSetOf<Long>()
         
-        // Sıra ile her takım için partner bul
-        for (i in teams.indices) {
+        // DOĞRU ALGORİTMA: Her takım için sırayla eşleşmemiş partner bul
+        var i = 0
+        while (i < teams.size) {
             val team1 = teams[i]
             
-            // Bu takım zaten eşleşmişse atla
-            if (team1.id in usedTeams) continue
+            // Bu takım zaten eşleşmişse sonraki takıma geç
+            if (team1.id in usedTeams) {
+                i++
+                continue
+            }
             
-            // team1 için partner ara: sıradaki takımlardan daha önce oynamadığı ilkini bul
+            // team1 için partner ara: i+1, i+2, i+3... diye tüm takımları kontrol et
             var foundPartner = false
-            for (j in i + 1 until teams.size) {
+            var j = i + 1
+            
+            while (j < teams.size && !foundPartner) {
                 val team2 = teams[j]
                 
-                // Bu takım zaten eşleşmişse atla
-                if (team2.id in usedTeams) continue
+                // Bu takım zaten eşleşmişse sonrakini dene
+                if (team2.id in usedTeams) {
+                    j++
+                    continue
+                }
                 
-                // CRITICAL: Daha önce oynamış mı kontrol et
-                val pair1 = Pair(team1.id, team2.id)
-                val pair2 = Pair(team2.id, team1.id)
+                // CRITICAL: Daha önce bu ikili oynamış mı kontrol et
+                val hasPlayedBefore = hasTeamsPlayedBefore(team1.id, team2.id, matchHistory)
                 
-                // Daha önce oynamadılar mı?
-                if (pair1 !in matchHistory && pair2 !in matchHistory) {
+                // Daha önce oynamadılarsa eşleştir
+                if (!hasPlayedBefore) {
                     // Eşleştirme oluştur
                     matches.add(
                         Match(
@@ -173,22 +182,36 @@ object EmreSystemCorrect {
                         hasSamePointMatch = true
                     }
                     
-                    // Bu takımları işaretle
+                    // Bu takımları işaretle - artık eşleşmişler
                     usedTeams.add(team1.id)
                     usedTeams.add(team2.id)
                     
                     foundPartner = true
                     break
+                } else {
+                    // Bu takımla daha önce oynamışlar, sonrakini dene
+                    j++
                 }
             }
             
-            // Partner bulunamadı, bu takım kalan turda bye geçer
+            // Eğer team1 için partner bulunamadıysa (herkesle oynamış), o bye geçer
             if (!foundPartner) {
                 usedTeams.add(team1.id)
             }
+            
+            i++
         }
         
         return Pair(matches, hasSamePointMatch)
+    }
+    
+    /**
+     * İki takımın daha önce oynayıp oynamadığını kontrol et
+     */
+    private fun hasTeamsPlayedBefore(team1Id: Long, team2Id: Long, matchHistory: Set<Pair<Long, Long>>): Boolean {
+        val pair1 = Pair(team1Id, team2Id)
+        val pair2 = Pair(team2Id, team1Id)
+        return (pair1 in matchHistory) || (pair2 in matchHistory)
     }
     
     /**
