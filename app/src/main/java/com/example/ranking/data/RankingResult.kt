@@ -9,7 +9,7 @@ data class RankingResult(
     val id: Long = 0,
     val songId: Long,
     val listId: Long,
-    val rankingMethod: String, // "DIRECT_SCORING", "LEAGUE", "ELIMINATION", "SWISS", "EMRE"
+    val rankingMethod: String, // "DIRECT_SCORING", "LEAGUE", "ELIMINATION", "SWISS", "EMRE_CORRECT"
     val score: Double,
     val position: Int,
     val createdAt: Long = System.currentTimeMillis()

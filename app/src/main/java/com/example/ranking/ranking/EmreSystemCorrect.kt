@@ -369,7 +369,7 @@ object EmreSystemCorrect {
             val matches = candidateMatches.map { candidate ->
                 Match(
                     listId = candidate.team1.song.listId,
-                    rankingMethod = "EMRE",
+                    rankingMethod = "EMRE_CORRECT",
                     songId1 = candidate.team1.id,
                     songId2 = candidate.team2.id,
                     winnerId = null,

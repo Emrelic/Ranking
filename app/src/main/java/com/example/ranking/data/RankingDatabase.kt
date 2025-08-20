@@ -10,7 +10,7 @@ import com.example.ranking.data.dao.*
 
 @Database(
     entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -213,6 +213,17 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Convert old "EMRE" method references to "EMRE_CORRECT"
+                db.execSQL("UPDATE matches SET rankingMethod = 'EMRE_CORRECT' WHERE rankingMethod = 'EMRE'")
+                db.execSQL("UPDATE ranking_results SET rankingMethod = 'EMRE_CORRECT' WHERE rankingMethod = 'EMRE'")
+                db.execSQL("UPDATE voting_sessions SET rankingMethod = 'EMRE_CORRECT' WHERE rankingMethod = 'EMRE'")
+                db.execSQL("UPDATE league_settings SET rankingMethod = 'EMRE_CORRECT' WHERE rankingMethod = 'EMRE'")
+                db.execSQL("UPDATE archives SET method = 'EMRE_CORRECT' WHERE method = 'EMRE'")
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -220,7 +231,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

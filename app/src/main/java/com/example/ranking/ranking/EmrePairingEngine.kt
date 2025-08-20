@@ -41,7 +41,7 @@ object EmrePairingEngine {
             matches.add(
                 Match(
                     listId = song1.listId,
-                    rankingMethod = "EMRE",
+                    rankingMethod = "EMRE_CORRECT",
                     songId1 = song1.id,
                     songId2 = song2.id,
                     winnerId = null,
@@ -79,7 +79,7 @@ object EmrePairingEngine {
                 matches.add(
                     Match(
                         listId = song1.listId,
-                        rankingMethod = "EMRE",
+                        rankingMethod = "EMRE_CORRECT",
                         songId1 = song1.id,
                         songId2 = song2.id,
                         winnerId = null,

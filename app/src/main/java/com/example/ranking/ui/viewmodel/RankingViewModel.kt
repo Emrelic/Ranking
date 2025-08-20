@@ -66,7 +66,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val allSongs: List<Song> = emptyList(),
         val currentStandings: List<StandingEntry> = emptyList(),
         val emreState: EmreSystemCorrect.EmreState? = null,
-        val showInitialRanking: Boolean = false // İlk sıralama tablosunu göster
+        val showInitialRanking: Boolean = false, // İlk sıralama tablosunu göster
+        val showMatchingsList: Boolean = false, // Eşleştirmeler listesini göster
+        val matchingsList: List<Match> = emptyList() // Oluşturulan eşleştirmeler
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -135,7 +137,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "FULL_ELIMINATION" -> initializeFullElimination()
                                 "SWISS" -> initializeSwiss()
                                 "EMRE_CORRECT" -> initializeEmre()
-                                "EMRE" -> initializeEmre()
                             }
                         }
                     } else {
@@ -298,6 +299,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
+    fun startScoring() {
+        android.util.Log.d("RankingViewModel", "🎯 Puanlama ekranına geçiliyor...")
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(showMatchingsList = false)
+            loadNextMatch()
+        }
+    }
+    
     private suspend fun loadNextMatch() {
         android.util.Log.d("RankingViewModel", "🔍 loadNextMatch BAŞLADI!")
         android.util.Log.d("RankingViewModel", "🔍 currentListId: $currentListId, currentMethod: $currentMethod")
@@ -322,7 +331,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         return
                     }
                 }
-                "EMRE_CORRECT", "EMRE" -> {
+                "EMRE_CORRECT" -> {
                     val currentRound = getCurrentEmreRound(completed)
                     // Emre usulünde sabit maksimum tur yok - sadece durma koşuluna bak
                     createNextEmreRound(currentRound)
@@ -389,7 +398,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             completedMatches = completed,
             totalMatches = total,
             progress = if (total > 0) completed.toFloat() / total else 0f,
-            emreState = if (currentMethod.contains("EMRE")) emreState else null
+            emreState = if (currentMethod == "EMRE_CORRECT") emreState else null
         )
         android.util.Log.d("RankingViewModel", "🔍 UI State güncellendi! currentMatch null mu: ${_uiState.value.currentMatch == null}")
     }
@@ -468,12 +477,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     repository.createMatches(pairingResult.matches)
                     android.util.Log.d("RankingViewModel", "✅ Maçlar kaydedildi!")
                     
-                    // showInitialRanking'i kapat ve ilk maçı yükle
-                    android.util.Log.d("RankingViewModel", "🔄 showInitialRanking=false yapılıyor ve loadNextMatch çağrılıyor...")
-                    _uiState.value = _uiState.value.copy(showInitialRanking = false)
-                    android.util.Log.d("RankingViewModel", "🔄 loadNextMatch() çağrılmadan önce...")
-                    loadNextMatch()
-                    android.util.Log.d("RankingViewModel", "🔄 loadNextMatch() çağrıldıktan sonra...")
+                    // Eşleştirmeler listesini göster
+                    android.util.Log.d("RankingViewModel", "📋 Eşleştirmeler listesi gösteriliyor...")
+                    _uiState.value = _uiState.value.copy(
+                        showInitialRanking = false,
+                        showMatchingsList = true,
+                        matchingsList = pairingResult.matches
+                    )
                 } else {
                     android.util.Log.w("RankingViewModel", "❌ Hiç maç oluşturulamadı!")
                     _uiState.value = _uiState.value.copy(
@@ -548,7 +558,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val results = when (currentMethod) {
                 "LEAGUE" -> RankingEngine.calculateLeagueResults(songs, allMatches)
                 "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
-                "EMRE_CORRECT", "EMRE" -> {
+                "EMRE_CORRECT" -> {
                     if (emreState != null) {
                         RankingEngine.calculateCorrectEmreResults(emreState!!)
                     } else {
@@ -624,7 +634,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 
                 // Update Emre state if this is an Emre tournament
-                if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
+                if (currentMethod == "EMRE_CORRECT") {
                     updateEmreCorrectStateAfterMatch(updatedMatch)
                 }
                 
@@ -651,7 +661,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 
                 // Update Emre state if this is an Emre tournament
-                if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
+                if (currentMethod == "EMRE_CORRECT") {
                     updateEmreCorrectStateAfterMatch(updatedMatch)
                 }
                 
@@ -1138,7 +1148,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     loadNextMatch()
                 }
             }
-            "EMRE" -> {
+            "EMRE_CORRECT" -> {
                 // Resume Emre system from existing matches
                 val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
                 if (allMatches.isNotEmpty()) {
@@ -1174,7 +1184,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val dateFormat = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
             val formattedDate = dateFormat.format(java.util.Date(currentTime))
             val methodName = when (currentMethod) {
-                "EMRE" -> "Geliştirilmiş İsviçre"
+                "EMRE_CORRECT" -> "Geliştirilmiş İsviçre"
                 "SWISS" -> "İsviçre"
                 "LEAGUE" -> "Lig"
                 "ELIMINATION" -> "Eleme"
@@ -1345,7 +1355,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             val completedMatches = allMatches.filter { it.isCompleted }
             
-            if (currentMethod == "EMRE_CORRECT" || currentMethod == "EMRE") {
+            if (currentMethod == "EMRE_CORRECT") {
                 // Emre sistemi için puan hesaplama
                 val standings = songs.map { song ->
                     var points = 0.0

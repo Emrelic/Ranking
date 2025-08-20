@@ -48,7 +48,7 @@ fun ResultsScreen(
                 }
             },
             actions = {
-                if (method in listOf("LEAGUE", "SWISS", "EMRE", "ELIMINATION")) {
+                if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "ELIMINATION")) {
                     TextButton(
                         onClick = { onNavigateToFixture(listId, method) }
                     ) {
@@ -556,7 +556,7 @@ private fun formatScore(score: Double, method: String): String {
     return when (method) {
         "DIRECT_SCORING" -> "${score.toInt()}/100"
         "LEAGUE", "SWISS" -> "${score.toInt()} puan"
-        "EMRE" -> "${score.toInt()}"
+        "EMRE_CORRECT" -> "${score.toInt()}"
         else -> score.toString()
     }
 }
@@ -566,7 +566,7 @@ private fun getScoreLabel(method: String): String {
         "DIRECT_SCORING" -> "puan"
         "LEAGUE" -> "lig puanı"
         "SWISS" -> "turnuva puanı"
-        "EMRE" -> "sıra puanı"
+        "EMRE_CORRECT" -> "sıra puanı"
         else -> ""
     }
 }
@@ -622,7 +622,7 @@ private fun getMethodTitle(method: String): String {
         "LEAGUE" -> "Lig Sistemi"
         "ELIMINATION" -> "Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
-        "EMRE" -> "Geliştirilmiş İsviçre Sistemi"
+        "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
         else -> "Sıralama"
     }
 }

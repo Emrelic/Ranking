@@ -4,10 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,14 +70,14 @@ fun RankingScreen(
                     }
                 }
                 
-                if (method in listOf("LEAGUE", "SWISS", "EMRE", "EMRE_CORRECT", "ELIMINATION", "FULL_ELIMINATION")) {
+                if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "ELIMINATION", "FULL_ELIMINATION")) {
                     TextButton(
                         onClick = { onNavigateToFixture(listId, method) }
                     ) {
                         Text("Fikstür")
                     }
                 }
-                if (method == "LEAGUE" || method == "EMRE" || method == "EMRE_CORRECT") {
+                if (method == "LEAGUE" || method == "EMRE_CORRECT") {
                     var showStandings by remember { mutableStateOf(false) }
                     TextButton(
                         onClick = { showStandings = !showStandings }
@@ -118,7 +120,7 @@ fun RankingScreen(
                 onScoreUpdate = viewModel::updateScoreInSession,
                 onComplete = { onNavigateToResults(listId, method) }
             )
-            "LEAGUE", "SWISS", "EMRE", "EMRE_CORRECT" -> MatchBasedContent(
+            "LEAGUE", "SWISS", "EMRE_CORRECT" -> MatchBasedContent(
                 uiState = uiState,
                 method = method,
                 viewModel = viewModel,
@@ -408,6 +410,15 @@ private fun MatchBasedContent(
         return
     }
     
+    // Eşleştirmeler listesini göster (EMRE_CORRECT için)
+    if (method == "EMRE_CORRECT" && uiState.showMatchingsList) {
+        MatchingsListContent(
+            uiState = uiState,
+            viewModel = viewModel
+        )
+        return
+    }
+    
     if (uiState.isComplete) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -448,7 +459,7 @@ private fun MatchBasedContent(
                 style = MaterialTheme.typography.bodyMedium
             )
             
-            if (method == "SWISS" || method == "EMRE" || method == "EMRE_CORRECT") {
+            if (method == "SWISS" || method == "EMRE_CORRECT") {
                 Text(
                     text = "Tur: ${match.round}",
                     style = MaterialTheme.typography.bodyMedium,
@@ -628,7 +639,7 @@ private fun MatchBasedContent(
                             }
                             
                             // Puan göstergesi SAĞ ALT KÖŞEDE (sadece EMRE sistemi için)
-                            if (method.contains("EMRE") || method == "EMRE_CORRECT") {
+                            if (method == "EMRE_CORRECT") {
                                 val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
                                     uiState.emreState.teams.find { it.song.id == song1.id }?.points ?: 0.0
                                 } else {
@@ -700,7 +711,7 @@ private fun MatchBasedContent(
                             }
                             
                             // Puan göstergesi SAĞ ALT KÖŞEDE (sadece EMRE sistemi için)
-                            if (method.contains("EMRE") || method == "EMRE_CORRECT") {
+                            if (method == "EMRE_CORRECT") {
                                 val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
                                     uiState.emreState.teams.find { it.song.id == song2.id }?.points ?: 0.0
                                 } else {
@@ -728,7 +739,7 @@ private fun MatchBasedContent(
                         }
                     }
                     
-                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE" || method == "EMRE_CORRECT") {
+                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
                         val allowDraws = uiState.leagueSettings?.allowDraws ?: true
                         if (allowDraws) {
                             Button(
@@ -1021,6 +1032,143 @@ private fun InitialRankingContent(
     }
 }
 
+@Composable
+private fun MatchingsListContent(
+    uiState: RankingViewModel.RankingUiState,
+    viewModel: RankingViewModel
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Başlık
+        Text(
+            text = "1. Tur Eşleştirmeleri",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        // Toplam eşleştirme sayısı
+        Text(
+            text = "${uiState.matchingsList.size} Eşleştirme Oluşturuldu",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        // Eşleştirmeler listesi
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            itemsIndexed(uiState.matchingsList) { index, match ->
+                val song1 = uiState.allSongs.find { it.id == match.songId1 }
+                val song2 = uiState.allSongs.find { it.id == match.songId2 }
+                
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Eşleşme numarası
+                        Text(
+                            text = "${index + 1}.",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        // İlk takım
+                        Column(
+                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = song1?.artist ?: "Bilinmiyor",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2
+                            )
+                            Text(
+                                text = song1?.album ?: "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1
+                            )
+                        }
+                        
+                        // VS
+                        Text(
+                            text = "VS",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                        
+                        // İkinci takım  
+                        Column(
+                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = song2?.artist ?: "Bilinmiyor",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                maxLines = 2
+                            )
+                            Text(
+                                text = song2?.album ?: "",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Puanlama ekranına geç butonu
+        Button(
+            onClick = { 
+                android.util.Log.d("MatchingsListContent", "🎯 Puanlama ekranına geç butonu basıldı!")
+                viewModel.startScoring() 
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = null,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = "Puanlama Ekranına Geç",
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+}
+
 private fun getMethodTitle(method: String): String {
     return when (method) {
         "DIRECT_SCORING" -> "Direkt Puanlama"
@@ -1028,7 +1176,6 @@ private fun getMethodTitle(method: String): String {
         "ELIMINATION" -> "Eleme Sistemi"
         "FULL_ELIMINATION" -> "Tam Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
-        "EMRE" -> "Geliştirilmiş İsviçre Sistemi"
         "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
         else -> "Sıralama"
     }

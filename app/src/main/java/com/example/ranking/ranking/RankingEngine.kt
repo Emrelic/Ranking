@@ -689,7 +689,7 @@ object RankingEngine {
             matches.add(
                 Match(
                     listId = songs[0].listId,
-                    rankingMethod = "EMRE",
+                    rankingMethod = "EMRE_CORRECT",
                     songId1 = songs[i].id,
                     songId2 = songs[i + 1].id,
                     winnerId = null,

@@ -146,7 +146,7 @@ fun FixtureScreen(
                                     "Hafta ${round - firstHalfRounds} (Rövanş)"
                                 }
                             }
-                            "SWISS", "EMRE" -> "Tur $round"
+                            "SWISS", "EMRE_CORRECT" -> "Tur $round"
                             else -> "Tur $round"
                         }
                         
@@ -526,7 +526,7 @@ private fun getMethodTitle(method: String): String {
         "LEAGUE" -> "Lig Sistemi"
         "ELIMINATION" -> "Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
-        "EMRE" -> "Emre Usulü"
+        "EMRE_CORRECT" -> "Emre Usulü"
         else -> "Sıralama"
     }
 }
