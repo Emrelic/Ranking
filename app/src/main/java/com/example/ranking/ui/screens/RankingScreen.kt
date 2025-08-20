@@ -1063,7 +1063,7 @@ private fun MatchingsListContent(
         // Eşleştirmeler listesi
         LazyColumn(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             itemsIndexed(uiState.matchingsList) { index, match ->
                 val song1 = uiState.allSongs.find { it.id == match.songId1 }
@@ -1078,7 +1078,7 @@ private fun MatchingsListContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(20.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -1100,6 +1100,7 @@ private fun MatchingsListContent(
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
@@ -1107,6 +1108,7 @@ private fun MatchingsListContent(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
@@ -1130,6 +1132,7 @@ private fun MatchingsListContent(
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
@@ -1137,6 +1140,7 @@ private fun MatchingsListContent(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
+                                maxLines = 2,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
