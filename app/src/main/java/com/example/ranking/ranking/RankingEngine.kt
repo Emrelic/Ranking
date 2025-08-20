@@ -733,7 +733,7 @@ object RankingEngine {
      */
     fun createCorrectEmreMatches(songs: List<Song>, state: EmreSystemCorrect.EmreState?): EmreSystemCorrect.EmrePairingResult {
         val currentState = state ?: EmreSystemCorrect.initializeEmreTournament(songs)
-        return EmreSystemCorrect.createNextRound(currentState)
+        return EmreSystemCorrect.createNextRoundWithConfirmation(currentState)
     }
     
     /**

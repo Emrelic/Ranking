@@ -68,14 +68,14 @@ fun RankingScreen(
                     }
                 }
                 
-                if (method in listOf("LEAGUE", "SWISS", "EMRE", "ELIMINATION", "FULL_ELIMINATION")) {
+                if (method in listOf("LEAGUE", "SWISS", "EMRE", "EMRE_CORRECT", "ELIMINATION", "FULL_ELIMINATION")) {
                     TextButton(
                         onClick = { onNavigateToFixture(listId, method) }
                     ) {
                         Text("Fikstür")
                     }
                 }
-                if (method == "LEAGUE" || method == "EMRE") {
+                if (method == "LEAGUE" || method == "EMRE" || method == "EMRE_CORRECT") {
                     var showStandings by remember { mutableStateOf(false) }
                     TextButton(
                         onClick = { showStandings = !showStandings }
@@ -118,9 +118,10 @@ fun RankingScreen(
                 onScoreUpdate = viewModel::updateScoreInSession,
                 onComplete = { onNavigateToResults(listId, method) }
             )
-            "LEAGUE", "SWISS", "EMRE" -> MatchBasedContent(
+            "LEAGUE", "SWISS", "EMRE", "EMRE_CORRECT" -> MatchBasedContent(
                 uiState = uiState,
                 method = method,
+                viewModel = viewModel,
                 onMatchResult = viewModel::submitMatchResult,
                 onMatchResultWithScore = viewModel::submitMatchResultWithScore,
                 onComplete = { onNavigateToResults(listId, method) }
@@ -392,10 +393,21 @@ private fun CompletedScoreItem(
 private fun MatchBasedContent(
     uiState: RankingViewModel.RankingUiState,
     method: String,
+    viewModel: RankingViewModel = viewModel(),
     onMatchResult: (Long, Long?) -> Unit,
     onMatchResultWithScore: (Long, Long?, Int?, Int?) -> Unit = { id, winner, _, _ -> onMatchResult(id, winner) },
     onComplete: () -> Unit
 ) {
+    // İlk sıralama tablosunu göster (EMRE_CORRECT için)
+    if (method == "EMRE_CORRECT" && uiState.showInitialRanking) {
+        InitialRankingContent(
+            uiState = uiState,
+            method = method,
+            viewModel = viewModel
+        )
+        return
+    }
+    
     if (uiState.isComplete) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -436,7 +448,7 @@ private fun MatchBasedContent(
                 style = MaterialTheme.typography.bodyMedium
             )
             
-            if (method == "SWISS" || method == "EMRE") {
+            if (method == "SWISS" || method == "EMRE" || method == "EMRE_CORRECT") {
                 Text(
                     text = "Tur: ${match.round}",
                     style = MaterialTheme.typography.bodyMedium,
@@ -616,7 +628,7 @@ private fun MatchBasedContent(
                             }
                             
                             // Puan göstergesi SAĞ ALT KÖŞEDE (sadece EMRE sistemi için)
-                            if (method.contains("EMRE")) {
+                            if (method.contains("EMRE") || method == "EMRE_CORRECT") {
                                 val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
                                     uiState.emreState.teams.find { it.song.id == song1.id }?.points ?: 0.0
                                 } else {
@@ -688,7 +700,7 @@ private fun MatchBasedContent(
                             }
                             
                             // Puan göstergesi SAĞ ALT KÖŞEDE (sadece EMRE sistemi için)
-                            if (method.contains("EMRE")) {
+                            if (method.contains("EMRE") || method == "EMRE_CORRECT") {
                                 val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
                                     uiState.emreState.teams.find { it.song.id == song2.id }?.points ?: 0.0
                                 } else {
@@ -716,7 +728,7 @@ private fun MatchBasedContent(
                         }
                     }
                     
-                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE") {
+                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE" || method == "EMRE_CORRECT") {
                         val allowDraws = uiState.leagueSettings?.allowDraws ?: true
                         if (allowDraws) {
                             Button(
@@ -873,6 +885,142 @@ private fun StandingsDialog(
     )
 }
 
+@Composable
+private fun InitialRankingContent(
+    uiState: RankingViewModel.RankingUiState,
+    method: String,
+    viewModel: RankingViewModel = viewModel()
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "İlk Sıralama Tablosu",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        // EmreState'den takımları al
+        uiState.emreState?.teams?.let { teams ->
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                item {
+                    // Header
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Sıra",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.width(40.dp)
+                        )
+                        Text(
+                            text = "ID",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.width(40.dp)
+                        )
+                        Text(
+                            text = "Takım",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Puan",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.width(60.dp),
+                            textAlign = TextAlign.End
+                        )
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                }
+                
+                items(teams.sortedBy { it.currentPosition }) { team ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            // Anlık sıra
+                            Text(
+                                text = "${team.currentPosition}",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.width(40.dp)
+                            )
+                            
+                            // ID (sabit sıra numarası)
+                            Text(
+                                text = "${team.teamId}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.width(40.dp)
+                            )
+                            
+                            // Takım bilgisi
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = team.song.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                if (team.song.artist.isNotBlank()) {
+                                    Text(
+                                        text = team.song.artist,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            
+                            // Puan
+                            Text(
+                                text = "${team.points.toInt()}p",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.width(60.dp),
+                                textAlign = TextAlign.End
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // İlk eşleştirmeleri yap butonu
+        Button(
+            onClick = { 
+                android.util.Log.d("InitialRankingContent", "🔥 BUTON BASILDI!")
+                viewModel.createFirstRoundMatches() 
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("1. Tur Eşleştirmelerini Yap")
+        }
+    }
+}
+
 private fun getMethodTitle(method: String): String {
     return when (method) {
         "DIRECT_SCORING" -> "Direkt Puanlama"
@@ -881,6 +1029,7 @@ private fun getMethodTitle(method: String): String {
         "FULL_ELIMINATION" -> "Tam Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
         "EMRE" -> "Geliştirilmiş İsviçre Sistemi"
+        "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
         else -> "Sıralama"
     }
 }

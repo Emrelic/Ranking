@@ -70,7 +70,7 @@ fun EmrePairingSettingsScreen(
         
         Button(
             onClick = { 
-                onNavigateToRanking(listId, "EMRE", selectedMethod)
+                onNavigateToRanking(listId, "EMRE_CORRECT", selectedMethod)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
