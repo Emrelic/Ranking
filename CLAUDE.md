@@ -319,3 +319,59 @@ while (searchIndex < teams.size) {
 
 **APK Test:** Build başarılı, telefona yüklendi
 **Sonuç:** ✅ Duplicate pairing problemi çözülmüş olmalı - kullanıcının doğru algoritması implement edildi
+
+### 2025-08-20 - KRİTİK 1. TUR EŞLEŞTİRME PROBLEMI ÇÖZÜLDÜ
+**Problem:** "1. tur eşleştirmeleri yap" butonu hiçbir şey döndürmüyordu
+
+**Kök Nedenler:**
+1. **Yanlış Eşleştirme Motoru:** `RankingViewModel.createFirstRoundMatches()` eski `EmrePairingEngine` kullanıyordu
+2. **İlk Tur Logic Hatası:** `EmreSystemCorrect.checkAndApproveRound()` ilk turda herkes 0 puanda olduğu için "aynı puanlı eşleşme yok" diye turnuvayı bitiriyordu
+
+**Çözümler:**
+1. **RankingViewModel.kt line 456-462:** 
+   ```kotlin
+   // ÖNCE (YANLIŞ)
+   val firstRoundMatches = EmrePairingEngine.createFirstRoundMatches(songs, currentPairingMethod)
+   
+   // SONRA (DOĞRU)
+   val pairingResult = EmreSystemCorrect.createNextRoundWithConfirmation(currentState)
+   ```
+
+2. **EmreSystemCorrect.kt line 361-365:**
+   ```kotlin
+   // İlk tur özel durumu eklendi
+   val hasSamePointMatch = if (currentRound == 1) {
+       true // İlk tur her zaman oynanır  
+   } else {
+       candidateMatches.any { !it.isAsymmetricPoints }
+   }
+   ```
+
+**Windows Build Problemi:**
+- Gradle cache ve KSP dosya kilitleri
+- `app\build\generated\ksp\debug\java` klasörü silinemiyor
+- **Çözüm:** Bilgisayar restart (dosya kilitlerini temizler)
+
+**🔄 MEVCUT DURUM - 2025-08-20 17:00:**
+**Problem Devam Ediyor:** Restart sonrası da Gradle cache ve KSP dosya kilitleri build'i engelliyor
+- Kullanıcı bilgisayarı restart etti
+- Gradle daemon durduruldu (`./gradlew --stop`)
+- Hala `app\build\intermediates\incremental\debug\mergeDebugResources\stripped.dir` silinemiyor
+- `./gradlew clean`, `./gradlew assembleDebug --offline --no-build-cache` çalışmıyor
+- Aynı dosya kilitleme hatası devam ediyor
+
+**Denenen Çözümler:**
+- ✅ Bilgisayar restart yapıldı
+- ✅ Gradle daemon durduruldu 
+- ❌ Clean build başarısız
+- ❌ Offline build başarısız
+- ❌ Android Studio path bulunamadı
+
+**Mevcut Çözüm Önerisi:**
+1. **CMD penceresi açıp farklı terminal'den dene** (kullanıcı şu anda yapıyor)
+2. **Android Studio GUI üzerinden Build → Generate APK(s)**
+3. **Gradle sync sonrası manual build**
+
+**Commit:** 6d65e07 - "Fix 1. tur eşleştirme problemi - İlk tur özel durumu eklendi"
+
+**⚠️ NOT:** Bu section problema çözüm bulununca silinecek - geçici kayıt amaçlı
