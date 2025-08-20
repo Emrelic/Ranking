@@ -357,7 +357,12 @@ object EmreSystemCorrect {
         }
         
         // AYNI PUANLI EŞLEŞİM VAR MI KONTROL ET
-        val hasSamePointMatch = candidateMatches.any { !it.isAsymmetricPoints }
+        // ⚠️ ÖNEMLİ: İlk turda (currentRound == 1) herkes 0 puanda - özel durum
+        val hasSamePointMatch = if (currentRound == 1) {
+            true // İlk tur her zaman oynanır
+        } else {
+            candidateMatches.any { !it.isAsymmetricPoints }
+        }
         
         if (hasSamePointMatch) {
             // EN AZ BİR AYNI PUANLI EŞLEŞİM VAR → TUR ONAYLANIR
@@ -560,7 +565,7 @@ object EmreSystemCorrect {
         }
         
         // KULLANICININ BELİRTTİĞİ Emre usulü sıralamayı yenile
-        val reorderedTeams = reorderTeamsEmreStyle(updatedTeams, newMatchHistory)
+        val reorderedTeams = reorderTeamsEmreStyle(updatedTeams, completedMatches)
         
         return EmreState(
             teams = reorderedTeams,
@@ -573,22 +578,92 @@ object EmreSystemCorrect {
     /**
      * Takımları Emre usulü kurallarına göre yeniden sırala
      * 
-     * Sıralama Kuralları:
+     * KULLANICININ TARİF ETTİĞİ TİEBREAKER KURALLARI:
      * 1. Puana göre yüksekten alçağa
-     * 2. Eşit puanlı takımlar için tiebreaker:
-     *    - Aralarında maç varsa, kazanan üstte
-     *    - Maç yoksa, önceki sıralamada yukarıdaki üstte
+     * 2. Eşit puanlı takımlar için:
+     *    a) Aynı puanlı ekipler ayrı grup alınır
+     *    b) Kendi aralarındaki maçlara göre ikinci puan listesi yapılır
+     *    c) İkinci puan listesine göre sıralama
+     *    d) İkinci puanda da eşitlik → ID numarası (teamId) küçük olan üstte
      * 3. Yeni sıra numaraları atanır (1-79)
      */
-    private fun reorderTeamsEmreStyle(teams: List<EmreTeam>, matchHistory: Set<Pair<Long, Long>>): List<EmreTeam> {
-        val sortedTeams = teams.sortedWith(compareBy<EmreTeam> { -it.points } // Yüksek puan önce
-            .thenBy { it.currentPosition } // Eşit puanlılar için önceki sıralama
-        )
+    private fun reorderTeamsEmreStyle(teams: List<EmreTeam>, completedMatches: List<Match>): List<EmreTeam> {
+        // Önce puana göre grupla
+        val pointGroups = teams.groupBy { it.points }
+        val sortedResults = mutableListOf<EmreTeam>()
+        
+        // Her puan grubunu en yüksekten en alçağa işle
+        pointGroups.keys.sortedDescending().forEach { points ->
+            val samePointTeams = pointGroups[points]!!
+            
+            if (samePointTeams.size == 1) {
+                // Tek takım varsa direkt ekle
+                sortedResults.addAll(samePointTeams)
+            } else {
+                // Aynı puanlı takımlar için karmaşık tiebreaker
+                val tiebreakerSorted = applySamePointTiebreaker(samePointTeams, completedMatches)
+                sortedResults.addAll(tiebreakerSorted)
+            }
+        }
         
         // Yeni sıra numaralarını ata
-        return sortedTeams.mapIndexed { index, team ->
+        return sortedResults.mapIndexed { index, team ->
             team.copy(currentPosition = index + 1)
         }
+    }
+    
+    /**
+     * Aynı puanlı takımlar için tiebreaker algoritması
+     * 
+     * KULLANICININ TARİF ETTİĞİ SISTEM:
+     * 1. Aynı puanlı takımları al
+     * 2. Kendi aralarındaki maçlara bak
+     * 3. Head-to-head puanlama yap (ikinci puan sistemi)
+     * 4. İkinci puan sistemine göre sırala
+     * 5. Hala eşitlik varsa → ID numarası (teamId) küçük olan üstte
+     */
+    private fun applySamePointTiebreaker(samePointTeams: List<EmreTeam>, completedMatches: List<Match>): List<EmreTeam> {
+        if (samePointTeams.size <= 1) return samePointTeams
+        
+        // Her takım için head-to-head puanları hesapla
+        val headToHeadPoints = mutableMapOf<Long, Double>()
+        samePointTeams.forEach { team ->
+            headToHeadPoints[team.id] = 0.0
+        }
+        
+        // Aynı puanlı takımların ID'lerini al
+        val samePointTeamIds = samePointTeams.map { it.id }.toSet()
+        
+        // Kendi aralarındaki tamamlanmış maçları kontrol et
+        completedMatches.forEach { match ->
+            // Bu maç aynı puanlı iki takım arasında mı?
+            if (match.isCompleted && 
+                match.songId1 in samePointTeamIds && 
+                match.songId2 in samePointTeamIds) {
+                
+                when (match.winnerId) {
+                    match.songId1 -> {
+                        // Takım 1 kazandı
+                        headToHeadPoints[match.songId1] = headToHeadPoints[match.songId1]!! + 1.0
+                    }
+                    match.songId2 -> {
+                        // Takım 2 kazandı
+                        headToHeadPoints[match.songId2] = headToHeadPoints[match.songId2]!! + 1.0
+                    }
+                    null -> {
+                        // Beraberlik - her ikisine 0.5 puan
+                        headToHeadPoints[match.songId1] = headToHeadPoints[match.songId1]!! + 0.5
+                        headToHeadPoints[match.songId2] = headToHeadPoints[match.songId2]!! + 0.5
+                    }
+                }
+            }
+        }
+        
+        // Head-to-head puanlarına göre sırala, sonra teamId'ye göre
+        return samePointTeams.sortedWith(
+            compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // Head-to-head puan (yüksek önce)
+                .thenBy { it.teamId } // ID numarası küçük olan üstte
+        )
     }
     
     /**

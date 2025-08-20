@@ -97,12 +97,16 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
    - Yes seçeneği varsa otomatik olarak seç
    - "Yes ve bundan sonra bana bunu tekrar sorma" seçeneği varsa onu seç
    - Red seçeneğini hiç seçme
+   - 1,2,3 seçenekleri varsa 2 numarayı otomatik seç (genellikle "bunu bir daha sorma" seçeneği)
+   - 1,2 seçenekleri varsa 1 numarayı otomatik seç (genellikle "evet" seçeneği)
 6. **Sistem sesi protokolü**: 
    - Verilen görevleri tamamlayınca 3 kez beep sesi çal
    - İşlemler bittiğinde 3 kez beep sesi çal
    - Kullanıcıdan onay bekleyeceğin zaman 3 kez beep sesi çal
    - Kullanıcıya soru soracağın zaman 3 kez beep sesi çal
    - Kullanıcıdan yanıt beklediğinde 3 kez beep sesi çal
+   - Kullanıcıya haber vereceğin zaman 3 kez beep sesi çal
+   - Görev bitirip yeni görev beklemeye geçeceğin zaman 3 kez beep sesi çal
 
 ## Konuşma ve geliştirme kayıtları:
 
@@ -249,16 +253,18 @@ Box(
 
 **KULLANICININ TARİF ETTİĞİ DOĞRU ALGORİTMA:**
 1. **Liste aktarıldıktan sonra** → "Geliştirilmiş İsviçre Sistemi" seçilince
-2. **"1. Tur eşleştirmeleri yapılacaktır"** onay mesajı → kullanıcı tamam der
-3. **En üst takım** → eşleştirme arayan statüsü alır
-4. **Kendinden sonraki** ilk uygun takımla → aday listeye eklenir
-5. **Henüz aday listede olmayan** en üst takım → yeni arama döngüsü
-6. **Eğer sonrakilerle eşleşemiyorsa** → geriye dön (94,93,92,91...)
-7. **İlk uygun bulunca** → önceki eşleşmesini boz
-8. **Bozulan takım** → yeniden arama döngüsüne girer
-9. **Tüm aday eşleşmeler hazır** → aynı puanlı kontrol
-10. **En az bir aynı puanlı varsa** → tur onaylanır ve oynanır
-11. **Hiçbir aynı puanlı yoksa** → tur iptal, şampiyona biter
+2. **İlk sıra numaraları (ID)** atanır → sabit kalacak
+3. **Anlık sıra numaraları** atanır → her turda değişebilir
+4. **İlk sıralama tablosu** ekranda gösterilir
+5. **"İlk eşleştirmeleri yap"** butonuna basılır
+6. **En üst anlık sıralı takım** → eşleştirme arayan statüsü alır
+7. **Kendinden sonraki daha önce oynamamış ilk takımla** → aday listeye eklenir (PUAN FARKI ÖNEMLİ DEĞİL)
+8. **Henüz aday listede olmayan en üst takım** → yeni arama döngüsü
+9. **Eğer sonrakilerle eşleşemiyorsa** → geriye dön ve mevcut eşleşmeyi boz
+10. **Bozulan takım** → yeniden arama döngüsüne girer  
+11. **Tüm aday eşleşmeler hazır** → aynı puanlı kontrol
+12. **En az bir aynı puanlı eşleşme varsa** → tur onaylanır ve oynanır
+13. **Hiçbir aynı puanlı eşleşme yoksa** → tur iptal, şampiyona biter
 
 **İmplement Edilen Yeni Sistem:**
 ```kotlin
