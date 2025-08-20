@@ -483,11 +483,16 @@ object EmreSystemCorrect {
         val pair2 = Pair(team2Id, team1Id)
         val hasPlayed = (pair1 in matchHistory) || (pair2 in matchHistory)
         
-        // 🔍 DEBUG LOG - Duplicate kontrolü
+        // 🔍 DETAILED DEBUG LOG - Match history kontrolü
+        android.util.Log.d("EmreSystemCorrect", "🔍 CHECKING MATCH HISTORY: Team $team1Id vs Team $team2Id")
+        android.util.Log.d("EmreSystemCorrect", "🔍 Match History size: ${matchHistory.size}")
+        android.util.Log.d("EmreSystemCorrect", "🔍 Looking for pairs: ($team1Id, $team2Id) or ($team2Id, $team1Id)")
+        
         if (hasPlayed) {
             android.util.Log.w("EmreSystemCorrect", "🚫 DUPLICATE DETECTED: Team $team1Id and $team2Id have played before!")
-            android.util.Log.w("EmreSystemCorrect", "Match History size: ${matchHistory.size}")
-            android.util.Log.w("EmreSystemCorrect", "Looking for: $pair1 or $pair2")
+            android.util.Log.w("EmreSystemCorrect", "🚫 Found in history: $pair1 in history = ${pair1 in matchHistory}, $pair2 in history = ${pair2 in matchHistory}")
+        } else {
+            android.util.Log.d("EmreSystemCorrect", "✅ PAIR OK: Team $team1Id and $team2Id have NOT played before")
         }
         
         return hasPlayed
@@ -516,10 +521,14 @@ object EmreSystemCorrect {
         }
         
         // Maç sonuçlarını işle
+        android.util.Log.d("EmreSystemCorrect", "📝 PROCESSING ${completedMatches.size} completed matches")
         completedMatches.forEach { match ->
             // CRITICAL: Maç geçmişine ekle - prevents duplicate pairings
-            newMatchHistory.add(Pair(match.songId1, match.songId2))
-            newMatchHistory.add(Pair(match.songId2, match.songId1))
+            val pair1 = Pair(match.songId1, match.songId2)
+            val pair2 = Pair(match.songId2, match.songId1)
+            newMatchHistory.add(pair1)
+            newMatchHistory.add(pair2)
+            android.util.Log.d("EmreSystemCorrect", "📝 ADDED TO HISTORY: ${match.songId1} vs ${match.songId2} (Match ID: ${match.id})")
             
             // Puanları güncelle (sadece tamamlanmış maçlar)
             if (match.isCompleted) {

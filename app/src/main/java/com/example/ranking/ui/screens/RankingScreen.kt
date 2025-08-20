@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.data.Song
@@ -846,7 +847,7 @@ private fun StandingsDialog(
                         Text(
                             text = "${standing.position}. ${standing.song.name}",
                             modifier = Modifier.weight(2f),
-                            maxLines = 1
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = standing.played.toString(),
@@ -1042,9 +1043,10 @@ private fun MatchingsListContent(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Başlık
+        // Başlık - Dinamik tur numarası
+        val currentRound = uiState.matchingsList.firstOrNull()?.round ?: 1
         Text(
-            text = "1. Tur Eşleştirmeleri",
+            text = "${currentRound}. Tur Eşleştirmeleri",
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -1098,14 +1100,14 @@ private fun MatchingsListContent(
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
-                                maxLines = 2
+                                overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = song1?.album ?: "",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
-                                maxLines = 1
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                         
@@ -1128,14 +1130,14 @@ private fun MatchingsListContent(
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
-                                maxLines = 2
+                                overflow = TextOverflow.Ellipsis
                             )
                             Text(
                                 text = song2?.album ?: "",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
-                                maxLines = 1
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
