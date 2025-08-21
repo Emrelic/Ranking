@@ -527,7 +527,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             
             if (pairingResult.matches.isNotEmpty()) {
                 repository.createMatches(pairingResult.matches)
-                loadNextMatch()
+                
+                // Her turda eşleştirmeler listesini göster
+                android.util.Log.d("RankingViewModel", "📋 ${round}. tur eşleştirmeler listesi gösteriliyor...")
+                _uiState.value = _uiState.value.copy(
+                    showInitialRanking = false,
+                    showMatchingsList = true,
+                    matchingsList = pairingResult.matches,
+                    emreState = emreState
+                )
             } else {
                 completeRanking()
             }
@@ -1438,6 +1446,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 
                 if (pairingResult.matches.isNotEmpty()) {
                     repository.createMatches(pairingResult.matches)
+                    
+                    // Her yeni tur için eşleştirmeler listesini göster
+                    android.util.Log.d("RankingViewModel", "📋 ${completedMatch.round + 1}. tur eşleştirmeler listesi gösteriliyor...")
+                    _uiState.value = _uiState.value.copy(
+                        showInitialRanking = false,
+                        showMatchingsList = true,
+                        matchingsList = pairingResult.matches,
+                        emreState = emreState
+                    )
                 }
             }
             

@@ -31,13 +31,9 @@
         </activity>
         <activity
             android:name=".TestActivity"
-            android:exported="true"
+            android:exported="false"
             android:label="Tam Eleme Test"
             android:theme="@style/Theme.Ranking">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 
