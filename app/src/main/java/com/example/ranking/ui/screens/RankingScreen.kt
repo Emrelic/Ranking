@@ -613,18 +613,22 @@ private fun MatchBasedContent(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    // Padişah ismi ortada - BÜYÜK FONT
+                                    // Padişah ismi ortada - BÜYÜK FONT - TAM GÖRÜNÜR
                                     Text(
                                         text = song1.name,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 3,
+                                        softWrap = true
                                     )
                                     if (song1.artist.isNotBlank()) {
                                         Text(
                                             text = song1.artist,
                                             style = MaterialTheme.typography.titleMedium,
-                                            textAlign = TextAlign.Center
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 2,
+                                            softWrap = true
                                         )
                                     }
                                     if (song1.album.isNotBlank()) {
@@ -632,7 +636,9 @@ private fun MatchBasedContent(
                                             text = song1.album,
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                            textAlign = TextAlign.Center
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 2,
+                                            softWrap = true
                                         )
                                     }
                                 }
@@ -685,18 +691,22 @@ private fun MatchBasedContent(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    // Padişah ismi ortada - BÜYÜK FONT
+                                    // Padişah ismi ortada - BÜYÜK FONT - TAM GÖRÜNÜR
                                     Text(
                                         text = song2.name,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 3,
+                                        softWrap = true
                                     )
                                     if (song2.artist.isNotBlank()) {
                                         Text(
                                             text = song2.artist,
                                             style = MaterialTheme.typography.titleMedium,
-                                            textAlign = TextAlign.Center
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 2,
+                                            softWrap = true
                                         )
                                     }
                                     if (song2.album.isNotBlank()) {
@@ -704,7 +714,9 @@ private fun MatchBasedContent(
                                             text = song2.album,
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                            textAlign = TextAlign.Center
+                                            textAlign = TextAlign.Center,
+                                            maxLines = 2,
+                                            softWrap = true
                                         )
                                     }
                                 }
@@ -1094,19 +1106,30 @@ private fun MatchingsListContent(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = song1?.artist ?: "Bilinmiyor",
+                                text = song1?.name ?: "Bilinmiyor",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
-                                maxLines = 2
+                                softWrap = true
                             )
-                            Text(
-                                text = song1?.album ?: "",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1
-                            )
+                            if (song1?.artist?.isNotBlank() == true) {
+                                Text(
+                                    text = song1.artist,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                    softWrap = true
+                                )
+                            }
+                            if (song1?.album?.isNotBlank() == true) {
+                                Text(
+                                    text = song1.album,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    textAlign = TextAlign.Center,
+                                    softWrap = true
+                                )
+                            }
                         }
                         
                         // VS
@@ -1124,19 +1147,30 @@ private fun MatchingsListContent(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = song2?.artist ?: "Bilinmiyor",
+                                text = song2?.name ?: "Bilinmiyor",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
-                                maxLines = 2
+                                softWrap = true
                             )
-                            Text(
-                                text = song2?.album ?: "",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                maxLines = 1
-                            )
+                            if (song2?.artist?.isNotBlank() == true) {
+                                Text(
+                                    text = song2.artist,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                    softWrap = true
+                                )
+                            }
+                            if (song2?.album?.isNotBlank() == true) {
+                                Text(
+                                    text = song2.album,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                    textAlign = TextAlign.Center,
+                                    softWrap = true
+                                )
+                            }
                         }
                     }
                 }
