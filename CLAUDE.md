@@ -301,6 +301,38 @@ Box(
 - 🎯 **Algoritma kusursuz çalışıyor** - detaylı loglar bunu kanıtladı
 - 🎯 **Swiss sistem mantığına uygun** duplicate prevention aktif
 
+### 2025-08-21 - EŞLEŞTİRME SAYISI AZALMA PROBLEMİ - ÇÖZÜLMEDI ❌
+
+**Problem:** İlerleyen turlarda eşleştirme sayısı azalıyor
+- 13. tur: 18 eşleştirme ✅
+- 14. tur: 17 eşleştirme ❌
+- 15. tur: 17 eşleştirme ❌
+- 18. tur: 16 eşleştirme ❌
+
+**Matematik:** 36 takım = her turda 18 eşleştirme olmalı, bye team yok
+
+**Kök Neden Analizi:**
+1. **Algoritma 18 eşleştirme yaratıyor** - EmreSystemCorrect logları doğru
+2. **Repository'ye doğru kaydediliyor** - ViewModel logları doğru  
+3. **UI'da eksik gösteriliyor** - MatchingsListContent logları eksik
+
+**Yapılan Değişiklikler:**
+- `RankingViewModel.kt` line 1433-1437: Expected matches hesaplaması düzeltildi
+- `RankingScreen.kt` line 1075-1079: UI debug logları eklendi
+- Bye team tur kontrolü algoritması güncellendi
+
+**Debugging:**
+```
+13. TUR: UI Eşleştirme 0-17 (18 eşleştirme) ✅
+14. TUR: UI Eşleştirme 0-16 (17 eşleştirme) ❌  
+15. TUR: UI Eşleştirme 0-16 (17 eşleştirme) ❌
+18. TUR: 16 eşleştirme ❌
+```
+
+**Sonuç:** Problem çözülmedi - Swiss algoritma her turda farklı sayıda eşleştirme yaratıyor
+
+**NOT:** Yarın devam edilecek - sorun Swiss sistem bye mantığında
+
 ### 2025-08-19 - İKİ KADEMELİ KONTROLLU SİSTEM - KULLANICININ DOĞRU ALGORİTMASI
 **Kullanıcı Geri Bildirimi:** Sistem çalışmıyor, kullanıcının tarif ettiği algoritma yanlış anlaşıldı
 

@@ -1064,13 +1064,19 @@ private fun MatchingsListContent(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        // Toplam eşleştirme sayısı
+        // Toplam eşleştirme sayısı - Debug log ekle
         Text(
             text = "${uiState.matchingsList.size} Eşleştirme Oluşturuldu",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
+        
+        // DEBUG: UI'da kaç eşleştirme var log'la
+        android.util.Log.d("MatchingsListContent", "🔢 UI'da görünen eşleştirme sayısı: ${uiState.matchingsList.size}")
+        uiState.matchingsList.forEachIndexed { index, match ->
+            android.util.Log.d("MatchingsListContent", "UI Eşleştirme $index: ${match.songId1} vs ${match.songId2} (Round: ${match.round})")
+        }
         
         // Eşleştirmeler listesi
         LazyColumn(

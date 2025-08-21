@@ -182,6 +182,7 @@ object EmreSystemCorrect {
                 continue
             }
             
+            
             // Bu takım için eşleştirme ara
             val partnerResult = findPartnerSequentially(
                 searchingTeam = searchingTeam,
@@ -229,7 +230,7 @@ object EmreSystemCorrect {
         }
         
         // AYNI PUANLI KONTROL VE TUR ONAY SİSTEMİ
-        return checkAndApproveRound(candidateMatches, byeTeam, currentRound)
+        return checkAndApproveRound(candidateMatches, byeTeam, currentRound, matchHistory)
     }
     
     /**
@@ -343,7 +344,8 @@ object EmreSystemCorrect {
     private fun checkAndApproveRound(
         candidateMatches: List<CandidateMatch>,
         byeTeam: EmreTeam?,
-        currentRound: Int
+        currentRound: Int,
+        matchHistory: Set<Pair<Long, Long>>
     ): EmrePairingResult {
         
         if (candidateMatches.isEmpty()) {
@@ -366,7 +368,23 @@ object EmreSystemCorrect {
         
         if (hasSamePointMatch) {
             // EN AZ BİR AYNI PUANLI EŞLEŞİM VAR → TUR ONAYLANIR
-            val matches = candidateMatches.map { candidate ->
+            
+            // ⚠️ CRITICAL FIX: Final duplicate check before creating matches
+            val validMatches = candidateMatches.filter { candidate ->
+                val team1Id = candidate.team1.id
+                val team2Id = candidate.team2.id
+                
+                // Final duplicate kontrolü - bu çift daha önce eşleşmiş mi?
+                val isDuplicate = hasTeamsPlayedBefore(team1Id, team2Id, matchHistory)
+                
+                if (isDuplicate) {
+                    android.util.Log.e("EmreSystemCorrect", "🚨 CRITICAL: Duplicate pair in final matches: $team1Id vs $team2Id - FILTERING OUT!")
+                }
+                
+                !isDuplicate
+            }
+            
+            val matches = validMatches.map { candidate ->
                 Match(
                     listId = candidate.team1.song.listId,
                     rankingMethod = "EMRE_CORRECT",

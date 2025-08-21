@@ -1429,7 +1429,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             }
             
             // Tur tamamlandı mı kontrol et  
-            val expectedMatchesInRound = songs.size / 2
+            // ⚠️ KRİTİK: Expected matches sayısı takım sayısına göre sabittir
+            val expectedMatchesInRound = if (songs.size % 2 == 0) {
+                songs.size / 2  // Çift takım = tam eşleştirme
+            } else {
+                (songs.size - 1) / 2  // Tek takım = 1 bye + eşleştirmeler
+            }
+            
+            android.util.Log.d("RankingViewModel", "🔍 Tur kontrolü: ${currentRoundMatches.size}/${expectedMatchesInRound} maç tamamlandı")
+            
             if (currentRoundMatches.size >= expectedMatchesInRound) {
                 // Tur tamamlandı, sonuçları işle
                 val byeTeam = findByeTeam(currentState, currentRoundMatches)
