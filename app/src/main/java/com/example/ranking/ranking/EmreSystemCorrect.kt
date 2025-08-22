@@ -243,8 +243,16 @@ object EmreSystemCorrect {
                     byeTeam = searchingTeam
                     usedTeams.add(searchingTeam.id)
                 }
+                
+                is SequentialPartnerResult.TournamentFinished -> {
+                    // TURNUVA BİTER - Bu takım kimseyle eşleşemiyor (herkes herkesle oynadı)
+                    android.util.Log.w("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: Cannot create more matches")
+                    android.util.Log.w("EmreSystemCorrect", "🏁 FINAL MATCHES: ${candidateMatches.size} matches created")
+                    break // Döngüyü kır, turnuva biter
+                }
             }
         }
+        
         
         // FINAL DURUM RAPORU
         android.util.Log.d("EmreSystemCorrect", "✅ PAIRING COMPLETED: ${candidateMatches.size} matches created")
@@ -331,9 +339,10 @@ object EmreSystemCorrect {
             }
         }
         
-        // HIÇBIR YERDE PARTNER BULUNAMADI → BYE GEÇ
-        android.util.Log.d("EmreSystemCorrect", "🆓 BYE TEAM: Team ${searchingTeam.currentPosition} gets bye")
-        return SequentialPartnerResult.Bye
+        // HIÇBIR YERDE PARTNER BULUNAMADI → TURNUVA BİTER (herkes herkesle oynadı)
+        android.util.Log.w("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: Team ${searchingTeam.currentPosition} cannot find any partner")
+        android.util.Log.w("EmreSystemCorrect", "🏁 REASON: This team has played against all other available teams")
+        return SequentialPartnerResult.TournamentFinished
     }
     
     /**
@@ -343,6 +352,7 @@ object EmreSystemCorrect {
         data class Found(val partner: EmreTeam) : SequentialPartnerResult()
         data class NeedsBacktrack(val targetTeam: EmreTeam) : SequentialPartnerResult()
         object Bye : SequentialPartnerResult()
+        object TournamentFinished : SequentialPartnerResult()
     }
     
     /**
