@@ -172,15 +172,19 @@ object EmreSystemCorrect {
         val usedTeams = mutableSetOf<Long>()
         var byeTeam: EmreTeam? = null
         
-        // SIRA SIRA EŞLEŞTİRME ALGORİTMASI
-        var searchIndex = 0
-        while (searchIndex < teams.size) {
-            // Henüz aday listede olmayan en üst takımı bul
-            val searchingTeam = teams.find { it.currentPosition == searchIndex + 1 && it.id !in usedTeams }
+        // KULLANICININ TARİF ETTİĞİ DOĞRU ALGORİTMA: En üst serbest takım arama döngüsü
+        while (usedTeams.size < teams.size) {
+            // En üst serbest takımı bul (anlık sıralamaya göre)
+            val searchingTeam = teams
+                .filter { it.id !in usedTeams }
+                .minByOrNull { it.currentPosition }
+            
             if (searchingTeam == null) {
-                searchIndex++
-                continue
+                android.util.Log.w("EmreSystemCorrect", "⚠️ NO FREE TEAMS: All teams have been processed")
+                break
             }
+            
+            android.util.Log.d("EmreSystemCorrect", "🎯 CURRENT SEARCHER: Team ${searchingTeam.currentPosition} (ID: ${searchingTeam.id})")
             
             // Bu takım için eşleştirme ara
             val partnerResult = findPartnerSequentially(
@@ -194,6 +198,7 @@ object EmreSystemCorrect {
             when (partnerResult) {
                 is SequentialPartnerResult.Found -> {
                     // Partner bulundu → aday listesine ekle
+                    android.util.Log.d("EmreSystemCorrect", "✅ MATCH CREATED: Team ${searchingTeam.currentPosition} vs Team ${partnerResult.partner.currentPosition}")
                     candidateMatches.add(
                         CandidateMatch(
                             team1 = searchingTeam,
@@ -206,26 +211,26 @@ object EmreSystemCorrect {
                 }
                 
                 is SequentialPartnerResult.NeedsBacktrack -> {
-                    // Geri dönüş gerekiyor → eşleşme boz ve yeniden başla
+                    // 🎯 KİRURGİKAL BACKTRACK: Sadece gerekli eşleştirmeyi boz
+                    android.util.Log.w("EmreSystemCorrect", "🔄 INITIATING BACKTRACK: Team ${searchingTeam.currentPosition} needs Team ${partnerResult.targetTeam.currentPosition}")
                     breakExistingMatch(
                         targetTeam = partnerResult.targetTeam,
                         searchingTeam = searchingTeam,
                         candidateMatches = candidateMatches,
                         usedTeams = usedTeams
                     )
-                    // Bozulan takım yeniden arama döngüsüne girecek
-                    searchIndex = 0 // Baştan başla
+                    // Döngü yeniden başlayacak ve en üst serbest takımı bulacak
+                    // Bu searchingTeam veya targetTeam olabilir - hangisi daha üstteyse
                     continue
                 }
                 
                 is SequentialPartnerResult.Bye -> {
                     // Bye geçer (tek sayıda liste durumunda)
+                    android.util.Log.d("EmreSystemCorrect", "🆓 BYE ASSIGNED: Team ${searchingTeam.currentPosition}")
                     byeTeam = searchingTeam
                     usedTeams.add(searchingTeam.id)
                 }
             }
-            
-            searchIndex++
         }
         
         // AYNI PUANLI KONTROL VE TUR ONAY SİSTEMİ
@@ -233,9 +238,9 @@ object EmreSystemCorrect {
     }
     
     /**
-     * SIRA SIRA EŞLEŞTİRME - Tek takım için partner bul
+     * SIRA SIRA EŞLEŞTİRME - Kullanıcının tarif ettiği DOĞRU algoritma
      * 
-     * ⚠️ KRİTİK: ADAY LİSTEDE DUPLICATE KONTROL EKLENDI
+     * ⚠️ KRİTİK FARK: Geriye dönükten uygun takım bulduğunda eşleştirmeyi KONTROL ET
      */
     private fun findPartnerSequentially(
         searchingTeam: EmreTeam,
@@ -244,6 +249,8 @@ object EmreSystemCorrect {
         matchHistory: Set<Pair<Long, Long>>,
         candidateMatches: List<CandidateMatch>
     ): SequentialPartnerResult {
+        
+        android.util.Log.d("EmreSystemCorrect", "🔍 PARTNER SEARCH: Team ${searchingTeam.currentPosition} (ID: ${searchingTeam.id}) searching for partner")
         
         // ÖNCE SONRAKI EKİPLERE BAK (kendisinden sonraki sıradakiler)
         for (i in searchingTeam.currentPosition until teams.size) {
@@ -265,13 +272,16 @@ object EmreSystemCorrect {
             }
             
             // Her iki kontrol de geçti → partner bulundu
+            android.util.Log.d("EmreSystemCorrect", "✅ FORWARD PARTNER FOUND: Team ${searchingTeam.currentPosition} will pair with Team ${potentialPartner.currentPosition}")
             return SequentialPartnerResult.Found(potentialPartner)
         }
         
-        // SONRAKI EKİPLERDE BULUNAMADI → GERİYE DÖN (94,93,92,91...)
+        android.util.Log.d("EmreSystemCorrect", "⬆️ NO FORWARD PARTNER: Team ${searchingTeam.currentPosition} checking backwards")
+        
+        // SONRAKI EKİPLERDE BULUNAMADI → GERİYE DÖN (kendinden öncekiler)
         for (i in searchingTeam.currentPosition - 2 downTo 0) {
             val potentialPartner = teams.find { it.currentPosition == i + 1 }
-            if (potentialPartner == null || potentialPartner.id in usedTeams) continue
+            if (potentialPartner == null) continue
             
             // ⚠️ KRİTİK KONTROLLER:
             // 1. Daha önce oynamışlar mı kontrol et
@@ -287,11 +297,20 @@ object EmreSystemCorrect {
                 continue // Aday listede zaten var, sonrakini dene
             }
             
-            // Bu takım önceki bir eşleşmede kullanılıyor → backtrack gerekir
-            return SequentialPartnerResult.NeedsBacktrack(potentialPartner)
+            // 🎯 KRİTİK NOKTA: Bu takım zaten kullanılmış mı kontrol et
+            if (potentialPartner.id in usedTeams) {
+                // EVET KULLANILMIŞ → backtrack gerekir
+                android.util.Log.w("EmreSystemCorrect", "🔄 BACKTRACK NEEDED: Team ${searchingTeam.currentPosition} wants Team ${potentialPartner.currentPosition} (already used)")
+                return SequentialPartnerResult.NeedsBacktrack(potentialPartner)
+            } else {
+                // HAYIR KULLANILMAMIŞA → direkt eşleştir
+                android.util.Log.d("EmreSystemCorrect", "✅ BACKWARD PARTNER FOUND: Team ${searchingTeam.currentPosition} will pair with Team ${potentialPartner.currentPosition}")
+                return SequentialPartnerResult.Found(potentialPartner)
+            }
         }
         
         // HIÇBIR YERDE PARTNER BULUNAMADI → BYE GEÇ
+        android.util.Log.d("EmreSystemCorrect", "🆓 BYE TEAM: Team ${searchingTeam.currentPosition} gets bye")
         return SequentialPartnerResult.Bye
     }
     
@@ -305,7 +324,10 @@ object EmreSystemCorrect {
     }
     
     /**
-     * Mevcut eşleşmeyi boz ve yeniden eşleştir
+     * Kirurgikal eşleşme bozma - Kullanıcının tarif ettiği DOĞRU algoritma
+     * 
+     * ⚠️ KRİTİK FARK: Sadece eski eşleşmeyi BOZ, yeni eşleştirmeyi YAPMA
+     * Algoritma baştan başlayıp en üst serbest takımı bulacak
      */
     private fun breakExistingMatch(
         targetTeam: EmreTeam,
@@ -313,27 +335,30 @@ object EmreSystemCorrect {
         candidateMatches: MutableList<CandidateMatch>,
         usedTeams: MutableSet<Long>
     ) {
+        android.util.Log.w("EmreSystemCorrect", "💥 BREAKING MATCH: Team ${searchingTeam.currentPosition} wants Team ${targetTeam.currentPosition}")
+        
         // Target team'in mevcut eşleşmesini bul ve kaldır
         val existingMatch = candidateMatches.find { 
             it.team1.id == targetTeam.id || it.team2.id == targetTeam.id 
         }
         
         existingMatch?.let { match ->
-            // Eski eşleşmeyi kaldır
+            android.util.Log.w("EmreSystemCorrect", "🔄 REMOVING MATCH: Team ${match.team1.currentPosition} vs Team ${match.team2.currentPosition}")
+            
+            // SADECE ESKİ EŞLEŞMEYİ KALDIR - YENİSİNİ YAPMA!
             candidateMatches.remove(match)
             usedTeams.remove(match.team1.id)
             usedTeams.remove(match.team2.id)
             
-            // Yeni eşleşmeyi ekle
-            candidateMatches.add(
-                CandidateMatch(
-                    team1 = searchingTeam,
-                    team2 = targetTeam,
-                    isAsymmetricPoints = searchingTeam.points != targetTeam.points
-                )
-            )
-            usedTeams.add(searchingTeam.id)
-            usedTeams.add(targetTeam.id)
+            android.util.Log.d("EmreSystemCorrect", "✅ MATCH BROKEN: Teams ${match.team1.currentPosition} and ${match.team2.currentPosition} are now free")
+            android.util.Log.d("EmreSystemCorrect", "🔄 ALGORITHM RESTART: Will find highest free team and start pairing again")
+            
+            // YENİ EŞLEŞTİRMEYİ YAPMA! 
+            // Ana algoritma döngüsü baştan başlayıp en üst serbest takımı bulacak
+            // searchingTeam ve targetTeam ikisi de serbest kalacak
+            // En üst olanı yeniden arama döngüsüne girecek
+        } ?: run {
+            android.util.Log.e("EmreSystemCorrect", "❌ ERROR: Could not find existing match for Team ${targetTeam.currentPosition}")
         }
     }
     
