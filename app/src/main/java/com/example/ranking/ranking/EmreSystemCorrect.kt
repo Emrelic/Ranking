@@ -178,13 +178,15 @@ object EmreSystemCorrect {
         var loopCounter = 0
         while (usedTeams.size < teams.size) {
             loopCounter++
-            if (loopCounter > teams.size * 2) {
-                android.util.Log.e("EmreSystemCorrect", "💀 INFINITE LOOP DETECTED: Breaking after ${loopCounter} iterations")
-                break
-            }
             
             // En üst serbest takımı bul (anlık sıralamaya göre)
             val freeTeams = teams.filter { it.id !in usedTeams }
+            
+            if (loopCounter > teams.size * 10) { // Daha toleranslı limit
+                android.util.Log.e("EmreSystemCorrect", "💀 INFINITE LOOP DETECTED: Breaking after ${loopCounter} iterations")
+                android.util.Log.e("EmreSystemCorrect", "🔍 DEBUG: Free teams remaining: ${freeTeams.map { it.currentPosition }.sorted()}")
+                break
+            }
             val searchingTeam = freeTeams.minByOrNull { it.currentPosition }
             
             android.util.Log.d("EmreSystemCorrect", "🔢 LOOP ${loopCounter}: UsedTeams=${usedTeams.size}/${teams.size}, FreeTeams=${freeTeams.size}, Matches=${candidateMatches.size}")
