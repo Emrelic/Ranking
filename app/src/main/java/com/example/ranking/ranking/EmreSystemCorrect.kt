@@ -173,11 +173,21 @@ object EmreSystemCorrect {
         var byeTeam: EmreTeam? = null
         
         // KULLANICININ TARİF ETTİĞİ DOĞRU ALGORİTMA: En üst serbest takım arama döngüsü
+        android.util.Log.d("EmreSystemCorrect", "🚀 STARTING PAIRING PROCESS: ${teams.size} teams total")
+        
+        var loopCounter = 0
         while (usedTeams.size < teams.size) {
+            loopCounter++
+            if (loopCounter > teams.size * 2) {
+                android.util.Log.e("EmreSystemCorrect", "💀 INFINITE LOOP DETECTED: Breaking after ${loopCounter} iterations")
+                break
+            }
+            
             // En üst serbest takımı bul (anlık sıralamaya göre)
-            val searchingTeam = teams
-                .filter { it.id !in usedTeams }
-                .minByOrNull { it.currentPosition }
+            val freeTeams = teams.filter { it.id !in usedTeams }
+            val searchingTeam = freeTeams.minByOrNull { it.currentPosition }
+            
+            android.util.Log.d("EmreSystemCorrect", "🔢 LOOP ${loopCounter}: UsedTeams=${usedTeams.size}/${teams.size}, FreeTeams=${freeTeams.size}, Matches=${candidateMatches.size}")
             
             if (searchingTeam == null) {
                 android.util.Log.w("EmreSystemCorrect", "⚠️ NO FREE TEAMS: All teams have been processed")
@@ -185,6 +195,7 @@ object EmreSystemCorrect {
             }
             
             android.util.Log.d("EmreSystemCorrect", "🎯 CURRENT SEARCHER: Team ${searchingTeam.currentPosition} (ID: ${searchingTeam.id})")
+            android.util.Log.d("EmreSystemCorrect", "🔍 FREE TEAMS: ${freeTeams.map { it.currentPosition }.sorted()}")
             
             // Bu takım için eşleştirme ara
             val partnerResult = findPartnerSequentially(
@@ -231,6 +242,15 @@ object EmreSystemCorrect {
                     usedTeams.add(searchingTeam.id)
                 }
             }
+        }
+        
+        // FINAL DURUM RAPORU
+        android.util.Log.d("EmreSystemCorrect", "✅ PAIRING COMPLETED: ${candidateMatches.size} matches created")
+        android.util.Log.d("EmreSystemCorrect", "📊 FINAL STATE: UsedTeams=${usedTeams.size}/${teams.size}, ByeTeam=${byeTeam?.currentPosition ?: "none"}")
+        android.util.Log.d("EmreSystemCorrect", "🎯 EXPECTED: ${if (teams.size % 2 == 0) teams.size / 2 else (teams.size - 1) / 2} matches + ${if (teams.size % 2 == 1) "1 bye" else "0 bye"}")
+        
+        if (candidateMatches.size * 2 + (if (byeTeam != null) 1 else 0) != teams.size) {
+            android.util.Log.e("EmreSystemCorrect", "❌ PAIRING ERROR: Expected ${teams.size} teams in pairs, got ${candidateMatches.size * 2 + (if (byeTeam != null) 1 else 0)}")
         }
         
         // AYNI PUANLI KONTROL VE TUR ONAY SİSTEMİ
