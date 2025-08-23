@@ -602,14 +602,27 @@ object EmreSystemCorrect {
         
         // AYNI PUANLI EŞLEŞİM VAR MI KONTROL ET
         // ⚠️ ÖNEMLİ: İlk turda (currentRound == 1) herkes 0 puanda - özel durum
+        
+        android.util.Log.d("EmreSystemCorrect", "🎯 TOURNAMENT FINISH CHECK: Round $currentRound, ${candidateMatches.size} candidate matches")
+        candidateMatches.forEachIndexed { index, match ->
+            android.util.Log.d("EmreSystemCorrect", "🔍 MATCH $index: Team ${match.team1.currentPosition} (${match.team1.points}p) vs Team ${match.team2.currentPosition} (${match.team2.points}p) → isAsymmetric=${match.isAsymmetricPoints}")
+        }
+        
         val hasSamePointMatch = if (currentRound == 1) {
+            android.util.Log.d("EmreSystemCorrect", "✅ FIRST ROUND: Always continue")
             true // İlk tur her zaman oynanır
         } else {
-            candidateMatches.any { !it.isAsymmetricPoints }
+            val samePointMatches = candidateMatches.filter { !it.isAsymmetricPoints }
+            android.util.Log.d("EmreSystemCorrect", "🔍 SAME POINT MATCHES: ${samePointMatches.size} out of ${candidateMatches.size}")
+            samePointMatches.forEach { match ->
+                android.util.Log.d("EmreSystemCorrect", "⚖️ SAME POINTS: Team ${match.team1.currentPosition} (${match.team1.points}p) vs Team ${match.team2.currentPosition} (${match.team2.points}p)")
+            }
+            candidateMatches.any { !it.isAsymmetricPoints }  // isAsymmetricPoints=false → aynı puanlı
         }
         
         if (hasSamePointMatch) {
             // EN AZ BİR AYNI PUANLI EŞLEŞİM VAR → TUR ONAYLANIR
+            android.util.Log.d("EmreSystemCorrect", "✅ TOURNAMENT CONTINUES: At least one same-point match found → Round $currentRound will be played")
             
             // ⚠️ CRITICAL FIX: Final duplicate check before creating matches
             val validMatches = candidateMatches.filter { candidate ->
@@ -646,6 +659,8 @@ object EmreSystemCorrect {
             )
         } else {
             // HİÇBİR EŞLEŞİM AYNI PUANDA DEĞİL → TUR İPTAL, ŞAMPIYONA BITER
+            android.util.Log.w("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: No same-point matches found → All matches are asymmetric")
+            android.util.Log.w("EmreSystemCorrect", "🏁 FINAL STANDINGS: Tournament ends at Round $currentRound")
             return EmrePairingResult(
                 matches = emptyList(),
                 byeTeam = byeTeam,
