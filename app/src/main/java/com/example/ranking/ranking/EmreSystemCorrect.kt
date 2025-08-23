@@ -389,6 +389,9 @@ object EmreSystemCorrect {
         android.util.Log.w("EmreSystemCorrect", "🏁 NO PARTNER FOUND: Team ${searchingTeam.currentPosition} cannot find any partner")
         android.util.Log.w("EmreSystemCorrect", "🏁 REASON: This team has played against all other available teams or all are used")
         
+        // KRİTİK FIX REMOVED: FORCE PAIRING VİOLATES RED LINE RULE #1
+        // KIRMIZI ÇİZGİ İHLALİ: Aynı takımlar tekrar eşleşemez - bu fix kaldırıldı
+        
         // Eğer bu takım displaced ise ve partner bulamıyorsa bye yap
         if (searchingTeam.id in displacedTeams) {
             android.util.Log.w("EmreSystemCorrect", "🆓 DISPLACED TEAM TO BYE: Team ${searchingTeam.currentPosition} will get bye")

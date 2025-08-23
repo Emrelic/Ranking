@@ -5,6 +5,21 @@ Bu proje için tam olarak doğru Geliştirilmiş İsviçre Sistemi (Emre Usulü)
 
 ## DOĞRU Geliştirilmiş İsviçre Sistemi Algoritması
 
+### 🔴 KIRMIZI ÇİZGİLER - İHLAL EDİLEMEZ KURALLAR
+1. **İki takım birbiri ile sadece bir kere eşleşebilir** - EN KIRMIZI KURAL
+2. **Her turda eşit sayıda maç oynanır (tüm listenin yarısı kadar)**
+   - 36 takım var ise → 18 maç oynanır
+3. **Çift sayıda takım listesi ise hiçbir takım bye geçemez**
+   - 36 takım (çift) → BYE YOK
+4. **Tek sayıda takım var ise SADECE en alttaki takım bye geçer**
+   - En alt anlık sıralamaya ait takım
+5. **Kesinlikle iki takım birden bye geçemez**
+
+### ⚠️ YASAKLI ÇÖZÜM ÖNERİLERİ
+- ❌ **ASLA duplicate/zorla eşleştirme önerilmeyecek**
+- ❌ **ASLA aynı takımları tekrar eşleştirme**
+- ❌ **ASLA kırmızı çizgi ihlali yapılmayacak**
+
 ### 1. Eşleştirme Kuralları
 - **İlk tur**: Sıralı eşleştirme (1-2, 3-4, 5-6, ..., 79-80)
 - **Sonraki turlar**: Yeni sıraya göre (1-2, 3-4, 5-6...)
