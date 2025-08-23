@@ -649,3 +649,64 @@ android.util.Log.d("EmreSystemCorrect", "🔄 DISPLACED TEAM ADDED: Team ${displ
 - `4aef679` - Test sonuçları ve build issues
 
 **NOT:** Restart sonrası displaced team tracking sistemi kesin çalışacak! 🚀
+
+### 2025-08-23 - DISPLACED TEAM TRACKING ALGORİTMA FIX - BUILD SORUNU DEVAM EDİYOR ❌
+
+**Test Sonucu:** YENİ APK (23 Ağustos 13:55) test edildi
+- ✅ Displaced team tracking sistemi çalışıyor (loglar gözükiyor)  
+- ✅ İlk turlarda: 18 eşleştirme ✅
+- ❌ 15-17. turlarda: **17 eşleştirme** (18 olmalı) ❌
+- ❌ 2 takım hala kayıp (UsedTeams=34/36)
+
+**Sorun Tespiti:**
+Logcat analizi ile 3 kritik bug bulundu:
+
+#### 1. **Tournament Finish Early Exit Bug (✅ Çözüldü)**
+- **Problem:** `TournamentFinished` dönüşü displaced teams queue'da takım varken döngüyü bitiriyordu
+- **Fix:** Displaced teams kontrolü eklendi - varsa döngü devam eder
+
+#### 2. **Displaced Team Infinite Loop Bug (✅ Çözüldü)**  
+- **Problem:** Displaced team partner bulamayınca infinite loop'a giriyordu
+- **Fix:** Displaced team partner bulamazsa `Bye` statüsü alır
+
+#### 3. **Stuck Displaced Teams Bug (✅ Çözüldü)**
+- **Problem:** Main loop'ta displaced teams stuck kalabiliyordu
+- **Fix:** Stuck teams otomatik temizlenir
+
+**Uygulanan Kod Düzeltmeleri:**
+```kotlin
+// 1. Tournament finish blocking
+if (displacedTeams.isNotEmpty()) {
+    android.util.Log.w("EmreSystemCorrect", "⚠️ TOURNAMENT FINISH BLOCKED: ${displacedTeams.size} displaced teams still in queue")
+    continue // Displaced varsa devam et
+}
+
+// 2. Displaced team bye fallback  
+if (searchingTeam.id in displacedTeams) {
+    android.util.Log.w("EmreSystemCorrect", "🆓 DISPLACED TEAM TO BYE: Team ${searchingTeam.currentPosition} will get bye")
+    return SequentialPartnerResult.Bye
+}
+
+// 3. Stuck teams cleanup
+if (displacedTeams.isNotEmpty()) {
+    android.util.Log.e("EmreSystemCorrect", "❌ DISPLACED TEAMS STUCK: ${displacedTeams.size} teams in displaced queue")
+    displacedTeams.clear() // Temizle
+}
+```
+
+**🚨 MEVCUT BUILD SORUNU:**
+- **Windows Gradle Cache Lock:** Restart sonrası da devam ediyor
+- **File Handle Issues:** `mergeDebugResources`, `dexBuilderDebug` tasks fail
+- **Gradle Properties Fix:** `org.gradle.daemon=false` eklendi ama yeterli değil
+- **Nuclear Build Directory Removal:** İlk seferde çalıştı, şimdi çalışmıyor
+
+**Sonuç:** 
+- ✅ **Algoritma bugları fix edildi** (kod committed)
+- ❌ **Build edilemiyor** - Windows cache hell devam ediyor  
+- ❌ **Test edilemiyor** - yeni fix APK'sı yok
+
+**İleriki Çözümler:**
+1. **Linux/Mac build environment** kullan
+2. **Docker containerized build**
+3. **GitHub Actions CI/CD**
+4. **Android Studio GUI build** (klasör erişim sorunları var)

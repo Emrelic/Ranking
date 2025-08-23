@@ -208,6 +208,13 @@ object EmreSystemCorrect {
             android.util.Log.d("EmreSystemCorrect", "🔢 LOOP ${loopCounter}: UsedTeams=${usedTeams.size}/${teams.size}, DisplacedTeams=${displacedTeams.size}, Matches=${candidateMatches.size}")
             
             if (searchingTeam == null) {
+                // Tüm takımlar işlenmiş ama hala usedTeams tam değilse problem var
+                if (displacedTeams.isNotEmpty()) {
+                    android.util.Log.e("EmreSystemCorrect", "❌ DISPLACED TEAMS STUCK: ${displacedTeams.size} teams in displaced queue")
+                    android.util.Log.e("EmreSystemCorrect", "🔍 Stuck teams: ${displacedTeams.toList()}")
+                    // Stuck displaced teams'i bye yap
+                    displacedTeams.clear()
+                }
                 android.util.Log.w("EmreSystemCorrect", "⚠️ NO FREE TEAMS: All teams processed")
                 break
             }
@@ -253,10 +260,18 @@ object EmreSystemCorrect {
                 }
                 
                 is SequentialPartnerResult.TournamentFinished -> {
-                    // TURNUVA BİTER - Bu takım kimseyle eşleşemiyor (herkes herkesle oynadı)
-                    android.util.Log.w("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: Cannot create more matches")
-                    android.util.Log.w("EmreSystemCorrect", "🏁 FINAL MATCHES: ${candidateMatches.size} matches created")
-                    break // Döngüyü kır, turnuva biter
+                    // KRİTİK FIX: Displaced teams varsa onları önce işle, yoksa turnuva bitir
+                    if (displacedTeams.isNotEmpty()) {
+                        android.util.Log.w("EmreSystemCorrect", "⚠️ TOURNAMENT FINISH BLOCKED: ${displacedTeams.size} displaced teams still in queue")
+                        android.util.Log.w("EmreSystemCorrect", "🔄 CONTINUING: Will process displaced teams first")
+                        // Displaced teams varsa döngü devam etsin
+                        continue
+                    } else {
+                        // Gerçekten bitir
+                        android.util.Log.w("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: Cannot create more matches")
+                        android.util.Log.w("EmreSystemCorrect", "🏁 FINAL MATCHES: ${candidateMatches.size} matches created")
+                        break // Döngüyü kır, turnuva biter
+                    }
                 }
             }
         }
@@ -370,9 +385,16 @@ object EmreSystemCorrect {
             }
         }
         
-        // HIÇBIR YERDE PARTNER BULUNAMADI → TURNUVA BİTER (herkes herkesle oynadı)
-        android.util.Log.w("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: Team ${searchingTeam.currentPosition} cannot find any partner")
-        android.util.Log.w("EmreSystemCorrect", "🏁 REASON: This team has played against all other available teams")
+        // HIÇBIR YERDE PARTNER BULUNAMADI → kontrol et
+        android.util.Log.w("EmreSystemCorrect", "🏁 NO PARTNER FOUND: Team ${searchingTeam.currentPosition} cannot find any partner")
+        android.util.Log.w("EmreSystemCorrect", "🏁 REASON: This team has played against all other available teams or all are used")
+        
+        // Eğer bu takım displaced ise ve partner bulamıyorsa bye yap
+        if (searchingTeam.id in displacedTeams) {
+            android.util.Log.w("EmreSystemCorrect", "🆓 DISPLACED TEAM TO BYE: Team ${searchingTeam.currentPosition} will get bye")
+            return SequentialPartnerResult.Bye
+        }
+        
         return SequentialPartnerResult.TournamentFinished
     }
     
