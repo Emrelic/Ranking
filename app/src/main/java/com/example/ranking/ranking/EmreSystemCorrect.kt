@@ -408,11 +408,23 @@ object EmreSystemCorrect {
             }
         }
         
-        // Tek sayıda takım varsa en alttaki bye geçer
-        if (teams.size % 2 == 1 && unpairedTeams.size == 1) {
-            byeTeam = unpairedTeams.first()
-            unpairedTeams.clear()
-            android.util.Log.d("EmreSystemCorrect", "🆓 BYE ASSIGNED: Team ${byeTeam.currentPosition}")
+        // ENHANCED BYE TEAM LOGIC: Handle odd number of teams properly
+        if (teams.size % 2 == 1) {
+            if (unpairedTeams.size == 1) {
+                byeTeam = unpairedTeams.first()
+                unpairedTeams.clear()
+                android.util.Log.d("EmreSystemCorrect", "🆓 BYE ASSIGNED: Team ${byeTeam.currentPosition}")
+            } else if (unpairedTeams.size > 1) {
+                // Multiple unpaired teams, assign lowest position as bye
+                val lowestPositionTeam = unpairedTeams.maxByOrNull { it.currentPosition }
+                if (lowestPositionTeam != null) {
+                    byeTeam = lowestPositionTeam
+                    unpairedTeams.remove(lowestPositionTeam)
+                    android.util.Log.d("EmreSystemCorrect", "🆓 BYE ASSIGNED (from multiple): Team ${byeTeam.currentPosition}")
+                }
+            }
+        } else if (unpairedTeams.size > 0) {
+            android.util.Log.w("EmreSystemCorrect", "⚠️ UNEXPECTED: Even number of teams (${teams.size}) but ${unpairedTeams.size} unpaired teams remain")
         }
         
         return InitialPairingResult(matches, unpairedTeams, byeTeam)
@@ -480,8 +492,11 @@ object EmreSystemCorrect {
         val unpairedTeams = initialResult.unpairedTeams.toMutableList()
         var byeTeam = initialResult.byeTeam
         
-        for (unpairedTeam in unpairedTeams.toList()) {
-            android.util.Log.w("EmreSystemCorrect", "🔄 RESOLVING UNPAIRED: Team ${unpairedTeam.currentPosition}")
+        // CRITICAL FIX: Use while loop with dynamic list to handle newly added unpaired teams
+        var index = 0
+        while (index < unpairedTeams.size) {
+            val unpairedTeam = unpairedTeams[index]
+            android.util.Log.w("EmreSystemCorrect", "🔄 RESOLVING UNPAIRED ($index/${unpairedTeams.size}): Team ${unpairedTeam.currentPosition}")
             
             // En yakın eşleştirmeyi bul ve boz
             val targetMatch = findClosestMatchToBreak(unpairedTeam, matches, teams, matchHistory)
@@ -505,14 +520,34 @@ object EmreSystemCorrect {
                         isAsymmetricPoints = unpairedTeam.points != newPartner.points
                     ))
                     
-                    // Kalan takımı unpaired'a ekle
-                    unpairedTeams.remove(unpairedTeam)
-                    unpairedTeams.add(remainingTeam)
+                    // CRITICAL FIX: Remove current unpaired team and add remaining team
+                    unpairedTeams.removeAt(index)  // Remove current team at index
+                    unpairedTeams.add(remainingTeam)  // Add remaining team to end
                     
                     android.util.Log.d("EmreSystemCorrect", "✅ NEW PAIRING: Team ${unpairedTeam.currentPosition} vs Team ${newPartner.currentPosition}")
-                    android.util.Log.w("EmreSystemCorrect", "⚠️ NEW UNPAIRED: Team ${remainingTeam.currentPosition}")
+                    android.util.Log.w("EmreSystemCorrect", "⚠️ NEW UNPAIRED: Team ${remainingTeam.currentPosition} (added to queue)")
+                    
+                    // Don't increment index since we removed current item
+                    continue
                 }
             }
+            
+            // Move to next unpaired team
+            index++
+        }
+        
+        // CRITICAL VALIDATION: Ensure no teams are lost during backtrack
+        val totalProcessedTeams = matches.size * 2 + unpairedTeams.size + (if (byeTeam != null) 1 else 0)
+        if (totalProcessedTeams != teams.size) {
+            android.util.Log.e("EmreSystemCorrect", "❌ BACKTRACK VALIDATION FAILED: Expected ${teams.size} teams, got $totalProcessedTeams")
+            android.util.Log.e("EmreSystemCorrect", "📊 BREAKDOWN: ${matches.size} matches (${matches.size * 2} teams) + ${unpairedTeams.size} unpaired + ${if (byeTeam != null) 1 else 0} bye")
+            
+            // Log unpaired teams for debugging
+            unpairedTeams.forEachIndexed { i, team ->
+                android.util.Log.e("EmreSystemCorrect", "🔍 UNPAIRED[$i]: Team ${team.currentPosition} (ID: ${team.id})")
+            }
+        } else {
+            android.util.Log.d("EmreSystemCorrect", "✅ BACKTRACK VALIDATION PASSED: All ${teams.size} teams accounted for")
         }
         
         return InitialPairingResult(matches, unpairedTeams, byeTeam)
