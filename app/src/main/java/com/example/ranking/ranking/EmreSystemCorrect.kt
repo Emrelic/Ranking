@@ -151,16 +151,18 @@ object EmreSystemCorrect {
     
     /**
      * KULLANICININ TARİF ETTİĞİ DOĞRU ALGORİTMA - TEK TEK TAKIM BAZINDA
+     * ✅ DÜZELTME: Displaced team tracking ile takım kaybı problemi çözüldü
      * 
      * 1. En üst takım → eşleştirme arayan statüsü
      * 2. Kendinden sonraki ilk uygun takımla → aday listeye ekle  
      * 3. Henüz aday listede olmayan en üst takım → yeni arama döngüsü
      * 4. Eğer sonraki hiçbiriyle eşleşemiyorsa → geriye dön (94,93,92...)
      * 5. İlk uygun bulunca → önceki eşleşmesini boz
-     * 6. Bozulan takım yeniden arama döngüsüne gir
-     * 7. Tüm aday eşleşmeler hazır → aynı puanlı kontrol
-     * 8. En az bir aynı puanlı varsa → tur onaylanır
-     * 9. Hiçbir aynı puanlı yoksa → tur iptal, şampiyona biter
+     * 6. ✅ Bozulan takım displaced queue'ya eklenir
+     * 7. ✅ Ana döngü displaced takımları öncelikle işler
+     * 8. Tüm aday eşleşmeler hazır → aynı puanlı kontrol
+     * 9. En az bir aynı puanlı varsa → tur onaylanır
+     * 10. Hiçbir aynı puanlı yoksa → tur iptal, şampiyona biter
      */
     private fun createAdvancedSwissPairings(
         teams: List<EmreTeam>, 
@@ -172,41 +174,60 @@ object EmreSystemCorrect {
         val usedTeams = mutableSetOf<Long>()
         var byeTeam: EmreTeam? = null
         
-        // KULLANICININ TARİF ETTİĞİ DOĞRU ALGORİTMA: En üst serbest takım arama döngüsü
+        // ✅ DISPLACED TEAM TRACKING SISTEMI - takım kaybını önler
+        val displacedTeams = mutableSetOf<Long>() // Yerinden edilen takımların ID'leri
+        
         android.util.Log.d("EmreSystemCorrect", "🚀 STARTING PAIRING PROCESS: ${teams.size} teams total")
         
         var loopCounter = 0
         while (usedTeams.size < teams.size) {
             loopCounter++
             
-            // En üst serbest takımı bul (anlık sıralamaya göre)
-            val freeTeams = teams.filter { it.id !in usedTeams }
+            // ✅ KRİTİK DÜZELTME: Önce displaced teams'i al, sonra normal serbest takımları
+            val normalFreeTeams = teams.filter { it.id !in usedTeams && it.id !in displacedTeams }
+            val displacedFreeTeams = teams.filter { it.id in displacedTeams && it.id !in usedTeams }
             
-            if (loopCounter > teams.size * 10) { // Daha toleranslı limit
+            if (loopCounter > teams.size * 15) { // Biraz daha toleranslı limit
                 android.util.Log.e("EmreSystemCorrect", "💀 INFINITE LOOP DETECTED: Breaking after ${loopCounter} iterations")
-                android.util.Log.e("EmreSystemCorrect", "🔍 DEBUG: Free teams remaining: ${freeTeams.map { it.currentPosition }.sorted()}")
+                android.util.Log.e("EmreSystemCorrect", "🔍 DEBUG: Normal free teams: ${normalFreeTeams.map { it.currentPosition }.sorted()}")
+                android.util.Log.e("EmreSystemCorrect", "🔍 DEBUG: Displaced free teams: ${displacedFreeTeams.map { it.currentPosition }.sorted()}")
+                android.util.Log.e("EmreSystemCorrect", "🔍 DEBUG: Used teams: ${usedTeams.size}/${teams.size}")
                 break
             }
-            val searchingTeam = freeTeams.minByOrNull { it.currentPosition }
             
-            android.util.Log.d("EmreSystemCorrect", "🔢 LOOP ${loopCounter}: UsedTeams=${usedTeams.size}/${teams.size}, FreeTeams=${freeTeams.size}, Matches=${candidateMatches.size}")
+            // ✅ ÖNCE DISPLACED TEAMS'İ İŞLE (öncelik verilir)
+            val searchingTeam = if (displacedFreeTeams.isNotEmpty()) {
+                val displaced = displacedFreeTeams.minByOrNull { it.currentPosition }
+                android.util.Log.d("EmreSystemCorrect", "🔄 PROCESSING DISPLACED TEAM: ${displaced?.currentPosition}")
+                displaced
+            } else {
+                // Displaced takım yoksa normal en üst serbest takım
+                normalFreeTeams.minByOrNull { it.currentPosition }
+            }
+            
+            android.util.Log.d("EmreSystemCorrect", "🔢 LOOP ${loopCounter}: UsedTeams=${usedTeams.size}/${teams.size}, DisplacedTeams=${displacedTeams.size}, Matches=${candidateMatches.size}")
             
             if (searchingTeam == null) {
-                android.util.Log.w("EmreSystemCorrect", "⚠️ NO FREE TEAMS: All teams have been processed")
+                android.util.Log.w("EmreSystemCorrect", "⚠️ NO FREE TEAMS: All teams processed")
                 break
             }
             
-            android.util.Log.d("EmreSystemCorrect", "🎯 CURRENT SEARCHER: Team ${searchingTeam.currentPosition} (ID: ${searchingTeam.id})")
-            android.util.Log.d("EmreSystemCorrect", "🔍 FREE TEAMS: ${freeTeams.map { it.currentPosition }.sorted()}")
+            android.util.Log.d("EmreSystemCorrect", "🎯 CURRENT SEARCHER: Team ${searchingTeam.currentPosition} (ID: ${searchingTeam.id}, Displaced: ${searchingTeam.id in displacedTeams})")
             
+            // ✅ Bu takım işleme alındığında displaced listesinden çıkar
+            if (searchingTeam.id in displacedTeams) {
+                displacedTeams.remove(searchingTeam.id)
+                android.util.Log.d("EmreSystemCorrect", "🔄 REMOVED FROM DISPLACED: Team ${searchingTeam.currentPosition}")
+            }
             
             // Bu takım için eşleştirme ara
-            val partnerResult = findPartnerSequentially(
+            val partnerResult = findPartnerSequentiallyWithDisplacement(
                 searchingTeam = searchingTeam,
                 teams = teams,
                 usedTeams = usedTeams,
                 matchHistory = matchHistory,
-                candidateMatches = candidateMatches
+                candidateMatches = candidateMatches,
+                displacedTeams = displacedTeams // ✅ Displaced tracking parametre eklendi
             )
             
             when (partnerResult) {
@@ -223,8 +244,6 @@ object EmreSystemCorrect {
                     usedTeams.add(searchingTeam.id)
                     usedTeams.add(partnerResult.partner.id)
                 }
-                
-                // NeedsBacktrack case kaldırıldı - backtrack işlemi findPartnerSequentially içinde yapılıyor
                 
                 is SequentialPartnerResult.Bye -> {
                     // Bye geçer (tek sayıda liste durumunda)
@@ -258,15 +277,18 @@ object EmreSystemCorrect {
     
     /**
      * SIRA SIRA EŞLEŞTİRME - Kullanıcının tarif ettiği DOĞRU algoritma
+     * ✅ DÜZELTME: Displaced team tracking eklendi
      * 
      * ⚠️ KRİTİK FARK: Geriye dönükten uygun takım bulduğunda eşleştirmeyi KONTROL ET
+     * ✅ YENİ: Backtrack sırasında displaced team'i otomatik track eder
      */
-    private fun findPartnerSequentially(
+    private fun findPartnerSequentiallyWithDisplacement(
         searchingTeam: EmreTeam,
         teams: List<EmreTeam>, 
         usedTeams: MutableSet<Long>,
         matchHistory: Set<Pair<Long, Long>>,
-        candidateMatches: MutableList<CandidateMatch>
+        candidateMatches: MutableList<CandidateMatch>,
+        displacedTeams: MutableSet<Long> // ✅ YENİ PARAMETRE
     ): SequentialPartnerResult {
         
         android.util.Log.d("EmreSystemCorrect", "🔍 PARTNER SEARCH: Team ${searchingTeam.currentPosition} (ID: ${searchingTeam.id}) searching for partner")
@@ -332,9 +354,10 @@ object EmreSystemCorrect {
                     usedTeams.remove(match.team1.id)
                     usedTeams.remove(match.team2.id)
                     
-                    // BOZULAN DİĞER TAKIMI DA İŞARELE (yeniden arama döngüsüne girecek)
+                    // ✅ KRİTİK DÜZELTME: BOZULAN TAKIMI DISPLACED QUEUE'YA EKLE
                     val displacedTeam = if (match.team1.id == potentialPartner.id) match.team2 else match.team1
-                    android.util.Log.d("EmreSystemCorrect", "🔄 DISPLACED TEAM: Team ${displacedTeam.currentPosition} will search for new partner")
+                    displacedTeams.add(displacedTeam.id)
+                    android.util.Log.d("EmreSystemCorrect", "🔄 DISPLACED TEAM ADDED: Team ${displacedTeam.currentPosition} added to displaced queue")
                 }
                 
                 // YENİ EŞLEŞMEYİ OLUŞTUR
@@ -441,8 +464,10 @@ object EmreSystemCorrect {
     }
     
     /**
-     * Eşleşme arayan ekip için partner bul
+     * DEPRECATED - Eski partner arama fonksiyonu
+     * ✅ YENİ: findPartnerSequentiallyWithDisplacement kullanılıyor
      */
+    @Deprecated("Use findPartnerSequentiallyWithDisplacement instead")
     private fun findPartnerForTeam(
         searchingTeam: EmreTeam,
         teams: List<EmreTeam>,
@@ -488,8 +513,10 @@ object EmreSystemCorrect {
     }
     
     /**
-     * Geri dönüş senaryosunu handle et
+     * DEPRECATED - Geri dönüş senaryosunu handle et
+     * ✅ YENİ: Backtrack findPartnerSequentiallyWithDisplacement içinde yapılıyor
      */
+    @Deprecated("Backtrack is now handled inside findPartnerSequentiallyWithDisplacement")
     private fun handleBacktrackScenario(
         candidateMatches: MutableList<CandidateMatch>,
         usedTeams: MutableSet<Long>,
