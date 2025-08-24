@@ -186,17 +186,49 @@ object EmreSystemCorrect {
             android.util.Log.w("EmreSystemCorrect", "🔄 SMART BACKTRACK DISABLED: ${initialPairings.unpairedTeams.size} unpaired teams remain")
             android.util.Log.w("EmreSystemCorrect", "🆓 CONVERTING UNPAIRED TEAMS TO BYE TEAMS")
             
-            // Convert unpaired teams to bye teams (temporary fix)
-            val updatedByeTeam = if (initialPairings.unpairedTeams.isNotEmpty()) {
-                val lowestTeam = initialPairings.unpairedTeams.maxByOrNull { it.currentPosition }
-                android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${lowestTeam?.currentPosition}")
-                lowestTeam
-            } else {
-                initialPairings.byeTeam
+            // Convert unpaired teams to matches/bye (emergency fix)
+            var updatedMatches = initialPairings.matches.toMutableList()
+            var updatedByeTeam = initialPairings.byeTeam
+            
+            when (initialPairings.unpairedTeams.size) {
+                1 -> {
+                    // Single unpaired team -> bye
+                    updatedByeTeam = initialPairings.unpairedTeams.first()
+                    android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${updatedByeTeam.currentPosition}")
+                }
+                2 -> {
+                    // Two unpaired teams -> pair them together
+                    val team1 = initialPairings.unpairedTeams[0]
+                    val team2 = initialPairings.unpairedTeams[1]
+                    updatedMatches.add(CandidateMatch(
+                        team1 = team1,
+                        team2 = team2,
+                        isAsymmetricPoints = team1.points != team2.points
+                    ))
+                    android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIRING: Team ${team1.currentPosition} vs Team ${team2.currentPosition}")
+                }
+                else -> {
+                    // Multiple unpaired teams -> pair as many as possible, bye for remainder
+                    val pairedCount = (initialPairings.unpairedTeams.size / 2) * 2
+                    for (i in 0 until pairedCount step 2) {
+                        val team1 = initialPairings.unpairedTeams[i]
+                        val team2 = initialPairings.unpairedTeams[i + 1]
+                        updatedMatches.add(CandidateMatch(
+                            team1 = team1,
+                            team2 = team2,
+                            isAsymmetricPoints = team1.points != team2.points
+                        ))
+                        android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIRING: Team ${team1.currentPosition} vs Team ${team2.currentPosition}")
+                    }
+                    if (initialPairings.unpairedTeams.size % 2 == 1) {
+                        updatedByeTeam = initialPairings.unpairedTeams.last()
+                        android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${updatedByeTeam?.currentPosition}")
+                    }
+                }
             }
             
             InitialPairingResult(
-                matches = initialPairings.matches, 
+                matches = updatedMatches, 
                 unpairedTeams = emptyList(), // Clear unpaired teams
                 byeTeam = updatedByeTeam
             )
