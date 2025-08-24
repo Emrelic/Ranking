@@ -174,6 +174,9 @@ object EmreSystemCorrect {
         val validationResult = validateRoundRequirements(teams, matchHistory, currentRound)
         if (!validationResult.isValid) {
             android.util.Log.e("EmreSystemCorrect", "❌ ROUND VALIDATION FAILED: ${validationResult.reason}")
+            android.util.Log.e("EmreSystemCorrect", "❌ TOURNAMENT EARLY EXIT: Validation failure at Round $currentRound")
+            android.util.Log.e("EmreSystemCorrect", "❌ TEAMS COUNT: ${teams.size} teams available")
+            android.util.Log.e("EmreSystemCorrect", "❌ MATCH HISTORY SIZE: ${matchHistory.size} pairs played")
             return EmrePairingResult(emptyList(), null, false, false)
         }
         
@@ -192,22 +195,22 @@ object EmreSystemCorrect {
         // 3.5. EMERGENCY FALLBACK IF SMART BACKTRACK FAILS
         val safetyPairings = if (finalPairings.unpairedTeams.isNotEmpty()) {
             android.util.Log.w("EmreSystemCorrect", "🆘 EMERGENCY FALLBACK: Smart backtrack failed, ${finalPairings.unpairedTeams.size} teams still unpaired")
-            android.util.Log.w("EmreSystemCorrect", "🆓 CONVERTING UNPAIRED TEAMS TO BYE TEAMS")
+            android.util.Log.w("EmreSystemCorrect", "🆓 CONVERTING UNPAIRED TEAMS TO EMERGENCY PAIRS")
             
-            // Convert unpaired teams to matches/bye (emergency fix)
-            var updatedMatches = initialPairings.matches.toMutableList()
-            var updatedByeTeam = initialPairings.byeTeam
+            // CRITICAL FIX: Use finalPairings (after backtrack) not initialPairings
+            var updatedMatches = finalPairings.matches.toMutableList()
+            var updatedByeTeam = finalPairings.byeTeam
             
-            when (initialPairings.unpairedTeams.size) {
+            when (finalPairings.unpairedTeams.size) {
                 1 -> {
                     // Single unpaired team -> bye
-                    updatedByeTeam = initialPairings.unpairedTeams.first()
+                    updatedByeTeam = finalPairings.unpairedTeams.first()
                     android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${updatedByeTeam.currentPosition}")
                 }
                 2 -> {
                     // Two unpaired teams -> pair them together
-                    val team1 = initialPairings.unpairedTeams[0]
-                    val team2 = initialPairings.unpairedTeams[1]
+                    val team1 = finalPairings.unpairedTeams[0]
+                    val team2 = finalPairings.unpairedTeams[1]
                     updatedMatches.add(CandidateMatch(
                         team1 = team1,
                         team2 = team2,
@@ -217,10 +220,10 @@ object EmreSystemCorrect {
                 }
                 else -> {
                     // Multiple unpaired teams -> pair as many as possible, bye for remainder
-                    val pairedCount = (initialPairings.unpairedTeams.size / 2) * 2
+                    val pairedCount = (finalPairings.unpairedTeams.size / 2) * 2
                     for (i in 0 until pairedCount step 2) {
-                        val team1 = initialPairings.unpairedTeams[i]
-                        val team2 = initialPairings.unpairedTeams[i + 1]
+                        val team1 = finalPairings.unpairedTeams[i]
+                        val team2 = finalPairings.unpairedTeams[i + 1]
                         updatedMatches.add(CandidateMatch(
                             team1 = team1,
                             team2 = team2,
@@ -228,8 +231,8 @@ object EmreSystemCorrect {
                         ))
                         android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIRING: Team ${team1.currentPosition} vs Team ${team2.currentPosition}")
                     }
-                    if (initialPairings.unpairedTeams.size % 2 == 1) {
-                        updatedByeTeam = initialPairings.unpairedTeams.last()
+                    if (finalPairings.unpairedTeams.size % 2 == 1) {
+                        updatedByeTeam = finalPairings.unpairedTeams.last()
                         android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${updatedByeTeam?.currentPosition}")
                     }
                 }
@@ -256,6 +259,8 @@ object EmreSystemCorrect {
         val totalTeamsInMatches = candidateMatches.size * 2 + (if (byeTeam != null) 1 else 0)
         if (totalTeamsInMatches != teams.size) {
             android.util.Log.e("EmreSystemCorrect", "❌ PAIRING ERROR: Expected ${teams.size} teams in pairs, got $totalTeamsInMatches")
+            android.util.Log.e("EmreSystemCorrect", "❌ TOURNAMENT EARLY EXIT: Team count mismatch at Round $currentRound")
+            android.util.Log.e("EmreSystemCorrect", "❌ BREAKDOWN: ${candidateMatches.size} matches (${candidateMatches.size * 2} teams) + ${if (byeTeam != null) 1 else 0} bye team")
             return EmrePairingResult(emptyList(), null, false, false)
         }
         
@@ -263,6 +268,8 @@ object EmreSystemCorrect {
         for (match in candidateMatches) {
             if (hasTeamsPlayedBefore(match.team1.id, match.team2.id, matchHistory)) {
                 android.util.Log.e("EmreSystemCorrect", "❌ RED LINE VIOLATION: Teams ${match.team1.currentPosition} and ${match.team2.currentPosition} have played before!")
+                android.util.Log.e("EmreSystemCorrect", "❌ TOURNAMENT EARLY EXIT: Duplicate pairing detected at Round $currentRound")
+                android.util.Log.e("EmreSystemCorrect", "❌ VIOLATION DETAILS: Team ${match.team1.id} vs Team ${match.team2.id} already in match history")
                 return EmrePairingResult(emptyList(), null, false, false)
             }
         }
@@ -768,8 +775,22 @@ object EmreSystemCorrect {
             )
         } else {
             // HİÇBİR EŞLEŞİM AYNI PUANDA DEĞİL → TUR İPTAL, ŞAMPIYONA BITER
-            android.util.Log.w("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: No same-point matches found → All matches are asymmetric")
-            android.util.Log.w("EmreSystemCorrect", "🏁 FINAL STANDINGS: Tournament ends at Round $currentRound")
+            android.util.Log.e("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: No same-point matches found → All matches are asymmetric")
+            android.util.Log.e("EmreSystemCorrect", "🏁 DETAILED ANALYSIS: Why tournament ended at Round $currentRound")
+            android.util.Log.e("EmreSystemCorrect", "🏁 TOTAL MATCHES: ${candidateMatches.size} matches analyzed")
+            
+            candidateMatches.forEachIndexed { index, match ->
+                val team1Points = match.team1.points
+                val team2Points = match.team2.points
+                val pointDiff = kotlin.math.abs(team1Points - team2Points)
+                android.util.Log.e("EmreSystemCorrect", "🏁 MATCH $index: Team ${match.team1.currentPosition}(${team1Points}p) vs Team ${match.team2.currentPosition}(${team2Points}p) → Diff: ${pointDiff}p, Asymmetric: ${match.isAsymmetricPoints}")
+            }
+            
+            android.util.Log.e("EmreSystemCorrect", "🏁 SAME POINT COUNT: ${candidateMatches.count { !it.isAsymmetricPoints }} matches have same points")
+            android.util.Log.e("EmreSystemCorrect", "🏁 ASYMMETRIC COUNT: ${candidateMatches.count { it.isAsymmetricPoints }} matches have different points")
+            android.util.Log.e("EmreSystemCorrect", "🏁 RULE: Tournament continues ONLY if at least 1 same-point match exists")
+            android.util.Log.e("EmreSystemCorrect", "🏁 RESULT: TOURNAMENT ENDS → No same-point matches found")
+            
             return EmrePairingResult(
                 matches = emptyList(),
                 byeTeam = byeTeam,
