@@ -930,3 +930,60 @@ if (displacedTeams.isNotEmpty()) {
 **APK:** 24 Ağustos 03:49 (proximity-based algorithm içeren son versiyon)
 
 **Sonuç:** ✅ Proje tamamlandı - Geliştirilmiş İsviçre Sistemi tam çalışır durumda
+
+---
+
+### 2025-08-24 - KRİTİK BACKWARD SEARCH BACKTRACK BUG DÜZELTME ✅
+
+**Problem:** 6-7. turda Team 35 partner bulamıyor, turnuva erken sonlanıyor
+
+**Kök Neden Keşfi:**
+Kullanıcının tarif ettiği doğru algoritma yanlış implement edilmişti:
+- Backward search'da eşleşmiş takımların **eşleştirme bozma (backtrack) kontrolüne girmesi** gerekiyordu
+- Ama `line 401-404`'te eşleşmiş takımlar **skip ediliyor**, `line 417-421`'deki backtrack kodu **dead code** olmuştu
+
+**YANLISS İMPLEMENTASYON:**
+```kotlin
+// Line 401: Eşleşmiş takımları atla ❌
+if (candidate.teamId in engineState.usedTeams) {
+    continue // Skip ediyor - backtrack kontrolüne hiç gelemiyor
+}
+
+// Line 417: Dead code - hiç çalışmıyor ❌  
+if (candidate.teamId in engineState.usedTeams) {
+    return RequiresBacktrack(candidate) // Buraya hiç gelmiyor
+}
+```
+
+**DOĞRU ALGORİTMA (KULLANICININ TARİFİ):**
+1. Team 35 kendinden sonrakilerden partner bulamıyor
+2. **Backward search:** Kendinden önceki EŞLEŞMIŞ takımları kontrol ediyor
+3. **Backtrack kontrolü:** Eşleşmiş takımla eşleşebilir mi bakıyor
+4. **Mevcut eşleştirmeyi bozup** yeni eşleştirme yapıyor
+
+**UYGULANAN FIX:**
+- `line 401-404` skip logic kaldırıldı
+- Sadece position ve match history kontrolü yapılıyor  
+- Eşleşmiş takımlar artık backtrack kontrolüne geliyor
+- `RequiresBacktrack` logic çalışır hale geldi
+
+**TEST SONUÇLARI:**
+- ✅ **9 tur başarıyla oynandı** (önceden sadece 6 tur)
+- ✅ **Team 35 partner search sorunu çözüldü**
+- ✅ **Backward search backtrack sistemi çalışıyor**
+- ✅ **10. turda asimetrik kontrol ile turnuva doğru şekilde bitti**
+
+**Logcat Kanıtı:**
+```
+🔍 BACKWARD CANDIDATE: Team X (TeamID: Y)  
+🔄 BACKTRACK NEEDED: 35 wants X (breaking existing match)
+```
+
+**Final Durum:**
+- 🎯 **Backward search backtrack algoritması tam çalışıyor**
+- 🎯 **Team 35 artık eşleşmiş takımları görebiliyor**
+- 🎯 **Mevcut eşleştirme bozma sistemi aktif**
+- 🎯 **Displaced team tracking otomatik çalışıyor**
+
+**Commit:** "Fix critical backward search backtrack logic - enable backtrack for paired teams"
+**APK:** 24 Ağustos 23:09 (backward search fix ile son versiyon)

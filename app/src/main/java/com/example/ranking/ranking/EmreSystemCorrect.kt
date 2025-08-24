@@ -116,7 +116,7 @@ object EmreSystemCorrect {
                 song = song, 
                 points = 0.0, 
                 currentPosition = index + 1,      // Anlık sıra numarası
-                teamId = song.id,                 // Sabit ID numarası
+                teamId = (index + 1).toLong(),    // FIXED: Sabit ID numarası (index-based)
                 preRoundPosition = index + 1,     // 🆕 İlk turda tur öncesi = başlangıç sırası
                 byePassed = false,
                 byeCount = 0
@@ -267,12 +267,13 @@ object EmreSystemCorrect {
             if (searchingTeam == null) break
             
             engineState.currentSearchingTeam = searchingTeam
-            android.util.Log.d("EmreSystemCorrect", "🔍 SEARCHING TEAM: ${searchingTeam.currentPosition} looking for partner")
+            android.util.Log.d("EmreSystemCorrect", "🔍 SEARCHING TEAM: ${searchingTeam.currentPosition} looking for partner (${availableTeams.size} teams remaining)")
             
             // Bu takım için eşleştirme arayan statüsü
             val pairingResult = findPartnerForSearchingTeam(
                 searchingTeam, 
                 availableTeams, 
+                teams, // 🆕 All teams for backward search
                 engineState, 
                 matchHistory
             )
@@ -281,8 +282,8 @@ object EmreSystemCorrect {
                 is PairingSearchResult.Success -> {
                     // Başarılı eşleştirme - her iki takımı da available listeden çıkar
                     availableTeams.remove(pairingResult.partner)
-                    engineState.usedTeams.add(searchingTeam.id)
-                    engineState.usedTeams.add(pairingResult.partner.id)
+                    engineState.usedTeams.add(searchingTeam.teamId)
+                    engineState.usedTeams.add(pairingResult.partner.teamId)
                     
                     android.util.Log.d("EmreSystemCorrect", "✅ MATCH CREATED: ${searchingTeam.currentPosition} vs ${pairingResult.partner.currentPosition}")
                 }
@@ -359,6 +360,7 @@ object EmreSystemCorrect {
     private fun findPartnerForSearchingTeam(
         searchingTeam: EmreTeam,
         availableTeams: List<EmreTeam>,
+        allTeams: List<EmreTeam>, // 🆕 For backward search
         engineState: PairingEngineState,
         matchHistory: Set<Pair<Long, Long>>
     ): PairingSearchResult {
@@ -391,9 +393,16 @@ object EmreSystemCorrect {
         
         android.util.Log.d("EmreSystemCorrect", "⬆️ NO FORWARD PARTNER: Checking backwards...")
         
-        // 2. GERİYE DÖN - ÖNCEKİ TAKIMLARI KONTROL ET
-        for (candidate in availableTeams.reversed()) {
-            if (candidate.currentPosition >= searchingTeam.currentPosition) continue // Sadece öncekiler
+        // 2. GERİYE DÖN - ÖNCEKİ TAKIMLARI KONTROL ET (TÜM TAKIMLARDAN)
+        android.util.Log.d("EmreSystemCorrect", "🔍 BACKWARD SEARCH: Team ${searchingTeam.currentPosition} checking ${allTeams.size} total teams backwards")
+        for (candidate in allTeams.reversed()) {
+            android.util.Log.d("EmreSystemCorrect", "🔍 BACKWARD CANDIDATE: Team ${candidate.currentPosition} (TeamID: ${candidate.teamId})")
+            
+            // Sadece kendinden önceki takımları kontrol et
+            if (candidate.currentPosition >= searchingTeam.currentPosition) {
+                android.util.Log.d("EmreSystemCorrect", "⏭️ SKIP: ${candidate.currentPosition} (not backwards: ${candidate.currentPosition} >= ${searchingTeam.currentPosition})")
+                continue
+            }
             
             // Daha önce oynamış mı kontrol et
             if (hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)) {
@@ -401,8 +410,8 @@ object EmreSystemCorrect {
                 continue
             }
             
-            // Bu takım zaten kullanılmış mı?
-            if (candidate.id in engineState.usedTeams) {
+            // Bu takım zaten kullanılmış mı? (Eşleşmiş takımlar için BACKTRACK)
+            if (candidate.teamId in engineState.usedTeams) {
                 // BACKTRACK GEREKLİ - bu takımın eşleşmesini boz
                 android.util.Log.w("EmreSystemCorrect", "🔄 BACKTRACK NEEDED: ${searchingTeam.currentPosition} wants ${candidate.currentPosition}")
                 return PairingSearchResult.RequiresBacktrack(candidate)
@@ -459,8 +468,8 @@ object EmreSystemCorrect {
         val stolenPartnerTeam = if (existingMatch.team1.id == targetTeam.id) existingMatch.team2 else existingMatch.team1
         
         // Used teams'den çıkar
-        engineState.usedTeams.remove(existingMatch.team1.id)
-        engineState.usedTeams.remove(existingMatch.team2.id)
+        engineState.usedTeams.remove(existingMatch.team1.teamId)
+        engineState.usedTeams.remove(existingMatch.team2.teamId)
         
         // Available teams'e geri ekle
         availableTeams.add(stolenPartnerTeam)
@@ -476,8 +485,8 @@ object EmreSystemCorrect {
             isAsymmetricPoints = searchingTeam.points != targetTeam.points
         )
         engineState.candidateMatches.add(newMatch)
-        engineState.usedTeams.add(searchingTeam.id)
-        engineState.usedTeams.add(targetTeam.id)
+        engineState.usedTeams.add(searchingTeam.teamId)
+        engineState.usedTeams.add(targetTeam.teamId)
         
         // Target team'i available'dan çıkar (zaten available değildi ama güvenlik için)
         availableTeams.remove(targetTeam)
@@ -638,12 +647,12 @@ object EmreSystemCorrect {
                 existingMatch?.let { match ->
                     android.util.Log.w("EmreSystemCorrect", "💥 REMOVING MATCH: Team ${match.team1.currentPosition} vs Team ${match.team2.currentPosition}")
                     candidateMatches.remove(match)
-                    usedTeams.remove(match.team1.id)
-                    usedTeams.remove(match.team2.id)
+                    usedTeams.remove(match.team1.teamId)
+                    usedTeams.remove(match.team2.teamId)
                     
                     // ✅ KRİTİK DÜZELTME: BOZULAN TAKIMI DISPLACED QUEUE'YA EKLE
                     val displacedTeam = if (match.team1.id == potentialPartner.id) match.team2 else match.team1
-                    displacedTeams.add(displacedTeam.id)
+                    displacedTeams.add(displacedTeam.teamId)
                     android.util.Log.d("EmreSystemCorrect", "🔄 DISPLACED TEAM ADDED: Team ${displacedTeam.currentPosition} added to displaced queue")
                 }
                 
@@ -744,8 +753,8 @@ object EmreSystemCorrect {
                     team2 = partner,
                     isAsymmetricPoints = searchingTeam.points != partner.points
                 ))
-                usedTeams.add(searchingTeam.id)
-                usedTeams.add(partner.id)
+                usedTeams.add(searchingTeam.teamId)
+                usedTeams.add(partner.teamId)
                 android.util.Log.d("EmreSystemCorrect", "✅ PAIRED: Team ${searchingTeam.currentPosition} vs Team ${partner.currentPosition}")
             } else {
                 // Partner bulunamadı
@@ -1152,8 +1161,8 @@ object EmreSystemCorrect {
         
         conflictMatch?.let { match ->
             candidateMatches.remove(match)
-            usedTeams.remove(match.team1.id)
-            usedTeams.remove(match.team2.id)
+            usedTeams.remove(match.team1.teamId)
+            usedTeams.remove(match.team2.teamId)
             
             // Yeni eşleşmeyi ekle
             candidateMatches.add(
@@ -1163,8 +1172,8 @@ object EmreSystemCorrect {
                     isAsymmetricPoints = searchingTeam.points != conflictTeam.points
                 )
             )
-            usedTeams.add(searchingTeam.id)
-            usedTeams.add(conflictTeam.id)
+            usedTeams.add(searchingTeam.teamId)
+            usedTeams.add(conflictTeam.teamId)
         }
     }
     
