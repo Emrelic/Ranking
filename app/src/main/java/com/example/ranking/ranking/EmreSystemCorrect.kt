@@ -181,10 +181,25 @@ object EmreSystemCorrect {
         val initialPairings = createProximityBasedPairings(teams, matchHistory)
         android.util.Log.d("EmreSystemCorrect", "📊 INITIAL PAIRINGS: ${initialPairings.matches.size} matches, ${initialPairings.unpairedTeams.size} unpaired teams")
         
-        // 3. SMART BACKTRACK FOR UNPAIRED TEAMS
+        // 3. SMART BACKTRACK FOR UNPAIRED TEAMS (DISABLED to prevent infinite loops)
         val finalPairings = if (initialPairings.unpairedTeams.isNotEmpty()) {
-            android.util.Log.w("EmreSystemCorrect", "🔄 SMART BACKTRACK: Resolving ${initialPairings.unpairedTeams.size} unpaired teams")
-            resolveUnpairedTeamsWithSmartBacktrack(initialPairings, teams, matchHistory)
+            android.util.Log.w("EmreSystemCorrect", "🔄 SMART BACKTRACK DISABLED: ${initialPairings.unpairedTeams.size} unpaired teams remain")
+            android.util.Log.w("EmreSystemCorrect", "🆓 CONVERTING UNPAIRED TEAMS TO BYE TEAMS")
+            
+            // Convert unpaired teams to bye teams (temporary fix)
+            val updatedByeTeam = if (initialPairings.unpairedTeams.isNotEmpty()) {
+                val lowestTeam = initialPairings.unpairedTeams.maxByOrNull { it.currentPosition }
+                android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${lowestTeam?.currentPosition}")
+                lowestTeam
+            } else {
+                initialPairings.byeTeam
+            }
+            
+            InitialPairingResult(
+                matches = initialPairings.matches, 
+                unpairedTeams = emptyList(), // Clear unpaired teams
+                byeTeam = updatedByeTeam
+            )
         } else {
             initialPairings
         }
@@ -494,7 +509,11 @@ object EmreSystemCorrect {
         
         // CRITICAL FIX: Use while loop with dynamic list to handle newly added unpaired teams
         var index = 0
-        while (index < unpairedTeams.size) {
+        var iterationCount = 0
+        val maxIterations = teams.size * 5 // Safety limit to prevent infinite loops
+        
+        while (index < unpairedTeams.size && iterationCount < maxIterations) {
+            iterationCount++
             val unpairedTeam = unpairedTeams[index]
             android.util.Log.w("EmreSystemCorrect", "🔄 RESOLVING UNPAIRED ($index/${unpairedTeams.size}): Team ${unpairedTeam.currentPosition}")
             
@@ -534,6 +553,15 @@ object EmreSystemCorrect {
             
             // Move to next unpaired team
             index++
+        }
+        
+        // Check for infinite loop protection
+        if (iterationCount >= maxIterations) {
+            android.util.Log.e("EmreSystemCorrect", "💀 INFINITE LOOP DETECTED: Breaking after $iterationCount iterations")
+            android.util.Log.e("EmreSystemCorrect", "💀 REMAINING UNPAIRED: ${unpairedTeams.size} teams")
+            unpairedTeams.forEachIndexed { i, team ->
+                android.util.Log.e("EmreSystemCorrect", "💀 STUCK TEAM[$i]: Team ${team.currentPosition} (ID: ${team.id})")
+            }
         }
         
         // CRITICAL VALIDATION: Ensure no teams are lost during backtrack
