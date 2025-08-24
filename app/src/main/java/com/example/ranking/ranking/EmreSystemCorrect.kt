@@ -181,9 +181,17 @@ object EmreSystemCorrect {
         val initialPairings = createProximityBasedPairings(teams, matchHistory)
         android.util.Log.d("EmreSystemCorrect", "📊 INITIAL PAIRINGS: ${initialPairings.matches.size} matches, ${initialPairings.unpairedTeams.size} unpaired teams")
         
-        // 3. SMART BACKTRACK FOR UNPAIRED TEAMS (DISABLED to prevent infinite loops)
+        // 3. SMART BACKTRACK FOR UNPAIRED TEAMS (RE-ENABLED with infinite loop protection)
         val finalPairings = if (initialPairings.unpairedTeams.isNotEmpty()) {
-            android.util.Log.w("EmreSystemCorrect", "🔄 SMART BACKTRACK DISABLED: ${initialPairings.unpairedTeams.size} unpaired teams remain")
+            android.util.Log.w("EmreSystemCorrect", "🔄 SMART BACKTRACK ENABLED: Resolving ${initialPairings.unpairedTeams.size} unpaired teams")
+            resolveUnpairedTeamsWithSmartBacktrack(initialPairings, teams, matchHistory)
+        } else {
+            initialPairings
+        }
+        
+        // 3.5. EMERGENCY FALLBACK IF SMART BACKTRACK FAILS
+        val safetyPairings = if (finalPairings.unpairedTeams.isNotEmpty()) {
+            android.util.Log.w("EmreSystemCorrect", "🆘 EMERGENCY FALLBACK: Smart backtrack failed, ${finalPairings.unpairedTeams.size} teams still unpaired")
             android.util.Log.w("EmreSystemCorrect", "🆓 CONVERTING UNPAIRED TEAMS TO BYE TEAMS")
             
             // Convert unpaired teams to matches/bye (emergency fix)
@@ -558,8 +566,14 @@ object EmreSystemCorrect {
                 // Eşleştirmeyi boz
                 matches.remove(targetMatch)
                 
-                // Yeni eşleştirmeler oluştur
-                val newPartner = findBestPartnerForBacktrack(unpairedTeam, listOf(targetMatch.team1, targetMatch.team2), matchHistory)
+                // Yeni eşleştirmeler oluştur - TÜM TAKIMLARDAN daha önce oynamadığı birini bul
+                val allAvailableTeams = listOf(targetMatch.team1, targetMatch.team2) + teams.filter { team ->
+                    team.id != unpairedTeam.id && 
+                    team.id != targetMatch.team1.id && 
+                    team.id != targetMatch.team2.id &&
+                    !hasTeamsPlayedBefore(unpairedTeam.id, team.id, matchHistory)
+                }
+                val newPartner = findBestPartnerForBacktrack(unpairedTeam, allAvailableTeams, matchHistory)
                 
                 if (newPartner != null) {
                     val remainingTeam = if (newPartner == targetMatch.team1) targetMatch.team2 else targetMatch.team1
