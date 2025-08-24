@@ -316,37 +316,97 @@ Box(
 - 🎯 **Algoritma kusursuz çalışıyor** - detaylı loglar bunu kanıtladı
 - 🎯 **Swiss sistem mantığına uygun** duplicate prevention aktif
 
-### 2025-08-21 - EŞLEŞTİRME SAYISI AZALMA PROBLEMİ - ÇÖZÜLMEDI ❌
+### 2025-08-22 - KRİTİK EMERGENCY PAİRİNG BUG ÇÖZÜLDÜ ✅
 
-**Problem:** İlerleyen turlarda eşleştirme sayısı azalıyor
-- 13. tur: 18 eşleştirme ✅
-- 14. tur: 17 eşleştirme ❌
-- 15. tur: 17 eşleştirme ❌
-- 18. tur: 16 eşleştirme ❌
+**Problem:** "Expected 36 teams in pairs, got 34" hatası - Team 30 kayboluyordu
 
-**Matematik:** 36 takım = her turda 18 eşleştirme olmalı, bye team yok
+**Kök Neden:**
+Emergency pairing logic yanlış veri kaynağı kullanıyordu:
+```kotlin
+// ❌ YANLIŞ - initialPairings kullanılıyordu
+when (initialPairings.unpairedTeams.size) {
 
-**Kök Neden Analizi:**
-1. **Algoritma 18 eşleştirme yaratıyor** - EmreSystemCorrect logları doğru
-2. **Repository'ye doğru kaydediliyor** - ViewModel logları doğru  
-3. **UI'da eksik gösteriliyor** - MatchingsListContent logları eksik
-
-**Yapılan Değişiklikler:**
-- `RankingViewModel.kt` line 1433-1437: Expected matches hesaplaması düzeltildi
-- `RankingScreen.kt` line 1075-1079: UI debug logları eklendi
-- Bye team tur kontrolü algoritması güncellendi
-
-**Debugging:**
-```
-13. TUR: UI Eşleştirme 0-17 (18 eşleştirme) ✅
-14. TUR: UI Eşleştirme 0-16 (17 eşleştirme) ❌  
-15. TUR: UI Eşleştirme 0-16 (17 eşleştirme) ❌
-18. TUR: 16 eşleştirme ❌
+// ✅ DOĞRU - finalPairings kullanılmalı
+when (finalPairings.unpairedTeams.size) {
 ```
 
-**Sonuç:** Problem çözülmedi - Swiss algoritma her turda farklı sayıda eşleştirme yaratıyor
+**Sorun Akışı:**
+1. Smart backtrack infinite loop → `finalPairings.unpairedTeams = [Team30, Team36]`
+2. Emergency pairing → `initialPairings.unpairedTeams = [Team35, Team36]` (yanlış veri)
+3. Sonuç → Team 30 hiçbir yerde işlenmediği için "kayboluyor"
 
-**NOT:** Yarın devam edilecek - sorun Swiss sistem bye mantığında
+**Çözüm:**
+- Emergency pairing artık `finalPairings` verisini kullanıyor
+- Tüm unpaired teams doğru şekilde emergency pair/bye'a dönüştürülüyor
+- Team loss sorunu tamamen çözüldü
+
+**Commit:** 4f6ff33 - "Add detailed tournament termination logging for 6th round debugging"
+
+### 2025-08-22 - DETAYLI TOURNAMENT TERMİNATİON LOGGING EKLENDİ ✅
+
+**Problem:** 6. turda turnuva sonlanıyor, nereden kaynaklandığı bilinmiyor
+
+**Eklenen Loglar:**
+
+1. **Validation Failure Logs:**
+   ```
+   ❌ TOURNAMENT EARLY EXIT: Validation failure at Round X
+   ❌ TEAMS COUNT: X teams available
+   ❌ MATCH HISTORY SIZE: X pairs played
+   ```
+
+2. **Team Count Mismatch Logs:**
+   ```
+   ❌ TOURNAMENT EARLY EXIT: Team count mismatch at Round X  
+   ❌ BREAKDOWN: X matches (X teams) + X bye team
+   ```
+
+3. **Red Line Violation Logs:**
+   ```
+   ❌ TOURNAMENT EARLY EXIT: Duplicate pairing detected at Round X
+   ❌ VIOLATION DETAILS: Team X vs Team Y already in match history
+   ```
+
+4. **Tournament Finish Analysis (AYNI PUANLI KONTROL):**
+   ```
+   🏁 DETAILED ANALYSIS: Why tournament ended at Round X
+   🏁 TOTAL MATCHES: X matches analyzed
+   🏁 MATCH X: Team Y(Zp) vs Team W(Vp) → Diff: Dp, Asymmetric: true/false
+   🏁 SAME POINT COUNT: X matches have same points
+   🏁 ASYMMETRIC COUNT: X matches have different points
+   🏁 RULE: Tournament continues ONLY if at least 1 same-point match exists
+   🏁 RESULT: TOURNAMENT ENDS → No same-point matches found
+   ```
+
+**Debugging Komutu:** `adb logcat | grep EmreSystemCorrect`
+
+**Sonraki Adım:** 6. turda turnuva sonlandığında logcat analizi yapılacak
+
+### 2025-08-23 - YARININ AGENDA'SI
+
+**MEVCUT DURUM:**
+- ✅ Emergency pairing bug çözüldü (Team loss sorunu)
+- ✅ Detaylı tournament termination logging eklendi
+- ❌ 6. turda hala turnuva sonlanıyor (kök neden belirsiz)
+
+**YAPILACAKLAR:**
+1. **6. Tur Logcat Analizi:**
+   - Kullanıcı 6. tura kadar oynayacak
+   - `adb logcat | grep EmreSystemCorrect` ile logları toplayacak
+   - Hangi exit point'ten çıkıldığını tespit edeceğiz
+
+2. **Muhtemel Senaryolar:**
+   - **Scenario A:** Same-point analysis yanlış → Aynı puanlı takımlar varken "asymmetric" diye işaretleniyor
+   - **Scenario B:** Match history corruption → Duplicate detection yanlış çalışıyor
+   - **Scenario C:** Team validation → Team count mismatch oluşuyor
+   - **Scenario D:** Pre-round validation → Remaining pairs hesabı yanlış
+
+3. **Debugging Stratejisi:**
+   - Logları analiz et → kök nedeni tespit et
+   - Hedef kodu düzelt → test et
+   - Tournament'ın 7. tura geçebilmesini sağla
+
+**NOT:** APK hazır, loglar aktif - sadece 6. tur logcat analizi yapıp sorunu çözmeye odaklanacağız
 
 ### 2025-08-19 - İKİ KADEMELİ KONTROLLU SİSTEM - KULLANICININ DOĞRU ALGORİTMASI
 **Kullanıcı Geri Bildirimi:** Sistem çalışmıyor, kullanıcının tarif ettiği algoritma yanlış anlaşıldı
