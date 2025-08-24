@@ -23,9 +23,11 @@ object EmreSystemCorrect {
     data class EmreTeam(
         val song: Song,
         var points: Double = 0.0,
-        var currentPosition: Int = 0,    // Mevcut sıra numarası (değişken)
-        val teamId: Long,                // Sabit ID numarası
-        var byePassed: Boolean = false
+        var currentPosition: Int = 0,           // Anlık sıra numarası (değişken)
+        val teamId: Long,                       // Sabit ID numarası  
+        var preRoundPosition: Int = 0,          // 🆕 Tur öncesi anlık sıralama (tiebreaker için)
+        var byePassed: Boolean = false,         // Bye geçti mi?
+        var byeCount: Int = 0                   // 🆕 Kaç kere bye geçti (maksimum 1)
     ) {
         val id: Long get() = song.id
         
@@ -36,7 +38,9 @@ object EmreSystemCorrect {
                 points = points,
                 currentPosition = currentPosition,
                 teamId = teamId,
-                byePassed = byePassed
+                preRoundPosition = preRoundPosition,
+                byePassed = byePassed,
+                byeCount = byeCount
             )
         }
     }
@@ -63,6 +67,38 @@ object EmreSystemCorrect {
         val isAsymmetricPoints: Boolean // Farklı puanlı mı?
     )
     
+    // 🆕 YENİ KAVRAMLAR İÇİN DATA CLASS'LAR
+    
+    /**
+     * Eşleşme motoru durumları
+     */
+    data class PairingEngineState(
+        val candidateMatches: MutableList<CandidateMatch> = mutableListOf(),
+        val usedTeams: MutableSet<Long> = mutableSetOf(),
+        val unpairedTeams: MutableList<EmreTeam> = mutableListOf(), // 🆕 Eşleşilemeden kalanlar grubu
+        var byeTeam: EmreTeam? = null,
+        var currentSearchingTeam: EmreTeam? = null // 🆕 Eşleştirme arayan takım
+    )
+    
+    /**
+     * Backtrack operasyonu sonucu
+     */
+    data class BacktrackResult(
+        val success: Boolean,
+        val newMatch: CandidateMatch? = null,
+        val stolenPartnerTeam: EmreTeam? = null, // 🆕 Partneri çalınan takım
+        val reason: String = ""
+    )
+    
+    /**
+     * 🆕 Eşleştirme arama sonuçları
+     */
+    sealed class PairingSearchResult {
+        data class Success(val partner: EmreTeam) : PairingSearchResult()
+        data class RequiresBacktrack(val targetTeam: EmreTeam) : PairingSearchResult()
+        object TournamentFinished : PairingSearchResult()
+    }
+    
     // İki kademeli kontrol durumları
     enum class PairingPhase {
         CANDIDATE_CREATION,    // Aday eşleştirme oluşturma
@@ -79,10 +115,17 @@ object EmreSystemCorrect {
             EmreTeam(
                 song = song, 
                 points = 0.0, 
-                currentPosition = index + 1,  // Başlangıç sıra numarası
-                teamId = song.id,             // Sabit ID
-                byePassed = false
+                currentPosition = index + 1,      // Anlık sıra numarası
+                teamId = song.id,                 // Sabit ID numarası
+                preRoundPosition = index + 1,     // 🆕 İlk turda tur öncesi = başlangıç sırası
+                byePassed = false,
+                byeCount = 0
             )
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🏁 TOURNAMENT INITIALIZED: ${teams.size} teams with ID and position numbers")
+        teams.forEach { team ->
+            android.util.Log.d("EmreSystemCorrect", "📋 TEAM: ID=${team.teamId}, Position=${team.currentPosition}, PreRound=${team.preRoundPosition}")
         }
         
         return EmreState(
@@ -113,169 +156,410 @@ object EmreSystemCorrect {
             )
         }
         
-        // Takımları sıra numaralarına göre sırala (en yüksek puan 1. sırada)
-        val sortedTeams = state.teams.sortedBy { it.currentPosition }
+        // 🆕 TUR ÖNCESİ ANLIK SIRALAMA HAFIZAYA ALINIR
+        val teamsWithPreRoundPosition = state.teams.map { team ->
+            team.deepCopy().apply {
+                preRoundPosition = currentPosition // Tur öncesi sıralama hafızaya al
+            }
+        }
         
-        // Bye kontrolü (tek sayıda takım varsa)
-        val (teamsToMatch, byeTeam) = handleByeTeam(sortedTeams)
+        // Takımları anlık sıra numaralarına göre sırala 
+        val sortedTeams = teamsWithPreRoundPosition.sortedBy { it.currentPosition }
         
-        // YENİ İKİ KADEMELİ ALGORİTMA İLE EŞLEŞTİRME
-        val result = createAdvancedSwissPairings(teamsToMatch, state.matchHistory, state.currentRound)
+        android.util.Log.d("EmreSystemCorrect", "📊 PRE-ROUND POSITIONS STORED: Round ${state.currentRound}")
+        sortedTeams.forEach { team ->
+            android.util.Log.d("EmreSystemCorrect", "📍 TEAM ${team.currentPosition}: PreRound=${team.preRoundPosition}, Points=${team.points}")
+        }
+        
+        // 🆕 YENİ BYE KONTROL SİSTEMİ
+        val (teamsToMatch, byeTeam) = handleByeTeamAdvanced(sortedTeams)
+        
+        // 🆕 YENİ EŞLEŞTIRME MOTORU
+        val result = createNewPairingEngine(teamsToMatch, state.matchHistory, state.currentRound)
         
         // Bye ekibini result'a ekle
         return result.copy(byeTeam = byeTeam)
     }
     
-    /**
-     * Geriye uyumluluk için eski fonksiyon - deprecated
-     */
-    @Deprecated("Use createNextRoundWithConfirmation instead")
-    fun createNextRound(state: EmreState): EmrePairingResult {
-        return createNextRoundWithConfirmation(state)
-    }
     
     /**
-     * Bye geçecek takımı belirle (en alttaki)
+     * 🆕 YENİ BYE KONTROL SİSTEMİ - Geliştirilmiş İsviçre Usulü Kuralları
+     * 
+     * KURALLAR:
+     * - Çift sayıda takım: Hiçbir takım bye geçemez
+     * - Tek sayıda takım: En alttaki (en düşük anlık sıralı) takım bye geçer
+     * - Bir takım turnuvada en fazla 1 kere bye geçebilir
      */
-    private fun handleByeTeam(sortedTeams: List<EmreTeam>): Pair<List<EmreTeam>, EmreTeam?> {
+    private fun handleByeTeamAdvanced(sortedTeams: List<EmreTeam>): Pair<List<EmreTeam>, EmreTeam?> {
+        android.util.Log.d("EmreSystemCorrect", "🔍 BYE CONTROL: ${sortedTeams.size} teams total")
+        
         if (sortedTeams.size % 2 == 0) {
+            // Çift sayıda takım - hiçbir takım bye geçemez
+            android.util.Log.d("EmreSystemCorrect", "✅ EVEN TEAMS: No bye needed (${sortedTeams.size} teams)")
             return Pair(sortedTeams, null)
         }
         
-        // En alttaki takım bye geçer
-        val byeTeam = sortedTeams.last()
-        val remainingTeams = sortedTeams.dropLast(1)
+        // Tek sayıda takım - bye geçecek takımı bul
+        android.util.Log.d("EmreSystemCorrect", "⚠️ ODD TEAMS: Looking for bye candidate (${sortedTeams.size} teams)")
+        
+        // En alttaki takımdan başlayarak bye geçmemiş takımı bul
+        var byeTeam: EmreTeam? = null
+        val remainingTeams = mutableListOf<EmreTeam>()
+        
+        // Tersten tarayarak en alttaki bye geçmemiş takımı bul
+        for (i in sortedTeams.indices.reversed()) {
+            val team = sortedTeams[i]
+            if (byeTeam == null && team.byeCount == 0) {
+                byeTeam = team
+                android.util.Log.d("EmreSystemCorrect", "🆓 BYE ASSIGNED: Team ${team.currentPosition} (ID: ${team.teamId}) - first time bye")
+            } else {
+                remainingTeams.add(0, team) // Başa ekle (sıralama korunur)
+            }
+        }
+        
+        // Eğer tüm takımlar bye geçmişse, en alttakini tekrar bye yap (olağanüstü durum)
+        if (byeTeam == null) {
+            byeTeam = sortedTeams.last()
+            remainingTeams.addAll(sortedTeams.dropLast(1))
+            android.util.Log.w("EmreSystemCorrect", "⚠️ EMERGENCY BYE: Team ${byeTeam.currentPosition} (all teams have had bye)")
+        }
         
         return Pair(remainingTeams, byeTeam)
     }
     
     /**
-     * YENİ AKILLI EŞLEŞTİRME ALGORİTMASI - PROXIMITY BASED
+     * 🆕 YENİ EŞLEŞTIRME MOTORU - Geliştirilmiş İsviçre Usulü
      * 
-     * KURALLAR:
-     * 1. Daha önce eşleşen takımlar asla tekrar eşleşmez
-     * 2. En yakın sıralamadaki eşleşmemiş takımla eşleş  
-     * 3. Her turda listenin yarısı kadar eşleşme (36→18)
-     * 4. Eşleşemeyen takım varsa → yakın takımların eşleşmesini boz
-     * 
-     * VALIDATION:
-     * - Tur başlamadan 3 kural kontrol edilir
-     * - Smart backtrack ile eşleşmeyen takımlar çözülür
+     * ALGORİTMA AKIŞI:
+     * 1. En üst anlık sıralı takım → "eşleştirme arayan takım" statüsü
+     * 2. Kendinden sonraki ilk eşleşmemiş takımla eşleştir
+     * 3. Eğer bulamazsa geriye dön ve mevcut eşleşmeyi boz
+     * 4. "Partneri çalınan takım" ile "eşleşilemeden kalanlar" kontrolü
+     * 5. Tüm takımlar eşleşince "eş puanlı eşleşme" kontrolü
+     * 6. En az 1 eş puanlı varsa tur oyna, yoksa turnuva bitir
      */
-    private fun createAdvancedSwissPairings(
+    private fun createNewPairingEngine(
         teams: List<EmreTeam>, 
         matchHistory: Set<Pair<Long, Long>>,
         currentRound: Int
     ): EmrePairingResult {
         
-        android.util.Log.d("EmreSystemCorrect", "🚀 STARTING NEW PROXIMITY-BASED PAIRING: ${teams.size} teams total")
+        android.util.Log.d("EmreSystemCorrect", "🚀 STARTING NEW PAIRING ENGINE: ${teams.size} teams total, Round $currentRound")
         
-        // 1. PRE-ROUND VALIDATION
-        val validationResult = validateRoundRequirements(teams, matchHistory, currentRound)
-        if (!validationResult.isValid) {
-            android.util.Log.e("EmreSystemCorrect", "❌ ROUND VALIDATION FAILED: ${validationResult.reason}")
-            android.util.Log.e("EmreSystemCorrect", "❌ TOURNAMENT EARLY EXIT: Validation failure at Round $currentRound")
-            android.util.Log.e("EmreSystemCorrect", "❌ TEAMS COUNT: ${teams.size} teams available")
-            android.util.Log.e("EmreSystemCorrect", "❌ MATCH HISTORY SIZE: ${matchHistory.size} pairs played")
-            return EmrePairingResult(emptyList(), null, false, false)
+        // 1. EŞLEŞTIRME MOTORU DURUMU BAŞLAT
+        val engineState = PairingEngineState()
+        val availableTeams = teams.sortedBy { it.currentPosition }.toMutableList()
+        
+        android.util.Log.d("EmreSystemCorrect", "📋 AVAILABLE TEAMS: ${availableTeams.size} teams ready for pairing")
+        availableTeams.forEach { team ->
+            android.util.Log.d("EmreSystemCorrect", "👥 TEAM ${team.currentPosition}: ID=${team.teamId}, Points=${team.points}")
         }
         
-        // 2. PROXIMITY-BASED INITIAL PAIRING
-        val initialPairings = createProximityBasedPairings(teams, matchHistory)
-        android.util.Log.d("EmreSystemCorrect", "📊 INITIAL PAIRINGS: ${initialPairings.matches.size} matches, ${initialPairings.unpairedTeams.size} unpaired teams")
+        // 2. ANA EŞLEŞTIRME DÖNGÜSÜ
+        var safetyCounter = 0
+        val maxIterations = teams.size * 3 // Güvenlik limiti
         
-        // 3. SMART BACKTRACK FOR UNPAIRED TEAMS (RE-ENABLED with infinite loop protection)
-        val finalPairings = if (initialPairings.unpairedTeams.isNotEmpty()) {
-            android.util.Log.w("EmreSystemCorrect", "🔄 SMART BACKTRACK ENABLED: Resolving ${initialPairings.unpairedTeams.size} unpaired teams")
-            resolveUnpairedTeamsWithSmartBacktrack(initialPairings, teams, matchHistory)
-        } else {
-            initialPairings
-        }
-        
-        // 3.5. EMERGENCY FALLBACK IF SMART BACKTRACK FAILS
-        val safetyPairings = if (finalPairings.unpairedTeams.isNotEmpty()) {
-            android.util.Log.w("EmreSystemCorrect", "🆘 EMERGENCY FALLBACK: Smart backtrack failed, ${finalPairings.unpairedTeams.size} teams still unpaired")
-            android.util.Log.w("EmreSystemCorrect", "🆓 CONVERTING UNPAIRED TEAMS TO EMERGENCY PAIRS")
+        while (availableTeams.isNotEmpty() && safetyCounter < maxIterations) {
+            safetyCounter++
             
-            // CRITICAL FIX: Use finalPairings (after backtrack) not initialPairings
-            var updatedMatches = finalPairings.matches.toMutableList()
-            var updatedByeTeam = finalPairings.byeTeam
+            // En üst anlık sıralı takımı "eşleştirme arayan takım" yap
+            val searchingTeam = availableTeams.removeFirstOrNull()
+            if (searchingTeam == null) break
             
-            when (finalPairings.unpairedTeams.size) {
-                1 -> {
-                    // Single unpaired team -> bye
-                    updatedByeTeam = finalPairings.unpairedTeams.first()
-                    android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${updatedByeTeam.currentPosition}")
+            engineState.currentSearchingTeam = searchingTeam
+            android.util.Log.d("EmreSystemCorrect", "🔍 SEARCHING TEAM: ${searchingTeam.currentPosition} looking for partner")
+            
+            // Bu takım için eşleştirme arayan statüsü
+            val pairingResult = findPartnerForSearchingTeam(
+                searchingTeam, 
+                availableTeams, 
+                engineState, 
+                matchHistory
+            )
+            
+            when (pairingResult) {
+                is PairingSearchResult.Success -> {
+                    // Başarılı eşleştirme - her iki takımı da available listeden çıkar
+                    availableTeams.remove(pairingResult.partner)
+                    engineState.usedTeams.add(searchingTeam.id)
+                    engineState.usedTeams.add(pairingResult.partner.id)
+                    
+                    android.util.Log.d("EmreSystemCorrect", "✅ MATCH CREATED: ${searchingTeam.currentPosition} vs ${pairingResult.partner.currentPosition}")
                 }
-                2 -> {
-                    // Two unpaired teams -> pair them together
-                    val team1 = finalPairings.unpairedTeams[0]
-                    val team2 = finalPairings.unpairedTeams[1]
-                    updatedMatches.add(CandidateMatch(
-                        team1 = team1,
-                        team2 = team2,
-                        isAsymmetricPoints = team1.points != team2.points
-                    ))
-                    android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIRING: Team ${team1.currentPosition} vs Team ${team2.currentPosition}")
+                is PairingSearchResult.RequiresBacktrack -> {
+                    // Backtrack gerekiyor - önceki eşleştirmeyi boz
+                    val backtrackResult = performAdvancedBacktrack(
+                        searchingTeam, 
+                        pairingResult.targetTeam,
+                        engineState, 
+                        availableTeams, 
+                        matchHistory
+                    )
+                    
+                    if (!backtrackResult.success) {
+                        // Backtrack başarısız - eşleşilemeden kalanlar grubuna ekle
+                        engineState.unpairedTeams.add(searchingTeam)
+                        android.util.Log.w("EmreSystemCorrect", "⚠️ UNPAIRED: Team ${searchingTeam.currentPosition} cannot find partner")
+                    }
                 }
-                else -> {
-                    // Multiple unpaired teams -> pair as many as possible, bye for remainder
-                    val pairedCount = (finalPairings.unpairedTeams.size / 2) * 2
-                    for (i in 0 until pairedCount step 2) {
-                        val team1 = finalPairings.unpairedTeams[i]
-                        val team2 = finalPairings.unpairedTeams[i + 1]
-                        updatedMatches.add(CandidateMatch(
-                            team1 = team1,
-                            team2 = team2,
-                            isAsymmetricPoints = team1.points != team2.points
-                        ))
-                        android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIRING: Team ${team1.currentPosition} vs Team ${team2.currentPosition}")
-                    }
-                    if (finalPairings.unpairedTeams.size % 2 == 1) {
-                        updatedByeTeam = finalPairings.unpairedTeams.last()
-                        android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${updatedByeTeam?.currentPosition}")
-                    }
+                is PairingSearchResult.TournamentFinished -> {
+                    // Turnuva bitti - kimse ile eşleşemiyor
+                    android.util.Log.e("EmreSystemCorrect", "🏁 TOURNAMENT END: Team ${searchingTeam.currentPosition} cannot pair with anyone")
+                    return EmrePairingResult(emptyList(), null, false, false, emptyList())
                 }
             }
+        }
+        
+        // 4. EŞLEŞİLEMEDEN KALANLAR GRUBU İŞLEME
+        if (engineState.unpairedTeams.isNotEmpty()) {
+            android.util.Log.w("EmreSystemCorrect", "⚠️ PROCESSING UNPAIRED TEAMS: ${engineState.unpairedTeams.size} teams need resolution")
+            // Eşleşilemeden kalanlar için emergency pairing logic burada olacak
+            // Şimdilik basit eşleştirme yapalım
+            while (engineState.unpairedTeams.size >= 2) {
+                val team1 = engineState.unpairedTeams.removeAt(0)
+                val team2 = engineState.unpairedTeams.removeAt(0)
+                
+                engineState.candidateMatches.add(CandidateMatch(
+                    team1 = team1,
+                    team2 = team2, 
+                    isAsymmetricPoints = team1.points != team2.points
+                ))
+                android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIR: ${team1.currentPosition} vs ${team2.currentPosition}")
+            }
             
-            InitialPairingResult(
-                matches = updatedMatches, 
-                unpairedTeams = emptyList(), // Clear unpaired teams
-                byeTeam = updatedByeTeam
+            // Tek kalan takım varsa bye yap
+            if (engineState.unpairedTeams.isNotEmpty()) {
+                engineState.byeTeam = engineState.unpairedTeams.first()
+                android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: ${engineState.byeTeam?.currentPosition}")
+            }
+        }
+        
+        // 5. FINAL VALIDATION
+        val totalTeamsInPairs = engineState.candidateMatches.size * 2 + (if (engineState.byeTeam != null) 1 else 0)
+        if (totalTeamsInPairs != teams.size) {
+            android.util.Log.e("EmreSystemCorrect", "❌ TEAM COUNT MISMATCH: Expected ${teams.size}, got $totalTeamsInPairs")
+            return EmrePairingResult(emptyList(), null, false, false, emptyList())
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "✅ PAIRING ENGINE COMPLETED: ${engineState.candidateMatches.size} matches, ${if (engineState.byeTeam != null) "1 bye" else "no bye"}")
+        
+        // 6. EŞ PUANLI EŞLEŞME KONTROLÜ VE TUR ONAY
+        return performAsymmetricPointCheck(engineState.candidateMatches, engineState.byeTeam, currentRound)
+    }
+    
+    /**
+     * 🆕 EŞLEŞTİRME ARAYAN TAKIM İÇİN PARTNER BULMA
+     * 
+     * ALGORİTMA:
+     * 1. Kendinden sonraki takımları kontrol et
+     * 2. Eşleşmemiş ve daha önce oynamamış ilk takımla eşleş
+     * 3. Bulamazsa kendinden önceki takımları kontrol et
+     * 4. Önceki takım kullanılmışsa backtrack gerekir
+     */
+    private fun findPartnerForSearchingTeam(
+        searchingTeam: EmreTeam,
+        availableTeams: List<EmreTeam>,
+        engineState: PairingEngineState,
+        matchHistory: Set<Pair<Long, Long>>
+    ): PairingSearchResult {
+        
+        android.util.Log.d("EmreSystemCorrect", "🔍 PARTNER SEARCH: Team ${searchingTeam.currentPosition} searching...")
+        
+        // 1. ÖNCE SONRAKI TAKIMLARI KONTROL ET
+        for (candidate in availableTeams) {
+            if (candidate.currentPosition <= searchingTeam.currentPosition) continue // Sadece sonrakiler
+            if (candidate.id in engineState.usedTeams) continue // Zaten kullanılmış
+            
+            // Daha önce oynamış mı kontrol et
+            if (hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)) {
+                android.util.Log.d("EmreSystemCorrect", "⏭️ SKIP: ${candidate.currentPosition} (played before)")
+                continue
+            }
+            
+            // UYGUN PARTNER BULUNDU
+            android.util.Log.d("EmreSystemCorrect", "✅ FORWARD PARTNER: ${searchingTeam.currentPosition} → ${candidate.currentPosition}")
+            
+            // Eşleştirmeyi candidate matches'a ekle
+            engineState.candidateMatches.add(CandidateMatch(
+                team1 = searchingTeam,
+                team2 = candidate,
+                isAsymmetricPoints = searchingTeam.points != candidate.points
+            ))
+            
+            return PairingSearchResult.Success(candidate)
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "⬆️ NO FORWARD PARTNER: Checking backwards...")
+        
+        // 2. GERİYE DÖN - ÖNCEKİ TAKIMLARI KONTROL ET
+        for (candidate in availableTeams.reversed()) {
+            if (candidate.currentPosition >= searchingTeam.currentPosition) continue // Sadece öncekiler
+            
+            // Daha önce oynamış mı kontrol et
+            if (hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)) {
+                android.util.Log.d("EmreSystemCorrect", "⏭️ SKIP: ${candidate.currentPosition} (played before)")
+                continue
+            }
+            
+            // Bu takım zaten kullanılmış mı?
+            if (candidate.id in engineState.usedTeams) {
+                // BACKTRACK GEREKLİ - bu takımın eşleşmesini boz
+                android.util.Log.w("EmreSystemCorrect", "🔄 BACKTRACK NEEDED: ${searchingTeam.currentPosition} wants ${candidate.currentPosition}")
+                return PairingSearchResult.RequiresBacktrack(candidate)
+            }
+            
+            // UYGUN PARTNER BULUNDU (GERİDEN)
+            android.util.Log.d("EmreSystemCorrect", "✅ BACKWARD PARTNER: ${searchingTeam.currentPosition} → ${candidate.currentPosition}")
+            
+            // Eşleştirmeyi candidate matches'a ekle
+            engineState.candidateMatches.add(CandidateMatch(
+                team1 = searchingTeam,
+                team2 = candidate,
+                isAsymmetricPoints = searchingTeam.points != candidate.points
+            ))
+            
+            return PairingSearchResult.Success(candidate)
+        }
+        
+        // 3. HİÇBİR YERİDE PARTNER BULUNAMADI
+        android.util.Log.e("EmreSystemCorrect", "🏁 NO PARTNER FOUND: Team ${searchingTeam.currentPosition} exhausted all options")
+        return PairingSearchResult.TournamentFinished
+    }
+    
+    /**
+     * 🆕 GELİŞMİŞ BACKTRACK İŞLEMİ
+     * 
+     * KULLANICININ ALGORİTMASI:
+     * 1. Hedef takımın mevcut eşleşmesini boz
+     * 2. "Partneri çalınan takım" ile "eşleşilemeden kalanlar" kontrolü
+     * 3. En uygun çözümü uygula
+     */
+    private fun performAdvancedBacktrack(
+        searchingTeam: EmreTeam,
+        targetTeam: EmreTeam,
+        engineState: PairingEngineState,
+        availableTeams: MutableList<EmreTeam>,
+        matchHistory: Set<Pair<Long, Long>>
+    ): BacktrackResult {
+        
+        android.util.Log.w("EmreSystemCorrect", "🔄 ADVANCED BACKTRACK: ${searchingTeam.currentPosition} breaking ${targetTeam.currentPosition}'s match")
+        
+        // 1. HEDEF TAKIMIN MEVCUT EŞLEŞMESİNİ BUL VE BOZ
+        val existingMatch = engineState.candidateMatches.find { 
+            it.team1.id == targetTeam.id || it.team2.id == targetTeam.id 
+        }
+        
+        if (existingMatch == null) {
+            android.util.Log.e("EmreSystemCorrect", "❌ BACKTRACK FAILED: ${targetTeam.currentPosition} has no existing match")
+            return BacktrackResult(false, reason = "Target team has no existing match")
+        }
+        
+        // 2. EŞLEŞMEYİ BOZ VE PARTNERİ ÇALINAN TAKIMI BELİRLE
+        engineState.candidateMatches.remove(existingMatch)
+        val stolenPartnerTeam = if (existingMatch.team1.id == targetTeam.id) existingMatch.team2 else existingMatch.team1
+        
+        // Used teams'den çıkar
+        engineState.usedTeams.remove(existingMatch.team1.id)
+        engineState.usedTeams.remove(existingMatch.team2.id)
+        
+        // Available teams'e geri ekle
+        availableTeams.add(stolenPartnerTeam)
+        availableTeams.sortBy { it.currentPosition }
+        
+        android.util.Log.w("EmreSystemCorrect", "💥 MATCH BROKEN: ${existingMatch.team1.currentPosition} vs ${existingMatch.team2.currentPosition}")
+        android.util.Log.w("EmreSystemCorrect", "👤 STOLEN PARTNER: Team ${stolenPartnerTeam.currentPosition}")
+        
+        // 3. YENİ EŞLEŞMEYİ OLUŞTUR (searchingTeam + targetTeam)
+        val newMatch = CandidateMatch(
+            team1 = searchingTeam,
+            team2 = targetTeam,
+            isAsymmetricPoints = searchingTeam.points != targetTeam.points
+        )
+        engineState.candidateMatches.add(newMatch)
+        engineState.usedTeams.add(searchingTeam.id)
+        engineState.usedTeams.add(targetTeam.id)
+        
+        // Target team'i available'dan çıkar (zaten available değildi ama güvenlik için)
+        availableTeams.remove(targetTeam)
+        
+        android.util.Log.w("EmreSystemCorrect", "✅ NEW MATCH CREATED: ${searchingTeam.currentPosition} vs ${targetTeam.currentPosition}")
+        
+        return BacktrackResult(
+            success = true,
+            newMatch = newMatch,
+            stolenPartnerTeam = stolenPartnerTeam,
+            reason = "Backtrack successful"
+        )
+    }
+    
+    /**
+     * 🆕 ESİMETRİK PUAN KONTROLÜ VE TUR ONAY
+     * 
+     * KULLANICININ KURALI:
+     * - En az 1 aynı puanlı eşleşme varsa → tur oyna
+     * - Hiçbir aynı puanlı eşleşme yoksa → turnuva bitir
+     */
+    private fun performAsymmetricPointCheck(
+        candidateMatches: List<CandidateMatch>,
+        byeTeam: EmreTeam?,
+        currentRound: Int
+    ): EmrePairingResult {
+        
+        android.util.Log.d("EmreSystemCorrect", "🎯 ASYMMETRIC POINT CHECK: Round $currentRound, ${candidateMatches.size} matches")
+        
+        // Her eşleştirmeyi kontrol et
+        candidateMatches.forEachIndexed { index, match ->
+            android.util.Log.d("EmreSystemCorrect", "🔍 MATCH $index: ${match.team1.currentPosition}(${match.team1.points}p) vs ${match.team2.currentPosition}(${match.team2.points}p) → Asymmetric=${match.isAsymmetricPoints}")
+        }
+        
+        // Aynı puanlı eşleşme var mı kontrol et
+        val hasSamePointMatch = if (currentRound == 1) {
+            android.util.Log.d("EmreSystemCorrect", "✅ FIRST ROUND: Always continue")
+            true // İlk tur her zaman oynanır
+        } else {
+            val samePointMatches = candidateMatches.filter { !it.isAsymmetricPoints }
+            android.util.Log.d("EmreSystemCorrect", "⚖️ SAME POINT MATCHES: ${samePointMatches.size} out of ${candidateMatches.size}")
+            samePointMatches.forEach { match ->
+                android.util.Log.d("EmreSystemCorrect", "⚖️ EQUAL POINTS: ${match.team1.currentPosition}(${match.team1.points}p) vs ${match.team2.currentPosition}(${match.team2.points}p)")
+            }
+            candidateMatches.any { !it.isAsymmetricPoints }
+        }
+        
+        if (hasSamePointMatch) {
+            // TUR OYNA
+            android.util.Log.d("EmreSystemCorrect", "✅ TOURNAMENT CONTINUES: Round $currentRound approved")
+            
+            val matches = candidateMatches.map { candidate ->
+                Match(
+                    listId = candidate.team1.song.listId,
+                    rankingMethod = "EMRE_CORRECT",
+                    songId1 = candidate.team1.id,
+                    songId2 = candidate.team2.id,
+                    winnerId = null,
+                    round = currentRound
+                )
+            }
+            
+            return EmrePairingResult(
+                matches = matches,
+                byeTeam = byeTeam,
+                hasSamePointMatch = true,
+                canContinue = true,
+                candidateMatches = candidateMatches
             )
         } else {
-            initialPairings
+            // TURNUVA BİTİR
+            android.util.Log.e("EmreSystemCorrect", "🏁 TOURNAMENT FINISHED: All matches are asymmetric (Round $currentRound)")
+            android.util.Log.e("EmreSystemCorrect", "🏁 FINAL ANALYSIS: ${candidateMatches.size} total matches, 0 same-point matches")
+            
+            return EmrePairingResult(
+                matches = emptyList(),
+                byeTeam = byeTeam,
+                hasSamePointMatch = false,
+                canContinue = false,
+                candidateMatches = candidateMatches
+            )
         }
-        
-        // 4. FINAL VALIDATION AND REPORTING
-        val candidateMatches = finalPairings.matches
-        val byeTeam = finalPairings.byeTeam
-        
-        android.util.Log.d("EmreSystemCorrect", "✅ PROXIMITY PAIRING COMPLETED: ${candidateMatches.size} matches created")
-        android.util.Log.d("EmreSystemCorrect", "📊 FINAL STATE: Matches=${candidateMatches.size}, ByeTeam=${byeTeam?.currentPosition ?: "none"}")
-        android.util.Log.d("EmreSystemCorrect", "🎯 EXPECTED: ${if (teams.size % 2 == 0) teams.size / 2 else (teams.size - 1) / 2} matches + ${if (teams.size % 2 == 1) "1 bye" else "0 bye"}")
-        
-        // Validation check
-        val totalTeamsInMatches = candidateMatches.size * 2 + (if (byeTeam != null) 1 else 0)
-        if (totalTeamsInMatches != teams.size) {
-            android.util.Log.e("EmreSystemCorrect", "❌ PAIRING ERROR: Expected ${teams.size} teams in pairs, got $totalTeamsInMatches")
-            android.util.Log.e("EmreSystemCorrect", "❌ TOURNAMENT EARLY EXIT: Team count mismatch at Round $currentRound")
-            android.util.Log.e("EmreSystemCorrect", "❌ BREAKDOWN: ${candidateMatches.size} matches (${candidateMatches.size * 2} teams) + ${if (byeTeam != null) 1 else 0} bye team")
-            return EmrePairingResult(emptyList(), null, false, false)
-        }
-        
-        // Red line validation
-        for (match in candidateMatches) {
-            if (hasTeamsPlayedBefore(match.team1.id, match.team2.id, matchHistory)) {
-                android.util.Log.e("EmreSystemCorrect", "❌ RED LINE VIOLATION: Teams ${match.team1.currentPosition} and ${match.team2.currentPosition} have played before!")
-                android.util.Log.e("EmreSystemCorrect", "❌ TOURNAMENT EARLY EXIT: Duplicate pairing detected at Round $currentRound")
-                android.util.Log.e("EmreSystemCorrect", "❌ VIOLATION DETAILS: Team ${match.team1.id} vs Team ${match.team2.id} already in match history")
-                return EmrePairingResult(emptyList(), null, false, false)
-            }
-        }
-        
-        // AYNI PUANLI KONTROL VE TUR ONAY SİSTEMİ
-        return checkAndApproveRound(candidateMatches, byeTeam, currentRound, matchHistory)
     }
     
     /**
@@ -303,7 +587,7 @@ object EmreSystemCorrect {
             
             // ⚠️ KRİTİK KONTROLLER:
             // 1. Daha önce oynamışlar mı kontrol et (match history)
-            if (hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+            if (hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
                 continue // Bu takımla daha önce oynamış, sonrakini dene
             }
             
@@ -329,7 +613,7 @@ object EmreSystemCorrect {
             
             // ⚠️ KRİTİK KONTROLLER:
             // 1. Daha önce oynamışlar mı kontrol et
-            if (hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+            if (hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
                 continue // Bu takımla daha önce oynamış, sonrakini dene
             }
             
@@ -514,7 +798,7 @@ object EmreSystemCorrect {
             val upperCandidate = sortedTeams.find { 
                 it.currentPosition == searchPosition + distance && 
                 it.id !in usedTeams &&
-                !hasTeamsPlayedBefore(searchingTeam.id, it.id, matchHistory)
+                !hasTeamsPlayedBefore(searchingTeam.teamId, it.teamId, matchHistory)
             }
             if (upperCandidate != null) {
                 android.util.Log.d("EmreSystemCorrect", "🎯 CLOSEST PARTNER (UP): Team ${upperCandidate.currentPosition} (distance: $distance)")
@@ -525,7 +809,7 @@ object EmreSystemCorrect {
             val lowerCandidate = sortedTeams.find { 
                 it.currentPosition == searchPosition - distance && 
                 it.id !in usedTeams &&
-                !hasTeamsPlayedBefore(searchingTeam.id, it.id, matchHistory)
+                !hasTeamsPlayedBefore(searchingTeam.teamId, it.teamId, matchHistory)
             }
             if (lowerCandidate != null) {
                 android.util.Log.d("EmreSystemCorrect", "🎯 CLOSEST PARTNER (DOWN): Team ${lowerCandidate.currentPosition} (distance: $distance)")
@@ -649,8 +933,8 @@ object EmreSystemCorrect {
         
         for (match in matches) {
             // Bu maçtaki takımlardan biriyle eşleşebilir mi?
-            val canPairWithTeam1 = !hasTeamsPlayedBefore(unpairedTeam.id, match.team1.id, matchHistory)
-            val canPairWithTeam2 = !hasTeamsPlayedBefore(unpairedTeam.id, match.team2.id, matchHistory)
+            val canPairWithTeam1 = !hasTeamsPlayedBefore(unpairedTeam.teamId, match.team1.teamId, matchHistory)
+            val canPairWithTeam2 = !hasTeamsPlayedBefore(unpairedTeam.teamId, match.team2.teamId, matchHistory)
             
             if (canPairWithTeam1 || canPairWithTeam2) {
                 val distance1 = kotlin.math.abs(unpairedTeam.currentPosition - match.team1.currentPosition)
@@ -677,7 +961,7 @@ object EmreSystemCorrect {
     ): EmreTeam? {
         
         return candidates.find { candidate ->
-            !hasTeamsPlayedBefore(unpairedTeam.id, candidate.id, matchHistory)
+            !hasTeamsPlayedBefore(unpairedTeam.teamId, candidate.teamId, matchHistory)
         }
     }
     
@@ -742,8 +1026,8 @@ object EmreSystemCorrect {
             
             // ⚠️ CRITICAL FIX: Final duplicate check before creating matches
             val validMatches = candidateMatches.filter { candidate ->
-                val team1Id = candidate.team1.id
-                val team2Id = candidate.team2.id
+                val team1Id = candidate.team1.teamId
+                val team2Id = candidate.team2.teamId
                 
                 // Final duplicate kontrolü - bu çift daha önce eşleşmiş mi?
                 val isDuplicate = hasTeamsPlayedBefore(team1Id, team2Id, matchHistory)
@@ -820,7 +1104,7 @@ object EmreSystemCorrect {
             
             if (potentialPartner.id in usedTeams) continue
             
-            if (!hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+            if (!hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
                 return PartnerSearchResult.Found(potentialPartner)
             }
         }
@@ -831,7 +1115,7 @@ object EmreSystemCorrect {
             
             if (potentialPartner.id in usedTeams) continue
             
-            if (!hasTeamsPlayedBefore(searchingTeam.id, potentialPartner.id, matchHistory)) {
+            if (!hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
                 // Bu takım önceki bir eşleşmede kullanılıyorsa backtrack gerekir
                 return PartnerSearchResult.RequiresBacktrack(potentialPartner)
             }
@@ -893,15 +1177,15 @@ object EmreSystemCorrect {
         val hasPlayed = (pair1 in matchHistory) || (pair2 in matchHistory)
         
         // 🔍 DETAILED DEBUG LOG - Match history kontrolü
-        android.util.Log.d("EmreSystemCorrect", "🔍 CHECKING MATCH HISTORY: Team $team1Id vs Team $team2Id")
+        android.util.Log.d("EmreSystemCorrect", "🔍 CHECKING MATCH HISTORY: TeamID $team1Id vs TeamID $team2Id")
         android.util.Log.d("EmreSystemCorrect", "🔍 Match History size: ${matchHistory.size}")
         android.util.Log.d("EmreSystemCorrect", "🔍 Looking for pairs: ($team1Id, $team2Id) or ($team2Id, $team1Id)")
         
         if (hasPlayed) {
-            android.util.Log.w("EmreSystemCorrect", "🚫 DUPLICATE DETECTED: Team $team1Id and $team2Id have played before!")
+            android.util.Log.w("EmreSystemCorrect", "🚫 DUPLICATE DETECTED: TeamID $team1Id and $team2Id have played before!")
             android.util.Log.w("EmreSystemCorrect", "🚫 Found in history: $pair1 in history = ${pair1 in matchHistory}, $pair2 in history = ${pair2 in matchHistory}")
         } else {
-            android.util.Log.d("EmreSystemCorrect", "✅ PAIR OK: Team $team1Id and $team2Id have NOT played before")
+            android.util.Log.d("EmreSystemCorrect", "✅ PAIR OK: TeamID $team1Id and $team2Id have NOT played before")
         }
         
         return hasPlayed
@@ -918,26 +1202,40 @@ object EmreSystemCorrect {
         val updatedTeams = state.teams.map { it.deepCopy() }.toMutableList()
         val newMatchHistory = state.matchHistory.toMutableSet()
         
-        // Bye geçen takıma puan ekle
+        // 🆕 Create song-to-team mapping from current teams
+        val songToTeamMap = state.teams.associate { team -> team.song.id to team.teamId }
+        android.util.Log.d("EmreSystemCorrect", "🗺️ SONG-TO-TEAM MAPPING CREATED: ${songToTeamMap.size} teams mapped")
+        
+        // 🆕 BYE GEÇEN TAKIMA PUAN EKLE VE BYE COUNT GÜNCELLE
         byeTeam?.let { bye ->
             val teamIndex = updatedTeams.indexOfFirst { it.id == bye.id }
             if (teamIndex >= 0) {
-                updatedTeams[teamIndex] = updatedTeams[teamIndex].copy(
-                    points = updatedTeams[teamIndex].points + 1.0,
-                    byePassed = true
+                val currentTeam = updatedTeams[teamIndex]
+                updatedTeams[teamIndex] = currentTeam.copy(
+                    points = currentTeam.points + 1.0,
+                    byePassed = true,
+                    byeCount = currentTeam.byeCount + 1 // 🆕 Bye count artır
                 )
+                android.util.Log.d("EmreSystemCorrect", "🆓 BYE UPDATE: Team ${currentTeam.currentPosition} → Points: ${currentTeam.points + 1.0}, ByeCount: ${currentTeam.byeCount + 1}")
             }
         }
         
         // Maç sonuçlarını işle
         android.util.Log.d("EmreSystemCorrect", "📝 PROCESSING ${completedMatches.size} completed matches")
         completedMatches.forEach { match ->
-            // CRITICAL: Maç geçmişine ekle - prevents duplicate pairings
-            val pair1 = Pair(match.songId1, match.songId2)
-            val pair2 = Pair(match.songId2, match.songId1)
-            newMatchHistory.add(pair1)
-            newMatchHistory.add(pair2)
-            android.util.Log.d("EmreSystemCorrect", "📝 ADDED TO HISTORY: ${match.songId1} vs ${match.songId2} (Match ID: ${match.id})")
+            // 🆕 CRITICAL FIX: Convert song IDs to stable team IDs for match history
+            val teamId1 = songToTeamMap[match.songId1]
+            val teamId2 = songToTeamMap[match.songId2]
+            
+            if (teamId1 != null && teamId2 != null) {
+                val pair1 = Pair(teamId1, teamId2)
+                val pair2 = Pair(teamId2, teamId1)
+                newMatchHistory.add(pair1)
+                newMatchHistory.add(pair2)
+                android.util.Log.d("EmreSystemCorrect", "📝 ADDED TO HISTORY: TeamID $teamId1 vs TeamID $teamId2 (Match ID: ${match.id}, SongIDs: ${match.songId1} vs ${match.songId2})")
+            } else {
+                android.util.Log.e("EmreSystemCorrect", "❌ MAPPING ERROR: Cannot find team IDs for songs ${match.songId1} vs ${match.songId2}")
+            }
             
             // Puanları güncelle (sadece tamamlanmış maçlar)
             if (match.isCompleted) {
@@ -1031,17 +1329,22 @@ object EmreSystemCorrect {
     }
     
     /**
-     * Aynı puanlı takımlar için tiebreaker algoritması
+     * 🆕 YENİ TIEBREAKER ALGORİTMASI - Geliştirilmiş İsviçre Usulü
      * 
-     * KULLANICININ TARİF ETTİĞİ SISTEM:
+     * KULLANICININ YENİ SİSTEMİ:
      * 1. Aynı puanlı takımları al
-     * 2. Kendi aralarındaki maçlara bak
+     * 2. Kendi aralarındaki maçlara bak (bye puanları hariç)
      * 3. Head-to-head puanlama yap (ikinci puan sistemi)
      * 4. İkinci puan sistemine göre sırala
-     * 5. Hala eşitlik varsa → ID numarası (teamId) küçük olan üstte
+     * 5. Hala eşitlik varsa → Tur öncesi anlık sıralama (düşük önce)
      */
     private fun applySamePointTiebreaker(samePointTeams: List<EmreTeam>, completedMatches: List<Match>): List<EmreTeam> {
         if (samePointTeams.size <= 1) return samePointTeams
+        
+        android.util.Log.d("EmreSystemCorrect", "🔄 TIEBREAKER: Processing ${samePointTeams.size} same-point teams")
+        samePointTeams.forEach { team ->
+            android.util.Log.d("EmreSystemCorrect", "📊 TEAM ${team.currentPosition}: Points=${team.points}, PreRound=${team.preRoundPosition}")
+        }
         
         // Her takım için head-to-head puanları hesapla
         val headToHeadPoints = mutableMapOf<Long, Double>()
@@ -1052,36 +1355,53 @@ object EmreSystemCorrect {
         // Aynı puanlı takımların ID'lerini al
         val samePointTeamIds = samePointTeams.map { it.id }.toSet()
         
-        // Kendi aralarındaki tamamlanmış maçları kontrol et
+        // 🆕 Kendi aralarındaki tamamlanmış maçları kontrol et (BYE PUANLARI HARİÇ)
         completedMatches.forEach { match ->
-            // Bu maç aynı puanlı iki takım arasında mı?
+            // Bu maç aynı puanlı iki takım arasında mı ve bye maçı değil mi?
             if (match.isCompleted && 
                 match.songId1 in samePointTeamIds && 
-                match.songId2 in samePointTeamIds) {
+                match.songId2 in samePointTeamIds &&
+                match.songId1 != match.songId2) { // Bye maçları değil
                 
                 when (match.winnerId) {
                     match.songId1 -> {
                         // Takım 1 kazandı
                         headToHeadPoints[match.songId1] = headToHeadPoints[match.songId1]!! + 1.0
+                        android.util.Log.d("EmreSystemCorrect", "⚔️ HEAD-TO-HEAD: ${match.songId1} beats ${match.songId2} → +1.0")
                     }
                     match.songId2 -> {
                         // Takım 2 kazandı
                         headToHeadPoints[match.songId2] = headToHeadPoints[match.songId2]!! + 1.0
+                        android.util.Log.d("EmreSystemCorrect", "⚔️ HEAD-TO-HEAD: ${match.songId2} beats ${match.songId1} → +1.0")
                     }
                     null -> {
                         // Beraberlik - her ikisine 0.5 puan
                         headToHeadPoints[match.songId1] = headToHeadPoints[match.songId1]!! + 0.5
                         headToHeadPoints[match.songId2] = headToHeadPoints[match.songId2]!! + 0.5
+                        android.util.Log.d("EmreSystemCorrect", "⚔️ HEAD-TO-HEAD: ${match.songId1} draws ${match.songId2} → +0.5 each")
                     }
                 }
             }
         }
         
-        // Head-to-head puanlarına göre sırala, sonra teamId'ye göre
-        return samePointTeams.sortedWith(
+        // Head-to-head puanlarını logla
+        headToHeadPoints.forEach { (teamId, points) ->
+            val team = samePointTeams.find { it.id == teamId }
+            android.util.Log.d("EmreSystemCorrect", "📈 H2H POINTS: Team ${team?.currentPosition} → ${points}")
+        }
+        
+        // 🆕 YENİ SIRALAMA: Head-to-head, sonra tur öncesi sıralama
+        val sortedTeams = samePointTeams.sortedWith(
             compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // Head-to-head puan (yüksek önce)
-                .thenBy { it.teamId } // ID numarası küçük olan üstte
+                .thenBy { it.preRoundPosition } // 🆕 Tur öncesi sıralama (düşük önce = üstte olan)
         )
+        
+        android.util.Log.d("EmreSystemCorrect", "🏆 TIEBREAKER RESULT:")
+        sortedTeams.forEachIndexed { index, team ->
+            android.util.Log.d("EmreSystemCorrect", "🥇 RANK ${index + 1}: Team ${team.currentPosition} (H2H: ${headToHeadPoints[team.id]}, PreRound: ${team.preRoundPosition})")
+        }
+        
+        return sortedTeams
     }
     
     /**
