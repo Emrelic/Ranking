@@ -1443,11 +1443,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 val byeTeam = findByeTeam(currentState, currentRoundMatches)
                 emreState = RankingEngine.processCorrectEmreResults(currentState, currentRoundMatches, byeTeam)
                 
+                // Tamamlanan turu fikstürde göster
+                android.util.Log.d("RankingViewModel", "📋 ${completedMatch.round}. tur maçları fikstürde gösteriliyor...")
+                _uiState.value = _uiState.value.copy(
+                    showInitialRanking = false,
+                    showMatchingsList = true,
+                    matchingsList = currentRoundMatches,
+                    emreState = emreState
+                )
+                
                 // Sonraki tur için eşleştirme oluştur
                 val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
                 
                 if (!pairingResult.canContinue) {
-                    // Turnuva tamamlandı
+                    // Turnuva tamamlandı - tamamlanan tur maçları zaten gösterildi
+                    android.util.Log.d("RankingViewModel", "🏁 Turnuva tamamlandı - Son tur maçları fikstürde görüntülendi")
                     completeRanking()
                     return
                 }
@@ -1455,7 +1465,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 if (pairingResult.matches.isNotEmpty()) {
                     repository.createMatches(pairingResult.matches)
                     
-                    // Her yeni tur için eşleştirmeler listesini göster
+                    // Sonraki tur için eşleştirmeler listesini göster
                     android.util.Log.d("RankingViewModel", "📋 ${completedMatch.round + 1}. tur eşleştirmeler listesi gösteriliyor...")
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,
