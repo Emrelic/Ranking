@@ -170,7 +170,16 @@ fun ResultsScreen(
                             position = index + 1,
                             song = resultWithSong.second,
                             score = resultWithSong.first.score,
-                            method = method
+                            method = method,
+                            teamId = if (method == "EMRE_CORRECT") resultWithSong.second.id else null,
+                            headToHeadInfo = if (method == "EMRE_CORRECT") {
+                                // Aynı puanlı takımlar için head-to-head bilgisi
+                                val currentScore = resultWithSong.first.score
+                                val samePointTeams = results.filter { it.first.score == currentScore }
+                                if (samePointTeams.size > 1) {
+                                    "H2H: ${index + 1}/${samePointTeams.size}"
+                                } else null
+                            } else null
                         )
                         
                         if (index < results.size - 1) {
@@ -223,7 +232,16 @@ private fun LeagueResultsTabs(
                             position = index + 1,
                             song = resultWithSong.second,
                             score = resultWithSong.first.score,
-                            method = method
+                            method = method,
+                            teamId = if (method == "EMRE_CORRECT") resultWithSong.second.id else null,
+                            headToHeadInfo = if (method == "EMRE_CORRECT") {
+                                // Aynı puanlı takımlar için head-to-head bilgisi
+                                val currentScore = resultWithSong.first.score
+                                val samePointTeams = results.filter { it.first.score == currentScore }
+                                if (samePointTeams.size > 1) {
+                                    "H2H: ${index + 1}/${samePointTeams.size}"
+                                } else null
+                            } else null
                         )
                         
                         if (index < results.size - 1) {
@@ -455,7 +473,9 @@ private fun ResultCard(
     position: Int,
     song: com.example.ranking.data.Song,
     score: Double,
-    method: String
+    method: String,
+    teamId: Long? = null,
+    headToHeadInfo: String? = null
 ) {
     val backgroundColor = when (position) {
         1 -> Color(0xFFFFD700) // Gold
@@ -481,25 +501,39 @@ private fun ResultCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Position with trophy icon for top 3
-            Box(
-                modifier = Modifier.width(48.dp),
-                contentAlignment = Alignment.Center
+            // Position with trophy icon for top 3 and Team ID
+            Column(
+                modifier = Modifier.width(60.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (position <= 3) {
-                    Icon(
-                        Icons.Default.Star,
-                        contentDescription = "Trophy",
-                        tint = textColor,
-                        modifier = Modifier.size(24.dp)
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (position <= 3) {
+                        Icon(
+                            Icons.Default.Star,
+                            contentDescription = "Trophy",
+                            tint = textColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Text(
+                        text = "$position",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = textColor
                     )
                 }
-                Text(
-                    text = "$position",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = textColor
-                )
+                
+                // Team ID (sadece EMRE_CORRECT için)
+                if (method == "EMRE_CORRECT" && teamId != null) {
+                    Text(
+                        text = "T$teamId",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = textColor.copy(alpha = 0.6f),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -532,7 +566,7 @@ private fun ResultCard(
             
             Spacer(modifier = Modifier.width(16.dp))
             
-            // Score
+            // Score and Head-to-Head info
             Column(
                 horizontalAlignment = Alignment.End
             ) {
@@ -547,6 +581,16 @@ private fun ResultCard(
                     style = MaterialTheme.typography.bodySmall,
                     color = textColor.copy(alpha = 0.7f)
                 )
+                
+                // Head-to-head bilgisi (sadece EMRE_CORRECT için ve aynı puanlı takımlar için)
+                if (method == "EMRE_CORRECT" && !headToHeadInfo.isNullOrBlank()) {
+                    Text(
+                        text = headToHeadInfo,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = textColor.copy(alpha = 0.8f),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             }
         }
     }

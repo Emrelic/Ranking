@@ -1087,99 +1087,164 @@ private fun MatchingsListContent(
                 val song1 = uiState.allSongs.find { it.id == match.songId1 }
                 val song2 = uiState.allSongs.find { it.id == match.songId2 }
                 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                Column {
+                    // Eşleşme numarası
+                    Text(
+                        text = "${index + 1}. Eşleşme",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                ) {
+                    
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Eşleşme numarası
-                        Text(
-                            text = "${index + 1}.",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
                         
-                        // İlk takım
-                        Column(
-                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = song1?.name ?: "Bilinmiyor",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                softWrap = true
+                        // İlk takım Card
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
-                            if (song1?.artist?.isNotBlank() == true) {
-                                Text(
-                                    text = song1.artist,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center,
-                                    softWrap = true
-                                )
-                            }
-                            if (song1?.album?.isNotBlank() == true) {
-                                Text(
-                                    text = song1.album,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                    textAlign = TextAlign.Center,
-                                    softWrap = true
-                                )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp)
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = song1?.name ?: "Bilinmiyor",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        softWrap = true
+                                    )
+                                    if (song1?.artist?.isNotBlank() == true) {
+                                        Text(
+                                            text = song1.artist,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            textAlign = TextAlign.Center,
+                                            softWrap = true
+                                        )
+                                    }
+                                    if (song1?.album?.isNotBlank() == true) {
+                                        Text(
+                                            text = song1.album,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                            textAlign = TextAlign.Center,
+                                            softWrap = true
+                                        )
+                                    }
+                                }
+                                
+                                // Puan rozeti sol alt köşe (sadece EMRE_CORRECT için)
+                                val team1Points = if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                    uiState.emreState.teams.find { it.song.id == song1?.id }?.points ?: 0.0
+                                } else {
+                                    0.0
+                                }
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomStart)
+                                        .padding(4.dp)
+                                        .background(Color(0xFF4CAF50), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "${team1Points.toInt()}p",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
                             }
                         }
                         
                         // VS
                         Text(
                             text = "VS",
-                            style = MaterialTheme.typography.titleMedium,
+                            style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            modifier = Modifier.padding(horizontal = 4.dp)
                         )
                         
-                        // İkinci takım  
-                        Column(
-                            modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = song2?.name ?: "Bilinmiyor",
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                softWrap = true
+                        // İkinci takım Card
+                        Card(
+                            modifier = Modifier.weight(1f),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
                             )
-                            if (song2?.artist?.isNotBlank() == true) {
-                                Text(
-                                    text = song2.artist,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center,
-                                    softWrap = true
-                                )
-                            }
-                            if (song2?.album?.isNotBlank() == true) {
-                                Text(
-                                    text = song2.album,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                    textAlign = TextAlign.Center,
-                                    softWrap = true
-                                )
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp)
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = song2?.name ?: "Bilinmiyor",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        softWrap = true
+                                    )
+                                    if (song2?.artist?.isNotBlank() == true) {
+                                        Text(
+                                            text = song2.artist,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            textAlign = TextAlign.Center,
+                                            softWrap = true
+                                        )
+                                    }
+                                    if (song2?.album?.isNotBlank() == true) {
+                                        Text(
+                                            text = song2.album,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                            textAlign = TextAlign.Center,
+                                            softWrap = true
+                                        )
+                                    }
+                                }
+                                
+                                // Puan rozeti sağ alt köşe (sadece EMRE_CORRECT için)
+                                val team2Points = if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                    uiState.emreState.teams.find { it.song.id == song2?.id }?.points ?: 0.0
+                                } else {
+                                    0.0
+                                }
+                                
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(4.dp)
+                                        .background(Color(0xFF4CAF50), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "${team2Points.toInt()}p",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
                             }
                         }
+                    }
+                }
                     }
                 }
             }

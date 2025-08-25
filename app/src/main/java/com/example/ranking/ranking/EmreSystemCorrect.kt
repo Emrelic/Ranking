@@ -257,10 +257,14 @@ object EmreSystemCorrect {
         
         // 2. ANA EŞLEŞTIRME DÖNGÜSÜ
         var safetyCounter = 0
-        val maxIterations = teams.size * 3 // Güvenlik limiti
+        val maxIterations = teams.size * 5 // Backtrack için daha yüksek limit
         
         while (availableTeams.isNotEmpty() && safetyCounter < maxIterations) {
             safetyCounter++
+            
+            if (safetyCounter % 50 == 0) {
+                android.util.Log.w("EmreSystemCorrect", "⚠️ ITERATION WARNING: ${safetyCounter}/${maxIterations} iterations, ${availableTeams.size} teams remaining")
+            }
             
             // En üst anlık sıralı takımı "eşleştirme arayan takım" yap
             val searchingTeam = availableTeams.removeFirstOrNull()
@@ -302,6 +306,7 @@ object EmreSystemCorrect {
                         engineState.unpairedTeams.add(searchingTeam)
                         android.util.Log.w("EmreSystemCorrect", "⚠️ UNPAIRED: Team ${searchingTeam.currentPosition} cannot find partner")
                     }
+                    // Note: Displaced team zaten performAdvancedBacktrack içinde availableTeams'e eklendi
                 }
                 is PairingSearchResult.TournamentFinished -> {
                     // Turnuva bitti - kimse ile eşleşemiyor
@@ -309,6 +314,14 @@ object EmreSystemCorrect {
                     return EmrePairingResult(emptyList(), null, false, false, emptyList())
                 }
             }
+        }
+        
+        // 3. INFINITE LOOP PROTECTION - KALAN TAKIMLAR
+        if (availableTeams.isNotEmpty()) {
+            android.util.Log.e("EmreSystemCorrect", "⚠️ INFINITE LOOP DETECTED: ${availableTeams.size} teams stuck after ${safetyCounter} iterations")
+            // Kalan takımları unpaired teams'e ekle
+            engineState.unpairedTeams.addAll(availableTeams)
+            availableTeams.clear()
         }
         
         // 4. EŞLEŞİLEMEDEN KALANLAR GRUBU İŞLEME
@@ -372,9 +385,19 @@ object EmreSystemCorrect {
             if (candidate.currentPosition <= searchingTeam.currentPosition) continue // Sadece sonrakiler
             if (candidate.id in engineState.usedTeams) continue // Zaten kullanılmış
             
-            // Daha önce oynamış mı kontrol et
+            // 🔴 KRİTİK: Daha önce oynamış mı kontrol et
             if (hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)) {
-                android.util.Log.d("EmreSystemCorrect", "⏭️ SKIP: ${candidate.currentPosition} (played before)")
+                android.util.Log.d("EmreSystemCorrect", "⏭️ FORWARD SKIP: ${candidate.currentPosition} (played before with TeamID ${searchingTeam.teamId})")
+                continue
+            }
+            
+            // 🔴 KRİTİK: Candidate matches'te duplicate kontrolü
+            val isDuplicateInCandidates = engineState.candidateMatches.any { existingMatch ->
+                (existingMatch.team1.teamId == searchingTeam.teamId && existingMatch.team2.teamId == candidate.teamId) ||
+                (existingMatch.team1.teamId == candidate.teamId && existingMatch.team2.teamId == searchingTeam.teamId)
+            }
+            if (isDuplicateInCandidates) {
+                android.util.Log.w("EmreSystemCorrect", "🚫 FORWARD SKIP: ${candidate.currentPosition} (already in candidate matches)")
                 continue
             }
             
@@ -404,9 +427,19 @@ object EmreSystemCorrect {
                 continue
             }
             
-            // Daha önce oynamış mı kontrol et
+            // 🔴 KRİTİK: Daha önce oynamış mı kontrol et
             if (hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)) {
-                android.util.Log.d("EmreSystemCorrect", "⏭️ SKIP: ${candidate.currentPosition} (played before)")
+                android.util.Log.d("EmreSystemCorrect", "⏭️ BACKWARD SKIP: ${candidate.currentPosition} (played before with TeamID ${searchingTeam.teamId})")
+                continue
+            }
+            
+            // 🔴 KRİTİK: Candidate matches'te duplicate kontrolü
+            val isDuplicateInCandidates = engineState.candidateMatches.any { existingMatch ->
+                (existingMatch.team1.teamId == searchingTeam.teamId && existingMatch.team2.teamId == candidate.teamId) ||
+                (existingMatch.team1.teamId == candidate.teamId && existingMatch.team2.teamId == searchingTeam.teamId)
+            }
+            if (isDuplicateInCandidates) {
+                android.util.Log.w("EmreSystemCorrect", "🚫 BACKWARD SKIP: ${candidate.currentPosition} (already in candidate matches)")
                 continue
             }
             
@@ -471,9 +504,9 @@ object EmreSystemCorrect {
         engineState.usedTeams.remove(existingMatch.team1.teamId)
         engineState.usedTeams.remove(existingMatch.team2.teamId)
         
-        // Available teams'e geri ekle
-        availableTeams.add(stolenPartnerTeam)
-        availableTeams.sortBy { it.currentPosition }
+        // Available teams'e geri ekle - ÖNCELİKLİ OLARAK BAŞA EKLE
+        availableTeams.add(0, stolenPartnerTeam) // Displaced team önceliği
+        android.util.Log.w("EmreSystemCorrect", "🔄 DISPLACED PRIORITY: Team ${stolenPartnerTeam.currentPosition} moved to front of queue")
         
         android.util.Log.w("EmreSystemCorrect", "💥 MATCH BROKEN: ${existingMatch.team1.currentPosition} vs ${existingMatch.team2.currentPosition}")
         android.util.Log.w("EmreSystemCorrect", "👤 STOLEN PARTNER: Team ${stolenPartnerTeam.currentPosition}")
@@ -1239,9 +1272,15 @@ object EmreSystemCorrect {
             if (teamId1 != null && teamId2 != null) {
                 val pair1 = Pair(teamId1, teamId2)
                 val pair2 = Pair(teamId2, teamId1)
-                newMatchHistory.add(pair1)
-                newMatchHistory.add(pair2)
-                android.util.Log.d("EmreSystemCorrect", "📝 ADDED TO HISTORY: TeamID $teamId1 vs TeamID $teamId2 (Match ID: ${match.id}, SongIDs: ${match.songId1} vs ${match.songId2})")
+                
+                // 🔴 KRİTİK FIX: DUPLICATE KONTROLÜ - SADECE DAHA ÖNCE EŞLEŞMİŞ DEĞİLLERLE EŞLEŞİR
+                if (!newMatchHistory.contains(pair1) && !newMatchHistory.contains(pair2)) {
+                    newMatchHistory.add(pair1)
+                    newMatchHistory.add(pair2)
+                    android.util.Log.d("EmreSystemCorrect", "📝 ADDED TO HISTORY: TeamID $teamId1 vs TeamID $teamId2 (Match ID: ${match.id}, SongIDs: ${match.songId1} vs ${match.songId2})")
+                } else {
+                    android.util.Log.e("EmreSystemCorrect", "🚫 BLOCKED DUPLICATE: TeamID $teamId1 vs TeamID $teamId2 already in match history! (Match ID: ${match.id})")
+                }
             } else {
                 android.util.Log.e("EmreSystemCorrect", "❌ MAPPING ERROR: Cannot find team IDs for songs ${match.songId1} vs ${match.songId2}")
             }
