@@ -1058,3 +1058,88 @@ if (candidate.teamId in engineState.usedTeams) {
 
 **Commit:** "Fix critical backward search backtrack logic - enable backtrack for paired teams"
 **APK:** 24 Ağustos 23:09 (backward search fix ile son versiyon)
+
+### 2025-08-25 - SON TUR MAÇLARI FİKSTÜRDE GÖSTERILME SORUNU ÇÖZÜLDÜ ✅
+
+**Problem:** Turnuva bittiğinde son tur maçları fikstürde görünmüyordu
+- 9 tur oynanıyor ama sadece 8 tur fikstürde görünüyordu
+- Son tur maçları database'e yazılıyor ama UI'da gösterilmiyordu
+
+**Kök Neden:**
+`updateEmreCorrectStateAfterMatch()` fonksiyonunda turnuva bittiğinde:
+```kotlin
+if (!pairingResult.canContinue) {
+    completeRanking()
+    return  // ❌ Direkt çıkıyor, son tur fikstürde gösterilmiyor
+}
+```
+
+**Çözüm:**
+```kotlin
+// ✅ Önce tamamlanan turu fikstürde göster
+_uiState.value = _uiState.value.copy(
+    showMatchingsList = true,
+    matchingsList = currentRoundMatches,  // ✅ Tamamlanan tur maçları
+    emreState = emreState
+)
+
+// ✅ Sonra turnuva bitiş kontrolü
+if (!pairingResult.canContinue) {
+    android.util.Log.d("RankingViewModel", "🏁 Turnuva tamamlandı - Son tur maçları fikstürde görüntülendi")
+    completeRanking()
+    return
+}
+```
+
+**Test Sonucu:**
+- ✅ Son tur maçları artık fikstürde görünüyor
+- ✅ Turnuva doğru zamanda bitiyor
+- ✅ Tüm turlar kayıt altında
+
+**APK:** 26 Ağustos 00:30 (son tur fikstür fix ile güncel versiyon)
+
+### 2025-08-25 - UYGULAMAYI ÖNCEKİ HALİNE GERİ DÖNDÜRME ✅
+
+**Kullanıcı İsteği:** Bugün yapılan değişiklikleri geri al, önceki çalışan hale döndür
+
+**Yapılan İşlem:**
+- Git stash ile mevcut değişiklikler kayıt altına alındı
+- `git reset --hard 2737716` ile çalışan versiyona dönüldü
+- Build ve test yapıldı
+
+**Geri Dönülen Commit:** 
+`2737716 - Fix critical backward search backtrack logic - enable backtrack for paired teams`
+
+**Bu durumda mevcut özellikler:**
+- ✅ Geliştirilmiş İsviçre Sistemi tam çalışır durumda
+- ✅ Proximity-based pairing algorithm aktif
+- ✅ Duplicate pairing koruması %100 çalışıyor
+- ✅ Backward search backtrack sistemi
+- ✅ Stable Team ID system
+
+**Sonuç:** Uygulama çalışan önceki haline başarıyla döndürüldü
+
+### 2025-08-25 - TURNUVA ERKEn SONLANMA SORUNU ANALİZİ ⚠️
+
+**Problem:** Turnuva bitmemesi gereken yerde bitiyor
+
+**Analiz:**
+Loglardan görülen durum:
+- ✅ Round 11 approved (7 aynı puanlı eşleşme var)
+- ✅ Algoritma "TOURNAMENT CONTINUES" diyor
+- ❌ Ama UI'da "9. tur eşleştirmeler" gösteriliyor
+- ❌ Sonra turnuva bitiyor
+
+**Tespit Edilen Sorun:**
+UI ve algoritma arasında tur numarası uyumsuzluğu:
+- Algorithm: Round 11 maçları oluşturuyor
+- UI Log: "📋 9. tur eşleştirmeler listesi gösteriliyor..."
+- Gerçek durum: `completedMatch.round + 1` hesaplaması yanlış
+
+**Devam Eden İnceleme:**
+Round numarası hesaplama mantığında tutarsızlık var.
+`updateEmreCorrectStateAfterMatch()` fonksiyonunda tur numarası doğru hesaplanmıyor.
+
+**Status:** 🔍 İnceleme devam ediyor - UI/algoritma uyumsuzluğu
+
+**APK:** 26 Ağustos 00:45 (son tur fikstür fix ile)
