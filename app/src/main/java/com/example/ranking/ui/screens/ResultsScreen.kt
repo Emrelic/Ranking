@@ -600,7 +600,7 @@ private fun formatScore(score: Double, method: String): String {
     return when (method) {
         "DIRECT_SCORING" -> "${score.toInt()}/100"
         "LEAGUE", "SWISS" -> "${score.toInt()} puan"
-        "EMRE_CORRECT" -> "${score.toInt()}"
+        "EMRE_CORRECT" -> if (score % 1.0 == 0.0) "${score.toInt()}" else "$score"
         else -> score.toString()
     }
 }

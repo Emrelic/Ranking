@@ -1466,7 +1466,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     repository.createMatches(pairingResult.matches)
                     
                     // Sonraki tur için eşleştirmeler listesini göster
-                    android.util.Log.d("RankingViewModel", "📋 ${completedMatch.round + 1}. tur eşleştirmeler listesi gösteriliyor...")
+                    val nextRoundNumber = emreState?.currentRound
+                    android.util.Log.d("RankingViewModel", "📋 ${nextRoundNumber}. tur eşleştirmeler listesi gösteriliyor...")
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,
                         showMatchingsList = true,

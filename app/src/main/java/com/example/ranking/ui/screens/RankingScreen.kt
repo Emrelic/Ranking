@@ -604,23 +604,29 @@ private fun MatchBasedContent(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     uiState.song1?.let { song1 ->
-                        Box {
+                        Box(
+                            modifier = Modifier.height(140.dp) // Sabit yükseklik - simetrik çerçeve
+                        ) {
                             Button(
                                 onClick = { onMatchResult(match.id, song1.id) },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight()
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(16.dp), // Normal padding - elips yüksekliği azalt
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp), // Eşit padding
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    verticalArrangement = Arrangement.Center // Ortada hizalama
                                 ) {
-                                    // Padişah ismi ortada - BÜYÜK FONT - TAM GÖRÜNÜR
+                                    // Padişah ismi - BÜYÜK FONT - TAM GÖRÜNÜR
                                     Text(
                                         text = song1.name,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center,
-                                        maxLines = 3,
+                                        maxLines = 2,
                                         softWrap = true
                                     )
                                     if (song1.artist.isNotBlank()) {
@@ -628,7 +634,7 @@ private fun MatchBasedContent(
                                             text = song1.artist,
                                             style = MaterialTheme.typography.titleMedium,
                                             textAlign = TextAlign.Center,
-                                            maxLines = 2,
+                                            maxLines = 1,
                                             softWrap = true
                                         )
                                     }
@@ -638,14 +644,14 @@ private fun MatchBasedContent(
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                             textAlign = TextAlign.Center,
-                                            maxLines = 2,
+                                            maxLines = 1,
                                             softWrap = true
                                         )
                                     }
                                 }
                             }
                             
-                            // Puan göstergesi SAĞ ALT KÖŞEDE (sadece EMRE sistemi için)
+                            // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
                             if (method == "EMRE_CORRECT") {
                                 val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
                                     uiState.emreState.teams.find { it.song.id == song1.id }?.points ?: 0.0
@@ -656,16 +662,16 @@ private fun MatchBasedContent(
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
-                                        .padding(8.dp)
+                                        .offset(x = 4.dp, y = 4.dp) // Tam köşeye yerleştir
                                         .background(
                                             Color(0xFFFF9800), // Turuncu/Amber
-                                            RoundedCornerShape(12.dp)
+                                            RoundedCornerShape(8.dp) // Küçük border radius
                                         )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp) // Kompakt padding
                                 ) {
                                     Text(
-                                        text = "${currentPoints.toInt()}p",
-                                        style = MaterialTheme.typography.labelMedium,
+                                        text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
+                                        style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
@@ -682,23 +688,29 @@ private fun MatchBasedContent(
                     )
                     
                     uiState.song2?.let { song2 ->
-                        Box {
+                        Box(
+                            modifier = Modifier.height(140.dp) // Aynı sabit yükseklik - simetrik çerçeve
+                        ) {
                             Button(
                                 onClick = { onMatchResult(match.id, song2.id) },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight()
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(16.dp), // Normal padding - elips yüksekliği azalt
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 16.dp, vertical = 8.dp), // Aynı eşit padding
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    verticalArrangement = Arrangement.Center // Aynı ortada hizalama
                                 ) {
-                                    // Padişah ismi ortada - BÜYÜK FONT - TAM GÖRÜNÜR
+                                    // Padişah ismi - BÜYÜK FONT - TAM GÖRÜNÜR
                                     Text(
                                         text = song2.name,
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center,
-                                        maxLines = 3,
+                                        maxLines = 2,
                                         softWrap = true
                                     )
                                     if (song2.artist.isNotBlank()) {
@@ -706,7 +718,7 @@ private fun MatchBasedContent(
                                             text = song2.artist,
                                             style = MaterialTheme.typography.titleMedium,
                                             textAlign = TextAlign.Center,
-                                            maxLines = 2,
+                                            maxLines = 1,
                                             softWrap = true
                                         )
                                     }
@@ -716,14 +728,14 @@ private fun MatchBasedContent(
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                             textAlign = TextAlign.Center,
-                                            maxLines = 2,
+                                            maxLines = 1,
                                             softWrap = true
                                         )
                                     }
                                 }
                             }
                             
-                            // Puan göstergesi SAĞ ALT KÖŞEDE (sadece EMRE sistemi için)
+                            // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
                             if (method == "EMRE_CORRECT") {
                                 val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
                                     uiState.emreState.teams.find { it.song.id == song2.id }?.points ?: 0.0
@@ -734,16 +746,16 @@ private fun MatchBasedContent(
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
-                                        .padding(8.dp)
+                                        .offset(x = 4.dp, y = 4.dp) // Tam köşeye yerleştir
                                         .background(
                                             Color(0xFFFF9800), // Turuncu/Amber
-                                            RoundedCornerShape(12.dp)
+                                            RoundedCornerShape(8.dp) // Küçük border radius
                                         )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp) // Kompakt padding
                                 ) {
                                     Text(
-                                        text = "${currentPoints.toInt()}p",
-                                        style = MaterialTheme.typography.labelMedium,
+                                        text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
+                                        style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
@@ -924,8 +936,21 @@ private fun InitialRankingContent(
             text = "İlk Sıralama Tablosu",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
+        
+        // İlk eşleştirmeleri yap butonu - YUKARI TAŞINDI
+        Button(
+            onClick = { 
+                android.util.Log.d("InitialRankingContent", "🔥 BUTON BASILDI!")
+                viewModel.createFirstRoundMatches() 
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            Text("1. Tur Eşleştirmelerini Yap")
+        }
         
         // EmreState'den takımları al
         uiState.emreState?.teams?.let { teams ->
@@ -1028,19 +1053,6 @@ private fun InitialRankingContent(
                     }
                 }
             }
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        // İlk eşleştirmeleri yap butonu
-        Button(
-            onClick = { 
-                android.util.Log.d("InitialRankingContent", "🔥 BUTON BASILDI!")
-                viewModel.createFirstRoundMatches() 
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("1. Tur Eşleştirmelerini Yap")
         }
     }
 }
