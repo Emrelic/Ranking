@@ -327,24 +327,55 @@ object EmreSystemCorrect {
         // 4. EŞLEŞİLEMEDEN KALANLAR GRUBU İŞLEME
         if (engineState.unpairedTeams.isNotEmpty()) {
             android.util.Log.w("EmreSystemCorrect", "⚠️ PROCESSING UNPAIRED TEAMS: ${engineState.unpairedTeams.size} teams need resolution")
-            // Eşleşilemeden kalanlar için emergency pairing logic burada olacak
-            // Şimdilik basit eşleştirme yapalım
-            while (engineState.unpairedTeams.size >= 2) {
-                val team1 = engineState.unpairedTeams.removeAt(0)
-                val team2 = engineState.unpairedTeams.removeAt(0)
+            
+            // 🔴 CRITICAL FIX: DUPLICATE PREVENTION IN EMERGENCY PAIRING
+            val processedTeams = mutableSetOf<Long>()
+            val emergencyPairs = mutableListOf<Pair<EmreTeam, EmreTeam>>()
+            
+            // İlk olarak tüm unpaired teams'i duplicate olmayan çiftler halinde eşleştir
+            for (i in engineState.unpairedTeams.indices) {
+                val team1 = engineState.unpairedTeams[i]
+                if (team1.teamId in processedTeams) continue
                 
-                engineState.candidateMatches.add(CandidateMatch(
-                    team1 = team1,
-                    team2 = team2, 
-                    isAsymmetricPoints = team1.points != team2.points
-                ))
-                android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIR: ${team1.currentPosition} vs ${team2.currentPosition}")
+                // Bu takım için duplicate olmayan partner ara
+                var foundPartner: EmreTeam? = null
+                for (j in i + 1 until engineState.unpairedTeams.size) {
+                    val team2 = engineState.unpairedTeams[j]
+                    if (team2.teamId in processedTeams) continue
+                    
+                    // DUPLICATE KONTROL
+                    if (!hasTeamsPlayedBefore(team1.teamId, team2.teamId, matchHistory)) {
+                        foundPartner = team2
+                        break
+                    }
+                }
+                
+                if (foundPartner != null) {
+                    emergencyPairs.add(Pair(team1, foundPartner))
+                    processedTeams.add(team1.teamId)
+                    processedTeams.add(foundPartner.teamId)
+                    android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY PAIR (DUPLICATE-SAFE): ${team1.currentPosition} vs ${foundPartner.currentPosition}")
+                } else {
+                    android.util.Log.e("EmreSystemCorrect", "❌ EMERGENCY FAIL: Team ${team1.currentPosition} cannot pair with anyone (all duplicates)")
+                }
             }
             
-            // Tek kalan takım varsa bye yap
-            if (engineState.unpairedTeams.isNotEmpty()) {
-                engineState.byeTeam = engineState.unpairedTeams.first()
-                android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: ${engineState.byeTeam?.currentPosition}")
+            // Duplicate-safe eşleştirmeleri candidateMatches'e ekle
+            for (pair in emergencyPairs) {
+                engineState.candidateMatches.add(CandidateMatch(
+                    team1 = pair.first,
+                    team2 = pair.second, 
+                    isAsymmetricPoints = pair.first.points != pair.second.points
+                ))
+            }
+            
+            // İşlenmeyen takımları bye grubuna ekle
+            engineState.unpairedTeams.clear()
+            for (team in engineState.unpairedTeams.toList()) {
+                if (team.teamId !in processedTeams) {
+                    android.util.Log.w("EmreSystemCorrect", "🆓 EMERGENCY BYE: Team ${team.currentPosition} (no duplicate-safe partner found)")
+                    engineState.byeTeam = team // Son çare olarak bye
+                }
             }
         }
         
@@ -511,7 +542,22 @@ object EmreSystemCorrect {
         android.util.Log.w("EmreSystemCorrect", "💥 MATCH BROKEN: ${existingMatch.team1.currentPosition} vs ${existingMatch.team2.currentPosition}")
         android.util.Log.w("EmreSystemCorrect", "👤 STOLEN PARTNER: Team ${stolenPartnerTeam.currentPosition}")
         
-        // 3. YENİ EŞLEŞMEYİ OLUŞTUR (searchingTeam + targetTeam)
+        // 3. YENİ EŞLEŞMEYİ OLUŞTUR (searchingTeam + targetTeam) - DUPLICATE KONTROL İLE
+        
+        // 🔴 CRITICAL CHECK: DUPLICATE PREVENTION IN BACKTRACK
+        if (hasTeamsPlayedBefore(searchingTeam.teamId, targetTeam.teamId, matchHistory)) {
+            android.util.Log.e("EmreSystemCorrect", "❌ BACKTRACK DUPLICATE: ${searchingTeam.currentPosition} and ${targetTeam.currentPosition} have played before!")
+            android.util.Log.e("EmreSystemCorrect", "❌ CANCELLING BACKTRACK: Reverting broken match")
+            
+            // Broken match'i geri yükle
+            engineState.candidateMatches.add(existingMatch)
+            engineState.usedTeams.add(existingMatch.team1.teamId)
+            engineState.usedTeams.add(existingMatch.team2.teamId)
+            availableTeams.remove(stolenPartnerTeam) // Displaced team'i geri çıkar
+            
+            return BacktrackResult(false, reason = "Backtrack would create duplicate pairing")
+        }
+        
         val newMatch = CandidateMatch(
             team1 = searchingTeam,
             team2 = targetTeam,
@@ -524,7 +570,7 @@ object EmreSystemCorrect {
         // Target team'i available'dan çıkar (zaten available değildi ama güvenlik için)
         availableTeams.remove(targetTeam)
         
-        android.util.Log.w("EmreSystemCorrect", "✅ NEW MATCH CREATED: ${searchingTeam.currentPosition} vs ${targetTeam.currentPosition}")
+        android.util.Log.w("EmreSystemCorrect", "✅ NEW MATCH CREATED (DUPLICATE-SAFE): ${searchingTeam.currentPosition} vs ${targetTeam.currentPosition}")
         
         return BacktrackResult(
             success = true,

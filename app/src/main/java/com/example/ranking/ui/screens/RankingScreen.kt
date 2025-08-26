@@ -1245,8 +1245,6 @@ private fun MatchingsListContent(
                         }
                     }
                 }
-                    }
-                }
             }
         }
         
