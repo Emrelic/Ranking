@@ -116,7 +116,7 @@ object EmreSystemCorrect {
                 song = song, 
                 points = 0.0, 
                 currentPosition = index + 1,      // Anlık sıra numarası
-                teamId = (index + 1).toLong(),    // FIXED: Sabit ID numarası (index-based)
+                teamId = (1000 + index).toLong(), // 4 basamaklı TeamID: 1000, 1001, 1002...
                 preRoundPosition = index + 1,     // 🆕 İlk turda tur öncesi = başlangıç sırası
                 byePassed = false,
                 byeCount = 0

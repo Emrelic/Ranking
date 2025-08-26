@@ -1,0 +1,1798 @@
+--------- beginning of main
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 🏁 TOURNAMENT INITIALIZED: 36 teams with ID and position numbers
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=1, Position=1, PreRound=1
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=2, Position=2, PreRound=2
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=3, Position=3, PreRound=3
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=4, Position=4, PreRound=4
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=5, Position=5, PreRound=5
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=6, Position=6, PreRound=6
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=7, Position=7, PreRound=7
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=8, Position=8, PreRound=8
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=9, Position=9, PreRound=9
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=10, Position=10, PreRound=10
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=11, Position=11, PreRound=11
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=12, Position=12, PreRound=12
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=13, Position=13, PreRound=13
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=14, Position=14, PreRound=14
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=15, Position=15, PreRound=15
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=16, Position=16, PreRound=16
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=17, Position=17, PreRound=17
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=18, Position=18, PreRound=18
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=19, Position=19, PreRound=19
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=20, Position=20, PreRound=20
+08-26 10:47:30.688 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=21, Position=21, PreRound=21
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=22, Position=22, PreRound=22
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=23, Position=23, PreRound=23
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=24, Position=24, PreRound=24
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=25, Position=25, PreRound=25
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=26, Position=26, PreRound=26
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=27, Position=27, PreRound=27
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=28, Position=28, PreRound=28
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=29, Position=29, PreRound=29
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=30, Position=30, PreRound=30
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=31, Position=31, PreRound=31
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=32, Position=32, PreRound=32
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=33, Position=33, PreRound=33
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=34, Position=34, PreRound=34
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=35, Position=35, PreRound=35
+08-26 10:47:30.689 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=36, Position=36, PreRound=36
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 1 vs TeamID 2 (Match ID: 1081, SongIDs: 1 vs 2)
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 3 vs TeamID 4 (Match ID: 1082, SongIDs: 3 vs 4)
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 5 vs TeamID 6 (Match ID: 1083, SongIDs: 5 vs 6)
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 7 vs TeamID 8 (Match ID: 1084, SongIDs: 7 vs 8)
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 9 vs TeamID 10 (Match ID: 1085, SongIDs: 9 vs 10)
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 11 vs TeamID 12 (Match ID: 1086, SongIDs: 11 vs 12)
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 13 vs TeamID 14 (Match ID: 1087, SongIDs: 13 vs 14)
+08-26 10:47:30.690 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 15 vs TeamID 16 (Match ID: 1088, SongIDs: 15 vs 16)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 17 vs TeamID 18 (Match ID: 1089, SongIDs: 17 vs 18)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 19 vs TeamID 20 (Match ID: 1090, SongIDs: 19 vs 20)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 21 vs TeamID 22 (Match ID: 1091, SongIDs: 21 vs 22)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 23 vs TeamID 24 (Match ID: 1092, SongIDs: 23 vs 24)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 25 vs TeamID 26 (Match ID: 1093, SongIDs: 25 vs 26)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 27 vs TeamID 28 (Match ID: 1094, SongIDs: 27 vs 28)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 29 vs TeamID 30 (Match ID: 1095, SongIDs: 29 vs 30)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 31 vs TeamID 32 (Match ID: 1096, SongIDs: 31 vs 32)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 33 vs TeamID 34 (Match ID: 1097, SongIDs: 33 vs 34)
+08-26 10:47:30.691 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 35 vs TeamID 36 (Match ID: 1098, SongIDs: 35 vs 36)
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 18 same-point teams
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=1.0, PreRound=2
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=1.0, PreRound=3
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=1.0, PreRound=6
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=1.0, PreRound=7
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=1.0, PreRound=10
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=1.0, PreRound=12
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=1.0, PreRound=14
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=1.0, PreRound=16
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=1.0, PreRound=17
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=1.0, PreRound=19
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=1.0, PreRound=22
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=1.0, PreRound=23
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=1.0, PreRound=26
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=1.0, PreRound=28
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=1.0, PreRound=30
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=1.0, PreRound=31
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=1.0, PreRound=34
+08-26 10:47:30.692 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=1.0, PreRound=35
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.0
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 2 (H2H: 0.0, PreRound: 2)
+08-26 10:47:30.693 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 3 (H2H: 0.0, PreRound: 3)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 6 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 7 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 10 (H2H: 0.0, PreRound: 10)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 12 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 14 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 16 (H2H: 0.0, PreRound: 16)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 17 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 19 (H2H: 0.0, PreRound: 19)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 22 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 23 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 13: Team 26 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 14: Team 28 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 15: Team 30 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 16: Team 31 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 17: Team 34 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🥇 RANK 18: Team 35 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 18 same-point teams
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 1: Points=0.0, PreRound=1
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=0.0, PreRound=4
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=0.0, PreRound=5
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=0.0, PreRound=8
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=0.0, PreRound=9
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=0.0, PreRound=11
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=0.0, PreRound=13
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=0.0, PreRound=15
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=0.0, PreRound=18
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=0.0, PreRound=20
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=0.0, PreRound=21
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=0.0, PreRound=24
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=0.0, PreRound=25
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=0.0, PreRound=27
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=0.0, PreRound=29
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=0.0, PreRound=32
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 33: Points=0.0, PreRound=33
+08-26 10:47:30.694 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=0.0, PreRound=36
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 1 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 33 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 1 (H2H: 0.0, PreRound: 1)
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 4 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.695 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 5 (H2H: 0.0, PreRound: 5)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 8 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 9 (H2H: 0.0, PreRound: 9)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 11 (H2H: 0.0, PreRound: 11)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 13 (H2H: 0.0, PreRound: 13)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 15 (H2H: 0.0, PreRound: 15)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 18 (H2H: 0.0, PreRound: 18)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 20 (H2H: 0.0, PreRound: 20)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 21 (H2H: 0.0, PreRound: 21)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 24 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 13: Team 25 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 14: Team 27 (H2H: 0.0, PreRound: 27)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 15: Team 29 (H2H: 0.0, PreRound: 29)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 16: Team 32 (H2H: 0.0, PreRound: 32)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 17: Team 33 (H2H: 0.0, PreRound: 33)
+08-26 10:47:30.696 30719 30719 D EmreSystemCorrect: 🥇 RANK 18: Team 36 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 2 vs TeamID 3 (Match ID: 1099, SongIDs: 2 vs 3)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 6 vs TeamID 7 (Match ID: 1100, SongIDs: 6 vs 7)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 10 vs TeamID 12 (Match ID: 1101, SongIDs: 10 vs 12)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 14 vs TeamID 16 (Match ID: 1102, SongIDs: 14 vs 16)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 17 vs TeamID 19 (Match ID: 1103, SongIDs: 17 vs 19)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 22 vs TeamID 23 (Match ID: 1104, SongIDs: 22 vs 23)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 26 vs TeamID 28 (Match ID: 1105, SongIDs: 26 vs 28)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 30 vs TeamID 31 (Match ID: 1106, SongIDs: 30 vs 31)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 34 vs TeamID 35 (Match ID: 1107, SongIDs: 34 vs 35)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 1 vs TeamID 4 (Match ID: 1108, SongIDs: 1 vs 4)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 5 vs TeamID 8 (Match ID: 1109, SongIDs: 5 vs 8)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 9 vs TeamID 11 (Match ID: 1110, SongIDs: 9 vs 11)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 13 vs TeamID 15 (Match ID: 1111, SongIDs: 13 vs 15)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 18 vs TeamID 20 (Match ID: 1112, SongIDs: 18 vs 20)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 21 vs TeamID 24 (Match ID: 1113, SongIDs: 21 vs 24)
+08-26 10:47:30.697 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 25 vs TeamID 27 (Match ID: 1114, SongIDs: 25 vs 27)
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 29 vs TeamID 32 (Match ID: 1115, SongIDs: 29 vs 32)
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 33 vs TeamID 36 (Match ID: 1116, SongIDs: 33 vs 36)
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 9 same-point teams
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 1: Points=2.0, PreRound=2
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=2.0, PreRound=7
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=2.0, PreRound=10
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=2.0, PreRound=14
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=2.0, PreRound=19
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=2.0, PreRound=23
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=2.0, PreRound=28
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=2.0, PreRound=30
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=2.0, PreRound=34
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 1 → 0.0
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.698 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 1 (H2H: 0.0, PreRound: 2)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 4 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 5 (H2H: 0.0, PreRound: 10)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 7 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 10 (H2H: 0.0, PreRound: 19)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 12 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 14 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 15 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 17 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 17 same-point teams
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=1.0, PreRound=3
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=1.0, PreRound=6
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=1.0, PreRound=12
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=1.0, PreRound=16
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=1.0, PreRound=17
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=1.0, PreRound=22
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=1.0, PreRound=26
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=1.0, PreRound=31
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=1.0, PreRound=35
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=1.0, PreRound=1
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=1.0, PreRound=8
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=1.0, PreRound=13
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=1.0, PreRound=18
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=1.0, PreRound=24
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=1.0, PreRound=27
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=1.0, PreRound=32
+08-26 10:47:30.699 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=1.0, PreRound=36
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 19 (H2H: 0.0, PreRound: 1)
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 2 (H2H: 0.0, PreRound: 3)
+08-26 10:47:30.700 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 3 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 22 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 6 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 25 (H2H: 0.0, PreRound: 13)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 8 (H2H: 0.0, PreRound: 16)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 9 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 27 (H2H: 0.0, PreRound: 18)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 11 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 30 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 13 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 13: Team 32 (H2H: 0.0, PreRound: 27)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 14: Team 16 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 15: Team 34 (H2H: 0.0, PreRound: 32)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 16: Team 18 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 17: Team 36 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=0.5, PreRound=9
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=0.5, PreRound=11
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 9 draws 11 → +0.5 each
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.5
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.5
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 23 (H2H: 0.5, PreRound: 9)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 24 (H2H: 0.5, PreRound: 11)
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 8 same-point teams
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=0.0, PreRound=4
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=0.0, PreRound=5
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=0.0, PreRound=15
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=0.0, PreRound=20
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=0.0, PreRound=21
+08-26 10:47:30.701 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=0.0, PreRound=25
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📊 TEAM 33: Points=0.0, PreRound=29
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=0.0, PreRound=33
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 33 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.0
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 20 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 21 (H2H: 0.0, PreRound: 5)
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 26 (H2H: 0.0, PreRound: 15)
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 28 (H2H: 0.0, PreRound: 20)
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 29 (H2H: 0.0, PreRound: 21)
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 31 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 33 (H2H: 0.0, PreRound: 29)
+08-26 10:47:30.702 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 35 (H2H: 0.0, PreRound: 33)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 2 vs TeamID 7 (Match ID: 1117, SongIDs: 2 vs 7)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 10 vs TeamID 14 (Match ID: 1118, SongIDs: 10 vs 14)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 19 vs TeamID 23 (Match ID: 1119, SongIDs: 19 vs 23)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 28 vs TeamID 30 (Match ID: 1120, SongIDs: 28 vs 30)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 34 vs TeamID 1 (Match ID: 1121, SongIDs: 34 vs 1)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 3 vs TeamID 6 (Match ID: 1122, SongIDs: 3 vs 6)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 8 vs TeamID 12 (Match ID: 1123, SongIDs: 8 vs 12)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 13 vs TeamID 16 (Match ID: 1124, SongIDs: 13 vs 16)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 17 vs TeamID 22 (Match ID: 1125, SongIDs: 17 vs 22)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 18 vs TeamID 24 (Match ID: 1126, SongIDs: 18 vs 24)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 26 vs TeamID 27 (Match ID: 1127, SongIDs: 26 vs 27)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 31 vs TeamID 35 (Match ID: 1128, SongIDs: 31 vs 35)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 32 vs TeamID 36 (Match ID: 1129, SongIDs: 32 vs 36)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 9 vs TeamID 4 (Match ID: 1130, SongIDs: 9 vs 4)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 11 vs TeamID 5 (Match ID: 1131, SongIDs: 11 vs 5)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 15 vs TeamID 20 (Match ID: 1132, SongIDs: 15 vs 20)
+08-26 10:47:30.703 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 21 vs TeamID 25 (Match ID: 1133, SongIDs: 21 vs 25)
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 29 vs TeamID 33 (Match ID: 1134, SongIDs: 29 vs 33)
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 5 same-point teams
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 1: Points=3.0, PreRound=2
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=3.0, PreRound=10
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=3.0, PreRound=19
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=3.0, PreRound=30
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=3.0, PreRound=34
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 1 → 0.0
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 1 (H2H: 0.0, PreRound: 2)
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 3 (H2H: 0.0, PreRound: 10)
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 5 (H2H: 0.0, PreRound: 19)
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 8 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 9 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 12 same-point teams
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=2.0, PreRound=7
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=2.0, PreRound=14
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=2.0, PreRound=23
+08-26 10:47:30.704 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=2.0, PreRound=28
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=2.0, PreRound=6
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=2.0, PreRound=8
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=2.0, PreRound=13
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=2.0, PreRound=17
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=2.0, PreRound=24
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=2.0, PreRound=26
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=2.0, PreRound=31
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=2.0, PreRound=32
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.0
+08-26 10:47:30.705 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.0
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 12 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 2 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 13 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 15 (H2H: 0.0, PreRound: 13)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 4 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 17 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 6 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 20 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 21 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 7 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 23 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 24 (H2H: 0.0, PreRound: 32)
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 13 same-point teams
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=1.0, PreRound=1
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=1.0, PreRound=3
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=1.0, PreRound=12
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=1.0, PreRound=16
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=1.0, PreRound=18
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=1.0, PreRound=22
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=1.0, PreRound=27
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=1.0, PreRound=35
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=1.0, PreRound=36
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=1.0, PreRound=11
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=1.0, PreRound=4
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=1.0, PreRound=20
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📊 TEAM 33: Points=1.0, PreRound=21
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.706 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 33 → 0.0
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 10 (H2H: 0.0, PreRound: 1)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 11 (H2H: 0.0, PreRound: 3)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 29 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 28 (H2H: 0.0, PreRound: 11)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 14 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 16 (H2H: 0.0, PreRound: 16)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 18 (H2H: 0.0, PreRound: 18)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 32 (H2H: 0.0, PreRound: 20)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 33 (H2H: 0.0, PreRound: 21)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 19 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 22 (H2H: 0.0, PreRound: 27)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 25 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🥇 RANK 13: Team 26 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 4 same-point teams
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=0.5, PreRound=9
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=0.5, PreRound=5
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=0.5, PreRound=29
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=0.5, PreRound=33
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 29 draws 33 → +0.5 each
+08-26 10:47:30.707 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.5
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.5
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 35 (H2H: 0.5, PreRound: 29)
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 36 (H2H: 0.5, PreRound: 33)
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 30 (H2H: 0.0, PreRound: 5)
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 27 (H2H: 0.0, PreRound: 9)
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=0.0, PreRound=15
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=0.0, PreRound=25
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 31 (H2H: 0.0, PreRound: 15)
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 34 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.708 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 2 vs TeamID 10 (Match ID: 1135, SongIDs: 2 vs 10)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 19 vs TeamID 30 (Match ID: 1136, SongIDs: 19 vs 30)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 34 vs TeamID 6 (Match ID: 1137, SongIDs: 34 vs 6)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 7 vs TeamID 13 (Match ID: 1138, SongIDs: 7 vs 13)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 8 vs TeamID 14 (Match ID: 1139, SongIDs: 8 vs 14)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 17 vs TeamID 23 (Match ID: 1140, SongIDs: 17 vs 23)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 24 vs TeamID 26 (Match ID: 1141, SongIDs: 24 vs 26)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 28 vs TeamID 31 (Match ID: 1142, SongIDs: 28 vs 31)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 32 vs TeamID 1 (Match ID: 1143, SongIDs: 32 vs 1)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 3 vs TeamID 11 (Match ID: 1144, SongIDs: 3 vs 11)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 4 vs TeamID 12 (Match ID: 1145, SongIDs: 4 vs 12)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 16 vs TeamID 18 (Match ID: 1146, SongIDs: 16 vs 18)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 20 vs TeamID 21 (Match ID: 1147, SongIDs: 20 vs 21)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 22 vs TeamID 27 (Match ID: 1148, SongIDs: 22 vs 27)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 35 vs TeamID 29 (Match ID: 1149, SongIDs: 35 vs 29)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 36 vs TeamID 5 (Match ID: 1150, SongIDs: 36 vs 5)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 33 vs TeamID 9 (Match ID: 1151, SongIDs: 33 vs 9)
+08-26 10:47:30.709 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 15 vs TeamID 25 (Match ID: 1152, SongIDs: 15 vs 25)
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 3 same-point teams
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=4.0, PreRound=10
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=4.0, PreRound=19
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=4.0, PreRound=34
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 2 (H2H: 0.0, PreRound: 10)
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 3 (H2H: 0.0, PreRound: 19)
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 5 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 7 same-point teams
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 1: Points=3.0, PreRound=2
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=3.0, PreRound=30
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=3.0, PreRound=7
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=3.0, PreRound=8
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=3.0, PreRound=23
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=3.0, PreRound=24
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=3.0, PreRound=31
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 1 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:47:30.710 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 1 (H2H: 0.0, PreRound: 2)
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 7 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 8 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 12 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 13 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 4 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 16 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 13 same-point teams
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=2.0, PreRound=6
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=2.0, PreRound=13
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=2.0, PreRound=14
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=2.0, PreRound=17
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=2.0, PreRound=26
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=2.0, PreRound=28
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=2.0, PreRound=32
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=2.0, PreRound=1
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=2.0, PreRound=3
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=2.0, PreRound=12
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=2.0, PreRound=18
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=2.0, PreRound=27
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=2.0, PreRound=35
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 1 beats 32 → +1.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.711 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 1.0
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.0
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.0
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 18 (H2H: 1.0, PreRound: 1)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 19 (H2H: 0.0, PreRound: 3)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 6 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 22 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 9 (H2H: 0.0, PreRound: 13)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 10 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 11 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 24 (H2H: 0.0, PreRound: 18)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 14 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 28 (H2H: 0.0, PreRound: 27)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 15 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 17 (H2H: 0.0, PreRound: 32)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🥇 RANK 13: Team 29 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 4 same-point teams
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=1.5, PreRound=20
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=1.5, PreRound=21
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📊 TEAM 33: Points=1.5, PreRound=5
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=1.5, PreRound=9
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 20 draws 21 → +0.5 each
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.5
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.5
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 33 → 0.0
+08-26 10:47:30.712 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 25 (H2H: 0.5, PreRound: 20)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 26 (H2H: 0.5, PreRound: 21)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 33 (H2H: 0.0, PreRound: 5)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 34 (H2H: 0.0, PreRound: 9)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 6 same-point teams
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=1.0, PreRound=4
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=1.0, PreRound=11
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=1.0, PreRound=16
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=1.0, PreRound=22
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=1.0, PreRound=36
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=1.0, PreRound=25
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 20 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 21 (H2H: 0.0, PreRound: 11)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 23 (H2H: 0.0, PreRound: 16)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 27 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 36 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 30 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=0.5, PreRound=29
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=0.5, PreRound=33
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 31 (H2H: 0.0, PreRound: 29)
+08-26 10:47:30.713 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 32 (H2H: 0.0, PreRound: 33)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 10 vs TeamID 19 (Match ID: 1153, SongIDs: 10 vs 19)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 34 vs TeamID 2 (Match ID: 1154, SongIDs: 34 vs 2)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 7 vs TeamID 23 (Match ID: 1155, SongIDs: 7 vs 23)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 8 vs TeamID 24 (Match ID: 1156, SongIDs: 8 vs 24)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 30 vs TeamID 1 (Match ID: 1157, SongIDs: 30 vs 1)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 31 vs TeamID 3 (Match ID: 1158, SongIDs: 31 vs 3)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 6 vs TeamID 12 (Match ID: 1159, SongIDs: 6 vs 12)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 13 vs TeamID 17 (Match ID: 1160, SongIDs: 13 vs 17)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 14 vs TeamID 18 (Match ID: 1161, SongIDs: 14 vs 18)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 26 vs TeamID 32 (Match ID: 1162, SongIDs: 26 vs 32)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 27 vs TeamID 35 (Match ID: 1163, SongIDs: 27 vs 35)
+08-26 10:47:30.714 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 28 vs TeamID 20 (Match ID: 1164, SongIDs: 28 vs 20)
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 21 vs TeamID 5 (Match ID: 1165, SongIDs: 21 vs 5)
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 9 vs TeamID 16 (Match ID: 1166, SongIDs: 9 vs 16)
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 4 vs TeamID 11 (Match ID: 1167, SongIDs: 4 vs 11)
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 22 vs TeamID 25 (Match ID: 1168, SongIDs: 22 vs 25)
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 36 vs TeamID 29 (Match ID: 1169, SongIDs: 36 vs 29)
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 33 vs TeamID 15 (Match ID: 1170, SongIDs: 33 vs 15)
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 6 same-point teams
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=4.0, PreRound=19
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=4.0, PreRound=34
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=4.0, PreRound=2
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=4.0, PreRound=7
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=4.0, PreRound=8
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=4.0, PreRound=30
+08-26 10:47:30.715 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 2 beats 34 → +1.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 1.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 4 (H2H: 1.0, PreRound: 2)
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 5 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 6 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 2 (H2H: 0.0, PreRound: 19)
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 9 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 3 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 10 same-point teams
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=3.0, PreRound=23
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=3.0, PreRound=24
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=3.0, PreRound=31
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=3.0, PreRound=3
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=3.0, PreRound=6
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=3.0, PreRound=14
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=3.0, PreRound=17
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=3.0, PreRound=26
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=3.0, PreRound=27
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=3.0, PreRound=28
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 3 beats 31 → +1.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 1.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:47:30.716 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 12 (H2H: 1.0, PreRound: 3)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 13 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 16 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 17 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 7 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 8 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 19 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 20 (H2H: 0.0, PreRound: 27)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 21 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 10 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=2.5, PreRound=5
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=2.5, PreRound=9
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 26 (H2H: 0.0, PreRound: 5)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 27 (H2H: 0.0, PreRound: 9)
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 9 same-point teams
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=2.0, PreRound=1
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=2.0, PreRound=12
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=2.0, PreRound=13
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=2.0, PreRound=18
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=2.0, PreRound=32
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=2.0, PreRound=35
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=2.0, PreRound=4
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=2.0, PreRound=22
+08-26 10:47:30.717 30719 30719 D EmreSystemCorrect: 📊 TEAM 33: Points=2.0, PreRound=36
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 33 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 11 (H2H: 0.0, PreRound: 1)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 28 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 14 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 15 (H2H: 0.0, PreRound: 13)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 18 (H2H: 0.0, PreRound: 18)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 31 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 22 (H2H: 0.0, PreRound: 32)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 23 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 33 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=1.5, PreRound=20
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=1.5, PreRound=21
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 24 (H2H: 0.0, PreRound: 20)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 25 (H2H: 0.0, PreRound: 21)
+08-26 10:47:30.718 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 4 same-point teams
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=1.0, PreRound=11
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=1.0, PreRound=16
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=1.0, PreRound=25
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=1.0, PreRound=15
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.0
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 29 (H2H: 0.0, PreRound: 11)
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 36 (H2H: 0.0, PreRound: 15)
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 30 (H2H: 0.0, PreRound: 16)
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 32 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=0.5, PreRound=29
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=0.5, PreRound=33
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.0
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 34 (H2H: 0.0, PreRound: 29)
+08-26 10:47:30.719 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 35 (H2H: 0.0, PreRound: 33)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 10 vs TeamID 7 (Match ID: 1171, SongIDs: 10 vs 7)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 2 vs TeamID 8 (Match ID: 1172, SongIDs: 2 vs 8)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 19 vs TeamID 34 (Match ID: 1173, SongIDs: 19 vs 34)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 30 vs TeamID 3 (Match ID: 1174, SongIDs: 30 vs 3)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 6 vs TeamID 14 (Match ID: 1175, SongIDs: 6 vs 14)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 17 vs TeamID 24 (Match ID: 1176, SongIDs: 17 vs 24)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 23 vs TeamID 26 (Match ID: 1177, SongIDs: 23 vs 26)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 27 vs TeamID 31 (Match ID: 1178, SongIDs: 27 vs 31)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 28 vs TeamID 5 (Match ID: 1179, SongIDs: 28 vs 5)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 9 vs TeamID 1 (Match ID: 1180, SongIDs: 9 vs 1)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 4 vs TeamID 13 (Match ID: 1181, SongIDs: 4 vs 13)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 12 vs TeamID 18 (Match ID: 1182, SongIDs: 12 vs 18)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 22 vs TeamID 32 (Match ID: 1183, SongIDs: 22 vs 32)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 35 vs TeamID 20 (Match ID: 1184, SongIDs: 35 vs 20)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 36 vs TeamID 21 (Match ID: 1185, SongIDs: 36 vs 21)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 11 vs TeamID 15 (Match ID: 1186, SongIDs: 11 vs 15)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 29 vs TeamID 25 (Match ID: 1187, SongIDs: 29 vs 25)
+08-26 10:47:30.720 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 16 vs TeamID 33 (Match ID: 1188, SongIDs: 16 vs 33)
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 3 same-point teams
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=5.0, PreRound=2
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=5.0, PreRound=19
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=5.0, PreRound=30
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 2 (H2H: 0.0, PreRound: 2)
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 5 (H2H: 0.0, PreRound: 19)
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 6 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 8 same-point teams
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=4.0, PreRound=7
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=4.0, PreRound=8
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=4.0, PreRound=34
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=4.0, PreRound=6
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=4.0, PreRound=23
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=4.0, PreRound=24
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=4.0, PreRound=28
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=4.0, PreRound=31
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.721 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 9 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 3 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 4 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 12 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 13 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 16 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 17 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 7 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 10 same-point teams
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=3.0, PreRound=3
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=3.0, PreRound=14
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=3.0, PreRound=17
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=3.0, PreRound=26
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=3.0, PreRound=27
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=3.0, PreRound=1
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=3.0, PreRound=4
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=3.0, PreRound=12
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=3.0, PreRound=32
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=3.0, PreRound=35
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:47:30.722 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 20 (H2H: 0.0, PreRound: 1)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 8 (H2H: 0.0, PreRound: 3)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 21 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 22 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 10 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 11 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 14 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 15 (H2H: 0.0, PreRound: 27)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 26 (H2H: 0.0, PreRound: 32)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 27 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 3 same-point teams
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=2.5, PreRound=5
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=2.5, PreRound=9
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=2.5, PreRound=36
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 18 (H2H: 0.0, PreRound: 5)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 19 (H2H: 0.0, PreRound: 9)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 28 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 7 same-point teams
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=2.0, PreRound=13
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=2.0, PreRound=18
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=2.0, PreRound=22
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=2.0, PreRound=21
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=2.0, PreRound=11
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 33: Points=2.0, PreRound=16
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=2.0, PreRound=25
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:47:30.723 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 33 → 0.0
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 31 (H2H: 0.0, PreRound: 11)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 23 (H2H: 0.0, PreRound: 13)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 33 (H2H: 0.0, PreRound: 16)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 24 (H2H: 0.0, PreRound: 18)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 30 (H2H: 0.0, PreRound: 21)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 25 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 34 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=0.5, PreRound=29
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=0.5, PreRound=33
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.0
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 35 (H2H: 0.0, PreRound: 29)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 36 (H2H: 0.0, PreRound: 33)
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.724 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 10 vs TeamID 30 (Match ID: 1189, SongIDs: 10 vs 30)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 2 vs TeamID 19 (Match ID: 1190, SongIDs: 2 vs 19)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 6 vs TeamID 8 (Match ID: 1191, SongIDs: 6 vs 8)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 7 vs TeamID 24 (Match ID: 1192, SongIDs: 7 vs 24)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 23 vs TeamID 28 (Match ID: 1193, SongIDs: 23 vs 28)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 31 vs TeamID 34 (Match ID: 1194, SongIDs: 31 vs 34)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 1 vs TeamID 3 (Match ID: 1195, SongIDs: 1 vs 3)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 4 vs TeamID 14 (Match ID: 1196, SongIDs: 4 vs 14)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 12 vs TeamID 17 (Match ID: 1197, SongIDs: 12 vs 17)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 26 vs TeamID 35 (Match ID: 1198, SongIDs: 26 vs 35)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 27 vs TeamID 32 (Match ID: 1199, SongIDs: 27 vs 32)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 5 vs TeamID 9 (Match ID: 1200, SongIDs: 5 vs 9)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 36 vs TeamID 11 (Match ID: 1201, SongIDs: 36 vs 11)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 13 vs TeamID 18 (Match ID: 1202, SongIDs: 13 vs 18)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 16 vs TeamID 21 (Match ID: 1203, SongIDs: 16 vs 21)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 22 vs TeamID 20 (Match ID: 1204, SongIDs: 22 vs 20)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 25 vs TeamID 33 (Match ID: 1205, SongIDs: 25 vs 33)
+08-26 10:47:30.725 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 15 vs TeamID 29 (Match ID: 1206, SongIDs: 15 vs 29)
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 6 same-point teams
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=5.0, PreRound=2
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=5.0, PreRound=30
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=5.0, PreRound=7
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=5.0, PreRound=8
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=5.0, PreRound=23
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=5.0, PreRound=34
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 2 (H2H: 0.0, PreRound: 2)
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 6 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 7 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 8 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 4 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 12 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 7 same-point teams
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=4.0, PreRound=6
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=4.0, PreRound=24
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=4.0, PreRound=28
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=4.0, PreRound=31
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=4.0, PreRound=12
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=4.0, PreRound=14
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=4.0, PreRound=26
+08-26 10:47:30.726 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 5 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 16 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 17 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 9 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 19 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 10 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 11 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 4 same-point teams
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=3.5, PreRound=1
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=3.5, PreRound=3
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=3.5, PreRound=27
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=3.5, PreRound=32
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 1 draws 3 → +0.5 each
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 27 draws 32 → +0.5 each
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.5
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.5
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.5
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.5
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 13 (H2H: 0.5, PreRound: 1)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 14 (H2H: 0.5, PreRound: 3)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 20 (H2H: 0.5, PreRound: 27)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 21 (H2H: 0.5, PreRound: 32)
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 8 same-point teams
+08-26 10:47:30.727 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=3.0, PreRound=4
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=3.0, PreRound=17
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=3.0, PreRound=35
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=3.0, PreRound=5
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=3.0, PreRound=9
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=3.0, PreRound=11
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=3.0, PreRound=22
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=3.0, PreRound=25
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 5 draws 9 → +0.5 each
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.5
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.5
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 23 (H2H: 0.5, PreRound: 5)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 24 (H2H: 0.5, PreRound: 9)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 15 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 26 (H2H: 0.0, PreRound: 11)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 18 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 31 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 32 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 22 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 5 same-point teams
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=2.5, PreRound=36
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=2.5, PreRound=13
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=2.5, PreRound=16
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=2.5, PreRound=18
+08-26 10:47:30.728 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=2.5, PreRound=21
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 13 draws 18 → +0.5 each
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: ⚔️ HEAD-TO-HEAD: 16 draws 21 → +0.5 each
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.5
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.5
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.5
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.5
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 27 (H2H: 0.5, PreRound: 13)
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 28 (H2H: 0.5, PreRound: 16)
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 29 (H2H: 0.5, PreRound: 18)
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 30 (H2H: 0.5, PreRound: 21)
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 25 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=0.5, PreRound=29
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=0.5, PreRound=33
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.0
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 35 (H2H: 0.0, PreRound: 29)
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 36 (H2H: 0.0, PreRound: 33)
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:47:30.729 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 10 vs TeamID 8 (Match ID: 1207, SongIDs: 10 vs 8)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 19 vs TeamID 7 (Match ID: 1208, SongIDs: 19 vs 7)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 2 vs TeamID 23 (Match ID: 1209, SongIDs: 2 vs 23)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 30 vs TeamID 34 (Match ID: 1210, SongIDs: 30 vs 34)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 6 vs TeamID 24 (Match ID: 1211, SongIDs: 6 vs 24)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 12 vs TeamID 14 (Match ID: 1212, SongIDs: 12 vs 14)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 26 vs TeamID 31 (Match ID: 1213, SongIDs: 26 vs 31)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 28 vs TeamID 1 (Match ID: 1214, SongIDs: 28 vs 1)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 3 vs TeamID 27 (Match ID: 1215, SongIDs: 3 vs 27)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 32 vs TeamID 5 (Match ID: 1216, SongIDs: 32 vs 5)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 9 vs TeamID 17 (Match ID: 1217, SongIDs: 9 vs 17)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 4 vs TeamID 22 (Match ID: 1218, SongIDs: 4 vs 22)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 11 vs TeamID 25 (Match ID: 1219, SongIDs: 11 vs 25)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 18 vs TeamID 21 (Match ID: 1220, SongIDs: 18 vs 21)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 15 vs TeamID 36 (Match ID: 1221, SongIDs: 15 vs 36)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 29 vs TeamID 20 (Match ID: 1222, SongIDs: 29 vs 20)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 16 vs TeamID 35 (Match ID: 1223, SongIDs: 16 vs 35)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 13 vs TeamID 33 (Match ID: 1224, SongIDs: 13 vs 33)
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.730 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=6.0, PreRound=2
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=6.0, PreRound=34
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 3 (H2H: 0.0, PreRound: 2)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 8 (H2H: 0.0, PreRound: 34)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 7 same-point teams
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=5.0, PreRound=7
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=5.0, PreRound=8
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=5.0, PreRound=23
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=5.0, PreRound=30
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=5.0, PreRound=6
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=5.0, PreRound=12
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=5.0, PreRound=31
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 9 (H2H: 0.0, PreRound: 6)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 4 (H2H: 0.0, PreRound: 7)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 5 (H2H: 0.0, PreRound: 8)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 10 (H2H: 0.0, PreRound: 12)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 6 (H2H: 0.0, PreRound: 23)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 7 (H2H: 0.0, PreRound: 30)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 15 (H2H: 0.0, PreRound: 31)
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 3 same-point teams
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=4.5, PreRound=1
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=4.5, PreRound=3
+08-26 10:47:30.731 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=4.5, PreRound=32
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 16 (H2H: 0.0, PreRound: 1)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 17 (H2H: 0.0, PreRound: 3)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 19 (H2H: 0.0, PreRound: 32)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 8 same-point teams
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=4.0, PreRound=14
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=4.0, PreRound=24
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=4.0, PreRound=26
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=4.0, PreRound=28
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=4.0, PreRound=4
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=4.0, PreRound=11
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=4.0, PreRound=17
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=4.0, PreRound=35
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 22 (H2H: 0.0, PreRound: 4)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 23 (H2H: 0.0, PreRound: 11)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 11 (H2H: 0.0, PreRound: 14)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 24 (H2H: 0.0, PreRound: 17)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 12 (H2H: 0.0, PreRound: 24)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 13 (H2H: 0.0, PreRound: 26)
+08-26 10:47:30.732 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 14 (H2H: 0.0, PreRound: 28)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 27 (H2H: 0.0, PreRound: 35)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 4 same-point teams
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=3.5, PreRound=27
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=3.5, PreRound=13
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=3.5, PreRound=18
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=3.5, PreRound=36
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 28 (H2H: 0.0, PreRound: 13)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 30 (H2H: 0.0, PreRound: 18)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 18 (H2H: 0.0, PreRound: 27)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 32 (H2H: 0.0, PreRound: 36)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 4 same-point teams
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=3.0, PreRound=5
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=3.0, PreRound=9
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=3.0, PreRound=22
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=3.0, PreRound=25
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 20 (H2H: 0.0, PreRound: 5)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 21 (H2H: 0.0, PreRound: 9)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 25 (H2H: 0.0, PreRound: 22)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 26 (H2H: 0.0, PreRound: 25)
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 3 same-point teams
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=2.5, PreRound=16
+08-26 10:47:30.733 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=2.5, PreRound=21
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=2.5, PreRound=20
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.0
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 29 (H2H: 0.0, PreRound: 16)
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 34 (H2H: 0.0, PreRound: 20)
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 31 (H2H: 0.0, PreRound: 21)
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 2 same-point teams
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=0.5, PreRound=29
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=0.5, PreRound=33
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.0
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 35 (H2H: 0.0, PreRound: 29)
+08-26 10:47:30.734 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 36 (H2H: 0.0, PreRound: 33)
+08-26 10:47:33.866 30719 30719 D EmreSystemCorrect: 🏁 TOURNAMENT INITIALIZED: 36 teams with ID and position numbers
+08-26 10:47:33.866 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=1, Position=1, PreRound=1
+08-26 10:47:33.866 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=2, Position=2, PreRound=2
+08-26 10:47:33.866 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=3, Position=3, PreRound=3
+08-26 10:47:33.866 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=4, Position=4, PreRound=4
+08-26 10:47:33.866 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=5, Position=5, PreRound=5
+08-26 10:47:33.866 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=6, Position=6, PreRound=6
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=7, Position=7, PreRound=7
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=8, Position=8, PreRound=8
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=9, Position=9, PreRound=9
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=10, Position=10, PreRound=10
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=11, Position=11, PreRound=11
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=12, Position=12, PreRound=12
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=13, Position=13, PreRound=13
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=14, Position=14, PreRound=14
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=15, Position=15, PreRound=15
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=16, Position=16, PreRound=16
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=17, Position=17, PreRound=17
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=18, Position=18, PreRound=18
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=19, Position=19, PreRound=19
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=20, Position=20, PreRound=20
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=21, Position=21, PreRound=21
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=22, Position=22, PreRound=22
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=23, Position=23, PreRound=23
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=24, Position=24, PreRound=24
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=25, Position=25, PreRound=25
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=26, Position=26, PreRound=26
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=27, Position=27, PreRound=27
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=28, Position=28, PreRound=28
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=29, Position=29, PreRound=29
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=30, Position=30, PreRound=30
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=31, Position=31, PreRound=31
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=32, Position=32, PreRound=32
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=33, Position=33, PreRound=33
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=34, Position=34, PreRound=34
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=35, Position=35, PreRound=35
+08-26 10:47:33.867 30719 30719 D EmreSystemCorrect: 📋 TEAM: ID=36, Position=36, PreRound=36
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📊 PRE-ROUND POSITIONS STORED: Round 1
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 1: PreRound=1, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 2: PreRound=2, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 3: PreRound=3, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 4: PreRound=4, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 5: PreRound=5, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 6: PreRound=6, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 7: PreRound=7, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 8: PreRound=8, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 9: PreRound=9, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 10: PreRound=10, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 11: PreRound=11, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 12: PreRound=12, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 13: PreRound=13, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 14: PreRound=14, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 15: PreRound=15, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 16: PreRound=16, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 17: PreRound=17, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 18: PreRound=18, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 19: PreRound=19, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 20: PreRound=20, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 21: PreRound=21, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 22: PreRound=22, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 23: PreRound=23, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 24: PreRound=24, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 25: PreRound=25, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 26: PreRound=26, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 27: PreRound=27, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 28: PreRound=28, Points=0.0
+08-26 10:52:50.891 30719 30719 D EmreSystemCorrect: 📍 TEAM 29: PreRound=29, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📍 TEAM 30: PreRound=30, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📍 TEAM 31: PreRound=31, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📍 TEAM 32: PreRound=32, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📍 TEAM 33: PreRound=33, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📍 TEAM 34: PreRound=34, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📍 TEAM 35: PreRound=35, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📍 TEAM 36: PreRound=36, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 🔍 BYE CONTROL: 36 teams total
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: ✅ EVEN TEAMS: No bye needed (36 teams)
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 🚀 STARTING NEW PAIRING ENGINE: 36 teams total, Round 1
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 📋 AVAILABLE TEAMS: 36 teams ready for pairing
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 1: ID=1, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 2: ID=2, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 3: ID=3, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 4: ID=4, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 5: ID=5, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 6: ID=6, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 7: ID=7, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 8: ID=8, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 9: ID=9, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 10: ID=10, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 11: ID=11, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 12: ID=12, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 13: ID=13, Points=0.0
+08-26 10:52:50.892 30719 30719 D EmreSystemCorrect: 👥 TEAM 14: ID=14, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 15: ID=15, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 16: ID=16, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 17: ID=17, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 18: ID=18, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 19: ID=19, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 20: ID=20, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 21: ID=21, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 22: ID=22, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 23: ID=23, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 24: ID=24, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 25: ID=25, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 26: ID=26, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 27: ID=27, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 28: ID=28, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 29: ID=29, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 30: ID=30, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 31: ID=31, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 32: ID=32, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 33: ID=33, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 34: ID=34, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 35: ID=35, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 👥 TEAM 36: ID=36, Points=0.0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 1 looking for partner (35 teams remaining)
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 1 searching...
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 1 vs TeamID 2
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (1, 2) or (2, 1)
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 1 and 2 have NOT played before
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 1 → 2
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 1 vs 2
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 3 looking for partner (33 teams remaining)
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 3 searching...
+08-26 10:52:50.893 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 3 vs TeamID 4
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (3, 4) or (4, 3)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 3 and 4 have NOT played before
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 3 → 4
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 3 vs 4
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 5 looking for partner (31 teams remaining)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 5 searching...
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 5 vs TeamID 6
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (5, 6) or (6, 5)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 5 and 6 have NOT played before
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 5 → 6
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 5 vs 6
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 7 looking for partner (29 teams remaining)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 7 searching...
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 7 vs TeamID 8
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (7, 8) or (8, 7)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 7 and 8 have NOT played before
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 7 → 8
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 7 vs 8
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 9 looking for partner (27 teams remaining)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 9 searching...
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 9 vs TeamID 10
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (9, 10) or (10, 9)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 9 and 10 have NOT played before
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 9 → 10
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 9 vs 10
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 11 looking for partner (25 teams remaining)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 11 searching...
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 11 vs TeamID 12
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (11, 12) or (12, 11)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 11 and 12 have NOT played before
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 11 → 12
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 11 vs 12
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 13 looking for partner (23 teams remaining)
+08-26 10:52:50.894 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 13 searching...
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 13 vs TeamID 14
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (13, 14) or (14, 13)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 13 and 14 have NOT played before
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 13 → 14
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 13 vs 14
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 15 looking for partner (21 teams remaining)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 15 searching...
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 15 vs TeamID 16
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (15, 16) or (16, 15)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 15 and 16 have NOT played before
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 15 → 16
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 15 vs 16
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 17 looking for partner (19 teams remaining)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 17 searching...
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 17 vs TeamID 18
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (17, 18) or (18, 17)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 17 and 18 have NOT played before
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 17 → 18
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 17 vs 18
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 19 looking for partner (17 teams remaining)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 19 searching...
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 19 vs TeamID 20
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (19, 20) or (20, 19)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 19 and 20 have NOT played before
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 19 → 20
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 19 vs 20
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 21 looking for partner (15 teams remaining)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 21 searching...
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 21 vs TeamID 22
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (21, 22) or (22, 21)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 21 and 22 have NOT played before
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 21 → 22
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 21 vs 22
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 23 looking for partner (13 teams remaining)
+08-26 10:52:50.895 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 23 searching...
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 23 vs TeamID 24
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (23, 24) or (24, 23)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 23 and 24 have NOT played before
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 23 → 24
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 23 vs 24
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 25 looking for partner (11 teams remaining)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 25 searching...
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 25 vs TeamID 26
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (25, 26) or (26, 25)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 25 and 26 have NOT played before
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 25 → 26
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 25 vs 26
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 27 looking for partner (9 teams remaining)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 27 searching...
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 27 vs TeamID 28
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (27, 28) or (28, 27)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 27 and 28 have NOT played before
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 27 → 28
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 27 vs 28
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 29 looking for partner (7 teams remaining)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 29 searching...
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 29 vs TeamID 30
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (29, 30) or (30, 29)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 29 and 30 have NOT played before
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 29 → 30
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 29 vs 30
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 31 looking for partner (5 teams remaining)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 31 searching...
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 31 vs TeamID 32
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (31, 32) or (32, 31)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 31 and 32 have NOT played before
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 31 → 32
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 31 vs 32
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 33 looking for partner (3 teams remaining)
+08-26 10:52:50.896 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 33 searching...
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 33 vs TeamID 34
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (33, 34) or (34, 33)
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 33 and 34 have NOT played before
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 33 → 34
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 33 vs 34
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 35 looking for partner (1 teams remaining)
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 35 searching...
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 35 vs TeamID 36
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 0
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (35, 36) or (36, 35)
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 35 and 36 have NOT played before
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 35 → 36
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 35 vs 36
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: ✅ PAIRING ENGINE COMPLETED: 18 matches, no bye
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🎯 ASYMMETRIC POINT CHECK: Round 1, 18 matches
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 0: 1(0.0p) vs 2(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 1: 3(0.0p) vs 4(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 2: 5(0.0p) vs 6(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 3: 7(0.0p) vs 8(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 4: 9(0.0p) vs 10(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 5: 11(0.0p) vs 12(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 6: 13(0.0p) vs 14(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 7: 15(0.0p) vs 16(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 8: 17(0.0p) vs 18(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 9: 19(0.0p) vs 20(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 10: 21(0.0p) vs 22(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 11: 23(0.0p) vs 24(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 12: 25(0.0p) vs 26(0.0p) → Asymmetric=false
+08-26 10:52:50.897 30719 30719 D EmreSystemCorrect: 🔍 MATCH 13: 27(0.0p) vs 28(0.0p) → Asymmetric=false
+08-26 10:52:50.898 30719 30719 D EmreSystemCorrect: 🔍 MATCH 14: 29(0.0p) vs 30(0.0p) → Asymmetric=false
+08-26 10:52:50.898 30719 30719 D EmreSystemCorrect: 🔍 MATCH 15: 31(0.0p) vs 32(0.0p) → Asymmetric=false
+08-26 10:52:50.898 30719 30719 D EmreSystemCorrect: 🔍 MATCH 16: 33(0.0p) vs 34(0.0p) → Asymmetric=false
+08-26 10:52:50.898 30719 30719 D EmreSystemCorrect: 🔍 MATCH 17: 35(0.0p) vs 36(0.0p) → Asymmetric=false
+08-26 10:52:50.898 30719 30719 D EmreSystemCorrect: ✅ FIRST ROUND: Always continue
+08-26 10:52:50.898 30719 30719 D EmreSystemCorrect: ✅ TOURNAMENT CONTINUES: Round 1 approved
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 🗺️ SONG-TO-TEAM MAPPING CREATED: 36 teams mapped
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 PROCESSING 18 completed matches
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 1 vs TeamID 2 (Match ID: 1243, SongIDs: 1 vs 2)
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 3 vs TeamID 4 (Match ID: 1244, SongIDs: 3 vs 4)
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 5 vs TeamID 6 (Match ID: 1245, SongIDs: 5 vs 6)
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 7 vs TeamID 8 (Match ID: 1246, SongIDs: 7 vs 8)
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 9 vs TeamID 10 (Match ID: 1247, SongIDs: 9 vs 10)
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 11 vs TeamID 12 (Match ID: 1248, SongIDs: 11 vs 12)
+08-26 10:56:13.613 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 13 vs TeamID 14 (Match ID: 1249, SongIDs: 13 vs 14)
+08-26 10:56:13.614 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 15 vs TeamID 16 (Match ID: 1250, SongIDs: 15 vs 16)
+08-26 10:56:13.614 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 17 vs TeamID 18 (Match ID: 1251, SongIDs: 17 vs 18)
+08-26 10:56:13.614 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 19 vs TeamID 20 (Match ID: 1252, SongIDs: 19 vs 20)
+08-26 10:56:13.614 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 21 vs TeamID 22 (Match ID: 1253, SongIDs: 21 vs 22)
+08-26 10:56:13.614 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 23 vs TeamID 24 (Match ID: 1254, SongIDs: 23 vs 24)
+08-26 10:56:13.614 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 25 vs TeamID 26 (Match ID: 1255, SongIDs: 25 vs 26)
+08-26 10:56:13.615 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 27 vs TeamID 28 (Match ID: 1256, SongIDs: 27 vs 28)
+08-26 10:56:13.615 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 29 vs TeamID 30 (Match ID: 1257, SongIDs: 29 vs 30)
+08-26 10:56:13.615 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 31 vs TeamID 32 (Match ID: 1258, SongIDs: 31 vs 32)
+08-26 10:56:13.615 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 33 vs TeamID 34 (Match ID: 1259, SongIDs: 33 vs 34)
+08-26 10:56:13.615 30719 30719 D EmreSystemCorrect: 📝 ADDED TO HISTORY: TeamID 35 vs TeamID 36 (Match ID: 1260, SongIDs: 35 vs 36)
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 18 same-point teams
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 2: Points=1.0, PreRound=2
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 3: Points=1.0, PreRound=3
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 6: Points=1.0, PreRound=6
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 7: Points=1.0, PreRound=7
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 10: Points=1.0, PreRound=10
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 12: Points=1.0, PreRound=12
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 14: Points=1.0, PreRound=14
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 16: Points=1.0, PreRound=16
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 17: Points=1.0, PreRound=17
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 19: Points=1.0, PreRound=19
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 22: Points=1.0, PreRound=22
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 23: Points=1.0, PreRound=23
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 26: Points=1.0, PreRound=26
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 28: Points=1.0, PreRound=28
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 30: Points=1.0, PreRound=30
+08-26 10:56:13.616 30719 30719 D EmreSystemCorrect: 📊 TEAM 31: Points=1.0, PreRound=31
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📊 TEAM 34: Points=1.0, PreRound=34
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📊 TEAM 35: Points=1.0, PreRound=35
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 2 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 3 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 6 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 7 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 10 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 12 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 14 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 16 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 17 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 19 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 22 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 23 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 26 → 0.0
+08-26 10:56:13.617 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 28 → 0.0
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 30 → 0.0
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 31 → 0.0
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 34 → 0.0
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 35 → 0.0
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 2 (H2H: 0.0, PreRound: 2)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 3 (H2H: 0.0, PreRound: 3)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 6 (H2H: 0.0, PreRound: 6)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 7 (H2H: 0.0, PreRound: 7)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 10 (H2H: 0.0, PreRound: 10)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 12 (H2H: 0.0, PreRound: 12)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 14 (H2H: 0.0, PreRound: 14)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 16 (H2H: 0.0, PreRound: 16)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 17 (H2H: 0.0, PreRound: 17)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 19 (H2H: 0.0, PreRound: 19)
+08-26 10:56:13.618 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 22 (H2H: 0.0, PreRound: 22)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 23 (H2H: 0.0, PreRound: 23)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🥇 RANK 13: Team 26 (H2H: 0.0, PreRound: 26)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🥇 RANK 14: Team 28 (H2H: 0.0, PreRound: 28)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🥇 RANK 15: Team 30 (H2H: 0.0, PreRound: 30)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🥇 RANK 16: Team 31 (H2H: 0.0, PreRound: 31)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🥇 RANK 17: Team 34 (H2H: 0.0, PreRound: 34)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🥇 RANK 18: Team 35 (H2H: 0.0, PreRound: 35)
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 🔄 TIEBREAKER: Processing 18 same-point teams
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 1: Points=0.0, PreRound=1
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 4: Points=0.0, PreRound=4
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 5: Points=0.0, PreRound=5
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 8: Points=0.0, PreRound=8
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 9: Points=0.0, PreRound=9
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 11: Points=0.0, PreRound=11
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 13: Points=0.0, PreRound=13
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 15: Points=0.0, PreRound=15
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 18: Points=0.0, PreRound=18
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 20: Points=0.0, PreRound=20
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 21: Points=0.0, PreRound=21
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 24: Points=0.0, PreRound=24
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 25: Points=0.0, PreRound=25
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 27: Points=0.0, PreRound=27
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 29: Points=0.0, PreRound=29
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 32: Points=0.0, PreRound=32
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 33: Points=0.0, PreRound=33
+08-26 10:56:13.619 30719 30719 D EmreSystemCorrect: 📊 TEAM 36: Points=0.0, PreRound=36
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 1 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 4 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 5 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 8 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 9 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 11 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 13 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 15 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 18 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 20 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 21 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 24 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 25 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 27 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 29 → 0.0
+08-26 10:56:13.620 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 32 → 0.0
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 33 → 0.0
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 📈 H2H POINTS: Team 36 → 0.0
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🏆 TIEBREAKER RESULT:
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 1: Team 1 (H2H: 0.0, PreRound: 1)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 2: Team 4 (H2H: 0.0, PreRound: 4)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 3: Team 5 (H2H: 0.0, PreRound: 5)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 4: Team 8 (H2H: 0.0, PreRound: 8)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 5: Team 9 (H2H: 0.0, PreRound: 9)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 6: Team 11 (H2H: 0.0, PreRound: 11)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 7: Team 13 (H2H: 0.0, PreRound: 13)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 8: Team 15 (H2H: 0.0, PreRound: 15)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 9: Team 18 (H2H: 0.0, PreRound: 18)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 10: Team 20 (H2H: 0.0, PreRound: 20)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 11: Team 21 (H2H: 0.0, PreRound: 21)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 12: Team 24 (H2H: 0.0, PreRound: 24)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 13: Team 25 (H2H: 0.0, PreRound: 25)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 14: Team 27 (H2H: 0.0, PreRound: 27)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 15: Team 29 (H2H: 0.0, PreRound: 29)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 16: Team 32 (H2H: 0.0, PreRound: 32)
+08-26 10:56:13.621 30719 30719 D EmreSystemCorrect: 🥇 RANK 17: Team 33 (H2H: 0.0, PreRound: 33)
+08-26 10:56:13.622 30719 30719 D EmreSystemCorrect: 🥇 RANK 18: Team 36 (H2H: 0.0, PreRound: 36)
+08-26 10:56:13.622 30719 30719 D EmreSystemCorrect: 📊 PRE-ROUND POSITIONS STORED: Round 2
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 1: PreRound=1, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 2: PreRound=2, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 3: PreRound=3, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 4: PreRound=4, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 5: PreRound=5, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 6: PreRound=6, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 7: PreRound=7, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 8: PreRound=8, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 9: PreRound=9, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 10: PreRound=10, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 11: PreRound=11, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 12: PreRound=12, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 13: PreRound=13, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 14: PreRound=14, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 15: PreRound=15, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 16: PreRound=16, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 17: PreRound=17, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 18: PreRound=18, Points=1.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 19: PreRound=19, Points=0.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 20: PreRound=20, Points=0.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 21: PreRound=21, Points=0.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 22: PreRound=22, Points=0.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 23: PreRound=23, Points=0.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 24: PreRound=24, Points=0.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 25: PreRound=25, Points=0.0
+08-26 10:56:13.623 30719 30719 D EmreSystemCorrect: 📍 TEAM 26: PreRound=26, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 27: PreRound=27, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 28: PreRound=28, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 29: PreRound=29, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 30: PreRound=30, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 31: PreRound=31, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 32: PreRound=32, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 33: PreRound=33, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 34: PreRound=34, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 35: PreRound=35, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📍 TEAM 36: PreRound=36, Points=0.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 🔍 BYE CONTROL: 36 teams total
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: ✅ EVEN TEAMS: No bye needed (36 teams)
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 🚀 STARTING NEW PAIRING ENGINE: 36 teams total, Round 2
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 📋 AVAILABLE TEAMS: 36 teams ready for pairing
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 👥 TEAM 1: ID=2, Points=1.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 👥 TEAM 2: ID=3, Points=1.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 👥 TEAM 3: ID=6, Points=1.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 👥 TEAM 4: ID=7, Points=1.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 👥 TEAM 5: ID=10, Points=1.0
+08-26 10:56:13.624 30719 30719 D EmreSystemCorrect: 👥 TEAM 6: ID=12, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 7: ID=14, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 8: ID=16, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 9: ID=17, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 10: ID=19, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 11: ID=22, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 12: ID=23, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 13: ID=26, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 14: ID=28, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 15: ID=30, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 16: ID=31, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 17: ID=34, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 18: ID=35, Points=1.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 19: ID=1, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 20: ID=4, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 21: ID=5, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 22: ID=8, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 23: ID=9, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 24: ID=11, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 25: ID=13, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 26: ID=15, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 27: ID=18, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 28: ID=20, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 29: ID=21, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 30: ID=24, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 31: ID=25, Points=0.0
+08-26 10:56:13.625 30719 30719 D EmreSystemCorrect: 👥 TEAM 32: ID=27, Points=0.0
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 👥 TEAM 33: ID=29, Points=0.0
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 👥 TEAM 34: ID=32, Points=0.0
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 👥 TEAM 35: ID=33, Points=0.0
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 👥 TEAM 36: ID=36, Points=0.0
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 1 looking for partner (35 teams remaining)
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 1 searching...
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 2 vs TeamID 3
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (2, 3) or (3, 2)
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 2 and 3 have NOT played before
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 1 → 2
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 1 vs 2
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 3 looking for partner (33 teams remaining)
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 3 searching...
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 6 vs TeamID 7
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (6, 7) or (7, 6)
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 6 and 7 have NOT played before
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 3 → 4
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 3 vs 4
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 5 looking for partner (31 teams remaining)
+08-26 10:56:13.626 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 5 searching...
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 10 vs TeamID 12
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (10, 12) or (12, 10)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 10 and 12 have NOT played before
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 5 → 6
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 5 vs 6
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 7 looking for partner (29 teams remaining)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 7 searching...
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 14 vs TeamID 16
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (14, 16) or (16, 14)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 14 and 16 have NOT played before
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 7 → 8
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 7 vs 8
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 9 looking for partner (27 teams remaining)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 9 searching...
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 17 vs TeamID 19
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (17, 19) or (19, 17)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 17 and 19 have NOT played before
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 9 → 10
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 9 vs 10
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 11 looking for partner (25 teams remaining)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 11 searching...
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 22 vs TeamID 23
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (22, 23) or (23, 22)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 22 and 23 have NOT played before
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 11 → 12
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 11 vs 12
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 13 looking for partner (23 teams remaining)
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 13 searching...
+08-26 10:56:13.627 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 26 vs TeamID 28
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (26, 28) or (28, 26)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 26 and 28 have NOT played before
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 13 → 14
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 13 vs 14
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 15 looking for partner (21 teams remaining)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 15 searching...
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 30 vs TeamID 31
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (30, 31) or (31, 30)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 30 and 31 have NOT played before
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 15 → 16
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 15 vs 16
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 17 looking for partner (19 teams remaining)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 17 searching...
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 34 vs TeamID 35
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (34, 35) or (35, 34)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 34 and 35 have NOT played before
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 17 → 18
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 17 vs 18
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 19 looking for partner (17 teams remaining)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 19 searching...
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 1 vs TeamID 4
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (1, 4) or (4, 1)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 1 and 4 have NOT played before
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 19 → 20
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 19 vs 20
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 21 looking for partner (15 teams remaining)
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 21 searching...
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 5 vs TeamID 8
+08-26 10:56:13.628 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (5, 8) or (8, 5)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 5 and 8 have NOT played before
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 21 → 22
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 21 vs 22
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 23 looking for partner (13 teams remaining)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 23 searching...
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 9 vs TeamID 11
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (9, 11) or (11, 9)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 9 and 11 have NOT played before
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 23 → 24
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 23 vs 24
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 25 looking for partner (11 teams remaining)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 25 searching...
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 13 vs TeamID 15
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (13, 15) or (15, 13)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 13 and 15 have NOT played before
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 25 → 26
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 25 vs 26
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 27 looking for partner (9 teams remaining)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 27 searching...
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 18 vs TeamID 20
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (18, 20) or (20, 18)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 18 and 20 have NOT played before
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 27 → 28
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 27 vs 28
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 29 looking for partner (7 teams remaining)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 29 searching...
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 21 vs TeamID 24
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (21, 24) or (24, 21)
+08-26 10:56:13.629 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 21 and 24 have NOT played before
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 29 → 30
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 29 vs 30
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 31 looking for partner (5 teams remaining)
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 31 searching...
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 25 vs TeamID 27
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (25, 27) or (27, 25)
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 25 and 27 have NOT played before
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 31 → 32
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 31 vs 32
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 33 looking for partner (3 teams remaining)
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 33 searching...
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 29 vs TeamID 32
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (29, 32) or (32, 29)
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 29 and 32 have NOT played before
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 33 → 34
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 33 vs 34
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 SEARCHING TEAM: 35 looking for partner (1 teams remaining)
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 PARTNER SEARCH: Team 35 searching...
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 CHECKING MATCH HISTORY: TeamID 33 vs TeamID 36
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 Match History size: 36
+08-26 10:56:13.630 30719 30719 D EmreSystemCorrect: 🔍 Looking for pairs: (33, 36) or (36, 33)
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: ✅ PAIR OK: TeamID 33 and 36 have NOT played before
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: ✅ FORWARD PARTNER: 35 → 36
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: ✅ MATCH CREATED: 35 vs 36
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: ✅ PAIRING ENGINE COMPLETED: 18 matches, no bye
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🎯 ASYMMETRIC POINT CHECK: Round 2, 18 matches
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 0: 1(1.0p) vs 2(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 1: 3(1.0p) vs 4(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 2: 5(1.0p) vs 6(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 3: 7(1.0p) vs 8(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 4: 9(1.0p) vs 10(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 5: 11(1.0p) vs 12(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 6: 13(1.0p) vs 14(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 7: 15(1.0p) vs 16(1.0p) → Asymmetric=false
+08-26 10:56:13.631 30719 30719 D EmreSystemCorrect: 🔍 MATCH 8: 17(1.0p) vs 18(1.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 9: 19(0.0p) vs 20(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 10: 21(0.0p) vs 22(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 11: 23(0.0p) vs 24(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 12: 25(0.0p) vs 26(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 13: 27(0.0p) vs 28(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 14: 29(0.0p) vs 30(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 15: 31(0.0p) vs 32(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 16: 33(0.0p) vs 34(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: 🔍 MATCH 17: 35(0.0p) vs 36(0.0p) → Asymmetric=false
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: ⚖️ SAME POINT MATCHES: 18 out of 18
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 1(1.0p) vs 2(1.0p)
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 3(1.0p) vs 4(1.0p)
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 5(1.0p) vs 6(1.0p)
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 7(1.0p) vs 8(1.0p)
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 9(1.0p) vs 10(1.0p)
+08-26 10:56:13.632 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 11(1.0p) vs 12(1.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 13(1.0p) vs 14(1.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 15(1.0p) vs 16(1.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 17(1.0p) vs 18(1.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 19(0.0p) vs 20(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 21(0.0p) vs 22(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 23(0.0p) vs 24(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 25(0.0p) vs 26(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 27(0.0p) vs 28(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 29(0.0p) vs 30(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 31(0.0p) vs 32(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 33(0.0p) vs 34(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ⚖️ EQUAL POINTS: 35(0.0p) vs 36(0.0p)
+08-26 10:56:13.633 30719 30719 D EmreSystemCorrect: ✅ TOURNAMENT CONTINUES: Round 2 approved
