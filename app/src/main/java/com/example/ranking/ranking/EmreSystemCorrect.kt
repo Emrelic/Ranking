@@ -228,6 +228,133 @@ object EmreSystemCorrect {
     }
     
     /**
+     * 🧪 TEST LOG 1: DUPLICATE PAIRING CHECK
+     * Her eşleştirme öncesi duplicate kontrolünü detaylıca loglar
+     */
+    private fun logDuplicateTest(team1: EmreTeam, team2: EmreTeam, matchHistory: Set<Pair<Long, Long>>, testResult: Boolean, testName: String) {
+        android.util.Log.i("TEST_DUPLICATE", "🧪 $testName: TeamID ${team1.teamId}(Pos:${team1.currentPosition}) vs TeamID ${team2.teamId}(Pos:${team2.currentPosition})")
+        android.util.Log.i("TEST_DUPLICATE", "🧪 RESULT: ${if (testResult) "✅ DUPLICATE DETECTED - BLOCKED" else "✅ NEW PAIRING - ALLOWED"}")
+        android.util.Log.i("TEST_DUPLICATE", "🧪 MATCH HISTORY SIZE: ${matchHistory.size} pairs played so far")
+    }
+    
+    /**
+     * 🧪 TEST LOG 2: EQUAL MATCH COUNT PER ROUND
+     * Her turda eşit sayıda maç oynanıp oynanmadığını kontrol eder
+     */
+    private fun logMatchCountTest(teams: List<EmreTeam>, matches: List<CandidateMatch>, byeTeam: EmreTeam?, currentRound: Int) {
+        val totalTeams = teams.size
+        val expectedMatches = if (totalTeams % 2 == 0) totalTeams / 2 else (totalTeams - 1) / 2
+        val expectedBye = totalTeams % 2
+        val actualMatches = matches.size
+        val actualBye = if (byeTeam != null) 1 else 0
+        
+        android.util.Log.i("TEST_MATCH_COUNT", "🧪 ROUND $currentRound MATCH COUNT TEST:")
+        android.util.Log.i("TEST_MATCH_COUNT", "🧪 TOTAL TEAMS: $totalTeams")
+        android.util.Log.i("TEST_MATCH_COUNT", "🧪 EXPECTED: $expectedMatches matches + $expectedBye bye")
+        android.util.Log.i("TEST_MATCH_COUNT", "🧪 ACTUAL: $actualMatches matches + $actualBye bye")
+        android.util.Log.i("TEST_MATCH_COUNT", "🧪 TEST RESULT: ${if (actualMatches == expectedMatches && actualBye == expectedBye) "✅ PASSED" else "❌ FAILED"}")
+        
+        if (actualMatches != expectedMatches || actualBye != expectedBye) {
+            android.util.Log.e("TEST_MATCH_COUNT", "🧪 ERROR: Match count mismatch detected!")
+        }
+    }
+    
+    /**
+     * 🧪 TEST LOG 3: TOURNAMENT END ALGORITHM 
+     * Turnuva bitişinin algoritmasal doğruluğunu test eder
+     */
+    private fun logTournamentEndTest(candidateMatches: List<CandidateMatch>, canContinue: Boolean, currentRound: Int) {
+        val samePointMatches = candidateMatches.filter { !it.isAsymmetricPoints }
+        val asymmetricMatches = candidateMatches.filter { it.isAsymmetricPoints }
+        
+        android.util.Log.i("TEST_TOURNAMENT_END", "🧪 TOURNAMENT END ALGORITHM TEST - ROUND $currentRound:")
+        android.util.Log.i("TEST_TOURNAMENT_END", "🧪 TOTAL CANDIDATE MATCHES: ${candidateMatches.size}")
+        android.util.Log.i("TEST_TOURNAMENT_END", "🧪 SAME POINT MATCHES: ${samePointMatches.size}")
+        android.util.Log.i("TEST_TOURNAMENT_END", "🧪 ASYMMETRIC MATCHES: ${asymmetricMatches.size}")
+        
+        samePointMatches.forEachIndexed { index, match ->
+            android.util.Log.i("TEST_TOURNAMENT_END", "🧪 SAME POINT[$index]: Team ${match.team1.currentPosition}(${match.team1.points}p) vs Team ${match.team2.currentPosition}(${match.team2.points}p)")
+        }
+        
+        asymmetricMatches.forEachIndexed { index, match ->
+            android.util.Log.i("TEST_TOURNAMENT_END", "🧪 ASYMMETRIC[$index]: Team ${match.team1.currentPosition}(${match.team1.points}p) vs Team ${match.team2.currentPosition}(${match.team2.points}p)")
+        }
+        
+        android.util.Log.i("TEST_TOURNAMENT_END", "🧪 ALGORITHM RULE: Tournament continues ONLY if samePointMatches > 0")
+        android.util.Log.i("TEST_TOURNAMENT_END", "🧪 CAN CONTINUE: $canContinue")
+        android.util.Log.i("TEST_TOURNAMENT_END", "🧪 TEST RESULT: ${if (canContinue == (samePointMatches.isNotEmpty())) "✅ ALGORITHM CORRECT" else "❌ ALGORITHM ERROR"}")
+    }
+    
+    /**
+     * 🧪 TEST LOG 4: HEAD-TO-HEAD TIEBREAKER TEST
+     * İkincil puan durumu (head-to-head) hesaplamasını test eder
+     */
+    private fun logHeadToHeadTest(samePointTeams: List<EmreTeam>, headToHeadPoints: Map<Long, Double>, completedMatches: List<Match>) {
+        android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 HEAD-TO-HEAD TIEBREAKER TEST:")
+        android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 SAME POINT TEAMS COUNT: ${samePointTeams.size}")
+        
+        samePointTeams.forEach { team ->
+            val h2hPoints = headToHeadPoints[team.id] ?: 0.0
+            android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 TEAM ${team.currentPosition}: MainPoints=${team.points}, H2H_Points=${h2hPoints}, PreRoundPos=${team.preRoundPosition}")
+        }
+        
+        // Head-to-head maçlarını say
+        val samePointTeamIds = samePointTeams.map { it.id }.toSet()
+        val h2hMatches = completedMatches.filter { match ->
+            match.isCompleted &&
+            match.songId1 in samePointTeamIds &&
+            match.songId2 in samePointTeamIds &&
+            match.songId1 != match.songId2
+        }
+        
+        android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 HEAD-TO-HEAD MATCHES FOUND: ${h2hMatches.size}")
+        h2hMatches.forEachIndexed { index, match ->
+            val winner = when (match.winnerId) {
+                match.songId1 -> "Team with Song ${match.songId1}"
+                match.songId2 -> "Team with Song ${match.songId2}"
+                null -> "DRAW"
+                else -> "Unknown"
+            }
+            android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 H2H MATCH[$index]: Song ${match.songId1} vs Song ${match.songId2} → Winner: $winner")
+        }
+        
+        // Test doğruluğu
+        val hasValidH2H = samePointTeams.size > 1 && h2hMatches.isNotEmpty()
+        android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 TEST RESULT: ${if (hasValidH2H) "✅ HEAD-TO-HEAD ACTIVE" else "⚠️ NO HEAD-TO-HEAD NEEDED"}")
+        
+        // Direct head-to-head testini ekle
+        if (samePointTeams.size >= 2) {
+            val directMatches = mutableListOf<String>()
+            for (i in 0 until samePointTeams.size - 1) {
+                for (j in i + 1 until samePointTeams.size) {
+                    val team1 = samePointTeams[i]
+                    val team2 = samePointTeams[j]
+                    val directMatch = completedMatches.find { match ->
+                        match.isCompleted &&
+                        ((match.songId1 == team1.id && match.songId2 == team2.id) ||
+                         (match.songId1 == team2.id && match.songId2 == team1.id))
+                    }
+                    
+                    if (directMatch != null) {
+                        val winner = when (directMatch.winnerId) {
+                            team1.id -> "Team ${team1.currentPosition}"
+                            team2.id -> "Team ${team2.currentPosition}" 
+                            null -> "DRAW"
+                            else -> "Unknown"
+                        }
+                        directMatches.add("Team ${team1.currentPosition} vs Team ${team2.currentPosition} → Winner: $winner")
+                    }
+                }
+            }
+            
+            android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 DIRECT H2H MATCHES: ${directMatches.size}")
+            directMatches.forEach { matchResult ->
+                android.util.Log.i("TEST_HEAD_TO_HEAD", "🧪 DIRECT: $matchResult")
+            }
+        }
+    }
+
+    /**
      * 🆕 YENİ EŞLEŞTIRME MOTORU - Geliştirilmiş İsviçre Usulü
      * 
      * ALGORİTMA AKIŞI:
@@ -344,7 +471,10 @@ object EmreSystemCorrect {
                     if (team2.teamId in processedTeams) continue
                     
                     // DUPLICATE KONTROL
-                    if (!hasTeamsPlayedBefore(team1.teamId, team2.teamId, matchHistory)) {
+                    val duplicateCheck = hasTeamsPlayedBefore(team1.teamId, team2.teamId, matchHistory)
+                    logDuplicateTest(team1, team2, matchHistory, duplicateCheck, "EMERGENCY_PAIRING")
+                    
+                    if (!duplicateCheck) {
                         foundPartner = team2
                         break
                     }
@@ -388,6 +518,9 @@ object EmreSystemCorrect {
         
         android.util.Log.d("EmreSystemCorrect", "✅ PAIRING ENGINE COMPLETED: ${engineState.candidateMatches.size} matches, ${if (engineState.byeTeam != null) "1 bye" else "no bye"}")
         
+        // 🧪 TEST LOG 2: MATCH COUNT TEST
+        logMatchCountTest(teams, engineState.candidateMatches, engineState.byeTeam, currentRound)
+        
         // 6. EŞ PUANLI EŞLEŞME KONTROLÜ VE TUR ONAY
         return performAsymmetricPointCheck(engineState.candidateMatches, engineState.byeTeam, currentRound)
     }
@@ -417,7 +550,10 @@ object EmreSystemCorrect {
             if (candidate.id in engineState.usedTeams) continue // Zaten kullanılmış
             
             // 🔴 KRİTİK: Daha önce oynamış mı kontrol et
-            if (hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)) {
+            val duplicateCheck = hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)
+            logDuplicateTest(searchingTeam, candidate, matchHistory, duplicateCheck, "FORWARD_SEARCH")
+            
+            if (duplicateCheck) {
                 android.util.Log.d("EmreSystemCorrect", "⏭️ FORWARD SKIP: ${candidate.currentPosition} (played before with TeamID ${searchingTeam.teamId})")
                 continue
             }
@@ -459,7 +595,10 @@ object EmreSystemCorrect {
             }
             
             // 🔴 KRİTİK: Daha önce oynamış mı kontrol et
-            if (hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)) {
+            val duplicateCheck = hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)
+            logDuplicateTest(searchingTeam, candidate, matchHistory, duplicateCheck, "BACKWARD_SEARCH")
+            
+            if (duplicateCheck) {
                 android.util.Log.d("EmreSystemCorrect", "⏭️ BACKWARD SKIP: ${candidate.currentPosition} (played before with TeamID ${searchingTeam.teamId})")
                 continue
             }
@@ -545,7 +684,10 @@ object EmreSystemCorrect {
         // 3. YENİ EŞLEŞMEYİ OLUŞTUR (searchingTeam + targetTeam) - DUPLICATE KONTROL İLE
         
         // 🔴 CRITICAL CHECK: DUPLICATE PREVENTION IN BACKTRACK
-        if (hasTeamsPlayedBefore(searchingTeam.teamId, targetTeam.teamId, matchHistory)) {
+        val backtrackDuplicateCheck = hasTeamsPlayedBefore(searchingTeam.teamId, targetTeam.teamId, matchHistory)
+        logDuplicateTest(searchingTeam, targetTeam, matchHistory, backtrackDuplicateCheck, "BACKTRACK_VALIDATION")
+        
+        if (backtrackDuplicateCheck) {
             android.util.Log.e("EmreSystemCorrect", "❌ BACKTRACK DUPLICATE: ${searchingTeam.currentPosition} and ${targetTeam.currentPosition} have played before!")
             android.util.Log.e("EmreSystemCorrect", "❌ CANCELLING BACKTRACK: Reverting broken match")
             
@@ -612,6 +754,9 @@ object EmreSystemCorrect {
             }
             candidateMatches.any { !it.isAsymmetricPoints }
         }
+        
+        // 🧪 TEST LOG 3: TOURNAMENT END ALGORITHM TEST
+        logTournamentEndTest(candidateMatches, hasSamePointMatch, currentRound)
         
         if (hasSamePointMatch) {
             // TUR OYNA
@@ -1484,10 +1629,46 @@ object EmreSystemCorrect {
             android.util.Log.d("EmreSystemCorrect", "📈 H2H POINTS: Team ${team?.currentPosition} → ${points}")
         }
         
-        // 🆕 YENİ SIRALAMA: Head-to-head, sonra tur öncesi sıralama
+        // 🧪 TEST LOG 4: HEAD-TO-HEAD TIEBREAKER TEST  
+        logHeadToHeadTest(samePointTeams, headToHeadPoints, completedMatches)
+        
+        // 🆕 COMPLETE TIEBREAKER: Head-to-head puanları, sonra direct H2H, sonra tur öncesi sıralama
         val sortedTeams = samePointTeams.sortedWith(
-            compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // Head-to-head puan (yüksek önce)
-                .thenBy { it.preRoundPosition } // 🆕 Tur öncesi sıralama (düşük önce = üstte olan)
+            compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // 1. Head-to-head puan (yüksek önce)
+                .thenComparing { team1, team2 ->
+                    // 2. Direct head-to-head: Eğer H2H puanları eşitse, direkt maçta kim yendi?
+                    val h2h1 = headToHeadPoints[team1.id] ?: 0.0
+                    val h2h2 = headToHeadPoints[team2.id] ?: 0.0
+                    
+                    if (h2h1 == h2h2) {
+                        // H2H puanları eşit - direkt maça bakılır
+                        val directMatch = completedMatches.find { match ->
+                            match.isCompleted &&
+                            ((match.songId1 == team1.id && match.songId2 == team2.id) ||
+                             (match.songId1 == team2.id && match.songId2 == team1.id)) &&
+                            match.winnerId != null // Beraberlik değil
+                        }
+                        
+                        if (directMatch != null) {
+                            when (directMatch.winnerId) {
+                                team1.id -> {
+                                    android.util.Log.d("EmreSystemCorrect", "🥊 DIRECT H2H: Team ${team1.currentPosition} beats Team ${team2.currentPosition}")
+                                    -1 // team1 kazandı, team1 üstte
+                                }
+                                team2.id -> {
+                                    android.util.Log.d("EmreSystemCorrect", "🥊 DIRECT H2H: Team ${team2.currentPosition} beats Team ${team1.currentPosition}")
+                                    1 // team2 kazandı, team2 üstte
+                                }
+                                else -> 0 // Beraberlik veya beklenmeyen durum
+                            }
+                        } else {
+                            0 // Direkt maç yok, bir sonraki tiebreaker'a geç
+                        }
+                    } else {
+                        0 // H2H puanları farklı, zaten ilk kriter çözüyor
+                    }
+                }
+                .thenBy { it.preRoundPosition } // 3. Tur öncesi sıralama (düşük önce = üstte olan)
         )
         
         android.util.Log.d("EmreSystemCorrect", "🏆 TIEBREAKER RESULT:")
