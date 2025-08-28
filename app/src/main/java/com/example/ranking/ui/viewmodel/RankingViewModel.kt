@@ -1465,8 +1465,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 if (pairingResult.matches.isNotEmpty()) {
                     repository.createMatches(pairingResult.matches)
                     
-                    // Sonraki tur için eşleştirmeler listesini göster
-                    val nextRoundNumber = emreState?.currentRound
+                    // Sonraki tur için eşleştirmeler listesini göster - DOĞRU TUR NUMARASI
+                    val nextRoundNumber = pairingResult.matches.firstOrNull()?.round ?: (emreState?.currentRound ?: 1)
                     android.util.Log.d("RankingViewModel", "📋 ${nextRoundNumber}. tur eşleştirmeler listesi gösteriliyor...")
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,

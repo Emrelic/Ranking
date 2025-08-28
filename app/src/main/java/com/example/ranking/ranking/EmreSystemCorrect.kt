@@ -1407,18 +1407,28 @@ object EmreSystemCorrect {
      * İki takımın daha önce oynayıp oynamadığını kontrol et
      */
     private fun hasTeamsPlayedBefore(team1Id: Long, team2Id: Long, matchHistory: Set<Pair<Long, Long>>): Boolean {
-        val pair1 = Pair(team1Id, team2Id)
-        val pair2 = Pair(team2Id, team1Id)
-        val hasPlayed = (pair1 in matchHistory) || (pair2 in matchHistory)
+        // 🔥 CRITICAL FIX: Normalized pair lookup (küçük ID önce)
+        val normalizedPair = if (team1Id < team2Id) {
+            Pair(team1Id, team2Id)
+        } else {
+            Pair(team2Id, team1Id)
+        }
+        val hasPlayed = normalizedPair in matchHistory
         
         // 🔍 DETAILED DEBUG LOG - Match history kontrolü
         android.util.Log.d("EmreSystemCorrect", "🔍 CHECKING MATCH HISTORY: TeamID $team1Id vs TeamID $team2Id")
         android.util.Log.d("EmreSystemCorrect", "🔍 Match History size: ${matchHistory.size}")
-        android.util.Log.d("EmreSystemCorrect", "🔍 Looking for pairs: ($team1Id, $team2Id) or ($team2Id, $team1Id)")
+        android.util.Log.d("EmreSystemCorrect", "🔍 Looking for normalized pair: $normalizedPair")
+        
+        // 🆕 DEBUG: Match history sample göster (ilk 3 pair)
+        if (matchHistory.size > 0) {
+            val sample = matchHistory.take(3)
+            android.util.Log.d("EmreSystemCorrect", "🔍 MATCH HISTORY SAMPLE: $sample")
+        }
         
         if (hasPlayed) {
             android.util.Log.w("EmreSystemCorrect", "🚫 DUPLICATE DETECTED: TeamID $team1Id and $team2Id have played before!")
-            android.util.Log.w("EmreSystemCorrect", "🚫 Found in history: $pair1 in history = ${pair1 in matchHistory}, $pair2 in history = ${pair2 in matchHistory}")
+            android.util.Log.w("EmreSystemCorrect", "🚫 Found in history: $normalizedPair in history = ${normalizedPair in matchHistory}")
         } else {
             android.util.Log.d("EmreSystemCorrect", "✅ PAIR OK: TeamID $team1Id and $team2Id have NOT played before")
         }
@@ -1457,19 +1467,32 @@ object EmreSystemCorrect {
         
         // Maç sonuçlarını işle
         android.util.Log.d("EmreSystemCorrect", "📝 PROCESSING ${completedMatches.size} completed matches")
+        
+        // 🆕 Track processed match IDs to prevent duplicate processing
+        val processedMatchIds = mutableSetOf<Long>()
+        
         completedMatches.forEach { match ->
+            // 🔴 Skip if match already processed
+            if (match.id in processedMatchIds) {
+                android.util.Log.w("EmreSystemCorrect", "⚠️ SKIPPING DUPLICATE MATCH: Match ID ${match.id} already processed")
+                return@forEach
+            }
+            processedMatchIds.add(match.id)
             // 🆕 CRITICAL FIX: Convert song IDs to stable team IDs for match history
             val teamId1 = songToTeamMap[match.songId1]
             val teamId2 = songToTeamMap[match.songId2]
             
             if (teamId1 != null && teamId2 != null) {
-                val pair1 = Pair(teamId1, teamId2)
-                val pair2 = Pair(teamId2, teamId1)
+                // 🔥 CRITICAL FIX: Sadece tek yönlü kaydet (küçük ID önce)
+                val normalizedPair = if (teamId1 < teamId2) {
+                    Pair(teamId1, teamId2)
+                } else {
+                    Pair(teamId2, teamId1)
+                }
                 
                 // 🔴 KRİTİK FIX: DUPLICATE KONTROLÜ - SADECE DAHA ÖNCE EŞLEŞMİŞ DEĞİLLERLE EŞLEŞİR
-                if (!newMatchHistory.contains(pair1) && !newMatchHistory.contains(pair2)) {
-                    newMatchHistory.add(pair1)
-                    newMatchHistory.add(pair2)
+                if (!newMatchHistory.contains(normalizedPair)) {
+                    newMatchHistory.add(normalizedPair)
                     android.util.Log.d("EmreSystemCorrect", "📝 ADDED TO HISTORY: TeamID $teamId1 vs TeamID $teamId2 (Match ID: ${match.id}, SongIDs: ${match.songId1} vs ${match.songId2})")
                 } else {
                     android.util.Log.e("EmreSystemCorrect", "🚫 BLOCKED DUPLICATE: TeamID $teamId1 vs TeamID $teamId2 already in match history! (Match ID: ${match.id})")

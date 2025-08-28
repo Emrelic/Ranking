@@ -90,6 +90,143 @@ app/src/main/java/com/example/ranking/ui/viewmodel/RankingViewModel.kt
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## 🔍 FİX KONTROL PROTOKOLLERİ
+
+### Her Test Sonrası Zorunlu Kontroller:
+
+#### 1. **LOG SETUP VE TEMIZLIK**
+```bash
+# Eski logcat temizle
+adb logcat -c
+
+# Yeni logcat monitoring başlat
+adb logcat -s "EmreSystemCorrect" > test_session_logs.txt &
+```
+
+#### 2. **APK BUILD VE DEPLOY**
+```bash
+# Fresh build
+./gradlew assembleDebug
+
+# Install latest APK
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+#### 3. **ZORUNLU TEST KONTROL MADDELERİ**
+
+**A) MÜKERRER EŞLEŞME KONTROLÜ**
+```bash
+# Her takımın hangi takımlarla eşleştiğini satır satır analiz et
+grep -o "TeamID [0-9]* vs TeamID [0-9]*" test_session_logs.txt | sort | uniq -c | sort -nr
+
+# Hiçbir çift 1'den fazla oynamamalı
+# Her satırda "1 TeamID X vs TeamID Y" olmalı
+```
+
+**B) HER TURDA EŞİT SAYIDA MAÇLAR KONTROLÜ**
+```bash
+# Toplam match sayısı
+total_matches=$(grep -c "ADDED TO HISTORY" test_session_logs.txt)
+
+# Takım sayısından expected match per round hesapla
+team_count=$(grep "TOURNAMENT INITIALIZED" test_session_logs.txt | grep -o "[0-9]* teams" | grep -o "[0-9]*")
+matches_per_round=$((team_count / 2))
+
+# Toplam tur sayısı
+total_rounds=$((total_matches / matches_per_round))
+
+echo "Takım sayısı: $team_count"
+echo "Her turda maç sayısı: $matches_per_round" 
+echo "Toplam maç: $total_matches"
+echo "Toplam tur: $total_rounds"
+```
+
+**C) TURNUVA BİTİŞ ASİMETRİK KONTROL**
+```bash
+# Son tur eşleştirmelerini bul
+grep -A20 -B5 "TOURNAMENT ENDS\|TOURNAMENT CONTINUES" test_session_logs.txt | tail -30
+
+# Son aday eşleştirme tablosunu getir
+# Tüm eşleştirmelerin asimetrik (farklı puanlı) olduğunu kontrol et
+```
+
+**D) DETAYLI EŞLEŞTİRME MATRİSİ**
+```bash
+# Her takımın tüm rakipleriyle eşleştirme tablosunu oluştur
+# Format: "Team X played against: Y, Z, W, ..." 
+# Her takım satır satır listelenmeli
+# Hiçbir takım aynı rakiple 2 kere eşleşmemeli
+```
+
+**E) DUPLICATE PREVENTION SİSTEM KONTROL**
+```bash
+# Duplicate detection logları
+grep -c "🚫 DUPLICATE DETECTED" test_session_logs.txt
+
+# Duplicate match skip logları  
+grep -c "⚠️ SKIPPING DUPLICATE MATCH" test_session_logs.txt
+
+# Pair OK logları (başarılı eşleştirmeler)
+grep -c "✅ PAIR OK" test_session_logs.txt
+```
+
+#### 4. **BAŞARI KRİTERLERİ**
+
+✅ **GEÇER:** Tüm kontroller başarılı
+- Mükerrer eşleştirme = 0
+- Her turda eşit sayıda maç
+- Turnuva doğru şekilde sonlanır  
+- Duplicate prevention çalışır
+
+❌ **KALIR:** Herhangi bir kontrol başarısız
+- Debug yapmaya devam et
+- Fix uygula
+- Tekrar test et
+
+#### 5. **OTOMATIK RAPOR TEMPLATE**
+
+```
+=== GELİŞTİRİLMİŞ İSVİÇRE SİSTEMİ TEST RAPORU ===
+
+TOURNAMENT BİLGİLERİ:
+- Takım Sayısı: [X teams]
+- Her Turda Maç: [X matches] 
+- Toplam Tur: [X rounds]
+- Toplam Maç: [X total matches]
+
+MÜKERRER EŞLEŞTİRME KONTROLÜ:
+- En çok eşleşen çift: [Team X vs Y: Z kere]
+- Duplicate sayısı: [X çift]
+- Sonuç: [✅ BAŞARILI / ❌ BAŞARISIZ]
+
+TUR BAZLI KONTROL:
+- Beklenen maç/tur: [X]
+- Gerçek maç/tur: [X] 
+- Sonuç: [✅ TUTARLI / ❌ TUTARSIZ]
+
+DUPLICATE PREVENTION:
+- Pair OK: [X]
+- Duplicate Detected: [X]
+- Skip Duplicate Match: [X]
+- Sonuç: [✅ ÇALIŞIYOR / ❌ ÇALIŞMIYOR]
+
+TURNUVA BİTİŞ:
+- Bitiş nedeni: [Asimetrik puan / Diğer]
+- Son eşleştirme sayısı: [X]
+- Sonuç: [✅ DOĞRU / ❌ YANLIŞ]
+
+GENEL SONUÇ: [✅ TÜM KONTROLLER BAŞARILI / ❌ FIX GEREKLİ]
+```
+
+#### 6. **HER TEST SONRASI ZORUNLU**
+- Yukarıdaki tüm kontrolleri yap
+- Raporu oluştur  
+- Başarısızlık varsa fix uygula
+- Fix sonrası tekrar test et
+- Tüm kontroller geçene kadar tekrarla
+
+**Bu protokol her test sonrası otomatik olarak uygulanacak.**
+
 ## Gelecek Geliştirmeler
 
 ### 🔄 Planlanmış Özellikler
