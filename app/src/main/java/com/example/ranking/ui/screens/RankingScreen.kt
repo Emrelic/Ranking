@@ -19,6 +19,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.data.Song
@@ -89,6 +90,7 @@ fun RankingScreen(
                     if (showStandings) {
                         StandingsDialog(
                             uiState = uiState,
+                            method = method,
                             onDismiss = { showStandings = false }
                         )
                     }
@@ -802,6 +804,7 @@ private fun EliminationContent(
 @Composable
 private fun StandingsDialog(
     uiState: RankingViewModel.RankingUiState,
+    method: String,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -847,6 +850,14 @@ private fun StandingsDialog(
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.weight(0.5f)
                         )
+                        if (method == "EMRE_CORRECT") {
+                            Text(
+                                text = "İP", // İkincil Puan
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(0.5f),
+                                fontSize = 12.sp
+                            )
+                        }
                         Text(
                             text = "Y",
                             fontWeight = FontWeight.Bold,
@@ -903,6 +914,20 @@ private fun StandingsDialog(
                             modifier = Modifier.weight(0.5f),
                             textAlign = TextAlign.Center
                         )
+                        if (method == "EMRE_CORRECT") {
+                            // İkincil puan gösterimi - EmreState'den H2H puanını al
+                            val secondaryPoints = uiState.emreState?.teams?.find { 
+                                it.song.id == standing.song.id 
+                            }?.secondaryPoints ?: 0.0
+                            
+                            Text(
+                                text = String.format("%.1f", secondaryPoints),
+                                modifier = Modifier.weight(0.5f),
+                                textAlign = TextAlign.Center,
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                        }
                         Text(
                             text = String.format("%.1f", standing.points),
                             modifier = Modifier.weight(0.5f),

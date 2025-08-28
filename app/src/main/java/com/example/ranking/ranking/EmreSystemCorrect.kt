@@ -27,7 +27,8 @@ object EmreSystemCorrect {
         val teamId: Long,                       // Sabit ID numarası  
         var preRoundPosition: Int = 0,          // 🆕 Tur öncesi anlık sıralama (tiebreaker için)
         var byePassed: Boolean = false,         // Bye geçti mi?
-        var byeCount: Int = 0                   // 🆕 Kaç kere bye geçti (maksimum 1)
+        var byeCount: Int = 0,                  // 🆕 Kaç kere bye geçti (maksimum 1)
+        var secondaryPoints: Double = 0.0       // 🆕 İkincil puan (H2H) - UI gösterimi için
     ) {
         val id: Long get() = song.id
         
@@ -40,7 +41,8 @@ object EmreSystemCorrect {
                 teamId = teamId,
                 preRoundPosition = preRoundPosition,
                 byePassed = byePassed,
-                byeCount = byeCount
+                byeCount = byeCount,
+                secondaryPoints = secondaryPoints
             )
         }
     }
@@ -1594,30 +1596,38 @@ object EmreSystemCorrect {
         // Aynı puanlı takımların ID'lerini al
         val samePointTeamIds = samePointTeams.map { it.id }.toSet()
         
-        // 🆕 Kendi aralarındaki tamamlanmış maçları kontrol et (BYE PUANLARI HARİÇ)
-        completedMatches.forEach { match ->
-            // Bu maç aynı puanlı iki takım arasında mı ve bye maçı değil mi?
-            if (match.isCompleted && 
-                match.songId1 in samePointTeamIds && 
-                match.songId2 in samePointTeamIds &&
-                match.songId1 != match.songId2) { // Bye maçları değil
-                
-                when (match.winnerId) {
-                    match.songId1 -> {
-                        // Takım 1 kazandı
-                        headToHeadPoints[match.songId1] = headToHeadPoints[match.songId1]!! + 1.0
-                        android.util.Log.d("EmreSystemCorrect", "⚔️ HEAD-TO-HEAD: ${match.songId1} beats ${match.songId2} → +1.0")
+        // 🎯 DOĞRU İKİNCİL PUAN SİSTEMİ: Sadece comprehensive hesaplama kullan
+        
+        // 🆕 GELIŞMIŞ İKINCIL PUAN HESABI: Aynı puanlı takımların tüm turnuva boyunca birbirleriyle oynadığı maçlar
+        android.util.Log.d("EmreSystemCorrect", "🎯 COMPREHENSIVE H2H: Calculating secondary points for ${samePointTeams.size} teams")
+        
+        // Her aynı puanlı takım için, diğer aynı puanlı takımlara karşı oynadığı tüm maçlardaki performansını hesapla
+        samePointTeams.forEach { teamA ->
+            samePointTeams.forEach { teamB ->
+                if (teamA.id != teamB.id) {
+                    // teamA ile teamB arasındaki tüm turnuva maçlarına bak
+                    val matchesBetween = completedMatches.filter { match ->
+                        match.isCompleted && 
+                        ((match.songId1 == teamA.id && match.songId2 == teamB.id) ||
+                         (match.songId1 == teamB.id && match.songId2 == teamA.id)) &&
+                        match.songId1 != match.songId2 // Bye değil
                     }
-                    match.songId2 -> {
-                        // Takım 2 kazandı
-                        headToHeadPoints[match.songId2] = headToHeadPoints[match.songId2]!! + 1.0
-                        android.util.Log.d("EmreSystemCorrect", "⚔️ HEAD-TO-HEAD: ${match.songId2} beats ${match.songId1} → +1.0")
-                    }
-                    null -> {
-                        // Beraberlik - her ikisine 0.5 puan
-                        headToHeadPoints[match.songId1] = headToHeadPoints[match.songId1]!! + 0.5
-                        headToHeadPoints[match.songId2] = headToHeadPoints[match.songId2]!! + 0.5
-                        android.util.Log.d("EmreSystemCorrect", "⚔️ HEAD-TO-HEAD: ${match.songId1} draws ${match.songId2} → +0.5 each")
+                    
+                    matchesBetween.forEach { match ->
+                        when (match.winnerId) {
+                            teamA.id -> {
+                                headToHeadPoints[teamA.id] = headToHeadPoints[teamA.id]!! + 1.0
+                                android.util.Log.d("EmreSystemCorrect", "⚔️ H2H COMPREHENSIVE: Team ${teamA.id} beats Team ${teamB.id} → +1.0")
+                            }
+                            teamB.id -> {
+                                // teamB kazandı ama teamA'nın puanını etkilemez (0 puan)
+                                android.util.Log.d("EmreSystemCorrect", "⚔️ H2H COMPREHENSIVE: Team ${teamB.id} beats Team ${teamA.id} → Team ${teamA.id} gets 0")
+                            }
+                            null -> {
+                                headToHeadPoints[teamA.id] = headToHeadPoints[teamA.id]!! + 0.5
+                                android.util.Log.d("EmreSystemCorrect", "⚔️ H2H COMPREHENSIVE: Team ${teamA.id} draws Team ${teamB.id} → +0.5")
+                            }
+                        }
                     }
                 }
             }
@@ -1674,6 +1684,9 @@ object EmreSystemCorrect {
         android.util.Log.d("EmreSystemCorrect", "🏆 TIEBREAKER RESULT:")
         sortedTeams.forEachIndexed { index, team ->
             android.util.Log.d("EmreSystemCorrect", "🥇 RANK ${index + 1}: Team ${team.currentPosition} (H2H: ${headToHeadPoints[team.id]}, PreRound: ${team.preRoundPosition})")
+            
+            // 🆕 İkincil puanları (H2H) takıma ata - UI gösterimi için
+            team.secondaryPoints = headToHeadPoints[team.id] ?: 0.0
         }
         
         return sortedTeams
