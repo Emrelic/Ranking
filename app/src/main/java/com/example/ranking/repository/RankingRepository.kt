@@ -30,6 +30,8 @@ class RankingRepository(
     
     suspend fun getSongListById(id: Long): SongList? = songListDao.getSongListById(id)
     
+    suspend fun getSongListByIdSync(id: Long): SongList? = songListDao.getSongListById(id)
+    
     suspend fun deleteSongList(songList: SongList) {
         songDao.deleteSongsByListId(songList.id)
         rankingResultDao.deleteAllRankingResults(songList.id)
@@ -132,6 +134,9 @@ class RankingRepository(
     
     // League Settings operations
     suspend fun getLeagueSettings(listId: Long, method: String): LeagueSettings? =
+        leagueSettingsDao.getByListAndMethod(listId, method)
+    
+    suspend fun getLeagueSettingsSync(listId: Long, method: String): LeagueSettings? =
         leagueSettingsDao.getByListAndMethod(listId, method)
     
     suspend fun saveLeagueSettings(settings: LeagueSettings) {

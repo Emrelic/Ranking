@@ -9,6 +9,7 @@ import com.example.ranking.ranking.RankingEngine
 import com.example.ranking.ranking.EmreSystemCorrect
 import com.example.ranking.repository.RankingRepository
 import com.example.ranking.utils.CsvReader
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -589,6 +590,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             
             repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
+            
+            // 🔥 KRİTİK FIX: TURNUVA BİTİNCE OTOMATİK ARŞİV KAYDI
+            autoSaveToArchive(allMatches, results)
             
             _uiState.value = _uiState.value.copy(
                 isComplete = true,
@@ -1484,5 +1488,119 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 error = "Emre durumu güncelleme hatası: ${e.message}"
             )
         }
+    }
+    
+    /**
+     * 🔥 OTOMATİK ARŞİV KAYDI - Turnuva bittiğinde arşivlenir
+     */
+    private suspend fun autoSaveToArchive(matches: List<Match>, results: List<RankingResult>) {
+        try {
+            val songList = repository.getSongListByIdSync(currentListId)
+            val currentTime = System.currentTimeMillis()
+            
+            // Otomatik arşiv ismi: "[Lista Adı] - [Usul] - [Tarih]"
+            val archiveName = "${songList?.name ?: "Bilinmeyen Lista"} - ${getMethodDisplayName(currentMethod)} - ${
+                java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault()).format(java.util.Date(currentTime))
+            }"
+            
+            // League table hesapla (sadece lig usulü için)
+            val leagueTable = if (currentMethod == "LEAGUE") {
+                calculateLeagueTableForArchive(matches)
+            } else null
+            
+            // League settings al (sadece lig usulü için)
+            val leagueSettings = if (currentMethod == "LEAGUE") {
+                repository.getLeagueSettingsSync(currentListId, currentMethod)
+            } else null
+            
+            // Archive oluştur
+            val archive = Archive(
+                name = archiveName,
+                listId = currentListId,
+                listName = songList?.name ?: "Bilinmeyen Lista",
+                method = currentMethod,
+                totalSongs = songs.size,
+                totalMatches = matches.size,
+                completedMatches = matches.count { it.isCompleted },
+                finalResults = Gson().toJson(results),
+                leagueTable = leagueTable?.let { Gson().toJson(it) },
+                matchResults = Gson().toJson(matches.filter { it.isCompleted }),
+                leagueSettings = leagueSettings?.let { Gson().toJson(it) },
+                isCompleted = true,
+                archivedAt = currentTime
+            )
+            
+            // Arşive kaydet
+            val archiveId = repository.saveArchive(archive)
+            android.util.Log.d("RankingViewModel", "✅ Turnuva otomatik arşivlendi: $archiveName (ID: $archiveId)")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("RankingViewModel", "❌ Otomatik arşivleme hatası: ${e.message}", e)
+            // Hata arşivleme başarısız olsa bile turnuvayı tamamla
+        }
+    }
+    
+    private fun getMethodDisplayName(method: String): String {
+        return when (method) {
+            "LEAGUE" -> "Lig Usulü"
+            "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
+            "SWISS" -> "İsviçre Sistemi"
+            "ELIMINATION" -> "Eleme Usulü"
+            "FULL_ELIMINATION" -> "Tam Eleme"
+            "DIRECT_SCORING" -> "Direkt Puanlama"
+            else -> method
+        }
+    }
+    
+    private suspend fun calculateLeagueTableForArchive(matches: List<Match>): List<Map<String, Any>> {
+        val tableEntries = mutableMapOf<Long, MutableMap<String, Any>>()
+        
+        // Initialize entries for all teams
+        songs.forEach { song ->
+            tableEntries[song.id] = mutableMapOf(
+                "songId" to song.id,
+                "artist" to song.artist,
+                "title" to song.name,
+                "album" to song.album,
+                "played" to 0,
+                "won" to 0,
+                "drawn" to 0,
+                "lost" to 0,
+                "points" to 0.0
+            )
+        }
+        
+        // Process completed matches
+        matches.filter { it.isCompleted }.forEach { match ->
+            val entry1 = tableEntries[match.songId1]!!
+            val entry2 = tableEntries[match.songId2]!!
+            
+            entry1["played"] = (entry1["played"] as Int) + 1
+            entry2["played"] = (entry2["played"] as Int) + 1
+            
+            when {
+                match.winnerId == match.songId1 -> {
+                    // Song1 wins
+                    entry1["won"] = (entry1["won"] as Int) + 1
+                    entry1["points"] = (entry1["points"] as Double) + 1.0
+                    entry2["lost"] = (entry2["lost"] as Int) + 1
+                }
+                match.winnerId == match.songId2 -> {
+                    // Song2 wins
+                    entry2["won"] = (entry2["won"] as Int) + 1
+                    entry2["points"] = (entry2["points"] as Double) + 1.0
+                    entry1["lost"] = (entry1["lost"] as Int) + 1
+                }
+                match.winnerId == null -> {
+                    // Draw
+                    entry1["drawn"] = (entry1["drawn"] as Int) + 1
+                    entry1["points"] = (entry1["points"] as Double) + 0.5
+                    entry2["drawn"] = (entry2["drawn"] as Int) + 1
+                    entry2["points"] = (entry2["points"] as Double) + 0.5
+                }
+            }
+        }
+        
+        return tableEntries.values.sortedByDescending { it["points"] as Double }
     }
 }
