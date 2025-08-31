@@ -210,11 +210,27 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeLeague() {
         viewModelScope.launch {
+            // 🔥 LIG USULÜ İÇİN SESSION YÖNETİMİ EKLENDI
+            createOrUpdateSession()
+            
             repository.clearMatches(currentListId, currentMethod)
             val settings = _uiState.value.leagueSettings
             val doubleRoundRobin = settings?.doubleRoundRobin ?: false
             val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
             repository.createMatches(matches)
+            
+            // Session'a toplam maç sayısını kaydet
+            currentVotingSession?.let { session ->
+                val updatedSession = session.copy(
+                    totalMatches = matches.size,
+                    completedMatches = 0,
+                    currentRound = 1,
+                    lastModified = System.currentTimeMillis()
+                )
+                votingSessionDao.updateSession(updatedSession)
+                currentVotingSession = updatedSession
+            }
+            
             loadNextMatch()
         }
     }
@@ -591,6 +607,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
             
+            // 🔍 COMPREHENSIVE TOURNAMENT ANALYSIS for GİS tournaments
+            if (currentMethod == "EMRE_CORRECT" && emreState != null) {
+                android.util.Log.d("RankingViewModel", "🔍 Starting comprehensive tournament analysis...")
+                EmreSystemCorrect.generateComprehensiveTournamentAnalysis(emreState!!, allMatches)
+            }
+            
             // 🔥 KRİTİK FIX: TURNUVA BİTİNCE OTOMATİK ARŞİV KAYDI
             autoSaveToArchive(allMatches, results)
             
@@ -640,6 +662,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 )
                 repository.updateMatch(updatedMatch)
                 
+                // 🔥 LIG USULÜ İÇİN SESSION PROGRESS GÜNCELLEME
+                if (currentMethod == "LEAGUE") {
+                    currentVotingSession?.let { session ->
+                        val completedCount = session.completedMatches + 1
+                        val updatedSession = session.copy(
+                            completedMatches = completedCount,
+                            progress = if (session.totalMatches > 0) completedCount.toFloat() / session.totalMatches else 0f,
+                            lastModified = System.currentTimeMillis()
+                        )
+                        votingSessionDao.updateSession(updatedSession)
+                        currentVotingSession = updatedSession
+                        android.util.Log.d("RankingViewModel", "🔄 Lig usulü progress güncellendi: $completedCount/${session.totalMatches}")
+                    }
+                }
+                
                 // Update Swiss state if this is a Swiss tournament
                 if (currentMethod == "SWISS") {
                     updateSwissStateAfterMatch(updatedMatch)
@@ -666,6 +703,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     isCompleted = true
                 )
                 repository.updateMatch(updatedMatch)
+                
+                // 🔥 LIG USULÜ İÇİN SESSION PROGRESS GÜNCELLEME (submitMatchResultWithScore)
+                if (currentMethod == "LEAGUE") {
+                    currentVotingSession?.let { session ->
+                        val completedCount = session.completedMatches + 1
+                        val updatedSession = session.copy(
+                            completedMatches = completedCount,
+                            progress = if (session.totalMatches > 0) completedCount.toFloat() / session.totalMatches else 0f,
+                            lastModified = System.currentTimeMillis()
+                        )
+                        votingSessionDao.updateSession(updatedSession)
+                        currentVotingSession = updatedSession
+                        android.util.Log.d("RankingViewModel", "🔄 Lig usulü score progress güncellendi: $completedCount/${session.totalMatches}")
+                    }
+                }
                 
                 // Update Swiss state if this is a Swiss tournament
                 if (currentMethod == "SWISS") {
@@ -1091,6 +1143,24 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 currentSongIndex = session.currentIndex
                 updateDirectScoringUI()
+            }
+            "LEAGUE" -> {
+                // 🔥 LIG USULÜ RESUME SUPPORT EKLENDI
+                android.util.Log.d("RankingViewModel", "🔄 Lig usulü session resume - tamamlanan maç: ${session.completedMatches}/${session.totalMatches}")
+                
+                // Tüm maçları yükle - zaten var olan matches kullanılacak
+                loadNextMatch()
+                
+                // UI state'i güncelle
+                _uiState.value = _uiState.value.copy(
+                    hasActiveSession = true,
+                    currentSession = session,
+                    completedMatches = session.completedMatches,
+                    totalMatches = session.totalMatches,
+                    progress = if (session.totalMatches > 0) session.completedMatches.toFloat() / session.totalMatches else 0f
+                )
+                
+                android.util.Log.d("RankingViewModel", "✅ Lig usulü session başarıyla resume edildi")
             }
             "SWISS" -> {
                 // Load comprehensive Swiss state and resume from exact position

@@ -288,6 +288,102 @@ object EmreSystemCorrect {
     }
     
     /**
+     * 🔍 COMPREHENSIVE TOURNAMENT ANALYSIS
+     * User requested detailed analysis of team pairings, duplicates, and round validation
+     */
+    fun generateComprehensiveTournamentAnalysis(state: EmreState, allMatches: List<Match>) {
+        android.util.Log.e("TournamentAnalysis", "🔍 ===== COMPREHENSIVE GİS TOURNAMENT ANALYSIS =====")
+        
+        // 1. Tournament Overview
+        android.util.Log.e("TournamentAnalysis", "📊 TOURNAMENT OVERVIEW:")
+        android.util.Log.e("TournamentAnalysis", "📊 Total Teams: ${state.teams.size}")
+        android.util.Log.e("TournamentAnalysis", "📊 Total Matches Played: ${allMatches.size}")
+        android.util.Log.e("TournamentAnalysis", "📊 Match History Size: ${state.matchHistory.size}")
+        
+        // 2. Round-by-round analysis
+        val roundMatches = allMatches.groupBy { it.round }
+        android.util.Log.e("TournamentAnalysis", "")
+        android.util.Log.e("TournamentAnalysis", "🔄 ROUND-BY-ROUND ANALYSIS:")
+        roundMatches.keys.sorted().forEach { round ->
+            val matches = roundMatches[round]!!
+            android.util.Log.e("TournamentAnalysis", "🔄 Round $round: ${matches.size} matches (Expected: ${state.teams.size / 2})")
+        }
+        
+        // 3. Individual team pairing history
+        android.util.Log.e("TournamentAnalysis", "")
+        android.util.Log.e("TournamentAnalysis", "👥 INDIVIDUAL TEAM PAIRING HISTORY:")
+        
+        val songToTeamMap = state.teams.associate { team -> team.song.id to team }
+        
+        state.teams.sortedBy { it.teamId }.forEach { team ->
+            val opponentList = mutableListOf<String>()
+            
+            allMatches.forEach { match ->
+                when {
+                    match.songId1 == team.song.id -> {
+                        val opponent = songToTeamMap[match.songId2]
+                        opponent?.let { opponentList.add("TeamID ${it.teamId} (Round ${match.round})") }
+                    }
+                    match.songId2 == team.song.id -> {
+                        val opponent = songToTeamMap[match.songId1]
+                        opponent?.let { opponentList.add("TeamID ${it.teamId} (Round ${match.round})") }
+                    }
+                }
+            }
+            
+            android.util.Log.e("TournamentAnalysis", "👥 TeamID ${team.teamId} played against: ${opponentList.joinToString(", ")}")
+        }
+        
+        // 4. Duplicate pairing detection
+        android.util.Log.e("TournamentAnalysis", "")
+        android.util.Log.e("TournamentAnalysis", "🚫 DUPLICATE PAIRING ANALYSIS:")
+        
+        val pairingCounts = mutableMapOf<Pair<Long, Long>, Int>()
+        allMatches.forEach { match ->
+            val team1 = songToTeamMap[match.songId1]
+            val team2 = songToTeamMap[match.songId2]
+            
+            if (team1 != null && team2 != null) {
+                val normalizedPair = if (team1.teamId < team2.teamId) {
+                    Pair(team1.teamId, team2.teamId)
+                } else {
+                    Pair(team2.teamId, team1.teamId)
+                }
+                pairingCounts[normalizedPair] = pairingCounts.getOrDefault(normalizedPair, 0) + 1
+            }
+        }
+        
+        val duplicates = pairingCounts.filter { it.value > 1 }
+        if (duplicates.isEmpty()) {
+            android.util.Log.e("TournamentAnalysis", "✅ NO DUPLICATE PAIRINGS FOUND - All teams played each opponent only once")
+        } else {
+            android.util.Log.e("TournamentAnalysis", "❌ DUPLICATE PAIRINGS DETECTED:")
+            duplicates.forEach { (pair, count) ->
+                android.util.Log.e("TournamentAnalysis", "❌ TeamID ${pair.first} vs TeamID ${pair.second}: $count times")
+            }
+        }
+        
+        // 5. Final standings
+        android.util.Log.e("TournamentAnalysis", "")
+        android.util.Log.e("TournamentAnalysis", "🏆 FINAL STANDINGS:")
+        state.teams.sortedBy { it.currentPosition }.forEach { team ->
+            android.util.Log.e("TournamentAnalysis", "🏆 Position ${team.currentPosition}: TeamID ${team.teamId} - ${team.points} points")
+        }
+        
+        // 6. Secondary scoring system analysis
+        android.util.Log.e("TournamentAnalysis", "")
+        android.util.Log.e("TournamentAnalysis", "⚖️ SECONDARY SCORING SYSTEM ANALYSIS:")
+        val samePointGroups = state.teams.groupBy { it.points }
+        samePointGroups.forEach { (points, teams) ->
+            if (teams.size > 1) {
+                android.util.Log.e("TournamentAnalysis", "⚖️ Teams with $points points: ${teams.map { "TeamID ${it.teamId}" }.joinToString(", ")}")
+            }
+        }
+        
+        android.util.Log.e("TournamentAnalysis", "🔍 ===== ANALYSIS COMPLETE =====")
+    }
+
+    /**
      * 🧪 TEST LOG 4: HEAD-TO-HEAD TIEBREAKER TEST
      * İkincil puan durumu (head-to-head) hesaplamasını test eder
      */
@@ -438,9 +534,12 @@ object EmreSystemCorrect {
                     // Note: Displaced team zaten performAdvancedBacktrack içinde availableTeams'e eklendi
                 }
                 is PairingSearchResult.TournamentFinished -> {
-                    // Turnuva bitti - kimse ile eşleşemiyor
-                    android.util.Log.e("EmreSystemCorrect", "🏁 TOURNAMENT END: Team ${searchingTeam.currentPosition} cannot pair with anyone")
-                    return EmrePairingResult(emptyList(), null, false, false, emptyList())
+                    // 🔥 FIX: Turnuva bitti - ama asymmetric check yap!
+                    android.util.Log.e("EmreSystemCorrect", "🏁 EARLY TOURNAMENT END: Team ${searchingTeam.currentPosition} cannot pair with anyone")
+                    android.util.Log.e("EmreSystemCorrect", "🔥 CHECKING EXISTING MATCHES: ${engineState.candidateMatches.size} matches before early exit")
+                    
+                    // Mevcut candidate matches ile asymmetric check yap
+                    return performAsymmetricPointCheck(engineState.candidateMatches, engineState.byeTeam, currentRound)
                 }
             }
         }
@@ -515,7 +614,10 @@ object EmreSystemCorrect {
         val totalTeamsInPairs = engineState.candidateMatches.size * 2 + (if (engineState.byeTeam != null) 1 else 0)
         if (totalTeamsInPairs != teams.size) {
             android.util.Log.e("EmreSystemCorrect", "❌ TEAM COUNT MISMATCH: Expected ${teams.size}, got $totalTeamsInPairs")
-            return EmrePairingResult(emptyList(), null, false, false, emptyList())
+            android.util.Log.e("EmreSystemCorrect", "🔥 MISMATCH DETAILS: ${engineState.candidateMatches.size} matches (${engineState.candidateMatches.size * 2} teams) + ${if (engineState.byeTeam != null) 1 else 0} bye team")
+            
+            // 🔥 FIX: Team count mismatch olsa bile asymmetric check yap!
+            return performAsymmetricPointCheck(engineState.candidateMatches, engineState.byeTeam, currentRound)
         }
         
         android.util.Log.d("EmreSystemCorrect", "✅ PAIRING ENGINE COMPLETED: ${engineState.candidateMatches.size} matches, ${if (engineState.byeTeam != null) "1 bye" else "no bye"}")
