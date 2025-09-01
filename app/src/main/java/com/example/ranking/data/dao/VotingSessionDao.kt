@@ -26,4 +26,17 @@ interface VotingSessionDao {
     
     @Query("DELETE FROM voting_sessions WHERE listId = :listId AND rankingMethod = :method")
     suspend fun deleteSessionsForList(listId: Long, method: String)
+    
+    // Tournament management queries
+    @Query("SELECT * FROM voting_sessions WHERE isCompleted = 0 ORDER BY startedAt DESC")
+    suspend fun getAllActiveTournaments(): List<VotingSession>
+    
+    @Query("SELECT * FROM voting_sessions WHERE isCompleted = 1 ORDER BY finishedAt DESC")
+    suspend fun getAllCompletedTournaments(): List<VotingSession>
+    
+    @Query("UPDATE voting_sessions SET tournamentName = :name, listName = :listName WHERE id = :sessionId")
+    suspend fun updateTournamentInfo(sessionId: Long, name: String, listName: String)
+    
+    @Query("UPDATE voting_sessions SET finishedAt = :finishedAt, isCompleted = 1 WHERE id = :sessionId")
+    suspend fun completeTournament(sessionId: Long, finishedAt: Long)
 }

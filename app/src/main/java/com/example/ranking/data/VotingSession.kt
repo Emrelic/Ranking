@@ -29,6 +29,11 @@ data class VotingSession(
     val createdAt: Long = System.currentTimeMillis(),
     val lastModified: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,
+    // Tournament identification
+    val tournamentName: String = "",
+    val listName: String = "",
+    val startedAt: Long = System.currentTimeMillis(),
+    val finishedAt: Long? = null,
     // Direct scoring specific
     val currentSongId: Long? = null,
     // Match-based specific

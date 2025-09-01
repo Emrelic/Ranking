@@ -176,7 +176,7 @@ object EmreSystemCorrect {
         // 🆕 YENİ BYE KONTROL SİSTEMİ
         val (teamsToMatch, byeTeam) = handleByeTeamAdvanced(sortedTeams)
         
-        // 🆕 YENİ EŞLEŞTIRME MOTORU
+        // 🆕 YENİ EŞLEŞTIRME MOTORU - Round numarası doğru kullanılacak
         val result = createNewPairingEngine(teamsToMatch, state.matchHistory, state.currentRound)
         
         // Bye ekibini result'a ekle
@@ -615,11 +615,22 @@ object EmreSystemCorrect {
                 continue
             }
             
-            // Bu takım zaten kullanılmış mı? (Eşleşmiş takımlar için BACKTRACK)
+            // Bu takım zaten kullanılmış mı? (Eşleşmiş takımlar için ADVANCED BACKTRACK)
             if (candidate.teamId in engineState.usedTeams) {
-                // BACKTRACK GEREKLİ - bu takımın eşleşmesini boz
-                android.util.Log.w("EmreSystemCorrect", "🔄 BACKTRACK NEEDED: ${searchingTeam.currentPosition} wants ${candidate.currentPosition}")
-                return PairingSearchResult.RequiresBacktrack(candidate)
+                // 🔥 GELİŞTİRİLMİŞ BACKTRACK ALGORİTMASI (METİNDEKİ 7. MADDE)
+                android.util.Log.w("EmreSystemCorrect", "🔄 ADVANCED BACKTRACK: ${searchingTeam.currentPosition} wants ${candidate.currentPosition}")
+                val backtrackResult = performAdvancedBacktrackAlgorithm(
+                    searchingTeam = searchingTeam,
+                    targetTeam = candidate,
+                    engineState = engineState,
+                    matchHistory = matchHistory,
+                    allTeams = allTeams
+                )
+                
+                return when (backtrackResult.success) {
+                    true -> PairingSearchResult.Success(candidate)
+                    false -> PairingSearchResult.Bye // Eşleştirme başarısız, bye geçer
+                }
             }
             
             // UYGUN PARTNER BULUNDU (GERİDEN)

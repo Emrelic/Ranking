@@ -24,9 +24,16 @@ fun HomeScreen(
     onNavigateToSongList: (Long) -> Unit,
     onNavigateToArchive: () -> Unit,
     onNavigateToTest: () -> Unit = {},
+    onNavigateToRanking: (Long, String) -> Unit = { _, _ -> },
     viewModel: HomeViewModel = viewModel()
 ) {
     val songLists by viewModel.songLists.collectAsState()
+    val activeTournaments by viewModel.activeTournaments.collectAsState()
+    
+    // Refresh active tournaments when screen is displayed
+    LaunchedEffect(Unit) {
+        viewModel.loadActiveTournaments()
+    }
     
     Column(
         modifier = Modifier
@@ -61,6 +68,64 @@ fun HomeScreen(
         }
         
         Spacer(modifier = Modifier.height(16.dp))
+        
+        // Active Tournaments Section
+        if (activeTournaments.isNotEmpty()) {
+            Text(
+                text = "Devam Eden Turnuvalar",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 200.dp)
+            ) {
+                items(activeTournaments) { tournament ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        onClick = { 
+                            val (listId, method) = viewModel.resumeTournament(tournament)
+                            onNavigateToRanking(listId, method)
+                        },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(
+                                text = tournament.tournamentName.ifEmpty { tournament.sessionName },
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = tournament.listName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            )
+                            Text(
+                                text = "${tournament.completedMatches}/${tournament.totalMatches} maç tamamlandı",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "Öğe Listeleri",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
         
         if (songLists.isEmpty()) {
             Box(

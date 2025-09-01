@@ -209,11 +209,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeLeague() {
         viewModelScope.launch {
+            android.util.Log.d("RankingViewModel", "🏆 INITIALIZING LEAGUE!")
+            createOrUpdateSession()
             repository.clearMatches(currentListId, currentMethod)
             val settings = _uiState.value.leagueSettings
             val doubleRoundRobin = settings?.doubleRoundRobin ?: false
             val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
             repository.createMatches(matches)
+            android.util.Log.d("RankingViewModel", "🏆 LEAGUE SESSION CREATED, loading first match")
             loadNextMatch()
         }
     }
@@ -589,6 +592,31 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             
             repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
+            
+            // Complete the tournament session
+            currentVotingSession?.let { session ->
+                val finishedAt = System.currentTimeMillis()
+                votingSessionDao.completeTournament(session.id, finishedAt)
+                
+                // Save tournament to archive
+                val archive = Archive(
+                    name = session.tournamentName,
+                    listId = session.listId,
+                    listName = session.listName,
+                    method = session.rankingMethod,
+                    totalSongs = songs.size,
+                    totalMatches = repository.getMatchesByListAndMethodSync(session.listId, session.rankingMethod).size,
+                    completedMatches = repository.getMatchesByListAndMethodSync(session.listId, session.rankingMethod).count { it.isCompleted },
+                    finalResults = results.joinToString(";") { "${it.position}:${it.songId}:${it.score}" },
+                    leagueTable = null,
+                    matchResults = repository.getMatchesByListAndMethodSync(session.listId, session.rankingMethod).joinToString(";") { "${it.id}:${it.winnerId}:${it.songId1}:${it.songId2}" },
+                    leagueSettings = null,
+                    archivedAt = finishedAt,
+                    isCompleted = true
+                )
+                repository.saveArchive(archive)
+                android.util.Log.d("RankingViewModel", "🏁 Tournament completed and archived: ${session.tournamentName}")
+            }
             
             _uiState.value = _uiState.value.copy(
                 isComplete = true,
@@ -1156,6 +1184,47 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     loadNextMatch()
                 }
             }
+            "LEAGUE" -> {
+                // Resume League system from existing matches
+                android.util.Log.d("RankingViewModel", "🏆 Resuming LEAGUE session: ${session.id}")
+                val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                android.util.Log.d("RankingViewModel", "📋 Found ${allMatches.size} existing matches")
+                
+                if (allMatches.isNotEmpty()) {
+                    // Recreate league standings from existing matches
+                    val results = RankingEngine.calculateLeagueResults(songs, allMatches)
+                    val standingsEntries = results.map { result ->
+                        val song = songs.find { it.id == result.songId }!!
+                        val songMatches = allMatches.filter { match -> 
+                            match.songId1 == song.id || match.songId2 == song.id 
+                        }
+                        val played = songMatches.count { it.isCompleted }
+                        val won = songMatches.count { match -> 
+                            match.isCompleted && 
+                            ((match.songId1 == song.id && match.winnerId == match.songId1) ||
+                             (match.songId2 == song.id && match.winnerId == match.songId2))
+                        }
+                        val drawn = songMatches.count { match ->
+                            match.isCompleted && match.winnerId == null
+                        }
+                        val lost = played - won - drawn
+                        
+                        StandingEntry(
+                            position = result.position,
+                            song = song,
+                            points = result.score,
+                            played = played,
+                            won = won,
+                            drawn = drawn,
+                            lost = lost
+                        )
+                    }
+                    
+                    _uiState.value = _uiState.value.copy(currentStandings = standingsEntries)
+                    android.util.Log.d("RankingViewModel", "✅ League standings restored: ${standingsEntries.size} entries")
+                }
+                loadNextMatch()
+            }
             "EMRE_CORRECT" -> {
                 // Resume Emre system from existing matches
                 val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
@@ -1201,10 +1270,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 else -> currentMethod
             }
             
+            val tournamentName = "${songList?.name ?: "Liste"} - $methodName"
             val newSession = VotingSession(
                 listId = currentListId,
                 rankingMethod = currentMethod,
-                sessionName = "${songList?.name ?: "Liste"} - $methodName ($formattedDate)",
+                sessionName = "$tournamentName ($formattedDate)",
+                tournamentName = tournamentName,
+                listName = songList?.name ?: "Liste",
+                startedAt = currentTime,
                 currentIndex = currentSongIndex,
                 totalItems = songs.size,
                 progress = if (songs.isNotEmpty()) currentSongIndex.toFloat() / songs.size else 0f,
@@ -1466,7 +1539,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     repository.createMatches(pairingResult.matches)
                     
                     // Sonraki tur için eşleştirmeler listesini göster
-                    val nextRoundNumber = emreState?.currentRound
+                    val nextRoundNumber = emreState?.currentRound ?: (completedMatch.round + 1)
                     android.util.Log.d("RankingViewModel", "📋 ${nextRoundNumber}. tur eşleştirmeler listesi gösteriliyor...")
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,

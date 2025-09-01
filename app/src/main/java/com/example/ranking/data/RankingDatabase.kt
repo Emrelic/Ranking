@@ -10,7 +10,7 @@ import com.example.ranking.data.dao.*
 
 @Database(
     entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -224,6 +224,19 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add tournament identification fields to voting_sessions table
+                db.execSQL("ALTER TABLE voting_sessions ADD COLUMN tournamentName TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE voting_sessions ADD COLUMN listName TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE voting_sessions ADD COLUMN startedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE voting_sessions ADD COLUMN finishedAt INTEGER")
+                
+                // Update existing rows with default values
+                db.execSQL("UPDATE voting_sessions SET startedAt = createdAt WHERE startedAt = 0")
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -231,7 +244,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

@@ -22,7 +22,8 @@ fun RankingNavigation(
                 onNavigateToCreateList = { navController.navigate("create_list") },
                 onNavigateToSongList = { listId -> navController.navigate("song_list/$listId") },
                 onNavigateToArchive = { navController.navigate("archive") },
-                onNavigateToTest = { navController.navigate("test") }
+                onNavigateToTest = { navController.navigate("test") },
+                onNavigateToRanking = { listId, method -> navController.navigate("ranking/$listId/$method") }
             )
         }
         
