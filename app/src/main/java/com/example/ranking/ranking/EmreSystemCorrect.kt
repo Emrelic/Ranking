@@ -1736,54 +1736,13 @@ object EmreSystemCorrect {
         }
     }
     
-    /**
-     * DEPRECATED - Eski partner arama fonksiyonu
-     * ✅ YENİ: findPartnerSequentiallyWithDisplacement kullanılıyor
+    /*
+     * DEPRECATED FUNCTION REMOVED - Compile error fix
+     * Original function: findPartnerForTeam()
+     * Replaced by: Hybrid pairing system functions
      */
-    @Deprecated("Use findPartnerSequentiallyWithDisplacement instead")
-    private fun findPartnerForTeam(
-        searchingTeam: EmreTeam,
-        teams: List<EmreTeam>,
-        usedTeams: Set<Long>,
-        matchHistory: Set<Pair<Long, Long>>,
-        startIndex: Int
-    ): PartnerSearchResult {
-        
-        // İleri doğru ara (kendisinden sonraki ekipler)
-        for (i in startIndex + 1 until teams.size) {
-            val potentialPartner = teams[i]
-            
-            if (potentialPartner.id in usedTeams) continue
-            
-            if (!hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
-                return PartnerSearchResult.Found(potentialPartner)
-            }
-        }
-        
-        // İleri doğru partner bulunamadı → geriye doğru ara
-        for (i in startIndex - 1 downTo 0) {
-            val potentialPartner = teams[i]
-            
-            if (potentialPartner.id in usedTeams) continue
-            
-            if (!hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
-                // Bu takım önceki bir eşleşmede kullanılıyorsa backtrack gerekir
-                return PartnerSearchResult.RequiresBacktrack(potentialPartner)
-            }
-        }
-        
-        // Hiçbir yerde partner bulunamadı
-        return PartnerSearchResult.NotFound
-    }
     
-    /**
-     * Partner arama sonucu
-     */
-    sealed class PartnerSearchResult {
-        data class Found(val partner: EmreTeam) : PartnerSearchResult()
-        object NotFound : PartnerSearchResult()
-        data class RequiresBacktrack(val conflictTeam: EmreTeam) : PartnerSearchResult()
-    }
+    // Eski PartnerSearchResult silindi - Yeni hibrit sistem kullanıyor
     
     /**
      * DEPRECATED - Geri dönüş senaryosunu handle et
@@ -2186,4 +2145,685 @@ object EmreSystemCorrect {
         IN_PROGRESS,
         COMPLETED
     }
+
+    // ==========================================
+    // YENİ HİBRİT EŞLEŞTİRME ALGORİTMASI
+    // ==========================================
+    
+    /**
+     * 🆕 YENİ HİBRİT EŞLEŞTİRME ALGORİTMASI - KULLANICININ TARİF ETTİĞİ SİSTEM
+     * 
+     * ALGORİTMA KAVRAMI:
+     * - EBTG: Eşleştirme Bekleyen Takımlar Grubu
+     * - KEAT: Kendine Eşleştirme Arayan Takım
+     * - AEG: Aday Eşleştirmeler Grubu
+     * - EM: Eşleştirme Motoru
+     * - EKG: Eşleşilemeden Kalanlar Grubu 
+     * - EBT: Eşleştirmesi Bozulan Takım
+     * - PÇT: Partneri Çalınan Takım
+     * 
+     * ALGORİTMA ADIMLARI:
+     * 1. Hibrit Tarama: Bir üstten bir alttan KEAT seçimi
+     * 2. KEAT kendinden sonraki/önceki takımlarla uygunluk kontrolü
+     * 3. Uygun bulamazsa backtrack: Mevcut eşleştirme bozma
+     * 4. PÇT-EBT karar matrisi ile yeniden eşleştirme
+     * 5. Recursive backtrack chain ile tüm takımların eşleşmesi
+     */
+    fun createHybridPairingSystem(state: EmreState): EmrePairingResult {
+        android.util.Log.d("EmreSystemCorrect", "🚀 STARTING HYBRID PAIRING SYSTEM: Round ${state.currentRound}")
+        
+        if (state.isComplete) {
+            return EmrePairingResult(
+                matches = emptyList(),
+                byeTeam = null,
+                hasSamePointMatch = false,
+                canContinue = false,
+                candidateMatches = emptyList()
+            )
+        }
+        
+        // Tur öncesi anlık sıralama hafızaya alınır
+        val teamsWithPreRound = state.teams.map { team ->
+            team.deepCopy().apply {
+                preRoundPosition = currentPosition
+            }
+        }
+        
+        // Takımları anlık sıra numaralarına göre sırala
+        val sortedTeams = teamsWithPreRound.sortedBy { it.currentPosition }
+        
+        android.util.Log.d("EmreSystemCorrect", "📊 PRE-ROUND POSITIONS: ${sortedTeams.size} teams")
+        
+        // BYE sistemi - geliştirilmiş kontrol
+        val (teamsToMatch, byeTeam) = handleAdvancedByeSystem(sortedTeams)
+        
+        if (byeTeam != null) {
+            android.util.Log.d("EmreSystemCorrect", "🆓 BYE TEAM: ${byeTeam.currentPosition} (TeamID: ${byeTeam.teamId})")
+        }
+        
+        // Hibrit eşleştirme motoru başlatılır
+        val pairingResult = executeHybridPairingEngine(teamsToMatch, state.matchHistory, state.currentRound)
+        
+        // Aynı puanlı kontrol ve turnuva bitiş analizi
+        val tournamentAnalysis = analyzeTournamentContinuation(pairingResult.AEG.map { 
+            CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints) 
+        }, state.currentRound)
+        
+        // ✅ AEG'yi Match'lere convert et
+        val convertedMatches = pairingResult.AEG.map { candidateMatch ->
+            Match(
+                listId = state.teams.firstOrNull()?.song?.listId ?: 0L,
+                rankingMethod = "EMRE_CORRECT",
+                songId1 = candidateMatch.team1.song.id,
+                songId2 = candidateMatch.team2.song.id,
+                winnerId = null,
+                round = state.currentRound,
+                isCompleted = false
+            )
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🎯 HYBRID PAIRING COMPLETE: ${convertedMatches.size} matches converted from AEG")
+        
+        return EmrePairingResult(
+            matches = convertedMatches, // ✅ Artık gerçek Match'ler döndürülüyor
+            byeTeam = byeTeam,
+            hasSamePointMatch = tournamentAnalysis.hasSamePointMatches,
+            canContinue = tournamentAnalysis.canContinue,
+            candidateMatches = pairingResult.AEG.map { 
+                CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints) 
+            }
+        )
+    }
+    
+    /**
+     * 🆕 ADVANCED BYE SİSTEMİ
+     * Tek sayıda takımda bye geçmişlik kontrolü ile en uygun bye takımını seçer
+     */
+    private fun handleAdvancedByeSystem(sortedTeams: List<EmreTeam>): Pair<List<EmreTeam>, EmreTeam?> {
+        android.util.Log.d("EmreSystemCorrect", "🔍 ADVANCED BYE CONTROL: ${sortedTeams.size} teams")
+        
+        if (sortedTeams.size % 2 == 0) {
+            // Çift sayıda takım - bye yok
+            android.util.Log.d("EmreSystemCorrect", "✅ EVEN TEAMS: No bye needed")
+            return Pair(sortedTeams, null)
+        }
+        
+        // Tek sayıda takım - bye gerekli
+        android.util.Log.d("EmreSystemCorrect", "⚠️ ODD TEAMS: Bye selection required")
+        
+        // En alttan başlayarak bye geçmemiş takım ara
+        for (i in sortedTeams.indices.reversed()) {
+            val candidate = sortedTeams[i]
+            if (!candidate.byePassed) {
+                android.util.Log.d("EmreSystemCorrect", "🎯 BYE SELECTED: Team ${candidate.currentPosition} (never had bye)")
+                val updatedByeTeam = candidate.deepCopy().apply { 
+                    byePassed = true
+                    byeCount += 1
+                }
+                val remainingTeams = sortedTeams.filterNot { it.teamId == candidate.teamId }
+                return Pair(remainingTeams, updatedByeTeam)
+            }
+        }
+        
+        // Tüm takımlar bye geçmiş - en alttakini seç
+        val byeTeam = sortedTeams.last().deepCopy().apply { 
+            byeCount += 1 
+        }
+        val remainingTeams = sortedTeams.dropLast(1)
+        
+        android.util.Log.d("EmreSystemCorrect", "🔄 BYE FALLBACK: Team ${byeTeam.currentPosition} (all teams had bye)")
+        return Pair(remainingTeams, byeTeam)
+    }
+    
+    /**
+     * 🆕 HİBRİT EŞLEŞTİRME MOTORU DATA CLASS'LARI
+     */
+    data class HybridPairingState(
+        val EBTG: MutableList<EmreTeam> = mutableListOf(),      // Eşleştirme Bekleyen Takımlar Grubu
+        val AEG: MutableList<CandidateMatch> = mutableListOf(), // Aday Eşleştirmeler Grubu
+        val EKG: MutableList<EmreTeam> = mutableListOf(),       // Eşleşilemeden Kalanlar Grubu
+        var currentKEAT: EmreTeam? = null,                      // Kendine Eşleştirme Arayan Takım
+        var keatSelectionFromTop: Boolean = true,               // Üstten mi seçiliyor KEAT
+        var backtrackDepth: Int = 0,                           // Backtrack derinliği
+        val stolenPartners: MutableMap<Long, Long> = mutableMapOf() // TeamID -> Stolen Partner ID (bu tur için)
+    )
+    
+    data class TournamentAnalysis(
+        val hasSamePointMatches: Boolean,
+        val canContinue: Boolean,
+        val asymmetricCount: Int,
+        val samePointCount: Int
+    )
+    
+    /**
+     * 🆕 ANA HİBRİT EŞLEŞTİRME MOTORU
+     */
+    private fun executeHybridPairingEngine(
+        teams: List<EmreTeam>, 
+        matchHistory: Set<Pair<Long, Long>>, 
+        currentRound: Int
+    ): HybridPairingState {
+        
+        android.util.Log.d("EmreSystemCorrect", "⚙️ HYBRID PAIRING ENGINE: ${teams.size} teams to pair")
+        
+        val state = HybridPairingState()
+        state.EBTG.addAll(teams.map { it.deepCopy() })
+        
+        val expectedPairs = teams.size / 2
+        android.util.Log.d("EmreSystemCorrect", "🎯 TARGET: $expectedPairs pairs needed")
+        
+        // Ana hibrit döngü - tüm takımlar eşleşene kadar
+        while (state.EBTG.isNotEmpty() && state.AEG.size < expectedPairs) {
+            
+            // KEAT seçimi - hibrit sistem (üst-alt-üst-alt)
+            val keat = selectNextKEAT(state)
+            if (keat == null) {
+                android.util.Log.e("EmreSystemCorrect", "❌ CRITICAL ERROR: Cannot select KEAT")
+                break
+            }
+            
+            android.util.Log.d("EmreSystemCorrect", "👤 KEAT SELECTED: Team ${keat.currentPosition} (TeamID: ${keat.teamId})")
+            
+            // KEAT'ı EBTG'den çıkar
+            state.EBTG.removeAll { it.teamId == keat.teamId }
+            state.currentKEAT = keat
+            
+            // KEAT için partner arama
+            val pairingResult = searchPartnerForKEAT(keat, state, matchHistory)
+            
+            when {
+                pairingResult.isSuccess -> {
+                    // Başarılı eşleştirme
+                    val partner = pairingResult.partner!!
+                    val candidateMatch = CandidateMatch(
+                        team1 = keat,
+                        team2 = partner,
+                        isAsymmetricPoints = (keat.points != partner.points)
+                    )
+                    
+                    // AEG'ye hibrit sıralama ile ekle
+                    addToAEGWithHybridOrdering(state.AEG, candidateMatch, state.keatSelectionFromTop)
+                    
+                    // Partneri EBTG'den çıkar
+                    state.EBTG.removeAll { it.teamId == partner.teamId }
+                    
+                    android.util.Log.d("EmreSystemCorrect", "✅ SUCCESSFUL PAIRING: ${keat.currentPosition} vs ${partner.currentPosition}")
+                }
+                
+                pairingResult.needsBacktrack -> {
+                    // Backtrack gerekli
+                    android.util.Log.d("EmreSystemCorrect", "🔄 BACKTRACK REQUIRED for Team ${keat.currentPosition}")
+                    
+                    val backtrackResult = executeBacktrackChain(keat, state, matchHistory)
+                    
+                    if (backtrackResult.isSuccess) {
+                        android.util.Log.d("EmreSystemCorrect", "✅ BACKTRACK SUCCESSFUL")
+                        
+                        // Backtrack depth kontrolü
+                        state.backtrackDepth++
+                        if (state.backtrackDepth >= 10) {
+                            android.util.Log.w("EmreSystemCorrect", "⚠️ HIGH BACKTRACK DEPTH: ${state.backtrackDepth}")
+                        }
+                    } else {
+                        android.util.Log.e("EmreSystemCorrect", "❌ BACKTRACK FAILED for Team ${keat.currentPosition}")
+                        // KEAT'ı geri EBTG'ye ekle
+                        state.EBTG.add(0, keat)
+                    }
+                }
+                
+                else -> {
+                    android.util.Log.e("EmreSystemCorrect", "❌ NO PAIRING SOLUTION for Team ${keat.currentPosition}")
+                    state.EBTG.add(0, keat) // Geri ekle
+                }
+            }
+            
+            // State validation - önemli noktalarda
+            validateHybridState(state, teams.size)
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🏁 PAIRING ENGINE COMPLETE: ${state.AEG.size} pairs created")
+        return state
+    }
+    
+    /**
+     * 🆕 HİBRİT KEAT SEÇİM SİSTEMİ
+     * Bir üstten bir alttan seçim yapar
+     */
+    private fun selectNextKEAT(state: HybridPairingState): EmreTeam? {
+        if (state.EBTG.isEmpty()) return null
+        
+        val selectedKeat = if (state.keatSelectionFromTop) {
+            // En üstteki (en küçük currentPosition)
+            state.EBTG.minByOrNull { it.currentPosition }
+        } else {
+            // En alttaki (en büyük currentPosition)  
+            state.EBTG.maxByOrNull { it.currentPosition }
+        }
+        
+        // Toggle pattern
+        state.keatSelectionFromTop = !state.keatSelectionFromTop
+        
+        android.util.Log.d("EmreSystemCorrect", "🎯 KEAT SELECTION: ${if (!state.keatSelectionFromTop) "TOP" else "BOTTOM"} → Team ${selectedKeat?.currentPosition}")
+        
+        return selectedKeat
+    }
+    
+    /**
+     * 🆕 KEAT İÇİN PARTNER ARAMA SİSTEMİ
+     */
+    data class PartnerSearchResult(
+        val isSuccess: Boolean = false,
+        val partner: EmreTeam? = null,
+        val needsBacktrack: Boolean = false,
+        val targetForBacktrack: EmreTeam? = null
+    )
+    
+    private fun searchPartnerForKEAT(
+        keat: EmreTeam, 
+        state: HybridPairingState, 
+        matchHistory: Set<Pair<Long, Long>>
+    ): PartnerSearchResult {
+        
+        android.util.Log.d("EmreSystemCorrect", "🔍 PARTNER SEARCH: Team ${keat.currentPosition}")
+        
+        // Önce kendi yönünde (üstten seçildiyse aşağıya, alttan seçildiyse yukarıya)
+        val searchDirection = !state.keatSelectionFromTop // Toggle edilmiş durumda
+        val candidates = if (searchDirection) {
+            // Aşağıya doğru ara (currentPosition > keat.currentPosition)
+            state.EBTG.filter { it.currentPosition > keat.currentPosition }.sortedBy { it.currentPosition }
+        } else {
+            // Yukarıya doğru ara (currentPosition < keat.currentPosition)
+            state.EBTG.filter { it.currentPosition < keat.currentPosition }.sortedByDescending { it.currentPosition }
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🎯 SEARCH DIRECTION: ${if (searchDirection) "DOWNWARD" else "UPWARD"}, ${candidates.size} candidates")
+        
+        // Öncelikli arama - kendi yönünde
+        for (candidate in candidates) {
+            if (isValidPairing(keat, candidate, matchHistory, state)) {
+                android.util.Log.d("EmreSystemCorrect", "✅ PARTNER FOUND: Team ${candidate.currentPosition}")
+                return PartnerSearchResult(isSuccess = true, partner = candidate)
+            }
+        }
+        
+        // Kendi yönünde bulamadı - ters yöne bak
+        val reverseCandidates = if (!searchDirection) {
+            state.EBTG.filter { it.currentPosition > keat.currentPosition }.sortedBy { it.currentPosition }
+        } else {
+            state.EBTG.filter { it.currentPosition < keat.currentPosition }.sortedByDescending { it.currentPosition }
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🔄 REVERSE SEARCH: ${reverseCandidates.size} candidates")
+        
+        for (candidate in reverseCandidates) {
+            if (isValidPairing(keat, candidate, matchHistory, state)) {
+                android.util.Log.d("EmreSystemCorrect", "✅ REVERSE PARTNER FOUND: Team ${candidate.currentPosition}")
+                return PartnerSearchResult(isSuccess = true, partner = candidate)
+            }
+        }
+        
+        // Hiçbir yerde bulamadı - backtrack gerekli
+        android.util.Log.d("EmreSystemCorrect", "🚫 NO PARTNER FOUND: Backtrack required")
+        return PartnerSearchResult(needsBacktrack = true)
+    }
+    
+    /**
+     * 🆕 BACKTRACK CHAIN SİSTEMİ - RECURSİVE
+     * KEAT eşleştirme bulamadığında AEG'deki mevcut eşleştirmeleri bozar
+     */
+    data class BacktrackChainResult(
+        val isSuccess: Boolean = false,
+        val newPairing: CandidateMatch? = null,
+        val displacedTeams: List<EmreTeam> = emptyList()
+    )
+    
+    private fun executeBacktrackChain(
+        keat: EmreTeam, 
+        state: HybridPairingState, 
+        matchHistory: Set<Pair<Long, Long>>
+    ): BacktrackChainResult {
+        
+        android.util.Log.d("EmreSystemCorrect", "🔄 EXECUTING BACKTRACK CHAIN: Team ${keat.currentPosition}")
+        
+        // AEG'deki eşleştirmeleri tarayarak bozulabilecek eşleştirme ara
+        for (candidateMatch in state.AEG.toList()) { // toList() ile kopya al
+            val EBT = candidateMatch.team1
+            val PÇT = candidateMatch.team2
+            
+            android.util.Log.d("EmreSystemCorrect", "🔍 CHECKING EXISTING MATCH: ${EBT.currentPosition} vs ${PÇT.currentPosition}")
+            
+            // KEAT ile EBT uyumlu mu?
+            val keatEBTCompatible = isValidPairing(keat, EBT, matchHistory, state)
+            // KEAT ile PÇT uyumlu mu?
+            val keatPÇTCompatible = isValidPairing(keat, PÇT, matchHistory, state)
+            
+            if (!keatEBTCompatible && !keatPÇTCompatible) {
+                android.util.Log.d("EmreSystemCorrect", "❌ NEITHER COMPATIBLE: Skip this match")
+                continue
+            }
+            
+            // Bu eşleştirmeyi boz
+            state.AEG.remove(candidateMatch)
+            android.util.Log.d("EmreSystemCorrect", "💥 BREAKING MATCH: ${EBT.currentPosition} vs ${PÇT.currentPosition}")
+            
+            // PÇT-EBT karar matrisi
+            val decision = makePÇTEBTDecision(keat, EBT, PÇT, state, matchHistory)
+            
+            when {
+                decision.keatPairs == EBT -> {
+                    // KEAT-EBT eşleşmesi
+                    val newMatch = CandidateMatch(
+                        team1 = keat,
+                        team2 = EBT,
+                        isAsymmetricPoints = (keat.points != EBT.points)
+                    )
+                    
+                    // Stolen partner prevention
+                    state.stolenPartners[PÇT.teamId] = EBT.teamId
+                    
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop)
+                    
+                    // PÇT'yi EBTG'ye geri ekle (anlık sıralamasına göre)
+                    insertPÇTBackToEBTG(PÇT, state)
+                    
+                    android.util.Log.d("EmreSystemCorrect", "✅ BACKTRACK SUCCESS: KEAT-EBT pairing")
+                    return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(PÇT))
+                }
+                
+                decision.keatPairs == PÇT -> {
+                    // KEAT-PÇT eşleşmesi
+                    val newMatch = CandidateMatch(
+                        team1 = keat,
+                        team2 = PÇT,
+                        isAsymmetricPoints = (keat.points != PÇT.points)
+                    )
+                    
+                    // Stolen partner prevention
+                    state.stolenPartners[EBT.teamId] = PÇT.teamId
+                    
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop)
+                    
+                    // EBT'yi EBTG'ye geri ekle
+                    insertPÇTBackToEBTG(EBT, state)
+                    
+                    android.util.Log.d("EmreSystemCorrect", "✅ BACKTRACK SUCCESS: KEAT-PÇT pairing")
+                    return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(EBT))
+                }
+                
+                else -> {
+                    // Karar verilemedi - eşleştirmeyi geri yükle
+                    state.AEG.add(candidateMatch)
+                    android.util.Log.d("EmreSystemCorrect", "🔄 RESTORING MATCH: No decision possible")
+                }
+            }
+        }
+        
+        android.util.Log.e("EmreSystemCorrect", "❌ BACKTRACK CHAIN FAILED: No suitable match to break")
+        return BacktrackChainResult(isSuccess = false)
+    }
+    
+    /**
+     * 🆕 PÇT-EBT KARAR MATRİSİ SİSTEMİ
+     * KEAT'ın EBT/PÇT ile eşleşme kararını verir
+     */
+    data class PairingDecision(
+        val keatPairs: EmreTeam? = null,
+        val reason: String = ""
+    )
+    
+    private fun makePÇTEBTDecision(
+        keat: EmreTeam,
+        EBT: EmreTeam, 
+        PÇT: EmreTeam,
+        state: HybridPairingState,
+        matchHistory: Set<Pair<Long, Long>>
+    ): PairingDecision {
+        
+        android.util.Log.d("EmreSystemCorrect", "🤔 DECISION MATRIX: KEAT vs EBT/PÇT")
+        
+        val keatEBTCompatible = isValidPairing(keat, EBT, matchHistory, state)
+        val keatPÇTCompatible = isValidPairing(keat, PÇT, matchHistory, state)
+        
+        when {
+            keatEBTCompatible && !keatPÇTCompatible -> {
+                android.util.Log.d("EmreSystemCorrect", "📋 DECISION: KEAT-EBT (only EBT compatible)")
+                return PairingDecision(keatPairs = EBT, reason = "Only EBT compatible")
+            }
+            
+            !keatEBTCompatible && keatPÇTCompatible -> {
+                android.util.Log.d("EmreSystemCorrect", "📋 DECISION: KEAT-PÇT (only PÇT compatible)")
+                return PairingDecision(keatPairs = PÇT, reason = "Only PÇT compatible")
+            }
+            
+            keatEBTCompatible && keatPÇTCompatible -> {
+                // İkisi de uyumlu - EKG analizi gerekli
+                android.util.Log.d("EmreSystemCorrect", "📋 BOTH COMPATIBLE: EKG analysis required")
+                
+                // EBT'nin EBTG'de (gelecekte) uygun partner bulabilme şansı
+                val EBTCanFindPartner = canFindPartnerInEBTG(EBT, state, matchHistory)
+                // PÇT'nin EBTG'de (gelecekte) uygun partner bulabilme şansı  
+                val PÇTCanFindPartner = canFindPartnerInEBTG(PÇT, state, matchHistory)
+                
+                when {
+                    EBTCanFindPartner && !PÇTCanFindPartner -> {
+                        android.util.Log.d("EmreSystemCorrect", "📋 DECISION: KEAT-PÇT (EBT can find partner later)")
+                        return PairingDecision(keatPairs = PÇT, reason = "EBT has better future prospects")
+                    }
+                    
+                    !EBTCanFindPartner && PÇTCanFindPartner -> {
+                        android.util.Log.d("EmreSystemCorrect", "📋 DECISION: KEAT-EBT (PÇT can find partner later)")
+                        return PairingDecision(keatPairs = EBT, reason = "PÇT has better future prospects")
+                    }
+                    
+                    else -> {
+                        // Default: KEAT-EBT (kullanıcının algoritmasına göre)
+                        android.util.Log.d("EmreSystemCorrect", "📋 DECISION: KEAT-EBT (default choice)")
+                        return PairingDecision(keatPairs = EBT, reason = "Default algorithm preference")
+                    }
+                }
+            }
+            
+            else -> {
+                android.util.Log.e("EmreSystemCorrect", "❌ NO COMPATIBLE PAIRING")
+                return PairingDecision(keatPairs = null, reason = "No compatible pairing")
+            }
+        }
+    }
+    
+    /**
+     * 🆕 VALIDATION SİSTEMİ
+     */
+    private fun isValidPairing(
+        team1: EmreTeam, 
+        team2: EmreTeam, 
+        matchHistory: Set<Pair<Long, Long>>,
+        state: HybridPairingState
+    ): Boolean {
+        
+        // 1. Duplicate kontrol - match history
+        if (hasTeamsPlayedBefore(team1.teamId, team2.teamId, matchHistory)) {
+            return false
+        }
+        
+        // 2. Stolen partner prevention (bu tur için)
+        val stolenPartner = state.stolenPartners[team1.teamId]
+        if (stolenPartner == team2.teamId) {
+            android.util.Log.d("EmreSystemCorrect", "🚫 STOLEN PARTNER PREVENTION: ${team1.teamId} cannot pair with stolen partner ${team2.teamId}")
+            return false
+        }
+        
+        return true
+    }
+    
+    /**
+     * 🆕 EBTG'DE GELECEKTE PARTNER BULABILME ANALİZİ
+     */
+    private fun canFindPartnerInEBTG(
+        team: EmreTeam, 
+        state: HybridPairingState, 
+        matchHistory: Set<Pair<Long, Long>>
+    ): Boolean {
+        
+        // EBTG'deki takımlarla uyumluluk kontrolü
+        for (candidate in state.EBTG) {
+            if (isValidPairing(team, candidate, matchHistory, state)) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    /**
+     * 🆕 PÇT'Yİ EBTG'YE GERİ EKLEME
+     * Anlık sıralama pozisyonuna göre doğru yere ekler
+     */
+    private fun insertPÇTBackToEBTG(pçt: EmreTeam, state: HybridPairingState) {
+        // Anlık sıralama pozisyonuna göre doğru yere ekle
+        val insertIndex = state.EBTG.indexOfFirst { it.currentPosition > pçt.currentPosition }
+        
+        if (insertIndex == -1) {
+            // En sona ekle
+            state.EBTG.add(pçt)
+        } else {
+            // Doğru pozisyona ekle
+            state.EBTG.add(insertIndex, pçt)
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🔄 PÇT RESTORED TO EBTG: Team ${pçt.currentPosition} at position $insertIndex")
+    }
+    
+    /**
+     * 🆕 AEG'YE HİBRİT SIRALAMA İLE EKLEME
+     * Üstten/alttan gelen eşleştirmeleri doğru sırayla ekler
+     */
+    private fun addToAEGWithHybridOrdering(
+        AEG: MutableList<CandidateMatch>, 
+        match: CandidateMatch, 
+        wasFromTop: Boolean
+    ) {
+        if (wasFromTop) {
+            // Üstten gelen eşleştirme - başa yakın ekle
+            val insertIndex = AEG.indexOfFirst { 
+                it.team1.currentPosition > match.team1.currentPosition && 
+                it.team2.currentPosition > match.team2.currentPosition 
+            }
+            if (insertIndex == -1) AEG.add(match) else AEG.add(insertIndex, match)
+        } else {
+            // Alttan gelen eşleştirme - sona yakın ekle  
+            AEG.add(match)
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "📋 AEG UPDATED: ${match.team1.currentPosition} vs ${match.team2.currentPosition} (${if (wasFromTop) "TOP" else "BOTTOM"} origin)")
+    }
+    
+    /**
+     * 🆕 STATE VALİDATİON SİSTEMİ
+     */
+    private fun validateHybridState(state: HybridPairingState, totalTeams: Int) {
+        val pairedTeams = state.AEG.size * 2
+        val unpairedTeams = state.EBTG.size
+        val totalCounted = pairedTeams + unpairedTeams
+        
+        if (totalCounted != totalTeams) {
+            android.util.Log.e("EmreSystemCorrect", "❌ STATE VALIDATION FAILED: Expected $totalTeams, got $totalCounted")
+        }
+        
+        // Duplicate team kontrolü
+        val allTeamIds = mutableSetOf<Long>()
+        state.EBTG.forEach { allTeamIds.add(it.teamId) }
+        state.AEG.forEach { 
+            allTeamIds.add(it.team1.teamId)
+            allTeamIds.add(it.team2.teamId)
+        }
+        
+        if (allTeamIds.size != totalTeams) {
+            android.util.Log.e("EmreSystemCorrect", "❌ DUPLICATE TEAM DETECTED: ${allTeamIds.size} unique teams instead of $totalTeams")
+        }
+    }
+    
+    /**
+     * 🆕 TOURNAMENT CONTINUATION ANALYSIS
+     * Aynı puanlı eşleştirme analizi ve turnuva bitiş kararı
+     */
+    private fun analyzeTournamentContinuation(
+        candidateMatches: List<CandidateMatch>,
+        currentRound: Int
+    ): TournamentAnalysis {
+        
+        android.util.Log.d("EmreSystemCorrect", "🏁 TOURNAMENT ANALYSIS: Round $currentRound, ${candidateMatches.size} matches")
+        
+        if (candidateMatches.isEmpty()) {
+            return TournamentAnalysis(
+                hasSamePointMatches = false,
+                canContinue = false,
+                asymmetricCount = 0,
+                samePointCount = 0
+            )
+        }
+        
+        var samePointCount = 0
+        var asymmetricCount = 0
+        
+        candidateMatches.forEachIndexed { index, match ->
+            val isSamePoint = (match.team1.points == match.team2.points)
+            if (isSamePoint) {
+                samePointCount++
+                android.util.Log.d("EmreSystemCorrect", "⚖️ SAME POINTS: Match ${index + 1}: ${match.team1.currentPosition}(${match.team1.points}p) vs ${match.team2.currentPosition}(${match.team2.points}p)")
+            } else {
+                asymmetricCount++
+                android.util.Log.d("EmreSystemCorrect", "🔺 ASYMMETRIC: Match ${index + 1}: ${match.team1.currentPosition}(${match.team1.points}p) vs ${match.team2.currentPosition}(${match.team2.points}p)")
+            }
+        }
+        
+        // İlk tur özel durumu - her zaman oynanır
+        val hasSamePointMatches = if (currentRound == 1) {
+            android.util.Log.d("EmreSystemCorrect", "🎯 FIRST ROUND: Always continues")
+            true
+        } else {
+            samePointCount > 0
+        }
+        
+        val canContinue = hasSamePointMatches
+        
+        android.util.Log.d("EmreSystemCorrect", "📊 ANALYSIS RESULT:")
+        android.util.Log.d("EmreSystemCorrect", "   Same Point Matches: $samePointCount")
+        android.util.Log.d("EmreSystemCorrect", "   Asymmetric Matches: $asymmetricCount")
+        android.util.Log.d("EmreSystemCorrect", "   Can Continue: $canContinue")
+        android.util.Log.d("EmreSystemCorrect", if (canContinue) "✅ TOURNAMENT CONTINUES" else "🏁 TOURNAMENT ENDS")
+        
+        return TournamentAnalysis(
+            hasSamePointMatches = hasSamePointMatches,
+            canContinue = canContinue,
+            asymmetricCount = asymmetricCount,
+            samePointCount = samePointCount
+        )
+    }
+    
+    /**
+     * 🆕 CANDIDATE MATCHES TO ACTUAL MATCHES CONVERTER
+     * NOT COMPLETE - listId ve rankingMethod parametreleri gerekli
+     */
+    private fun convertCandidatesToMatches(
+        candidateMatches: List<CandidateMatch>, 
+        currentRound: Int,
+        listId: Long,
+        rankingMethod: String
+    ): List<Match> {
+        return candidateMatches.mapIndexed { index, candidate ->
+            Match(
+                id = 0, // Database'de auto-generate edilecek
+                listId = listId,
+                rankingMethod = rankingMethod,
+                songId1 = candidate.team1.song.id,
+                songId2 = candidate.team2.song.id,
+                winnerId = null, // Henüz oynanmadı
+                round = currentRound,
+                isCompleted = false,
+                createdAt = System.currentTimeMillis()
+            )
+        }
+    }
+    
+    // hasTeamsPlayedBefore fonksiyonu mevcut - line 1784'te tanımlı
+
 }

@@ -468,9 +468,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 android.util.Log.d("RankingViewModel", "✅ Songs count: ${songs.size}")
                 android.util.Log.d("RankingViewModel", "✅ CurrentPairingMethod: $currentPairingMethod")
                 
-                // İlk tur eşleştirmesini yap - DOĞRU EmreSystemCorrect kullan
-                android.util.Log.d("RankingViewModel", "🎯 DOĞRU EmreSystemCorrect ile eşleştirme yapılıyor...")
-                val pairingResult = EmreSystemCorrect.createNextRoundWithConfirmation(currentState)
+                // İlk tur eşleştirmesini yap - YENİ HİBRİT SİSTEM kullan
+                android.util.Log.d("RankingViewModel", "🚀 YENİ HİBRİT SİSTEM ile eşleştirme yapılıyor...")
+                val pairingResult = EmreSystemCorrect.createHybridPairingSystem(currentState)
                 android.util.Log.d("RankingViewModel", "🎯 EmreSystemCorrect sonuç: ${pairingResult.matches.size} maç")
                 
                 pairingResult.matches.forEachIndexed { index, match ->
@@ -523,8 +523,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 emreState = RankingEngine.processCorrectEmreResults(currentState, completedMatches, byeTeam)
             }
             
-            // Sonraki tur için eşleştirme oluştur
-            val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
+            // Sonraki tur için eşleştirme oluştur - YENİ HİBRİT SİSTEM
+            val pairingResult = EmreSystemCorrect.createHybridPairingSystem(emreState!!)
             
             if (!pairingResult.canContinue) {
                 // Turnuva tamamlandı
