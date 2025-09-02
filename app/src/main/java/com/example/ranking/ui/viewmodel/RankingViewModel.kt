@@ -1459,8 +1459,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     emreState = emreState
                 )
                 
-                // Sonraki tur için eşleştirme oluştur
-                val pairingResult = RankingEngine.createCorrectEmreMatches(songs, emreState)
+                // Sonraki tur için eşleştirme oluştur - YENİ HİBRİT SİSTEM
+                val pairingResult = EmreSystemCorrect.createHybridPairingSystem(emreState!!)
                 
                 if (!pairingResult.canContinue) {
                     // Turnuva tamamlandı - tamamlanan tur maçları zaten gösterildi
