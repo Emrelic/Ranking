@@ -35,4 +35,7 @@ interface MatchDao {
 
     @Query("SELECT COUNT(*) FROM matches WHERE listId = :listId AND rankingMethod = :method")
     suspend fun getTotalMatchCount(listId: Long, method: String): Int
+    
+    @Query("SELECT * FROM matches WHERE listId = :listId AND isCompleted = 1 ORDER BY round ASC, id ASC")
+    suspend fun getCompletedMatchesForList(listId: Long): List<Match>
 }

@@ -7,8 +7,10 @@ import com.example.ranking.data.*
 import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
 import com.example.ranking.ranking.EmreSystemCorrect
+import com.example.ranking.ranking.TournamentTestProtocol
 import com.example.ranking.repository.RankingRepository
 import com.example.ranking.utils.CsvReader
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -68,7 +70,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val emreState: EmreSystemCorrect.EmreState? = null,
         val showInitialRanking: Boolean = false, // İlk sıralama tablosunu göster
         val showMatchingsList: Boolean = false, // Eşleştirmeler listesini göster
-        val matchingsList: List<Match> = emptyList() // Oluşturulan eşleştirmeler
+        val matchingsList: List<Match> = emptyList(), // Oluşturulan eşleştirmeler
+        val method: String = "", // Ranking metodu
+        val showTestReport: Boolean = false, // Test raporu dialog'unu göster
+        val testReportData: String = "", // Test raporu içeriği
+        val testReportTitle: String = "" // Test raporu başlığı
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -122,7 +128,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             currentSession = activeSession,
                             hasActiveSession = activeSession != null,
                             completedScores = completedScores,
-                            allSongs = songList
+                            allSongs = songList,
+                            method = method
                         )
                         
                         if (activeSession != null) {
@@ -209,14 +216,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeLeague() {
         viewModelScope.launch {
-            android.util.Log.d("RankingViewModel", "🏆 INITIALIZING LEAGUE!")
-            createOrUpdateSession()
             repository.clearMatches(currentListId, currentMethod)
             val settings = _uiState.value.leagueSettings
             val doubleRoundRobin = settings?.doubleRoundRobin ?: false
             val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
             repository.createMatches(matches)
-            android.util.Log.d("RankingViewModel", "🏆 LEAGUE SESSION CREATED, loading first match")
             loadNextMatch()
         }
     }
@@ -592,31 +596,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             
             repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
-            
-            // Complete the tournament session
-            currentVotingSession?.let { session ->
-                val finishedAt = System.currentTimeMillis()
-                votingSessionDao.completeTournament(session.id, finishedAt)
-                
-                // Save tournament to archive
-                val archive = Archive(
-                    name = session.tournamentName,
-                    listId = session.listId,
-                    listName = session.listName,
-                    method = session.rankingMethod,
-                    totalSongs = songs.size,
-                    totalMatches = repository.getMatchesByListAndMethodSync(session.listId, session.rankingMethod).size,
-                    completedMatches = repository.getMatchesByListAndMethodSync(session.listId, session.rankingMethod).count { it.isCompleted },
-                    finalResults = results.joinToString(";") { "${it.position}:${it.songId}:${it.score}" },
-                    leagueTable = null,
-                    matchResults = repository.getMatchesByListAndMethodSync(session.listId, session.rankingMethod).joinToString(";") { "${it.id}:${it.winnerId}:${it.songId1}:${it.songId2}" },
-                    leagueSettings = null,
-                    archivedAt = finishedAt,
-                    isCompleted = true
-                )
-                repository.saveArchive(archive)
-                android.util.Log.d("RankingViewModel", "🏁 Tournament completed and archived: ${session.tournamentName}")
-            }
             
             _uiState.value = _uiState.value.copy(
                 isComplete = true,
@@ -1184,47 +1163,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     loadNextMatch()
                 }
             }
-            "LEAGUE" -> {
-                // Resume League system from existing matches
-                android.util.Log.d("RankingViewModel", "🏆 Resuming LEAGUE session: ${session.id}")
-                val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
-                android.util.Log.d("RankingViewModel", "📋 Found ${allMatches.size} existing matches")
-                
-                if (allMatches.isNotEmpty()) {
-                    // Recreate league standings from existing matches
-                    val results = RankingEngine.calculateLeagueResults(songs, allMatches)
-                    val standingsEntries = results.map { result ->
-                        val song = songs.find { it.id == result.songId }!!
-                        val songMatches = allMatches.filter { match -> 
-                            match.songId1 == song.id || match.songId2 == song.id 
-                        }
-                        val played = songMatches.count { it.isCompleted }
-                        val won = songMatches.count { match -> 
-                            match.isCompleted && 
-                            ((match.songId1 == song.id && match.winnerId == match.songId1) ||
-                             (match.songId2 == song.id && match.winnerId == match.songId2))
-                        }
-                        val drawn = songMatches.count { match ->
-                            match.isCompleted && match.winnerId == null
-                        }
-                        val lost = played - won - drawn
-                        
-                        StandingEntry(
-                            position = result.position,
-                            song = song,
-                            points = result.score,
-                            played = played,
-                            won = won,
-                            drawn = drawn,
-                            lost = lost
-                        )
-                    }
-                    
-                    _uiState.value = _uiState.value.copy(currentStandings = standingsEntries)
-                    android.util.Log.d("RankingViewModel", "✅ League standings restored: ${standingsEntries.size} entries")
-                }
-                loadNextMatch()
-            }
             "EMRE_CORRECT" -> {
                 // Resume Emre system from existing matches
                 val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
@@ -1270,14 +1208,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 else -> currentMethod
             }
             
-            val tournamentName = "${songList?.name ?: "Liste"} - $methodName"
             val newSession = VotingSession(
                 listId = currentListId,
                 rankingMethod = currentMethod,
-                sessionName = "$tournamentName ($formattedDate)",
-                tournamentName = tournamentName,
-                listName = songList?.name ?: "Liste",
-                startedAt = currentTime,
+                sessionName = "${songList?.name ?: "Liste"} - $methodName ($formattedDate)",
                 currentIndex = currentSongIndex,
                 totalItems = songs.size,
                 progress = if (songs.isNotEmpty()) currentSongIndex.toFloat() / songs.size else 0f,
@@ -1539,7 +1473,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     repository.createMatches(pairingResult.matches)
                     
                     // Sonraki tur için eşleştirmeler listesini göster
-                    val nextRoundNumber = emreState?.currentRound ?: (completedMatch.round + 1)
+                    val nextRoundNumber = emreState?.currentRound
                     android.util.Log.d("RankingViewModel", "📋 ${nextRoundNumber}. tur eşleştirmeler listesi gösteriliyor...")
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,
@@ -1557,5 +1491,73 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 error = "Emre durumu güncelleme hatası: ${e.message}"
             )
         }
+    }
+    
+    // Test Protocol Functions
+    fun showTestReport(reportType: String) {
+        viewModelScope.launch {
+            try {
+                val currentState = _uiState.value
+                if (currentState.emreState == null) {
+                    android.util.Log.w("RankingViewModel", "EmreState is null, cannot generate test report")
+                    return@launch
+                }
+                
+                // Completed matches'ları database'den al
+                val completedMatches = repository.getCompletedMatchesForList(currentListId)
+                
+                val (reportData, reportTitle) = when (reportType) {
+                    "match_history" -> {
+                        val report = TournamentTestProtocol.generateMatchHistoryReport(currentState.emreState, completedMatches)
+                        Pair(report, "Eşleştirme Geçmişi Raporu")
+                    }
+                    "round_by_round" -> {
+                        val expectedMatchesPerRound = currentState.emreState.teams.size / 2
+                        val report = TournamentTestProtocol.generateRoundByRoundReport(completedMatches, expectedMatchesPerRound)
+                        Pair(report, "Tur Bazında Maç Raporu")
+                    }
+                    "asymmetric_points" -> {
+                        // Son oluşturulan eşleştirmeler için CandidateMatch listesi oluştur
+                        val candidateMatches = currentState.matchingsList.map { match ->
+                            val team1 = currentState.emreState.teams.find { it.song.id == match.songId1 }
+                            val team2 = currentState.emreState.teams.find { it.song.id == match.songId2 }
+                            if (team1 != null && team2 != null) {
+                                EmreSystemCorrect.CandidateMatch(team1, team2, (team1.points != team2.points))
+                            } else {
+                                null
+                            }
+                        }.filterNotNull()
+                        
+                        val report = TournamentTestProtocol.generateAsymmetricPointsReport(candidateMatches)
+                        Pair(report, "Asimetrik Puan Analiz Raporu")
+                    }
+                    else -> {
+                        Pair("Bilinmeyen rapor tipi: $reportType", "Hata")
+                    }
+                }
+                
+                _uiState.value = _uiState.value.copy(
+                    showTestReport = true,
+                    testReportData = reportData,
+                    testReportTitle = reportTitle
+                )
+                
+            } catch (e: Exception) {
+                android.util.Log.e("RankingViewModel", "Test raporu oluşturma hatası: ${e.message}", e)
+                _uiState.value = _uiState.value.copy(
+                    showTestReport = true,
+                    testReportData = "Rapor oluşturulurken hata oluştu: ${e.message}",
+                    testReportTitle = "Hata"
+                )
+            }
+        }
+    }
+    
+    fun hideTestReport() {
+        _uiState.value = _uiState.value.copy(
+            showTestReport = false,
+            testReportData = "",
+            testReportTitle = ""
+        )
     }
 }

@@ -1,0 +1,13 @@
+DEBUG LOG ANALYSIS - TOURNAMENT TERMINATION ISSUE
+
+Looking for specific debug patterns in logcat to identify why only 12 matches instead of 18 are created.
+
+Key patterns to search for:
+- ⚠️ INFINITE LOOP DETECTED
+- 💀 INFINITE LOOP DETECTED  
+- ❌ EMERGENCY FAIL
+- ❌ TEAM COUNT MISMATCH
+- UsedTeams count analysis
+- candidateMatches size tracking
+
+This will help identify the root cause of insufficient pairing generation.

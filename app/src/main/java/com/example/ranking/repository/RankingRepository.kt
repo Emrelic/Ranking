@@ -30,6 +30,8 @@ class RankingRepository(
     
     suspend fun getSongListById(id: Long): SongList? = songListDao.getSongListById(id)
     
+    suspend fun getSongListByIdSync(id: Long): SongList? = songListDao.getSongListById(id)
+    
     suspend fun deleteSongList(songList: SongList) {
         songDao.deleteSongsByListId(songList.id)
         rankingResultDao.deleteAllRankingResults(songList.id)
@@ -132,6 +134,9 @@ class RankingRepository(
     
     // League Settings operations
     suspend fun getLeagueSettings(listId: Long, method: String): LeagueSettings? =
+        leagueSettingsDao.getByListAndMethod(listId, method)
+    
+    suspend fun getLeagueSettingsSync(listId: Long, method: String): LeagueSettings? =
         leagueSettingsDao.getByListAndMethod(listId, method)
     
     suspend fun saveLeagueSettings(settings: LeagueSettings) {
@@ -382,5 +387,10 @@ class RankingRepository(
     suspend fun deleteAllSwissMatchStates(sessionId: Long) {
         swissMatchStateDao?.deleteAllMatchStates(sessionId)
         swissMatchStateDao?.deleteFixture(sessionId)
+    }
+    
+    // Test Protocol için completed matches'ları al
+    suspend fun getCompletedMatchesForList(listId: Long): List<Match> {
+        return matchDao.getCompletedMatchesForList(listId)
     }
 }

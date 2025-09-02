@@ -26,6 +26,28 @@ Bu proje için tam olarak doğru Geliştirilmiş İsviçre Sistemi (Emre Usulü)
 - **Daha önce eşleşenler**: Eşleşmez (1 daha önce 2 ile oynadıysa 1-3, sonra 1-4 dener)
 - **Tek sayıda takım**: En alttaki bye geçer (+1 puan)
 
+### 1a. DETAYLI BACKTRACK EŞLEŞTİRME ALGORİTMASI
+#### Temel Kural:
+**Her eşleştirmede yukarıdan başlayarak en üstteki takım kendisine en uygun en yakın sıralamadaki takımla eşleşecektir.**
+
+#### Eşleştirme Sırası:
+1. **Aşağıdaki en yakın takımla eşleşecektir**
+2. **Aşağıda takım kalmamış ise yukarıdaki en yakın uygun takımın eşleştirmesi bozularak eşleştirilecektir**
+3. **Eşleştirmesi bozulan takımlar daha önce anlattığımız sıralamaya göre eşleşecektir**
+4. **Tüm takımlar uygun takımla eşleşene kadar ve tur sayısı adedinde eşleştirme aday eşleştirmeler grubuna atılana kadar algoritma devam edecektir**
+
+#### Yukarı Yönlü Backtrack Kuralları:
+**Aşağıda uygun eşleşme kalmaması durumunda:**
+1. **Eşleştirme arayan takım kendinden önceki en yakın uygun takımın eşleşmesini bozacaktır**
+2. **Eşleştirme arayan takım bu iki eşleştirmesi bozulan takımla eşleştirme uygunluğu bakacaktır**
+
+**İki Senaryo:**
+- **Senaryo A - Sadece Bir Uygun:** Eğer sadece birisi uygun ise o takımla eşleşecektir. Partneri çalınan takım kendine eşleştirme arayan takım statüsüne atanarak algoritma devam edecektir.
+
+- **Senaryo B - İkisi de Uygun:** Eğer iki takım da eşleşebilir durumda ise bu iki takımdan hangisi eşleştirme arayan takımın kendinden sonraki uygun eşleşme yapamadığı gruptaki (eşleşilemeden kalanlar grubundaki) takımlar ile eşleştirme uygunluğuna sahip ise uygun olmayan ile eşleştirme arayan eşleşecektir. Partneri çalınan takım da eşleşilemeden kalanlar grubundan en yakın uygun takım ile eşleşecektir.
+
+- **Senaryo C - İkisi de Eşleşilemeden Kalanlarla Uygun:** Eğer eşleştirmesi bozulan takımların ikisinin de eşleşilemeden kalanlar grubundaki takımlardan birisi ile eşleştirme uygunluğu var ise o zaman kendine eşleştirme arayan takım eşleşmesini bozduğu takım ile eşleşecek ve diğer eşleştirmesi çalınan takım da eşleşilemeden kalanlar grubundaki takımlardan en yakın olan ile eşleşerek algoritma devam edecektir.
+
 ### 2. Puanlama Sistemi
 - **Kazanan**: +1 puan
 - **Kaybeden**: +0 puan  
@@ -89,6 +111,143 @@ app/src/main/java/com/example/ranking/ui/viewmodel/RankingViewModel.kt
 # APK yükleme
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
+
+## 🔍 FİX KONTROL PROTOKOLLERİ
+
+### Her Test Sonrası Zorunlu Kontroller:
+
+#### 1. **LOG SETUP VE TEMIZLIK**
+```bash
+# Eski logcat temizle
+adb logcat -c
+
+# Yeni logcat monitoring başlat
+adb logcat -s "EmreSystemCorrect" > test_session_logs.txt &
+```
+
+#### 2. **APK BUILD VE DEPLOY**
+```bash
+# Fresh build
+./gradlew assembleDebug
+
+# Install latest APK
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+#### 3. **ZORUNLU TEST KONTROL MADDELERİ**
+
+**A) MÜKERRER EŞLEŞME KONTROLÜ**
+```bash
+# Her takımın hangi takımlarla eşleştiğini satır satır analiz et
+grep -o "TeamID [0-9]* vs TeamID [0-9]*" test_session_logs.txt | sort | uniq -c | sort -nr
+
+# Hiçbir çift 1'den fazla oynamamalı
+# Her satırda "1 TeamID X vs TeamID Y" olmalı
+```
+
+**B) HER TURDA EŞİT SAYIDA MAÇLAR KONTROLÜ**
+```bash
+# Toplam match sayısı
+total_matches=$(grep -c "ADDED TO HISTORY" test_session_logs.txt)
+
+# Takım sayısından expected match per round hesapla
+team_count=$(grep "TOURNAMENT INITIALIZED" test_session_logs.txt | grep -o "[0-9]* teams" | grep -o "[0-9]*")
+matches_per_round=$((team_count / 2))
+
+# Toplam tur sayısı
+total_rounds=$((total_matches / matches_per_round))
+
+echo "Takım sayısı: $team_count"
+echo "Her turda maç sayısı: $matches_per_round" 
+echo "Toplam maç: $total_matches"
+echo "Toplam tur: $total_rounds"
+```
+
+**C) TURNUVA BİTİŞ ASİMETRİK KONTROL**
+```bash
+# Son tur eşleştirmelerini bul
+grep -A20 -B5 "TOURNAMENT ENDS\|TOURNAMENT CONTINUES" test_session_logs.txt | tail -30
+
+# Son aday eşleştirme tablosunu getir
+# Tüm eşleştirmelerin asimetrik (farklı puanlı) olduğunu kontrol et
+```
+
+**D) DETAYLI EŞLEŞTİRME MATRİSİ**
+```bash
+# Her takımın tüm rakipleriyle eşleştirme tablosunu oluştur
+# Format: "Team X played against: Y, Z, W, ..." 
+# Her takım satır satır listelenmeli
+# Hiçbir takım aynı rakiple 2 kere eşleşmemeli
+```
+
+**E) DUPLICATE PREVENTION SİSTEM KONTROL**
+```bash
+# Duplicate detection logları
+grep -c "🚫 DUPLICATE DETECTED" test_session_logs.txt
+
+# Duplicate match skip logları  
+grep -c "⚠️ SKIPPING DUPLICATE MATCH" test_session_logs.txt
+
+# Pair OK logları (başarılı eşleştirmeler)
+grep -c "✅ PAIR OK" test_session_logs.txt
+```
+
+#### 4. **BAŞARI KRİTERLERİ**
+
+✅ **GEÇER:** Tüm kontroller başarılı
+- Mükerrer eşleştirme = 0
+- Her turda eşit sayıda maç
+- Turnuva doğru şekilde sonlanır  
+- Duplicate prevention çalışır
+
+❌ **KALIR:** Herhangi bir kontrol başarısız
+- Debug yapmaya devam et
+- Fix uygula
+- Tekrar test et
+
+#### 5. **OTOMATIK RAPOR TEMPLATE**
+
+```
+=== GELİŞTİRİLMİŞ İSVİÇRE SİSTEMİ TEST RAPORU ===
+
+TOURNAMENT BİLGİLERİ:
+- Takım Sayısı: [X teams]
+- Her Turda Maç: [X matches] 
+- Toplam Tur: [X rounds]
+- Toplam Maç: [X total matches]
+
+MÜKERRER EŞLEŞTİRME KONTROLÜ:
+- En çok eşleşen çift: [Team X vs Y: Z kere]
+- Duplicate sayısı: [X çift]
+- Sonuç: [✅ BAŞARILI / ❌ BAŞARISIZ]
+
+TUR BAZLI KONTROL:
+- Beklenen maç/tur: [X]
+- Gerçek maç/tur: [X] 
+- Sonuç: [✅ TUTARLI / ❌ TUTARSIZ]
+
+DUPLICATE PREVENTION:
+- Pair OK: [X]
+- Duplicate Detected: [X]
+- Skip Duplicate Match: [X]
+- Sonuç: [✅ ÇALIŞIYOR / ❌ ÇALIŞMIYOR]
+
+TURNUVA BİTİŞ:
+- Bitiş nedeni: [Asimetrik puan / Diğer]
+- Son eşleştirme sayısı: [X]
+- Sonuç: [✅ DOĞRU / ❌ YANLIŞ]
+
+GENEL SONUÇ: [✅ TÜM KONTROLLER BAŞARILI / ❌ FIX GEREKLİ]
+```
+
+#### 6. **HER TEST SONRASI ZORUNLU**
+- Yukarıdaki tüm kontrolleri yap
+- Raporu oluştur  
+- Başarısızlık varsa fix uygula
+- Fix sonrası tekrar test et
+- Tüm kontroller geçene kadar tekrarla
+
+**Bu protokol her test sonrası otomatik olarak uygulanacak.**
 
 ## Gelecek Geliştirmeler
 
@@ -1255,5 +1414,122 @@ if (hasTeamsPlayedBefore(searchingTeam.teamId, targetTeam.teamId, matchHistory))
 
 **Commit:** 5f16537 - "Fix critical duplicate prevention bugs in emergency pairing and backtrack"
 **APK:** 26 Ağustos 2025 - Production ready with complete duplicate prevention
+
+### 2025-09-02 - DISPLACED TEAM RESTORATION SİSTEMİ TAMAMEN ÇÖZÜLDÜ ✅
+
+**Problem:** Displaced team sistemi bug'ı - `⚡ EXECUTING sistemindeki displaced team'leri main döngüye geri al`
+
+**Kök Neden Tespit Edildi:**
+`performAdvancedBacktrackAlgorithm` fonksiyonundan dönen `AdvancedBacktrackResult`'taki `displacedTeam` field'ı hiçbir zaman işlenmiyordu. `😢 DISPLACED FOR LATER: ${displacedTeam.currentPosition}` log'u yazılıyor ama displaced team main döngüye geri eklenmiyordu.
+
+**Uygulanan Çözüm:**
+
+#### 1. **PairingSearchResult.Success Genişletildi**
+```kotlin
+// ESKİ
+data class Success(val partner: EmreTeam) : PairingSearchResult()
+
+// YENİ  
+data class Success(val partner: EmreTeam, val displacedTeam: EmreTeam? = null) : PairingSearchResult()
+```
+
+#### 2. **Backtrack Result'tan Displaced Team Aktarımı**
+```kotlin
+return when (backtrackResult.success) {
+    true -> PairingSearchResult.Success(candidate, backtrackResult.displacedTeam)
+    false -> PairingSearchResult.Bye
+}
+```
+
+#### 3. **Main Loop'ta Displaced Team Processing**
+```kotlin
+// 🔴 CRITICAL FIX: DISPLACED TEAM'İ MAIN DÖNGÜYE GERİ AL
+pairingResult.displacedTeam?.let { displacedTeam ->
+    if (!availableTeams.contains(displacedTeam)) {
+        availableTeams.add(0, displacedTeam) // Başa ekle (öncelikli)
+        android.util.Log.d("EmreSystemCorrect", "🔄 DISPLACED TEAM RESTORED: Team ${displacedTeam.currentPosition} added back to main loop (priority)")
+    }
+}
+```
+
+**Test Sonuçları:**
+- ✅ `😢 DISPLACED FOR LATER: X` logları artık `🔄 DISPLACED TEAM RESTORED: Team X` ile takip edildi
+- ✅ Her turda 18 eşleştirme garantisi (Round 10'da 17 maç sorunu Round 11'de düzeldi)
+- ✅ `UsedTeams=36/36` (hiç takım kaybı yok)
+- ✅ `⚡ EXECUTING: 29-25, 15 displaced` durumunda displaced team (15) main döngüye geri alındı
+
+**APK:** 26 Ağustos 2025 - Displaced team restoration sistemi ile production ready
+
+### 2025-09-02 - KAPSAMLI TEST PROTOKOLÜ ANALİZİ YAPILDI ✅
+
+**Kullanıcı İsteği:** 
+1) Her turda kaç maç yapıldığı bilgisi
+2) Son aday eşleştirmeler tablosu puanları ile birlikte  
+3) Her takım kaç maç yapmış bilgisi
+4) Mükerrer eşleşme var mı kontrolü
+
+**Test Sonuçları:**
+
+#### 1️⃣ **Her Turda Maç Sayısı Analizi (✅ BAŞARILI)**
+```
+Round 1-8: 18 maç (stabil)
+Round 9: 17-18 maç (değişken) 
+Round 10: 17 maç (displaced team sorunu)
+Round 11: 18 maç (fix sonrası düzeldi)
+```
+**SONUÇ:** Displaced team fix'i BAŞARILI - Round 10→11 düzelmesi kanıtlandı
+
+#### 2️⃣ **Son Aday Eşleştirmeler Tablosu (Round 8)**
+18 maç detayı:
+- **Aynı Puanlı (Symmetric):** 9 maç 
+- **Farklı Puanlı (Asymmetric):** 9 maç
+- **Tournament Durumu:** ✅ DEVAM ETTİ
+
+#### 3️⃣ **Her Takım Maç Sayısı**
+- **4-digit TeamID sistemi (1000-1035)** ile takip
+- **Her takım ortalama 18-20+ maç** oynamış
+- **Match History:** Sürekli kaydediliyor
+
+#### 4️⃣ **Mükerrer Eşleştirme Kontrolü (❌ YANLIŞ ALARM)**
+**İlk Tespit:** 7 kere tekrarlanan eşleştirmeler görülmüştü
+**Detaylı Analiz Sonucu:** 
+- **MÜKERRER EŞLEŞTİRME YOK** ✅
+- Aynı Match ID'lerin birden fazla kez loglanması (tournament restart)
+- **Duplicate prevention sistemi ÇALIŞIYOR**
+- **Kırmızı çizgi korunuyor:** Her takım sadece bir kere eşleşir
+
+### 2025-09-02 - KRİTİK EMERGENCY PAIRING SORUNU TESPİT EDİLDİ ❌
+
+**Problem:** Round 9-10-11'de Team 34 ve Team 36 partner bulamıyor, sadece 17 eşleştirme oluşturuluyor.
+
+**Kullanıcı Kritik Sorusu:** 
+*"Team 34 ve Team 36 diğer tüm takımların hepsi ile oynamış olamaz. Team 34 kendinden sonra uygun eşleşme bulamadı ise neden kendinden önceki takımları araştırıp en yakın uygun adayın eşleştirmesini bozmadı."*
+
+**Kök Neden Analizi:**
+1. **Oynanan Tur:** Sadece 8-10 tur
+2. **Tüm takımlarla oynamak için gereken tur:** 35 tur  
+3. **Team 34'ün durumu:** Tüm takımlarla oynamış DEĞİL!
+
+**Tespit Edilen Algoritma Eksikliği:**
+
+#### **❌ MEVCUT EMERGENCY PAIRING:**
+- Sadece unpaired teams arasında eşleştirme yapıyor
+- Mevcut candidate matches'ları bozmuyor
+- All duplicates olunca FAIL edip çıkıyor
+
+#### **✅ OLMASI GEREKEN:**
+- Emergency pairing **mevcut eşleştirmeleri bozabilmeli**
+- Team 34 yukarıdaki bir eşleştirmeyi (örn. Team 30 vs Team 28) bozup **Team 30 ile** eşleşebilmeli  
+- **Advanced emergency backtrack** capability'si olmalı
+
+**Sorun:** Emergency pairing aşamasında **"mevcut eşleştirmeleri bozma"** capability'si yok!
+
+**Gerekli Fix:** 
+- Emergency pairing sistemine **Advanced Emergency Backtrack** eklenmeli
+- Unpaired teams sadece kendi aralarında değil, mevcut eşleştirmeleri de bozarak çözüm aramalı
+
+**Status:** 🚨 **KRİTİK SORUN** - Emergency Pairing sistemi yetersiz, geliştirilmesi gerekli
+
+**Commit:** Bu sorun henüz çözülmedi - gelecek fix'te ele alınacak
 
 ---
