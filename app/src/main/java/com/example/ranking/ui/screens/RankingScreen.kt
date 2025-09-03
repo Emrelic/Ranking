@@ -1120,14 +1120,15 @@ private fun MatchingsListContent(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            itemsIndexed(uiState.matchingsList) { index, match ->
+            itemsIndexed(uiState.matchingsList.sortedBy { if (it.matchNumber > 0) it.matchNumber else 999 }) { index, match ->
                 val song1 = uiState.allSongs.find { it.id == match.songId1 }
                 val song2 = uiState.allSongs.find { it.id == match.songId2 }
                 
                 Column {
-                    // Eşleşme numarası
+                    // Eşleşme numarası - alternating match numbering kullan
+                    val matchNumber = if (match.matchNumber > 0) match.matchNumber else index + 1
                     Text(
-                        text = "${index + 1}. Eşleşme",
+                        text = "${matchNumber}. Eşleşme",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,

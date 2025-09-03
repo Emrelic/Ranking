@@ -66,7 +66,8 @@ object EmreSystemCorrect {
     data class CandidateMatch(
         val team1: EmreTeam,
         val team2: EmreTeam,
-        val isAsymmetricPoints: Boolean // Farklı puanlı mı?
+        val isAsymmetricPoints: Boolean, // Farklı puanlı mı?
+        var matchNumber: Int = 0 // 🆕 Alternating match numbering için
     )
     
     // 🆕 YENİ KAVRAMLAR İÇİN DATA CLASS'LAR
@@ -2206,11 +2207,12 @@ object EmreSystemCorrect {
         
         // Aynı puanlı kontrol ve turnuva bitiş analizi
         val tournamentAnalysis = analyzeTournamentContinuation(pairingResult.AEG.map { 
-            CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints) 
+            CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints, it.matchNumber) 
         }, state.currentRound)
         
-        // ✅ AEG'yi Match'lere convert et
-        val convertedMatches = pairingResult.AEG.map { candidateMatch ->
+        // ✅ AEG'yi match number'a göre sırala ve Match'lere convert et
+        val sortedAEG = pairingResult.AEG.sortedBy { it.matchNumber }
+        val convertedMatches = sortedAEG.map { candidateMatch ->
             Match(
                 listId = state.teams.firstOrNull()?.song?.listId ?: 0L,
                 rankingMethod = "EMRE_CORRECT",
@@ -2218,8 +2220,14 @@ object EmreSystemCorrect {
                 songId2 = candidateMatch.team2.song.id,
                 winnerId = null,
                 round = state.currentRound,
+                matchNumber = candidateMatch.matchNumber, // 🆕 Alternating match number
                 isCompleted = false
             )
+        }
+        
+        // 🎯 ALTERNATING MATCH NUMBERING LOG
+        sortedAEG.forEach { match ->
+            android.util.Log.d("EmreSystemCorrect", "🎯 MATCH #${match.matchNumber}: ${match.team1.currentPosition} vs ${match.team2.currentPosition}")
         }
         
         android.util.Log.d("EmreSystemCorrect", "🎯 HYBRID PAIRING COMPLETE: ${convertedMatches.size} matches converted from AEG")
@@ -2230,7 +2238,7 @@ object EmreSystemCorrect {
             hasSamePointMatch = tournamentAnalysis.hasSamePointMatches,
             canContinue = tournamentAnalysis.canContinue,
             candidateMatches = pairingResult.AEG.map { 
-                CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints) 
+                CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints, it.matchNumber) 
             }
         )
     }
@@ -2304,7 +2312,9 @@ object EmreSystemCorrect {
         currentRound: Int
     ): HybridPairingState {
         
+        val totalMatches = teams.size / 2 // 🆕 Toplam maç sayısı hesapla
         android.util.Log.d("EmreSystemCorrect", "⚙️ HYBRID PAIRING ENGINE: ${teams.size} teams to pair")
+        android.util.Log.d("EmreSystemCorrect", "🎯 TARGET: $totalMatches pairs needed")
         
         val state = HybridPairingState()
         state.EBTG.addAll(teams.map { it.deepCopy() })
@@ -2342,7 +2352,8 @@ object EmreSystemCorrect {
                     )
                     
                     // AEG'ye hibrit sıralama ile ekle
-                    addToAEGWithHybridOrdering(state.AEG, candidateMatch, state.keatSelectionFromTop)
+                    val totalMatches = teams.size / 2 // 🆕 Dinamik toplam maç sayısı
+                    addToAEGWithHybridOrdering(state.AEG, candidateMatch, state.keatSelectionFromTop, totalMatches)
                     
                     // Partneri EBTG'den çıkar
                     state.EBTG.removeAll { it.teamId == partner.teamId }
@@ -2354,7 +2365,7 @@ object EmreSystemCorrect {
                     // Backtrack gerekli
                     android.util.Log.d("EmreSystemCorrect", "🔄 BACKTRACK REQUIRED for Team ${keat.currentPosition}")
                     
-                    val backtrackResult = executeBacktrackChain(keat, state, matchHistory)
+                    val backtrackResult = executeBacktrackChain(keat, state, matchHistory, totalMatches)
                     
                     if (backtrackResult.isSuccess) {
                         android.util.Log.d("EmreSystemCorrect", "✅ BACKTRACK SUCCESSFUL")
@@ -2480,7 +2491,8 @@ object EmreSystemCorrect {
     private fun executeBacktrackChain(
         keat: EmreTeam, 
         state: HybridPairingState, 
-        matchHistory: Set<Pair<Long, Long>>
+        matchHistory: Set<Pair<Long, Long>>,
+        totalMatches: Int
     ): BacktrackChainResult {
         
         android.util.Log.d("EmreSystemCorrect", "🔄 EXECUTING BACKTRACK CHAIN: Team ${keat.currentPosition}")
@@ -2521,7 +2533,7 @@ object EmreSystemCorrect {
                     // Stolen partner prevention
                     state.stolenPartners[PÇT.teamId] = EBT.teamId
                     
-                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop)
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
                     
                     // PÇT'yi EBTG'ye geri ekle (anlık sıralamasına göre)
                     insertPÇTBackToEBTG(PÇT, state)
@@ -2541,7 +2553,7 @@ object EmreSystemCorrect {
                     // Stolen partner prevention
                     state.stolenPartners[EBT.teamId] = PÇT.teamId
                     
-                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop)
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
                     
                     // EBT'yi EBTG'ye geri ekle
                     insertPÇTBackToEBTG(EBT, state)
@@ -2699,9 +2711,17 @@ object EmreSystemCorrect {
     private fun addToAEGWithHybridOrdering(
         AEG: MutableList<CandidateMatch>, 
         match: CandidateMatch, 
-        wasFromTop: Boolean
+        wasFromTop: Boolean,
+        totalMatches: Int = 18 // 🆕 Toplam maç sayısı (36 takım ÷ 2 = 18)
     ) {
+        // 🆕 ALTERNATING MATCH NUMBERING SYSTEM
+        val topMatchCount = AEG.count { it.matchNumber <= totalMatches / 2 }
+        val bottomMatchCount = AEG.count { it.matchNumber > totalMatches / 2 }
+        
         if (wasFromTop) {
+            // TOP KEAT → 1, 2, 3, 4, 5... sıralı numara
+            match.matchNumber = topMatchCount + 1
+            
             // Üstten gelen eşleştirme - başa yakın ekle
             val insertIndex = AEG.indexOfFirst { 
                 it.team1.currentPosition > match.team1.currentPosition && 
@@ -2709,11 +2729,14 @@ object EmreSystemCorrect {
             }
             if (insertIndex == -1) AEG.add(match) else AEG.add(insertIndex, match)
         } else {
+            // BOTTOM KEAT → 18, 17, 16, 15, 14... azalan numara  
+            match.matchNumber = totalMatches - bottomMatchCount
+            
             // Alttan gelen eşleştirme - sona yakın ekle  
             AEG.add(match)
         }
         
-        android.util.Log.d("EmreSystemCorrect", "📋 AEG UPDATED: ${match.team1.currentPosition} vs ${match.team2.currentPosition} (${if (wasFromTop) "TOP" else "BOTTOM"} origin)")
+        android.util.Log.d("EmreSystemCorrect", "📋 AEG UPDATED: Match #${match.matchNumber} - ${match.team1.currentPosition} vs ${match.team2.currentPosition} (${if (wasFromTop) "TOP" else "BOTTOM"} origin)")
     }
     
     /**
