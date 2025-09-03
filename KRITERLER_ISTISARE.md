@@ -1,8 +1,23 @@
 # KRİTERLER SİSTEMİ İSTİŞARE KAYITLARI
 
 ## 🎯 GENEL HEDEFLERİMİZ
-1. Ana sayfa redesign: Listeler, Kriterler, Devam Eden Turnuvalar, Arşiv
-2. Kriterler sistemi implementation
+1. ✅ Ana sayfa redesign: Listeler, Kriterler, Devam Eden Turnuvalar, Arşiv
+2. ✅ Kriterler sistemi implementation
+3. ⚠️ **YENİ SORUN (2025-09-03)**: Turnuva navigation sorunu
+
+## 📝 SON DURUM RAPORU (2025-09-03 22:50)
+### ✅ TAMAMLANAN
+- Ana sayfa redesign + 5 kart layout
+- Kriterler sistemi tam implementasyonu
+- NewTournamentScreen 6 turnuva sistemi
+- Smart navigation sistemi
+- Database kayıtları çalışıyor
+
+### ⚠️ DEVAM EDEN SORUN
+- TournamentRankingScreen açılıyor ama initialize edilmiyor
+- Log: "Screen loaded" ve "Initializing tournament" görünüyor
+- Ancak sonrasında turnuva UI yüklenmiyor
+- Problem muhtemelen TournamentRankingViewModel.initializeTournament()'de
 3. Turnuva sürecine kriter entegrasyonu
 4. CSV import ve manuel kriter girişi
 5. Slider bazlı puanlama sistemi

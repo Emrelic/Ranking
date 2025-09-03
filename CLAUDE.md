@@ -114,9 +114,13 @@ adb logcat -s "EmreSystemCorrect"
 **📝 İSTİŞARE KAYDI:** `KRITERLER_ISTISARE.md` - 22 soru tamamlandı
 **🏁 COMMIT:** `b729de9` - Ana sayfa redesign + Kriterler sistemi
 
-### 🎯 2025-09-03 - TURNUVA SİSTEMİ İYİLEŞTİRMELERİ (DEVAM EDİYOR)
+### ⚠️ 2025-09-03 - TURNUVA SİSTEMİ İYİLEŞTİRMELERİ - DEVAM EDİYOR
 **Hedef:** Turnuva akışı ve sistem seçenekleri iyileştirme
-- NewTournamentScreen sistem seçenekleri genişletme
-- SongListScreen'deki klasik usuller NewTournament'a taşıma
-- Turnuva tiplerini birleştirme ve düzenleme
-- UX flow optimize etme
+- ✅ NewTournamentScreen sistem seçenekleri genişletildi (6 sistem)
+- ✅ SongListScreen'deki klasik usuller NewTournament'a taşındı
+- ✅ Smart navigation sistemi: SWISS/EMRE_CORRECT → Tournament, diğerleri → Classic
+- ✅ Turnuvalar database'e kaydediliyor, Devam Eden Turnuvalar'da görünüyor
+- ⚠️ **SORUN**: TournamentRankingScreen açılıyor ama initialize edilmiyor
+
+**📝 COMMIT:** `df54110` - Navigation çalışıyor, initialize sorunu var
+**🔧 NEXT:** TournamentRankingViewModel initialize sorununu çözmek
