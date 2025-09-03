@@ -2210,9 +2210,8 @@ object EmreSystemCorrect {
             CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints, it.matchNumber) 
         }, state.currentRound)
         
-        // ✅ AEG'yi match number'a göre sırala ve Match'lere convert et
-        val sortedAEG = pairingResult.AEG.sortedBy { it.matchNumber }
-        val convertedMatches = sortedAEG.map { candidateMatch ->
+        // ✅ AEG'yi alternating match numbering ile Match'lere convert et
+        val convertedMatches = pairingResult.AEG.map { candidateMatch ->
             Match(
                 listId = state.teams.firstOrNull()?.song?.listId ?: 0L,
                 rankingMethod = "EMRE_CORRECT",
@@ -2220,14 +2219,14 @@ object EmreSystemCorrect {
                 songId2 = candidateMatch.team2.song.id,
                 winnerId = null,
                 round = state.currentRound,
-                matchNumber = candidateMatch.matchNumber, // 🆕 Alternating match number
+                matchNumber = candidateMatch.matchNumber, // 🆕 Alternating match numbering kullan
                 isCompleted = false
             )
         }
         
         // 🎯 ALTERNATING MATCH NUMBERING LOG
-        sortedAEG.forEach { match ->
-            android.util.Log.d("EmreSystemCorrect", "🎯 MATCH #${match.matchNumber}: ${match.team1.currentPosition} vs ${match.team2.currentPosition}")
+        convertedMatches.forEach { match ->
+            android.util.Log.d("EmreSystemCorrect", "🎯 MATCH #${match.matchNumber}: Song ${match.songId1} vs Song ${match.songId2}")
         }
         
         android.util.Log.d("EmreSystemCorrect", "🎯 HYBRID PAIRING COMPLETE: ${convertedMatches.size} matches converted from AEG")
@@ -2714,13 +2713,11 @@ object EmreSystemCorrect {
         wasFromTop: Boolean,
         totalMatches: Int = 18 // 🆕 Toplam maç sayısı (36 takım ÷ 2 = 18)
     ) {
-        // 🆕 ALTERNATING MATCH NUMBERING SYSTEM
-        val topMatchCount = AEG.count { it.matchNumber <= totalMatches / 2 }
-        val bottomMatchCount = AEG.count { it.matchNumber > totalMatches / 2 }
-        
+        // 🆕 ALTERNATING MATCH NUMBERING SYSTEM - TEMİZ VE BASIT
         if (wasFromTop) {
             // TOP KEAT → 1, 2, 3, 4, 5... sıralı numara
-            match.matchNumber = topMatchCount + 1
+            val topCount = AEG.count { it.matchNumber <= totalMatches / 2 && it.matchNumber > 0 }
+            match.matchNumber = topCount + 1
             
             // Üstten gelen eşleştirme - başa yakın ekle
             val insertIndex = AEG.indexOfFirst { 
@@ -2730,7 +2727,8 @@ object EmreSystemCorrect {
             if (insertIndex == -1) AEG.add(match) else AEG.add(insertIndex, match)
         } else {
             // BOTTOM KEAT → 18, 17, 16, 15, 14... azalan numara  
-            match.matchNumber = totalMatches - bottomMatchCount
+            val bottomCount = AEG.count { it.matchNumber > totalMatches / 2 }
+            match.matchNumber = totalMatches - bottomCount
             
             // Alttan gelen eşleştirme - sona yakın ekle  
             AEG.add(match)

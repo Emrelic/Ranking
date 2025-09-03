@@ -6,13 +6,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MatchDao {
-    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method ORDER BY round ASC, id ASC")
+    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method ORDER BY round ASC, matchNumber ASC, id ASC")
     fun getMatchesByListAndMethod(listId: Long, method: String): Flow<List<Match>>
     
-    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method ORDER BY round ASC, id ASC")
+    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method ORDER BY round ASC, matchNumber ASC, id ASC")
     suspend fun getMatchesByListAndMethodSync(listId: Long, method: String): List<Match>
 
-    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method AND isCompleted = 0 ORDER BY round ASC, id ASC LIMIT 1")
+    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method AND isCompleted = 0 ORDER BY round ASC, matchNumber DESC, id ASC LIMIT 1")
     suspend fun getNextUncompletedMatch(listId: Long, method: String): Match?
 
     @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method AND round = :round")

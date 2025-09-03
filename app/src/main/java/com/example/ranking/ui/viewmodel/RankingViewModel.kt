@@ -489,7 +489,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,
                         showMatchingsList = true,
-                        matchingsList = pairingResult.matches
+                        matchingsList = pairingResult.matches.sortedBy { it.matchNumber }
                     )
                 } else {
                     android.util.Log.w("RankingViewModel", "❌ Hiç maç oluşturulamadı!")
@@ -540,7 +540,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 _uiState.value = _uiState.value.copy(
                     showInitialRanking = false,
                     showMatchingsList = true,
-                    matchingsList = pairingResult.matches,
+                    matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
                     emreState = emreState
                 )
             } else {
@@ -1430,9 +1430,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val currentState = emreState ?: return
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             
-            // Bu turda tamamlanan tüm maçları al
+            // Bu turda tamamlanan tüm maçları al - matchNumber sıralaması ile
             val currentRoundMatches = allMatches.filter { 
                 it.isCompleted && it.round == completedMatch.round 
+            }.sortedBy { it.matchNumber }
+            
+            // Debug: Sıralama kontrolü
+            android.util.Log.d("RankingViewModel", "🔍 SIRALAMA DEBUG:")
+            currentRoundMatches.forEachIndexed { index, match ->
+                android.util.Log.d("RankingViewModel", "Match ${index + 1}: matchNumber=${match.matchNumber}, id=${match.id}")
             }
             
             // Tur tamamlandı mı kontrol et  
@@ -1478,7 +1484,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,
                         showMatchingsList = true,
-                        matchingsList = pairingResult.matches,
+                        matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
                         emreState = emreState
                     )
                 }
