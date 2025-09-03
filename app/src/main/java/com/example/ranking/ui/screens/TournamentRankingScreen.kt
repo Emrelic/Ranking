@@ -26,7 +26,10 @@ fun TournamentRankingScreen(
     onNavigateToResults: (Long) -> Unit,
     viewModel: TournamentRankingViewModel = viewModel()
 ) {
+    android.util.Log.d("TournamentRankingScreen", "Screen loaded with tournament ID: $tournamentId")
+    
     LaunchedEffect(tournamentId) {
+        android.util.Log.d("TournamentRankingScreen", "Initializing tournament with ID: $tournamentId")
         viewModel.initializeTournament(tournamentId)
     }
     

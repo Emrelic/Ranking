@@ -105,6 +105,20 @@ fun RankingNavigation(
                     navController.navigate("tournament_ranking/$tournamentId") {
                         popUpTo("main_menu")
                     }
+                },
+                onClassicSystemSelected = { listId, systemType ->
+                    // Navigate to classic ranking screen
+                    when (systemType) {
+                        "LEAGUE" -> navController.navigate("league_settings/$listId/$systemType") {
+                            popUpTo("main_menu")
+                        }
+                        "EMRE_CORRECT" -> navController.navigate("emre_pairing_settings/$listId") {
+                            popUpTo("main_menu")
+                        }
+                        else -> navController.navigate("ranking/$listId/$systemType") {
+                            popUpTo("main_menu")
+                        }
+                    }
                 }
             )
         }
@@ -115,8 +129,24 @@ fun RankingNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onTournamentCreated = { tournamentId ->
                     // Navigate to tournament-based ranking
+                    android.util.Log.d("RankingNavigation", "Direct - onTournamentCreated called with ID: $tournamentId")
+                    android.util.Log.d("RankingNavigation", "Direct - Navigating to tournament_ranking/$tournamentId")
                     navController.navigate("tournament_ranking/$tournamentId") {
                         popUpTo("main_menu")
+                    }
+                },
+                onClassicSystemSelected = { listId, systemType ->
+                    // Navigate to classic ranking screen
+                    when (systemType) {
+                        "LEAGUE" -> navController.navigate("league_settings/$listId/$systemType") {
+                            popUpTo("main_menu")
+                        }
+                        "EMRE_CORRECT" -> navController.navigate("emre_pairing_settings/$listId") {
+                            popUpTo("main_menu")
+                        }
+                        else -> navController.navigate("ranking/$listId/$systemType") {
+                            popUpTo("main_menu")
+                        }
                     }
                 }
             )

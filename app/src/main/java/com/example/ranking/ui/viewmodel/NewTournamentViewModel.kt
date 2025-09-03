@@ -54,6 +54,7 @@ class NewTournamentViewModel(application: Application) : AndroidViewModel(applic
     ) {
         viewModelScope.launch {
             try {
+                android.util.Log.d("NewTournamentViewModel", "Creating tournament: $name, system: $systemType")
                 val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
                 
                 val tournament = Tournament(
@@ -66,10 +67,13 @@ class NewTournamentViewModel(application: Application) : AndroidViewModel(applic
                     isCompleted = false
                 )
                 
+                android.util.Log.d("NewTournamentViewModel", "Inserting tournament to database...")
                 val tournamentId = database.tournamentDao().insertTournament(tournament)
+                android.util.Log.d("NewTournamentViewModel", "Tournament created with ID: $tournamentId")
                 onSuccess(tournamentId)
                 
             } catch (e: Exception) {
+                android.util.Log.e("NewTournamentViewModel", "Failed to create tournament", e)
                 onError("Turnuva oluşturulamadı: ${e.message}")
             }
         }

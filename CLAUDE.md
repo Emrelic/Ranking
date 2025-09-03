@@ -75,11 +75,20 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb logcat -s "EmreSystemCorrect"
 ```
 
+## Mevcut Kriterler Sistemi Özellikleri  
+✅ **Ana Sayfa Redesign**: 5 kart layout (Yeni Turnuva, Listeler, Kriterler, Devam Eden, Arşiv)
+✅ **Turnuva Kurulum Sihirbazı**: 5 adımlık detaylı turnuva oluşturma
+✅ **Kriterler Yönetimi**: CRUD operasyonları + CSV import/export
+✅ **Database Schema**: Tournament, CriterionList, CriterionScore entities
+✅ **Puanlama Sistemi**: Kıyaslamalı/Ayrı ayrı + 1-100 skalası
+✅ **Match Integration**: Kriterler match voting sırasında entegre
+✅ **Turnuva Takibi**: Aktif turnuvalar + Arşiv sistemi
+
 ## Son Durum (2025-09-03)
 - 🎯 **Geliştirilmiş İsviçre Sistemi tamamen çalışır durumda**
-- 🎯 **Alternating match numbering sistemi implementasyonu tamamlandı**
-- 🎯 **UI ordering ve voting sequence sorunları çözüldü**
-- 🎯 **Sistem production ready**
+- 🎯 **Kriterler sistemi tam implementasyonu tamamlandı**
+- 🎯 **Ana sayfa redesign ve navigation yenilendi**
+- 🎯 **Sistem production ready ve test edilmiş**
 
 ---
 
@@ -94,16 +103,20 @@ adb logcat -s "EmreSystemCorrect"
 
 ## Yeni Geliştirmeler Planı
 
-### 🎯 2025-09-03 - KRİTERLER SİSTEMİ GELİŞTİRİLMESİ (DEVAM EDİYOR)
-**Hedef:** Ana sayfa redesign + Kriterler sistemi implementation
-- Ana sayfa: 4 dikdörtgen kart (Listeler, Kriterler, Devam Eden Turnuvalar, Arşiv)
-- Kriter listeleri oluşturma ve CSV import (basit format)
-- Özelleştirilebilir puanlama sistemi (1-100 arası + elle gir)
-- İki puanlama tipi: Ayrı ayrı + Kıyaslamalı slider
-- Tam ayarlanabilir turnuva opsiyonları (mecburi/opsiyonel)
+### ✅ 2025-09-03 - KRİTERLER SİSTEMİ - TAMAMLANDI
+**Hedef:** Ana sayfa redesign + Kriterler sistemi implementation ✅
+- ✅ Ana sayfa: 5 kart layout (Yeni Turnuva öne çıkarıldı)
+- ✅ Kriter listeleri oluşturma ve CSV import/export
+- ✅ Özelleştirilebilir puanlama sistemi (1-100 arası + 2 tip)
+- ✅ Turnuva kurulum sihirbazı (5 adım)
+- ✅ Match integration ve real-time scoring
 
-**📝 İSTİŞARE KAYDI:** `KRITERLER_ISTISARE.md` - Detaylı soru-cevap kayıtları
-**Tamamlanan Sorular:** 1-7 (Database yapısı, puanlama sistemi, UI tasarım, navigation)
-**Sonraki Adım:** Database schema implementation ve UI geliştirme
+**📝 İSTİŞARE KAYDI:** `KRITERLER_ISTISARE.md` - 22 soru tamamlandı
+**🏁 COMMIT:** `b729de9` - Ana sayfa redesign + Kriterler sistemi
 
-**⏰ LİMİT DURUMU:** 5 saat limit yaklaşıyor - kayıt tamamlandı, 5 saat sonra devam
+### 🎯 2025-09-03 - TURNUVA SİSTEMİ İYİLEŞTİRMELERİ (DEVAM EDİYOR)
+**Hedef:** Turnuva akışı ve sistem seçenekleri iyileştirme
+- NewTournamentScreen sistem seçenekleri genişletme
+- SongListScreen'deki klasik usuller NewTournament'a taşıma
+- Turnuva tiplerini birleştirme ve düzenleme
+- UX flow optimize etme

@@ -25,7 +25,8 @@ import com.google.gson.reflect.TypeToken
 @Composable
 fun NewTournamentScreen(
     onNavigateBack: () -> Unit,
-    onTournamentCreated: (Long) -> Unit, // Navigate to RankingScreen with tournamentId
+    onTournamentCreated: (Long) -> Unit, // Navigate to TournamentRankingScreen with tournamentId
+    onClassicSystemSelected: (Long, String) -> Unit = { _, _ -> }, // Navigate to classic RankingScreen
     viewModel: NewTournamentViewModel = viewModel()
 ) {
     val songLists by viewModel.songLists.collectAsState()
@@ -106,7 +107,11 @@ fun NewTournamentScreen(
                 } else {
                     TextButton(
                         onClick = {
+                            android.util.Log.d("NewTournamentScreen", "Turnuva Başlat button clicked!")
                             if (selectedSongList != null) {
+                                android.util.Log.d("NewTournamentScreen", "Selected song list: ${selectedSongList!!.name}")
+                                android.util.Log.d("NewTournamentScreen", "Tournament name: $tournamentName")
+                                android.util.Log.d("NewTournamentScreen", "System type: $selectedSystemType")
                                 isLoading = true
                                 viewModel.createTournament(
                                     songList = selectedSongList!!,
@@ -125,7 +130,20 @@ fun NewTournamentScreen(
                                     } else null,
                                     onSuccess = { tournamentId ->
                                         isLoading = false
-                                        onTournamentCreated(tournamentId)
+                                        // Different systems need different navigation
+                                        android.util.Log.d("NewTournamentScreen", "Tournament created successfully with ID: $tournamentId")
+                                        android.util.Log.d("NewTournamentScreen", "Navigating for system type: $selectedSystemType")
+                                        when (selectedSystemType) {
+                                            "SWISS", "EMRE_CORRECT" -> {
+                                                android.util.Log.d("NewTournamentScreen", "Calling onTournamentCreated($tournamentId)")
+                                                onTournamentCreated(tournamentId)
+                                            }
+                                            else -> {
+                                                android.util.Log.d("NewTournamentScreen", "Calling onClassicSystemSelected(${selectedSongList!!.id}, $selectedSystemType)")
+                                                // For classic systems, navigate to old ranking screen
+                                                onClassicSystemSelected(selectedSongList!!.id, selectedSystemType)
+                                            }
+                                        }
                                     },
                                     onError = { error ->
                                         isLoading = false
@@ -343,8 +361,12 @@ private fun SystemTypeSelectionStep(
         Spacer(modifier = Modifier.height(16.dp))
 
         val systems = listOf(
+            "DIRECT_SCORING" to Pair("Direkt Puanlama", "Her öğeye 0-100 arası puan verin"),
+            "LEAGUE" to Pair("Lig Sistemi", "Öğeler birbiri ile eşleşir, kazanan 2 puan alır"),
+            "ELIMINATION" to Pair("Ön Eleme + Gruplu Eleme", "Önce gruplar, sonra elemeli turnuva"),
+            "FULL_ELIMINATION" to Pair("Tam Eleme Sistemi", "Tamamı elemeli turnuva sistemi"),
             "SWISS" to Pair("İsviçre Sistemi", "Eşit puanlı rakiplerle eşleşme sistemi"),
-            "EMRE_CORRECT" to Pair("Geliştirilmiş İsviçre Sistemi", "Puan bazlı eşleştirme ile adil sıralama - İlk tur eşleştirme seçeneği")
+            "EMRE_CORRECT" to Pair("Geliştirilmiş İsviçre Sistemi", "Puan bazlı eşleştirme ile adil sıralama")
         )
 
         systems.forEach { (value, info) ->
