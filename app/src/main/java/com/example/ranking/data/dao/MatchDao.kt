@@ -17,6 +17,13 @@ interface MatchDao {
 
     @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method AND round = :round")
     suspend fun getMatchesByRound(listId: Long, method: String, round: Int): List<Match>
+    
+    // Tournament-based queries
+    @Query("SELECT * FROM matches WHERE tournamentId = :tournamentId ORDER BY round ASC, matchNumber ASC, id ASC")
+    suspend fun getMatchesByTournamentId(tournamentId: Long): List<Match>
+    
+    @Query("SELECT * FROM matches WHERE id = :matchId")
+    suspend fun getMatchById(matchId: Long): Match?
 
     @Insert
     suspend fun insertMatch(match: Match): Long

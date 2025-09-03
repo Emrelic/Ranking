@@ -69,7 +69,7 @@ fun SongListScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Sıralama Yöntemini Seçin:",
+                text = "Klasik Sıralama Yöntemini Seçin:",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )

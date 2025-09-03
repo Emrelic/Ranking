@@ -15,8 +15,49 @@ fun RankingNavigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "main_menu"
     ) {
+        composable("main_menu") {
+            MainMenuScreen(
+                onNavigateToLists = { navController.navigate("lists") },
+                onNavigateToCriteria = { navController.navigate("criteria") },
+                onNavigateToActiveTournaments = { navController.navigate("active_tournaments") },
+                onNavigateToArchive = { navController.navigate("archive") },
+                onNavigateToNewTournament = { navController.navigate("new_tournament_direct") }
+            )
+        }
+        
+        composable("lists") {
+            ListsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCreateList = { navController.navigate("create_list") },
+                onNavigateToSongList = { listId -> navController.navigate("song_list/$listId") }
+            )
+        }
+        
+        composable("criteria") {
+            CriteriaScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCreateCriteria = { navController.navigate("create_criteria") },
+                onNavigateToEditCriteria = { criteriaId -> navController.navigate("edit_criteria/$criteriaId") }
+            )
+        }
+        
+        composable("create_criteria") {
+            CreateCriteriaScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        
+        composable("edit_criteria/{criteriaId}") { backStackEntry ->
+            val criteriaId = backStackEntry.arguments?.getString("criteriaId")?.toLongOrNull() ?: 0L
+            CreateCriteriaScreen(
+                onNavigateBack = { navController.popBackStack() },
+                criteriaListId = criteriaId
+            )
+        }
+        
+        // Keep old home route for backward compatibility during development
         composable("home") {
             HomeScreen(
                 onNavigateToCreateList = { navController.navigate("create_list") },
@@ -51,6 +92,52 @@ fun RankingNavigation(
                 },
                 onNavigateToEmrePairingSettings = { id ->
                     navController.navigate("emre_pairing_settings/$id")
+                }
+            )
+        }
+        
+        composable("new_tournament/{listId}") { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
+            NewTournamentScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onTournamentCreated = { tournamentId ->
+                    // Navigate to tournament-based ranking
+                    navController.navigate("tournament_ranking/$tournamentId") {
+                        popUpTo("main_menu")
+                    }
+                }
+            )
+        }
+        
+        // Direct tournament creation from main menu
+        composable("new_tournament_direct") {
+            NewTournamentScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onTournamentCreated = { tournamentId ->
+                    // Navigate to tournament-based ranking
+                    navController.navigate("tournament_ranking/$tournamentId") {
+                        popUpTo("main_menu")
+                    }
+                }
+            )
+        }
+        
+        composable("tournament_ranking/{tournamentId}") { backStackEntry ->
+            val tournamentId = backStackEntry.arguments?.getString("tournamentId")?.toLongOrNull() ?: 0L
+            TournamentRankingScreen(
+                tournamentId = tournamentId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToResults = { tId ->
+                    navController.navigate("tournament_results/$tId")
+                }
+            )
+        }
+        
+        composable("active_tournaments") {
+            ActiveTournamentsScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToTournament = { tournamentId ->
+                    navController.navigate("tournament_ranking/$tournamentId")
                 }
             )
         }

@@ -9,8 +9,8 @@ import android.content.Context
 import com.example.ranking.data.dao.*
 
 @Database(
-    entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class],
-    version = 11,
+    entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class, Tournament::class, CriterionList::class, CriterionScore::class],
+    version = 12,
     exportSchema = false
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -24,6 +24,10 @@ abstract class RankingDatabase : RoomDatabase() {
     abstract fun votingScoreDao(): VotingScoreDao
     abstract fun swissStateDao(): SwissStateDao
     abstract fun swissMatchStateDao(): SwissMatchStateDao
+    // New entities for Criteria System
+    abstract fun tournamentDao(): TournamentDao
+    abstract fun criterionListDao(): CriterionListDao
+    abstract fun criterionScoreDao(): CriterionScoreDao
 
     companion object {
         @Volatile
@@ -237,6 +241,68 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create tournaments table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS tournaments (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        startDate TEXT NOT NULL,
+                        songListId INTEGER NOT NULL,
+                        systemType TEXT NOT NULL,
+                        criterionListId INTEGER,
+                        criteriaSettings TEXT,
+                        isCompleted INTEGER NOT NULL DEFAULT 0,
+                        createdAt INTEGER NOT NULL,
+                        completedAt INTEGER,
+                        FOREIGN KEY(songListId) REFERENCES song_lists(id) ON DELETE CASCADE,
+                        FOREIGN KEY(criterionListId) REFERENCES criterion_lists(id) ON DELETE SET NULL
+                    )
+                """)
+                
+                // Create criterion_lists table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS criterion_lists (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        criteria TEXT NOT NULL,
+                        createdDate TEXT NOT NULL,
+                        isActive INTEGER NOT NULL DEFAULT 1,
+                        createdAt INTEGER NOT NULL
+                    )
+                """)
+                
+                // Create criterion_scores table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS criterion_scores (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        matchId INTEGER NOT NULL,
+                        tournamentId INTEGER NOT NULL,
+                        criterionName TEXT NOT NULL,
+                        team1Score REAL,
+                        team2Score REAL,
+                        createdAt TEXT NOT NULL,
+                        FOREIGN KEY(matchId) REFERENCES matches(id) ON DELETE CASCADE,
+                        FOREIGN KEY(tournamentId) REFERENCES tournaments(id) ON DELETE CASCADE
+                    )
+                """)
+                
+                // Add tournamentId to matches table  
+                db.execSQL("ALTER TABLE matches ADD COLUMN tournamentId INTEGER")
+                
+                // Add foreign key constraint manually (ALTER TABLE doesn't support adding FK)
+                // We'll handle this in app logic since SQLite ALTER TABLE has limitations
+                
+                // Create indices for performance
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_tournaments_songListId ON tournaments (songListId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_tournaments_criterionListId ON tournaments (criterionListId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_criterion_scores_matchId ON criterion_scores (matchId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_criterion_scores_tournamentId ON criterion_scores (tournamentId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_matches_tournamentId ON matches (tournamentId)")
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -244,7 +310,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

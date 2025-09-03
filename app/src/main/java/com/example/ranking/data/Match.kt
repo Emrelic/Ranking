@@ -17,6 +17,7 @@ data class Match(
     val round: Int = 1,
     val groupId: Int? = null, // for group stage matches
     val matchNumber: Int = 0, // 🆕 Alternating match numbering (1, 18, 2, 17...)
+    val tournamentId: Long? = null, // 🆕 Tournament relationship for cleaner data structure
     val isCompleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
