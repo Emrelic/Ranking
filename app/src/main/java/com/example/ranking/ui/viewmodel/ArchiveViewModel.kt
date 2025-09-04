@@ -29,6 +29,7 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
     data class ArchiveUiState(
         val isLoading: Boolean = true,
         val archives: List<Archive> = emptyList(),
+        val completedTournaments: List<Tournament> = emptyList(),
         val selectedArchive: Archive? = null,
         val archiveResults: List<ArchiveResult> = emptyList(),
         val archiveLeagueTable: List<LeagueTableEntry> = emptyList(),

@@ -142,6 +142,27 @@ fun RankingScreen(
                 onComplete = { onNavigateToResults(listId, method) }
             )
         }
+        
+        // 🆕 KRİTER PUANLAMA DIALOG ENTEGRASYONU
+        if (uiState.showCriteriaScoring && uiState.criteriaNames.isNotEmpty()) {
+            val currentMatch = uiState.currentMatch
+            val song1 = uiState.song1
+            val song2 = uiState.song2
+            
+            if (currentMatch != null && song1 != null && song2 != null) {
+                CriteriaScoringDialog(
+                    criteriaNames = uiState.criteriaNames,
+                    team1Name = song1.name,
+                    team2Name = song2.name,
+                    onSave = { criteriaScores ->
+                        viewModel.saveCriteriaScores(criteriaScores)
+                    },
+                    onDismiss = {
+                        viewModel.closeCriteriaScoring()
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -780,6 +801,20 @@ private fun MatchBasedContent(
                             }
                         }
                     }
+                    
+                    // 🆕 KRİTER PUANLAMA BUTONU
+                    if (method == "EMRE_CORRECT" && uiState.criteriaNames.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = { viewModel.openCriteriaScoring() },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.tertiary
+                            )
+                        ) {
+                            Text("📊 Kriter Puanlaması")
+                        }
+                    }
                 }
             }
         }
@@ -1323,5 +1358,202 @@ private fun getMethodTitle(method: String): String {
         "SWISS" -> "İsviçre Sistemi"
         "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
         else -> "Sıralama"
+    }
+}
+
+// ===================================================================================
+// 🆕 KRİTER PUANLAMA UI BİLEŞENLERİ
+// ===================================================================================
+
+/**
+ * Kriter puanlama dialog'u
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CriteriaScoringDialog(
+    criteriaNames: List<String>,
+    team1Name: String,
+    team2Name: String,
+    onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var criteriaScores by remember { 
+        mutableStateOf(criteriaNames.associateWith { Pair(null as Double?, null as Double?) }) 
+    }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                "Kriter Puanlaması",
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        text = {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp)
+            ) {
+                item {
+                    Text(
+                        "Her kriter için takımları 1-100 arası puanlayın:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                items(criteriaNames) { criterionName ->
+                    CriterionScoringItem(
+                        criterionName = criterionName,
+                        team1Name = team1Name,
+                        team2Name = team2Name,
+                        team1Score = criteriaScores[criterionName]?.first,
+                        team2Score = criteriaScores[criterionName]?.second,
+                        onTeam1ScoreChange = { score ->
+                            val currentPair = criteriaScores[criterionName] ?: Pair(null, null)
+                            criteriaScores = criteriaScores + (criterionName to currentPair.copy(first = score))
+                        },
+                        onTeam2ScoreChange = { score ->
+                            val currentPair = criteriaScores[criterionName] ?: Pair(null, null)
+                            criteriaScores = criteriaScores + (criterionName to currentPair.copy(second = score))
+                        }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(criteriaScores) },
+                enabled = criteriaScores.all { (_, scores) -> 
+                    scores.first != null && scores.second != null 
+                }
+            ) {
+                Text("Kaydet")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal")
+            }
+        }
+    )
+}
+
+/**
+ * Tek kriter puanlama bileşeni
+ */
+@Composable
+fun CriterionScoringItem(
+    criterionName: String,
+    team1Name: String,
+    team2Name: String,
+    team1Score: Double?,
+    team2Score: Double?,
+    onTeam1ScoreChange: (Double?) -> Unit,
+    onTeam2ScoreChange: (Double?) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = criterionName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Team 1 Score
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = team1Name,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    var team1Input by remember { mutableStateOf(team1Score?.toString() ?: "") }
+                    
+                    OutlinedTextField(
+                        value = team1Input,
+                        onValueChange = { input ->
+                            team1Input = input
+                            val score = input.toDoubleOrNull()
+                            if (score == null && input.isNotEmpty()) {
+                                // Invalid input, don't update
+                            } else if (score != null && score in 1.0..100.0) {
+                                onTeam1ScoreChange(score)
+                            } else if (input.isEmpty()) {
+                                onTeam1ScoreChange(null)
+                            }
+                        },
+                        label = { Text("Puan") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = team1Input.isNotEmpty() && (team1Input.toDoubleOrNull()?.let { it !in 1.0..100.0 } == true)
+                    )
+                }
+                
+                Text(
+                    "VS",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                // Team 2 Score
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = team2Name,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    var team2Input by remember { mutableStateOf(team2Score?.toString() ?: "") }
+                    
+                    OutlinedTextField(
+                        value = team2Input,
+                        onValueChange = { input ->
+                            team2Input = input
+                            val score = input.toDoubleOrNull()
+                            if (score == null && input.isNotEmpty()) {
+                                // Invalid input, don't update
+                            } else if (score != null && score in 1.0..100.0) {
+                                onTeam2ScoreChange(score)
+                            } else if (input.isEmpty()) {
+                                onTeam2ScoreChange(null)
+                            }
+                        },
+                        label = { Text("Puan") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = team2Input.isNotEmpty() && (team2Input.toDoubleOrNull()?.let { it !in 1.0..100.0 } == true)
+                    )
+                }
+            }
+            
+            // Validation message kaldırıldı
+        }
     }
 }

@@ -74,7 +74,8 @@ fun ActiveTournamentsScreen(
                 items(tournaments) { tournament ->
                     TournamentCard(
                         tournament = tournament,
-                        onContinue = { onNavigateToTournament(tournament.id) }
+                        onContinue = { onNavigateToTournament(tournament.id) },
+                        onDelete = { viewModel.deleteTournament(tournament) }
                     )
                 }
             }
@@ -85,11 +86,13 @@ fun ActiveTournamentsScreen(
 @Composable
 private fun TournamentCard(
     tournament: com.example.ranking.data.Tournament,
-    onContinue: () -> Unit
+    onContinue: () -> Unit,
+    onDelete: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onContinue
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -165,18 +168,63 @@ private fun TournamentCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Devam etmek için tıklayın",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
+                // Devam Et Butonu
+                TextButton(
+                    onClick = onContinue
+                ) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Devam Et")
+                }
                 
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                // Sil Butonu
+                IconButton(
+                    onClick = { showDeleteDialog = true }
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Sil",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
+    }
+    
+    // Silme onay dialog'u
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = {
+                Text("Turnuvayı Sil")
+            },
+            text = {
+                Text("'${tournament.name}' turnuvasını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDelete()
+                        showDeleteDialog = false
+                    }
+                ) {
+                    Text(
+                        "Sil",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("İptal")
+                }
+            }
+        )
     }
 }

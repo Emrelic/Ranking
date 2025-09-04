@@ -74,7 +74,16 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val method: String = "", // Ranking metodu
         val showTestReport: Boolean = false, // Test raporu dialog'unu göster
         val testReportData: String = "", // Test raporu içeriği
-        val testReportTitle: String = "" // Test raporu başlığı
+        val testReportTitle: String = "", // Test raporu başlığı
+        val showCriteriaDialog: Boolean = false, // Kriter değerlendirme dialog'u
+        val currentMatchCriteriaScores: Map<String, Pair<Double?, Double?>> = emptyMap(), // Mevcut maç kriter skorları
+        
+        // 🆕 KRİTER SİSTEMİ YENİ ALANLAR
+        val criterionList: CriterionList? = null,                    // Kullanılan kriter listesi
+        val criteriaNames: List<String> = emptyList(),               // Parse edilmiş kriter isimleri
+        val showCriteriaScoring: Boolean = false,                    // Kriter puanlama ekranı
+        val allCriteriaScores: List<CriterionScore> = emptyList(),   // Tüm kriter puanları
+        val currentMatchCriteriaNames: List<String> = emptyList()    // Mevcut maçın kriterleri
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -87,6 +96,80 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private var currentSongIndex: Int = 0
     private var currentVotingSession: VotingSession? = null
     private var currentPairingMethod: com.example.ranking.data.EmrePairingMethod = com.example.ranking.data.EmrePairingMethod.SEQUENTIAL
+    
+    // Tournament-based state
+    private var currentTournament: Tournament? = null
+    private var tournamentCriteriaSettings: Map<String, Any>? = null
+    
+    fun getCurrentTournament(): Tournament? = currentTournament
+    
+    fun initializeTournament(tournamentId: Long) {
+        android.util.Log.d("RankingViewModel", "initializeTournament called - TournamentId: $tournamentId")
+        viewModelScope.launch {
+            try {
+                val tournament = database.tournamentDao().getTournamentById(tournamentId)
+                if (tournament == null) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Turnuva bulunamadı"
+                    )
+                    return@launch
+                }
+                
+                currentTournament = tournament
+                android.util.Log.d("RankingViewModel", "Tournament loaded: ${tournament.name}, System: ${tournament.systemType}")
+                
+                // Parse criteria settings
+                tournamentCriteriaSettings = tournament.criteriaSettings?.let { json ->
+                    try {
+                        Gson().fromJson<Map<String, Any>>(json, object : com.google.gson.reflect.TypeToken<Map<String, Any>>() {}.type)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                
+                // 🆕 Load criterion list if exists
+                val criterionList = tournament.criterionListId?.let { criterionId ->
+                    try {
+                        database.criterionListDao().getCriterionListById(criterionId)
+                    } catch (e: Exception) {
+                        android.util.Log.e("RankingViewModel", "Failed to load criterion list: ${e.message}")
+                        null
+                    }
+                }
+                
+                // 🆕 Parse criteria names
+                val criteriaNames = criterionList?.let { list ->
+                    try {
+                        val gson = Gson()
+                        val listType = object : com.google.gson.reflect.TypeToken<List<String>>() {}.type
+                        gson.fromJson<List<String>>(list.criteria, listType)
+                    } catch (e: Exception) {
+                        android.util.Log.e("RankingViewModel", "Failed to parse criteria: ${e.message}")
+                        emptyList()
+                    }
+                } ?: emptyList()
+                
+                android.util.Log.d("RankingViewModel", "🎯 CRITERIA LOADED: ${criteriaNames.joinToString(", ")}")
+                
+                // Update UI state with criteria
+                _uiState.value = _uiState.value.copy(
+                    criterionList = criterionList,
+                    criteriaNames = criteriaNames
+                )
+                
+                // Initialize with tournament settings
+                initializeRanking(tournament.songListId, tournament.systemType, "SEQUENTIAL")
+                
+            } catch (e: Exception) {
+                android.util.Log.e("RankingViewModel", "initializeTournament error: ${e.message}", e)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Turnuva yüklenemedi: ${e.message}"
+                )
+            }
+        }
+    }
     
     fun initializeRanking(listId: Long, method: String, pairingMethodName: String = "SEQUENTIAL") {
         android.util.Log.d("RankingViewModel", "initializeRanking called - ListId: $listId, Method: $method, PairingMethod: $pairingMethodName")
@@ -1565,5 +1648,226 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             testReportData = "",
             testReportTitle = ""
         )
+    }
+
+    
+    // Criteria Dialog Functions
+    fun openCriteriaDialog() {
+        _uiState.value = _uiState.value.copy(showCriteriaDialog = true)
+    }
+    
+    fun closeCriteriaDialog() {
+        _uiState.value = _uiState.value.copy(showCriteriaDialog = false)
+    }
+    
+    fun saveCriteriaScores(matchId: Long, scores: Map<String, Pair<Double?, Double?>>) {
+        viewModelScope.launch {
+            try {
+                val tournamentId = currentTournament?.id ?: return@launch
+                
+                scores.forEach { (criterionName, scorePair) ->
+                    val criterionScore = CriterionScore(
+                        matchId = matchId,
+                        tournamentId = tournamentId,
+                        criterionName = criterionName,
+                        team1Score = scorePair.first,
+                        team2Score = scorePair.second
+                    )
+                    
+                    database.criterionScoreDao().insertCriterionScore(criterionScore)
+                }
+                
+                // Update UI state with saved scores
+                _uiState.value = _uiState.value.copy(
+                    currentMatchCriteriaScores = scores
+                )
+                
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = "Kriter skorları kaydedilemedi: ${e.message}"
+                )
+            }
+        }
+    }
+    
+    fun recordMatchResultFromCriteria(matchId: Long, result: Int) {
+        viewModelScope.launch {
+            val winnerId = when (result) {
+                1 -> _uiState.value.currentMatch?.songId1
+                2 -> _uiState.value.currentMatch?.songId2
+                else -> null // draw
+            }
+            submitMatchResult(matchId, winnerId)
+        }
+    }
+    
+    // ===================================================================================
+    // 🆕 KRİTER SİSTEMİ FONKSİYONLARI
+    // ===================================================================================
+    
+    /**
+     * Kriter puanlama dialog'unu aç
+     */
+    fun openCriteriaScoring() {
+        val currentMatch = _uiState.value.currentMatch
+        val criteriaNames = _uiState.value.criteriaNames
+        
+        if (currentMatch != null && criteriaNames.isNotEmpty()) {
+            android.util.Log.d("RankingViewModel", "🎯 OPENING CRITERIA SCORING FOR MATCH: ${currentMatch.id}")
+            
+            _uiState.value = _uiState.value.copy(
+                showCriteriaScoring = true,
+                currentMatchCriteriaNames = criteriaNames
+            )
+        }
+    }
+    
+    /**
+     * Kriter puanlama dialog'unu kapat
+     */
+    fun closeCriteriaScoring() {
+        _uiState.value = _uiState.value.copy(
+            showCriteriaScoring = false,
+            currentMatchCriteriaScores = emptyMap(),
+            currentMatchCriteriaNames = emptyList()
+        )
+    }
+    
+    /**
+     * Kriter puanlarını kaydet
+     */
+    fun saveCriteriaScores(criteriaScores: Map<String, Pair<Double?, Double?>>) {
+        viewModelScope.launch {
+            try {
+                val currentMatch = _uiState.value.currentMatch ?: return@launch
+                val tournament = currentTournament ?: return@launch
+                
+                android.util.Log.d("RankingViewModel", "🎯 SAVING CRITERIA SCORES: ${criteriaScores.size} criteria")
+                
+                // Her kriter için CriterionScore kaydet
+                criteriaScores.forEach { (criterionName, scores) ->
+                    val criterionScore = CriterionScore(
+                        matchId = currentMatch.id,
+                        tournamentId = tournament.id,
+                        criterionName = criterionName,
+                        team1Score = scores.first,
+                        team2Score = scores.second
+                    )
+                    
+                    database.criterionScoreDao().insertCriterionScore(criterionScore)
+                    android.util.Log.d("RankingViewModel", "📊 SAVED: $criterionName -> Team1: ${scores.first}, Team2: ${scores.second}")
+                }
+                
+                // Dialog'u kapat
+                closeCriteriaScoring()
+                
+            } catch (e: Exception) {
+                android.util.Log.e("RankingViewModel", "❌ ERROR SAVING CRITERIA SCORES: ${e.message}", e)
+                _uiState.value = _uiState.value.copy(
+                    error = "Kriter puanları kaydedilemedi: ${e.message}"
+                )
+            }
+        }
+    }
+    
+    /**
+     * Geliştirilmiş İsviçre sistemini kriter sistemi ile başlat
+     */
+    fun başlaGeliştirilmişİsviçreWithCriteria() {
+        viewModelScope.launch {
+            try {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = true,
+                    error = null,
+                    showInitialRanking = false,
+                    showMatchingsList = false
+                )
+                
+                // Şarkıları yükle
+                repository.getSongsByListId(currentListId).collect { loadedSongs ->
+                    songs = loadedSongs
+                    
+                    android.util.Log.d("RankingViewModel", "🏁 STARTING ENHANCED SWISS WITH CRITERIA")
+                    android.util.Log.d("RankingViewModel", "📊 Songs: ${songs.size}, Criteria: ${_uiState.value.criteriaNames.joinToString(", ")}")
+                    
+                    // Kriter sistemi ile turnuva başlat
+                    val pairingResult = RankingEngine.createCorrectEmreMatches(
+                        songs = songs,
+                        state = null,
+                        criterionList = _uiState.value.criterionList
+                    )
+                    
+                    // Match'leri veritabanına kaydet (düzenleme gerekli)
+                    val matchesWithIds = pairingResult.matches
+                    
+                    // UI state'i güncelle
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        totalMatches = matchesWithIds.size,
+                        completedMatches = 0,
+                        currentRound = 1,
+                        matchingsList = matchesWithIds,
+                        showMatchingsList = true,
+                        emreState = pairingResult.candidateMatches.firstOrNull()?.let { candidate ->
+                            // İlk candidate'dan state'i çıkar (geçici çözüm)
+                            EmreSystemCorrect.initializeEmreTournament(songs, _uiState.value.criterionList)
+                        }
+                    )
+                    
+                    // İlk maçı başlat (mevcut fonksiyon kullanılacak)
+                    android.util.Log.d("RankingViewModel", "✅ CRITERIA INTEGRATED TOURNAMENT STARTED")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("RankingViewModel", "❌ ERROR IN ENHANCED SWISS WITH CRITERIA: ${e.message}", e)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = "Turnuva başlatılamadı: ${e.message}"
+                )
+            }
+        }
+    }
+    
+    /**
+     * Emre state güncelleme - Kriter sistemi ile
+     */
+    fun updateEmreStateAfterMatchWithCriteria(match: Match, winnerId: Long?) {
+        viewModelScope.launch {
+            try {
+                val currentState = _uiState.value.emreState ?: return@launch
+                val tournament = currentTournament ?: return@launch
+                
+                // Bu maçın kriter puanlarını al
+                val matchCriteriaScores = database.criterionScoreDao()
+                    .getCriterionScoresByMatch(match.id)
+                
+                android.util.Log.d("RankingViewModel", "🔄 UPDATING EMRE STATE WITH CRITERIA")
+                android.util.Log.d("RankingViewModel", "📊 Match criteria scores: ${matchCriteriaScores.size}")
+                
+                // Maçı tamamlanmış olarak işaretle
+                val completedMatch = match.copy(
+                    winnerId = winnerId,
+                    isCompleted = true
+                )
+                repository.updateMatch(completedMatch)
+                
+                // State'i kriter puanları ile güncelle
+                val updatedState = RankingEngine.processCorrectEmreResults(
+                    state = currentState,
+                    completedMatches = listOf(completedMatch),
+                    byeTeam = null,
+                    allCriteriaScores = matchCriteriaScores
+                )
+                
+                _uiState.value = _uiState.value.copy(
+                    emreState = updatedState,
+                    allCriteriaScores = _uiState.value.allCriteriaScores + matchCriteriaScores
+                )
+                
+                android.util.Log.d("RankingViewModel", "✅ EMRE STATE UPDATED WITH CRITERIA INTEGRATION")
+                
+            } catch (e: Exception) {
+                android.util.Log.e("RankingViewModel", "❌ ERROR UPDATING EMRE STATE WITH CRITERIA: ${e.message}", e)
+            }
+        }
     }
 }

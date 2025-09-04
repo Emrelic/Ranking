@@ -4,6 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ranking.data.*
+import com.example.ranking.ranking.EmreSystemCorrect
+import com.example.ranking.ranking.RankingEngine
+import com.example.ranking.repository.RankingRepository
+import com.example.ranking.utils.CsvReader
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,12 +23,32 @@ data class TournamentRankingUiState(
     val currentMatchCriteriaScores: List<CriterionScore> = emptyList(),
     val isLoading: Boolean = true,
     val isCompleted: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val emreState: EmreSystemCorrect.EmreState? = null,
+    val allSongs: List<Song> = emptyList(),
+    val showInitialRanking: Boolean = false,
+    val showMatchingsList: Boolean = false,
+    val matchingsList: List<Match> = emptyList()
 )
 
 class TournamentRankingViewModel(application: Application) : AndroidViewModel(application) {
     private val database = RankingDatabase.getDatabase(application)
     private val gson = Gson()
+    
+    private val repository = RankingRepository(
+        songDao = database.songDao(),
+        songListDao = database.songListDao(),
+        rankingResultDao = database.rankingResultDao(),
+        matchDao = database.matchDao(),
+        leagueSettingsDao = database.leagueSettingsDao(),
+        archiveDao = database.archiveDao(),
+        csvReader = CsvReader(),
+        swissStateDao = database.swissStateDao(),
+        swissMatchStateDao = database.swissMatchStateDao()
+    )
+    
+    private var emreState: EmreSystemCorrect.EmreState? = null
+    private var songs: List<Song> = emptyList()
     
     private val _uiState = MutableStateFlow(TournamentRankingUiState())
     val uiState: StateFlow<TournamentRankingUiState> = _uiState.asStateFlow()
@@ -93,9 +117,43 @@ class TournamentRankingViewModel(application: Application) : AndroidViewModel(ap
     }
     
     private suspend fun generateTournamentMatches(tournament: Tournament) {
-        // Integration point with existing Swiss/Emre system
-        // This would call the existing match generation logic
-        // For now, placeholder
+        try {
+            // Load songs for the tournament
+            repository.getSongsByListId(tournament.songListId).collect { songList ->
+                songs = songList
+                
+                if (songs.isEmpty()) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Şarkı listesi boş!"
+                    )
+                    return@collect
+                }
+                
+                android.util.Log.d("TournamentRankingViewModel", "Tournament system: ${tournament.systemType}")
+                android.util.Log.d("TournamentRankingViewModel", "Songs count: ${songs.size}")
+                
+                when (tournament.systemType) {
+                    "EMRE_CORRECT" -> initializeEmreTournament()
+                    "SWISS" -> initializeSwissTournament()
+                    "LEAGUE" -> initializeLeagueTournament()
+                    "ELIMINATION" -> initializeEliminationTournament()
+                    "FULL_ELIMINATION" -> initializeFullEliminationTournament()
+                    else -> {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            errorMessage = "Desteklenmeyen turnuva sistemi: ${tournament.systemType}"
+                        )
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("TournamentRankingViewModel", "generateTournamentMatches error: ${e.message}", e)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Turnuva başlatma hatası: ${e.message}"
+            )
+        }
     }
     
     private suspend fun loadCurrentMatch(tournamentId: Long) {
@@ -190,6 +248,176 @@ class TournamentRankingViewModel(application: Application) : AndroidViewModel(ap
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(errorMessage = "Kriter skorları kaydedilemedi: ${e.message}")
             }
+        }
+    }
+    
+    private suspend fun initializeEmreTournament() {
+        try {
+            android.util.Log.d("TournamentRankingViewModel", "initializeEmreTournament started")
+            
+            // Initialize Emre system
+            emreState = EmreSystemCorrect.initializeEmreTournament(songs)
+            android.util.Log.d("TournamentRankingViewModel", "Emre system initialized, teams: ${emreState?.teams?.size}")
+            
+            // Show initial ranking table first
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                showInitialRanking = true,
+                emreState = emreState,
+                allSongs = songs,
+                currentMatch = null
+            )
+            android.util.Log.d("TournamentRankingViewModel", "Initial ranking table shown")
+            
+        } catch (e: Exception) {
+            android.util.Log.e("TournamentRankingViewModel", "initializeEmreTournament error: ${e.message}", e)
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Emre sistemi başlatma hatası: ${e.message}"
+            )
+        }
+    }
+    
+    private suspend fun initializeSwissTournament() {
+        try {
+            val matches = RankingEngine.createSwissMatches(songs, 1, emptyList())
+            
+            // Create matches in database with tournament ID
+            val tournament = _uiState.value.tournament
+            if (tournament != null) {
+                val tournamentMatches = matches.map { match ->
+                    match.copy(tournamentId = tournament.id)
+                }
+                repository.createMatches(tournamentMatches)
+            }
+            
+            loadCurrentMatch(_uiState.value.tournament?.id ?: 0L)
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Swiss sistemi başlatma hatası: ${e.message}"
+            )
+        }
+    }
+    
+    private suspend fun initializeLeagueTournament() {
+        try {
+            val matches = RankingEngine.createLeagueMatches(songs, false)
+            
+            // Create matches in database with tournament ID
+            val tournament = _uiState.value.tournament
+            if (tournament != null) {
+                val tournamentMatches = matches.map { match ->
+                    match.copy(tournamentId = tournament.id)
+                }
+                repository.createMatches(tournamentMatches)
+            }
+            
+            loadCurrentMatch(_uiState.value.tournament?.id ?: 0L)
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Lig sistemi başlatma hatası: ${e.message}"
+            )
+        }
+    }
+    
+    private suspend fun initializeEliminationTournament() {
+        try {
+            val matches = RankingEngine.createEliminationMatches(songs)
+            
+            // Create matches in database with tournament ID
+            val tournament = _uiState.value.tournament
+            if (tournament != null) {
+                val tournamentMatches = matches.map { match ->
+                    match.copy(tournamentId = tournament.id)
+                }
+                repository.createMatches(tournamentMatches)
+            }
+            
+            loadCurrentMatch(_uiState.value.tournament?.id ?: 0L)
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Eleme sistemi başlatma hatası: ${e.message}"
+            )
+        }
+    }
+    
+    private suspend fun initializeFullEliminationTournament() {
+        try {
+            val matches = RankingEngine.createFullEliminationMatches(songs)
+            
+            // Create matches in database with tournament ID
+            val tournament = _uiState.value.tournament
+            if (tournament != null) {
+                val tournamentMatches = matches.map { match ->
+                    match.copy(tournamentId = tournament.id)
+                }
+                repository.createMatches(tournamentMatches)
+            }
+            
+            loadCurrentMatch(_uiState.value.tournament?.id ?: 0L)
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "Tam eleme sistemi başlatma hatası: ${e.message}"
+            )
+        }
+    }
+    
+    fun createFirstRoundMatches() {
+        android.util.Log.d("TournamentRankingViewModel", "createFirstRoundMatches called")
+        viewModelScope.launch {
+            try {
+                val currentState = emreState
+                if (currentState == null) {
+                    android.util.Log.e("TournamentRankingViewModel", "EmreState is null!")
+                    _uiState.value = _uiState.value.copy(errorMessage = "EmreState bulunamadı")
+                    return@launch
+                }
+                
+                // Create first round pairing
+                val pairingResult = EmreSystemCorrect.createHybridPairingSystem(currentState)
+                android.util.Log.d("TournamentRankingViewModel", "Pairing result: ${pairingResult.matches.size} matches")
+                
+                if (pairingResult.matches.isNotEmpty()) {
+                    // Add tournament ID to matches
+                    val tournament = _uiState.value.tournament
+                    if (tournament != null) {
+                        val tournamentMatches = pairingResult.matches.map { match ->
+                            match.copy(tournamentId = tournament.id)
+                        }
+                        repository.createMatches(tournamentMatches)
+                        android.util.Log.d("TournamentRankingViewModel", "Matches saved to database")
+                        
+                        // Show matchings list
+                        _uiState.value = _uiState.value.copy(
+                            showInitialRanking = false,
+                            showMatchingsList = true,
+                            matchingsList = tournamentMatches.sortedBy { it.matchNumber }
+                        )
+                    }
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = "Eşleştirme oluşturulamadı"
+                    )
+                }
+                
+            } catch (e: Exception) {
+                android.util.Log.e("TournamentRankingViewModel", "createFirstRoundMatches error: ${e.message}", e)
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Eşleştirme hatası: ${e.message}"
+                )
+            }
+        }
+    }
+    
+    fun startScoring() {
+        android.util.Log.d("TournamentRankingViewModel", "startScoring called")
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(showMatchingsList = false)
+            loadCurrentMatch(_uiState.value.tournament?.id ?: 0L)
         }
     }
 }

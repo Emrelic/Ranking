@@ -3,6 +3,10 @@ package com.example.ranking.ranking
 import com.example.ranking.data.Song
 import com.example.ranking.data.Match
 import com.example.ranking.data.RankingResult
+import com.example.ranking.data.CriterionList
+import com.example.ranking.data.CriterionScore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 /**
  * GERÇEK Emre Usulü Sıralama Sistemi
@@ -28,7 +32,13 @@ object EmreSystemCorrect {
         var preRoundPosition: Int = 0,          // 🆕 Tur öncesi anlık sıralama (tiebreaker için)
         var byePassed: Boolean = false,         // Bye geçti mi?
         var byeCount: Int = 0,                  // 🆕 Kaç kere bye geçti (maksimum 1)
-        var secondaryPoints: Double = 0.0       // 🆕 İkincil puan (H2H) - UI gösterimi için
+        var secondaryPoints: Double = 0.0,      // 🆕 İkincil puan (H2H) - UI gösterimi için
+        
+        // 🆕 KRİTER SİSTEMİ YENİ ALANLAR
+        var criteriaScores: MutableMap<String, Double> = mutableMapOf(),  // Her kriter için toplam puan
+        var criteriaMatchCount: MutableMap<String, Int> = mutableMapOf(),  // Her kriter için kaç maçta puanlandı
+        var compositeCriteriaScore: Double = 0.0,                         // Ağırlıklı kriter puanı
+        var normalizedCriteriaScores: MutableMap<String, Double> = mutableMapOf()  // Normalize edilmiş kriter puanları
     ) {
         val id: Long get() = song.id
         
@@ -42,8 +52,38 @@ object EmreSystemCorrect {
                 preRoundPosition = preRoundPosition,
                 byePassed = byePassed,
                 byeCount = byeCount,
-                secondaryPoints = secondaryPoints
+                secondaryPoints = secondaryPoints,
+                criteriaScores = criteriaScores.toMutableMap(),
+                criteriaMatchCount = criteriaMatchCount.toMutableMap(),
+                compositeCriteriaScore = compositeCriteriaScore,
+                normalizedCriteriaScores = normalizedCriteriaScores.toMutableMap()
             )
+        }
+        
+        // 🆕 KRİTER PUAN HESAPLAMA FONKSİYONLARI
+        fun addCriteriaScore(criterionName: String, score: Double) {
+            criteriaScores[criterionName] = (criteriaScores[criterionName] ?: 0.0) + score
+            criteriaMatchCount[criterionName] = (criteriaMatchCount[criterionName] ?: 0) + 1
+        }
+        
+        fun getAverageCriteriaScore(criterionName: String): Double {
+            val totalScore = criteriaScores[criterionName] ?: 0.0
+            val matchCount = criteriaMatchCount[criterionName] ?: 0
+            return if (matchCount > 0) totalScore / matchCount else 0.0
+        }
+        
+        fun calculateCompositeCriteriaScore(criteriaWeights: Map<String, Double>): Double {
+            var totalWeightedScore = 0.0
+            var totalWeight = 0.0
+            
+            criteriaWeights.forEach { (criterionName, weight) ->
+                val avgScore = getAverageCriteriaScore(criterionName)
+                totalWeightedScore += avgScore * weight
+                totalWeight += weight
+            }
+            
+            compositeCriteriaScore = if (totalWeight > 0) totalWeightedScore / totalWeight else 0.0
+            return compositeCriteriaScore
         }
     }
     
@@ -51,7 +91,14 @@ object EmreSystemCorrect {
         val teams: List<EmreTeam>,
         val matchHistory: Set<Pair<Long, Long>> = emptySet(), // Oynanan eşleşmeler
         val currentRound: Int = 1,
-        val isComplete: Boolean = false
+        val isComplete: Boolean = false,
+        
+        // 🆕 KRİTER SİSTEMİ ENTEGRASYONU
+        val criterionList: CriterionList? = null,              // Kullanılan kriter listesi
+        val criteriaNames: List<String> = emptyList(),         // Parse edilmiş kriter isimleri
+        val criteriaWeights: Map<String, Double> = emptyMap(), // Her kriterin ağırlığı (varsayılan: eşit)
+        val useCriteriaForTiebreaking: Boolean = false,        // Eşitlik durumunda kriter kullanılsın mı?
+        val criteriaInfluenceFactor: Double = 0.1              // Kriter etkisinin ana puanlamadaki ağırlığı (0.0-1.0)
     )
     
     data class EmrePairingResult(
@@ -112,9 +159,9 @@ object EmreSystemCorrect {
     }
     
     /**
-     * Emre turnuvası başlat
+     * Emre turnuvası başlat - Kriter sistemi ile
      */
-    fun initializeEmreTournament(songs: List<Song>): EmreState {
+    fun initializeEmreTournament(songs: List<Song>, criterionList: CriterionList? = null): EmreState {
         val teams = songs.mapIndexed { index, song ->
             EmreTeam(
                 song = song, 
@@ -132,11 +179,40 @@ object EmreSystemCorrect {
             android.util.Log.d("EmreSystemCorrect", "📋 TEAM: ID=${team.teamId}, Position=${team.currentPosition}, PreRound=${team.preRoundPosition}")
         }
         
+        // 🆕 Kriter listesini parse et
+        val criteriaNames = criterionList?.let { list ->
+            try {
+                val gson = Gson()
+                val listType = object : TypeToken<List<String>>() {}.type
+                gson.fromJson<List<String>>(list.criteria, listType)
+            } catch (e: Exception) {
+                android.util.Log.e("EmreSystemCorrect", "❌ CRITERIA PARSING ERROR: ${e.message}")
+                emptyList()
+            }
+        } ?: emptyList()
+        
+        // 🆕 Eşit ağırlıklar oluştur (varsayılan)
+        val criteriaWeights = if (criteriaNames.isNotEmpty()) {
+            val equalWeight = 1.0 / criteriaNames.size
+            criteriaNames.associateWith { equalWeight }
+        } else {
+            emptyMap()
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🏁 TOURNAMENT INITIALIZED: ${teams.size} teams with criteria support")
+        android.util.Log.d("EmreSystemCorrect", "📊 CRITERIA: ${criteriaNames.joinToString(", ")}")
+        android.util.Log.d("EmreSystemCorrect", "⚖️ WEIGHTS: $criteriaWeights")
+        
         return EmreState(
             teams = teams,
             matchHistory = emptySet(),
             currentRound = 1,
-            isComplete = false
+            isComplete = false,
+            criterionList = criterionList,
+            criteriaNames = criteriaNames,
+            criteriaWeights = criteriaWeights,
+            useCriteriaForTiebreaking = criterionList != null,
+            criteriaInfluenceFactor = if (criterionList != null) 0.1 else 0.0
         )
     }
     
@@ -2846,5 +2922,139 @@ object EmreSystemCorrect {
     }
     
     // hasTeamsPlayedBefore fonksiyonu mevcut - line 1784'te tanımlı
+    
+    // ===================================================================================
+    // 🆕 KRİTER SİSTEMİ ENTEGRASYON FONKSİYONLARI
+    // ===================================================================================
+    
+    /**
+     * Maç sonuçlarını kriter puanları ile birlikte işle
+     */
+    fun processMatchResultWithCriteria(
+        state: EmreState,
+        match: Match,
+        criteriaScores: List<CriterionScore>
+    ): EmreState {
+        android.util.Log.d("EmreSystemCorrect", "🎯 PROCESSING MATCH RESULT WITH CRITERIA")
+        android.util.Log.d("EmreSystemCorrect", "📊 Criteria scores: ${criteriaScores.size} entries")
+        
+        val updatedTeams = state.teams.map { team ->
+            val updatedTeam = team.deepCopy()
+            
+            // Eğer bu takım maçta oynamışsa kriter puanlarını ekle
+            val isTeam1 = team.song.id == match.songId1
+            val isTeam2 = team.song.id == match.songId2
+            
+            if (isTeam1 || isTeam2) {
+                criteriaScores.forEach { criterionScore ->
+                    val score = if (isTeam1) {
+                        criterionScore.team1Score ?: 0.0
+                    } else {
+                        criterionScore.team2Score ?: 0.0
+                    }
+                    
+                    updatedTeam.addCriteriaScore(criterionScore.criterionName, score)
+                    android.util.Log.d("EmreSystemCorrect", "📈 ${team.song.name}: ${criterionScore.criterionName} = $score")
+                }
+                
+                // Composite kriter puanını güncelle
+                updatedTeam.calculateCompositeCriteriaScore(state.criteriaWeights)
+            }
+            
+            updatedTeam
+        }
+        
+        return state.copy(teams = updatedTeams)
+    }
+    
+    /**
+     * Kriter puanları ile gelişmiş sıralama algoritması
+     * 
+     * Sıralama Kriterleri (öncelik sırası):
+     * 1. Ana puan (match wins)
+     * 2. Kriter puanı (composite score) - eğer kullanımda ise
+     * 3. Tiebreaker (preRoundPosition)
+     */
+    fun rankTeamsWithCriteria(teams: List<EmreTeam>, state: EmreState): List<EmreTeam> {
+        return teams.sortedWith { team1, team2 ->
+            // 1. Ana puan karşılaştırması
+            val pointComparison = team2.points.compareTo(team1.points)
+            if (pointComparison != 0) return@sortedWith pointComparison
+            
+            // 2. Kriter puanı karşılaştırması (eğer kriteria sistemi aktif ise)
+            if (state.useCriteriaForTiebreaking && state.criteriaNames.isNotEmpty()) {
+                val criteriaComparison = team2.compositeCriteriaScore.compareTo(team1.compositeCriteriaScore)
+                if (criteriaComparison != 0) {
+                    android.util.Log.d("EmreSystemCorrect", "🏆 CRITERIA TIEBREAK: ${team2.song.name}(${team2.compositeCriteriaScore}) vs ${team1.song.name}(${team1.compositeCriteriaScore})")
+                    return@sortedWith criteriaComparison
+                }
+            }
+            
+            // 3. Tiebreaker (preRoundPosition - düşük değer önde)
+            team1.preRoundPosition.compareTo(team2.preRoundPosition)
+        }.mapIndexed { index, team ->
+            team.deepCopy().apply {
+                currentPosition = index + 1
+            }
+        }
+    }
+    
+    /**
+     * Hibrit puanlama sistemi: Ana puan + Kriter etkisi
+     * 
+     * Hibrit Puan = Ana Puan + (Kriter Puanı * Etki Faktörü)
+     * 
+     * @param state Turnuva durumu
+     * @return Hibrit puanlama ile güncellenmiş takımlar
+     */
+    fun calculateHybridScoring(state: EmreState): List<EmreTeam> {
+        if (!state.useCriteriaForTiebreaking || state.criteriaInfluenceFactor <= 0.0) {
+            // Kriter sistemi kapalı, normal sıralama
+            return state.teams
+        }
+        
+        android.util.Log.d("EmreSystemCorrect", "🔀 CALCULATING HYBRID SCORING (influence: ${state.criteriaInfluenceFactor})")
+        
+        return state.teams.map { team ->
+            val hybridScore = team.points + (team.compositeCriteriaScore * state.criteriaInfluenceFactor / 100.0)
+            
+            android.util.Log.d("EmreSystemCorrect", "📊 ${team.song.name}: Base=${team.points}, Criteria=${team.compositeCriteriaScore}, Hybrid=${hybridScore}")
+            
+            team.deepCopy().apply {
+                // Hibrit puanı secondaryPoints alanında sakla (UI gösterimi için)
+                secondaryPoints = hybridScore
+            }
+        }
+    }
+    
+    /**
+     * Normalize et kriter puanlarını (0-1 arası)
+     */
+    fun normalizeCriteriaScores(teams: List<EmreTeam>, criteriaNames: List<String>): List<EmreTeam> {
+        if (criteriaNames.isEmpty()) return teams
+        
+        android.util.Log.d("EmreSystemCorrect", "📏 NORMALIZING CRITERIA SCORES")
+        
+        criteriaNames.forEach { criterionName ->
+            val scores = teams.mapNotNull { it.getAverageCriteriaScore(criterionName).takeIf { score -> score > 0.0 } }
+            if (scores.isEmpty()) return@forEach
+            
+            val minScore = scores.minOrNull() ?: 0.0
+            val maxScore = scores.maxOrNull() ?: 0.0
+            val range = maxScore - minScore
+            
+            if (range > 0.0) {
+                teams.forEach { team ->
+                    val originalScore = team.getAverageCriteriaScore(criterionName)
+                    val normalizedScore = (originalScore - minScore) / range
+                    team.normalizedCriteriaScores[criterionName] = normalizedScore
+                    
+                    android.util.Log.d("EmreSystemCorrect", "📐 ${team.song.name} $criterionName: $originalScore → $normalizedScore")
+                }
+            }
+        }
+        
+        return teams
+    }
 
 }

@@ -27,4 +27,40 @@ class ActiveTournamentsViewModel(application: Application) : AndroidViewModel(ap
             }
         }
     }
+    
+    fun deleteTournament(tournament: Tournament) {
+        viewModelScope.launch {
+            try {
+                // Turnuva ile ilişkili tüm verileri sil
+                deleteTournamentRelatedData(tournament.id)
+                
+                // Turnuvayı sil
+                database.tournamentDao().deleteTournament(tournament)
+                
+                android.util.Log.d("ActiveTournamentsViewModel", "Tournament deleted: ${tournament.name}")
+            } catch (e: Exception) {
+                android.util.Log.e("ActiveTournamentsViewModel", "Error deleting tournament: ${e.message}", e)
+            }
+        }
+    }
+    
+    private suspend fun deleteTournamentRelatedData(tournamentId: Long) {
+        try {
+            // Turnuva ile ilişkili maçları sil
+            val matches = database.matchDao().getMatchesByTournamentId(tournamentId)
+            matches.forEach { match ->
+                database.matchDao().updateMatch(match.copy(tournamentId = null))
+            }
+            
+            // Kriter skorlarını sil
+            val criterionScores = database.criterionScoreDao().getCriterionScoresByTournament(tournamentId)
+            criterionScores.forEach { score ->
+                database.criterionScoreDao().deleteCriterionScore(score)
+            }
+            
+            android.util.Log.d("ActiveTournamentsViewModel", "Deleted related data for tournament: $tournamentId")
+        } catch (e: Exception) {
+            android.util.Log.e("ActiveTournamentsViewModel", "Error deleting tournament related data: ${e.message}", e)
+        }
+    }
 }

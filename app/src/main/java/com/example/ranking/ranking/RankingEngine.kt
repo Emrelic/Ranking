@@ -3,6 +3,8 @@ package com.example.ranking.ranking
 import com.example.ranking.data.Song
 import com.example.ranking.data.Match
 import com.example.ranking.data.RankingResult
+import com.example.ranking.data.CriterionList
+import com.example.ranking.data.CriterionScore
 import kotlin.math.ceil
 import kotlin.math.log2
 import kotlin.math.pow
@@ -729,22 +731,61 @@ object RankingEngine {
     }
     
     /**
-     * DOĞRU Emre Usulü Sistemi - Yeniden yazılan algoritma
+     * DOĞRU Emre Usulü Sistemi - Kriter sistemi ile
      */
-    fun createCorrectEmreMatches(songs: List<Song>, state: EmreSystemCorrect.EmreState?): EmreSystemCorrect.EmrePairingResult {
-        val currentState = state ?: EmreSystemCorrect.initializeEmreTournament(songs)
+    fun createCorrectEmreMatches(
+        songs: List<Song>, 
+        state: EmreSystemCorrect.EmreState?,
+        criterionList: CriterionList? = null
+    ): EmreSystemCorrect.EmrePairingResult {
+        val currentState = state ?: EmreSystemCorrect.initializeEmreTournament(songs, criterionList)
         return EmreSystemCorrect.createNextRoundWithConfirmation(currentState)
     }
     
     /**
-     * Doğru Emre sistemi için sonuçları işle
+     * Doğru Emre sistemi için sonuçları işle - Kriter sistemi ile
      */
     fun processCorrectEmreResults(
         state: EmreSystemCorrect.EmreState, 
         completedMatches: List<Match>,
-        byeTeam: EmreSystemCorrect.EmreTeam?
+        byeTeam: EmreSystemCorrect.EmreTeam?,
+        allCriteriaScores: List<CriterionScore> = emptyList()
     ): EmreSystemCorrect.EmreState {
-        return EmreSystemCorrect.processRoundResults(state, completedMatches, byeTeam)
+        var updatedState = EmreSystemCorrect.processRoundResults(state, completedMatches, byeTeam)
+        
+        // 🆕 Eğer kriter puanları varsa bunları işle
+        if (allCriteriaScores.isNotEmpty() && state.criterionList != null) {
+            android.util.Log.d("RankingEngine", "🎯 PROCESSING CRITERIA SCORES: ${allCriteriaScores.size} entries")
+            
+            completedMatches.forEach { match ->
+                val matchCriteriaScores = allCriteriaScores.filter { it.matchId == match.id }
+                if (matchCriteriaScores.isNotEmpty()) {
+                    updatedState = EmreSystemCorrect.processMatchResultWithCriteria(
+                        updatedState, 
+                        match, 
+                        matchCriteriaScores
+                    )
+                }
+            }
+            
+            // Kriter puanları normalize et
+            val normalizedTeams = EmreSystemCorrect.normalizeCriteriaScores(
+                updatedState.teams, 
+                updatedState.criteriaNames
+            )
+            
+            // Hibrit puanlama hesapla
+            val hybridTeams = EmreSystemCorrect.calculateHybridScoring(
+                updatedState.copy(teams = normalizedTeams)
+            )
+            
+            // Kriter tabanlı sıralama yap
+            val rankedTeams = EmreSystemCorrect.rankTeamsWithCriteria(hybridTeams, updatedState)
+            
+            updatedState = updatedState.copy(teams = rankedTeams)
+        }
+        
+        return updatedState
     }
     
     /**
