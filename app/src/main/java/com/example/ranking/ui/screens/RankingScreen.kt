@@ -1366,7 +1366,7 @@ private fun getMethodTitle(method: String): String {
 // ===================================================================================
 
 /**
- * Kriter puanlama dialog'u
+ * Kriter puanlama tam ekran sayfası - Kıyaslamalı ve Ayrı Ayrı puanlama desteği ile
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1380,72 +1380,160 @@ fun CriteriaScoringDialog(
     var criteriaScores by remember { 
         mutableStateOf(criteriaNames.associateWith { Pair(null as Double?, null as Double?) }) 
     }
+    var isComparative by remember { mutableStateOf(false) }
+    var maxPoints by remember { mutableStateOf(100) }
     
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(
-                "Kriter Puanlaması",
-                style = MaterialTheme.typography.headlineSmall
+    // Tam ekran Surface ile wrap etelim
+    Surface(
+        modifier = Modifier
+            .fillMaxSize()
+            .systemBarsPadding(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header bar
+            TopAppBar(
+                title = { 
+                    Text("📊 Kriter Puanlaması") 
+                },
+                navigationIcon = {
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
+                },
+                actions = {
+                    TextButton(
+                        onClick = { onSave(criteriaScores) },
+                        enabled = criteriaScores.all { (_, scores) -> 
+                            scores.first != null && scores.second != null 
+                        }
+                    ) {
+                        Text("Kaydet", fontWeight = FontWeight.Bold)
+                    }
+                }
             )
-        },
-        text = {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+            
+            // Settings bar
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 400.dp)
+                    .padding(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
             ) {
-                item {
-                    Text(
-                        "Her kriter için takımları 1-100 arası puanlayın:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                
-                items(criteriaNames) { criterionName ->
-                    CriterionScoringItem(
-                        criterionName = criterionName,
-                        team1Name = team1Name,
-                        team2Name = team2Name,
-                        team1Score = criteriaScores[criterionName]?.first,
-                        team2Score = criteriaScores[criterionName]?.second,
-                        onTeam1ScoreChange = { score ->
-                            val currentPair = criteriaScores[criterionName] ?: Pair(null, null)
-                            criteriaScores = criteriaScores + (criterionName to currentPair.copy(first = score))
-                        },
-                        onTeam2ScoreChange = { score ->
-                            val currentPair = criteriaScores[criterionName] ?: Pair(null, null)
-                            criteriaScores = criteriaScores + (criterionName to currentPair.copy(second = score))
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Puanlama Modu",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = if (isComparative) "Kıyaslamalı (Puan bölüştürme)" else "Ayrı Ayrı (Bağımsız puanlama)",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                            )
                         }
-                    )
+                        
+                        Switch(
+                            checked = isComparative,
+                            onCheckedChange = { 
+                                isComparative = it
+                                if (it) {
+                                    // Kıyaslamalı moda geçerken skorları temizle
+                                    criteriaScores = criteriaNames.associateWith { Pair(null as Double?, null as Double?) }
+                                }
+                            }
+                        )
+                    }
+                    
+                    if (isComparative) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text("Toplam Puan:", style = MaterialTheme.typography.bodyMedium)
+                            
+                            OutlinedTextField(
+                                value = maxPoints.toString(),
+                                onValueChange = { 
+                                    val newPoints = it.toIntOrNull()
+                                    if (newPoints != null && newPoints > 0 && newPoints <= 1000) {
+                                        maxPoints = newPoints
+                                        // Skorları temizle
+                                        criteriaScores = criteriaNames.associateWith { Pair(null as Double?, null as Double?) }
+                                    }
+                                },
+                                label = { Text("Puan") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                modifier = Modifier.width(80.dp),
+                                singleLine = true
+                            )
+                        }
+                    }
                 }
             }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onSave(criteriaScores) },
-                enabled = criteriaScores.all { (_, scores) -> 
-                    scores.first != null && scores.second != null 
-                }
+            
+            // Criteria list - Scroll olmadan daha fazla görünsün
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp), // Daha kompakt spacing
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
-                Text("Kaydet")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("İptal")
+                items(criteriaNames) { criterionName ->
+                    if (isComparative) {
+                        ComparativeCriterionScoringItem(
+                            criterionName = criterionName,
+                            team1Name = team1Name,
+                            team2Name = team2Name,
+                            maxPoints = maxPoints,
+                            team1Score = criteriaScores[criterionName]?.first,
+                            team2Score = criteriaScores[criterionName]?.second,
+                            onScoresChange = { score1, score2 ->
+                                criteriaScores = criteriaScores + (criterionName to Pair(score1, score2))
+                            }
+                        )
+                    } else {
+                        IndependentCriterionScoringItem(
+                            criterionName = criterionName,
+                            team1Name = team1Name,
+                            team2Name = team2Name,
+                            team1Score = criteriaScores[criterionName]?.first,
+                            team2Score = criteriaScores[criterionName]?.second,
+                            onTeam1ScoreChange = { score ->
+                                val currentPair = criteriaScores[criterionName] ?: Pair(null, null)
+                                criteriaScores = criteriaScores + (criterionName to currentPair.copy(first = score))
+                            },
+                            onTeam2ScoreChange = { score ->
+                                val currentPair = criteriaScores[criterionName] ?: Pair(null, null)
+                                criteriaScores = criteriaScores + (criterionName to currentPair.copy(second = score))
+                            }
+                        )
+                    }
+                }
             }
         }
-    )
+    }
 }
 
 /**
- * Tek kriter puanlama bileşeni
+ * Bağımsız kriter puanlama bileşeni - Ayrı ayrı puanlama modu için
  */
 @Composable
-fun CriterionScoringItem(
+fun IndependentCriterionScoringItem(
     criterionName: String,
     team1Name: String,
     team2Name: String,
@@ -1554,6 +1642,170 @@ fun CriterionScoringItem(
             }
             
             // Validation message kaldırıldı
+        }
+    }
+}
+
+/**
+ * Kıyaslamalı kriter puanlama bileşeni - Puan bölüştürme modu için
+ */
+@Composable
+fun ComparativeCriterionScoringItem(
+    criterionName: String,
+    team1Name: String,
+    team2Name: String,
+    maxPoints: Int,
+    team1Score: Double?,
+    team2Score: Double?,
+    onScoresChange: (Double?, Double?) -> Unit
+) {
+    var sliderValue by remember { mutableStateOf(maxPoints / 2f) }
+    
+    // Slider değeri değiştiğinde skorları güncelle
+    LaunchedEffect(sliderValue) {
+        val score1 = sliderValue.toDouble()
+        val score2 = (maxPoints - sliderValue).toDouble()
+        onScoresChange(if (score1 > 0) score1 else null, if (score2 > 0) score2 else null)
+    }
+    
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Kriter adı
+            Text(
+                text = criterionName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            // Takım isimleri ve skorları
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Team 1 info
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = team1Name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "${sliderValue.toInt()} puan",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                Text(
+                    "VS",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+                
+                // Team 2 info
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = team2Name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = "${(maxPoints - sliderValue).toInt()} puan",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+            
+            // Kayan slider
+            Column {
+                Slider(
+                    value = sliderValue,
+                    onValueChange = { sliderValue = it },
+                    valueRange = 0f..maxPoints.toFloat(),
+                    steps = maxPoints - 1,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f)
+                    )
+                )
+                
+                // Slider açıklaması
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${team1Name} favors",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Toplam: $maxPoints puan",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${team2Name} favors",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+            
+            // Hızlı preset butonları
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                listOf(
+                    "Eşit" to (maxPoints / 2f),
+                    "Hafif" to (maxPoints * 0.6f),
+                    "Güçlü" to (maxPoints * 0.8f),
+                    "Dominant" to (maxPoints * 0.9f)
+                ).forEach { (label, value) ->
+                    OutlinedButton(
+                        onClick = { sliderValue = value },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                    if (label != "Dominant") {
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                }
+            }
         }
     }
 }
