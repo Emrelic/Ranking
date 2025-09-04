@@ -3,6 +3,7 @@ package com.example.ranking.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -143,14 +144,21 @@ fun RankingScreen(
             )
         }
         
-        // 🆕 KRİTER PUANLAMA DIALOG ENTEGRASYONU
-        if (uiState.showCriteriaScoring && uiState.criteriaNames.isNotEmpty()) {
+        // 🆕 KRİTER PUANLAMA TAM EKRAN ENTEGRASYONU
+        if (uiState.showCriteriaScoring) {
             val currentMatch = uiState.currentMatch
             val song1 = uiState.song1
             val song2 = uiState.song2
             
-            if (currentMatch != null && song1 != null && song2 != null) {
-                CriteriaScoringDialog(
+            android.util.Log.d("RankingScreen", "🎯 CRITERIA DIALOG CONDITIONS:")
+            android.util.Log.d("RankingScreen", "showCriteriaScoring: ${uiState.showCriteriaScoring}")
+            android.util.Log.d("RankingScreen", "criteriaNames: ${uiState.criteriaNames}")
+            android.util.Log.d("RankingScreen", "currentMatch: $currentMatch")
+            android.util.Log.d("RankingScreen", "song1: ${song1?.name}")
+            android.util.Log.d("RankingScreen", "song2: ${song2?.name}")
+            
+            if (currentMatch != null && song1 != null && song2 != null && uiState.criteriaNames.isNotEmpty()) {
+                CriteriaScoringScreen(
                     criteriaNames = uiState.criteriaNames,
                     team1Name = song1.name,
                     team2Name = song2.name,
@@ -161,6 +169,10 @@ fun RankingScreen(
                         viewModel.closeCriteriaScoring()
                     }
                 )
+            } else {
+                // Fallback - hata durumunda dialog'u kapat
+                android.util.Log.e("RankingScreen", "❌ CRITERIA DIALOG CONDITIONS NOT MET - CLOSING")
+                viewModel.closeCriteriaScoring()
             }
         }
     }
@@ -1370,7 +1382,7 @@ private fun getMethodTitle(method: String): String {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CriteriaScoringDialog(
+fun CriteriaScoringScreen(
     criteriaNames: List<String>,
     team1Name: String,
     team2Name: String,
@@ -1382,6 +1394,7 @@ fun CriteriaScoringDialog(
     }
     var isComparative by remember { mutableStateOf(false) }
     var maxPoints by remember { mutableStateOf(100) }
+    var customPoints by remember { mutableStateOf("") }
     
     // Tam ekran Surface ile wrap etelim
     Surface(
@@ -1459,15 +1472,45 @@ fun CriteriaScoringDialog(
                     
                     if (isComparative) {
                         Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Puan Cetveli Seçenekleri
+                        Text("Toplam Puan Seçimi:", style = MaterialTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // Preset puan butonları
+                        val presetPoints = listOf(1, 2, 3, 5, 6, 7, 10, 20, 50, 100)
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(presetPoints) { points ->
+                                FilterChip(
+                                    onClick = {
+                                        maxPoints = points
+                                        customPoints = ""
+                                        // Skorları temizle
+                                        criteriaScores = criteriaNames.associateWith { Pair(null as Double?, null as Double?) }
+                                    },
+                                    label = { Text(points.toString()) },
+                                    selected = maxPoints == points && customPoints.isEmpty(),
+                                    modifier = Modifier.height(32.dp)
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        // Custom puan textbox
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("Toplam Puan:", style = MaterialTheme.typography.bodyMedium)
+                            Text("Özel:", style = MaterialTheme.typography.bodyMedium)
                             
                             OutlinedTextField(
-                                value = maxPoints.toString(),
+                                value = customPoints,
                                 onValueChange = { 
+                                    customPoints = it
                                     val newPoints = it.toIntOrNull()
                                     if (newPoints != null && newPoints > 0 && newPoints <= 1000) {
                                         maxPoints = newPoints
@@ -1476,8 +1519,9 @@ fun CriteriaScoringDialog(
                                     }
                                 },
                                 label = { Text("Puan") },
+                                placeholder = { Text("Örn: 15") },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                modifier = Modifier.width(80.dp),
+                                modifier = Modifier.width(100.dp),
                                 singleLine = true
                             )
                         }
@@ -1659,7 +1703,7 @@ fun ComparativeCriterionScoringItem(
     team2Score: Double?,
     onScoresChange: (Double?, Double?) -> Unit
 ) {
-    var sliderValue by remember { mutableStateOf(maxPoints / 2f) }
+    var sliderValue by remember { mutableStateOf(maxPoints * 0.53f) } // 53-47 varsayılan oranı
     
     // Slider değeri değiştiğinde skorları güncelle
     LaunchedEffect(sliderValue) {

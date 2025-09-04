@@ -68,55 +68,6 @@ fun SongListScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            Text(
-                text = "Klasik Sıralama Yöntemini Seçin:",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                RankingMethodButton(
-                    title = "Direkt Puanlama",
-                    description = "Her öğeye 0-100 arası puan verin",
-                    onClick = { onNavigateToRanking(listId, "DIRECT_SCORING") }
-                )
-                
-                RankingMethodButton(
-                    title = "Lig Sistemi",
-                    description = "Öğeler birbiri ile eşleşir, kazanan 2 puan alır",
-                    onClick = { onNavigateToLeagueSettings(listId, "LEAGUE") }
-                )
-                
-                RankingMethodButton(
-                    title = "Ön Eleme + Gruplu Eleme",
-                    description = "Önce gruplar, sonra elemeli turnuva",
-                    onClick = { onNavigateToRanking(listId, "ELIMINATION") }
-                )
-                
-                RankingMethodButton(
-                    title = "Tam Eleme Sistemi",
-                    description = "Tamamı elemeli turnuva sistemi",
-                    onClick = { onNavigateToRanking(listId, "FULL_ELIMINATION") }
-                )
-                
-                RankingMethodButton(
-                    title = "İsviçre Sistemi",
-                    description = "Eşit puanlı rakiplerle eşleşme sistemi",
-                    onClick = { onNavigateToRanking(listId, "SWISS") }
-                )
-                
-                RankingMethodButton(
-                    title = "Geliştirilmiş İsviçre Sistemi",
-                    description = "Puan bazlı eşleştirme ile adil sıralama - İlk tur eşleştirme seçeneği",
-                    onClick = { onNavigateToEmrePairingSettings(listId) }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
             
             Text(
                 text = "Öğe Listesi:",
@@ -166,34 +117,6 @@ fun SongListScreen(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun RankingMethodButton(
-    title: String,
-    description: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Medium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
