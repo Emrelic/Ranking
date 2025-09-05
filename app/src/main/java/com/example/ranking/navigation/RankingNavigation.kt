@@ -13,11 +13,13 @@ import com.example.ranking.ui.screens.*
 fun RankingNavigation(
     navController: NavHostController = rememberNavController()
 ) {
+    android.util.Log.d("RankingNavigation", "🗺️ RANKING NAVIGATION COMPOSABLE CALLED!")
     NavHost(
         navController = navController,
         startDestination = "main_menu"
     ) {
         composable("main_menu") {
+            android.util.Log.d("RankingNavigation", "🏠 MAIN_MENU COMPOSABLE REACHED!")
             MainMenuScreen(
                 onNavigateToLists = { navController.navigate("lists") },
                 onNavigateToCriteria = { navController.navigate("criteria") },

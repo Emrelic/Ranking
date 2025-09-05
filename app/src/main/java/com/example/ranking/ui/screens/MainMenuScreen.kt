@@ -25,6 +25,7 @@ fun MainMenuScreen(
     onNavigateToNewTournament: () -> Unit,
     viewModel: MainMenuViewModel = viewModel()
 ) {
+    android.util.Log.d("MainMenuScreen", "🏠 MAIN MENU SCREEN RENDERED!")
     val activeTournamentsCount by viewModel.activeTournamentsCount.collectAsState()
     val completedTournamentsCount by viewModel.completedTournamentsCount.collectAsState()
     val songListsCount by viewModel.songListsCount.collectAsState()

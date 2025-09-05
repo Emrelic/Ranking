@@ -2,6 +2,7 @@ package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
+import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -157,7 +159,9 @@ fun RankingScreen(
             android.util.Log.d("RankingScreen", "song1: ${song1?.name}")
             android.util.Log.d("RankingScreen", "song2: ${song2?.name}")
             
-            if (currentMatch != null && song1 != null && song2 != null && uiState.criteriaNames.isNotEmpty()) {
+            if (currentMatch != null && song1 != null && song2 != null) {
+                android.util.Log.d("RankingScreen", "🚀 CRITERIA SCORING SCREEN RENDERING!")
+                android.util.Log.d("RankingScreen", "criteriaNames.size: ${uiState.criteriaNames.size}")
                 CriteriaScoringScreen(
                     criteriaNames = uiState.criteriaNames,
                     team1Name = song1.name,
@@ -513,6 +517,20 @@ private fun MatchBasedContent(
             
             Spacer(modifier = Modifier.height(24.dp))
             
+            // TEST BUTONU - ALWAYS VISIBLE
+            Button(
+                onClick = { 
+                    android.util.Log.d("RankingScreen", "🔥 TEST BUTONU BASILDI!")
+                    viewModel.openCriteriaScoring()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+            ) {
+                Text("🔥 TEST KRİTER BUTONU", color = Color.White)
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
             if (useScores) {
                 // Score input mode
                 Column(
@@ -799,6 +817,24 @@ private fun MatchBasedContent(
                         }
                     }
                     
+                    // KRİTER PUANLAMA BUTONU - ÜST SIRADA
+                    if (method == "EMRE_CORRECT" && uiState.currentMatch != null && uiState.song1 != null && uiState.song2 != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { 
+                                android.util.Log.d("RankingScreen", "🚨 KRITER BUTONU BASILDI!")
+                                viewModel.openCriteriaScoring()
+                                android.util.Log.d("RankingScreen", "🚨 VIEWMODEL OPEN CRITERIA CALLED!")
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text("⭐ Kriter Puanlaması")
+                        }
+                    }
+                    
                     if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
                         val allowDraws = uiState.leagueSettings?.allowDraws ?: true
                         if (allowDraws) {
@@ -811,20 +847,6 @@ private fun MatchBasedContent(
                             ) {
                                 Text("Berabere")
                             }
-                        }
-                    }
-                    
-                    // 🆕 KRİTER PUANLAMA BUTONU
-                    if (method == "EMRE_CORRECT" && uiState.criteriaNames.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedButton(
-                            onClick = { viewModel.openCriteriaScoring() },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.tertiary
-                            )
-                        ) {
-                            Text("📊 Kriter Puanlaması")
                         }
                     }
                 }
@@ -1396,6 +1418,11 @@ fun CriteriaScoringScreen(
     var maxPoints by remember { mutableStateOf(100) }
     var customPoints by remember { mutableStateOf("") }
     
+    android.util.Log.d("CriteriaScoringScreen", "📊 CRITERIA SCORING SCREEN CREATED")
+    android.util.Log.d("CriteriaScoringScreen", "criteriaNames.size: ${criteriaNames.size}")
+    android.util.Log.d("CriteriaScoringScreen", "team1Name: $team1Name")
+    android.util.Log.d("CriteriaScoringScreen", "team2Name: $team2Name")
+    
     // Tam ekran Surface ile wrap etelim
     Surface(
         modifier = Modifier
@@ -1461,6 +1488,7 @@ fun CriteriaScoringScreen(
                         Switch(
                             checked = isComparative,
                             onCheckedChange = { 
+                                android.util.Log.d("CriteriaScoringScreen", "🔄 SWITCH TOGGLED: $it")
                                 isComparative = it
                                 if (it) {
                                     // Kıyaslamalı moda geçerken skorları temizle
@@ -1478,6 +1506,7 @@ fun CriteriaScoringScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         
                         // Preset puan butonları
+                        android.util.Log.d("CriteriaScoringScreen", "🔥 PRESET POINTS RENDERING!")
                         val presetPoints = listOf(1, 2, 3, 5, 6, 7, 10, 20, 50, 100)
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -1486,6 +1515,7 @@ fun CriteriaScoringScreen(
                             items(presetPoints) { points ->
                                 FilterChip(
                                     onClick = {
+                                        android.util.Log.d("CriteriaScoringScreen", "🎯 FILTERCHIP CLICKED: $points")
                                         maxPoints = points
                                         customPoints = ""
                                         // Skorları temizle
@@ -1703,7 +1733,10 @@ fun ComparativeCriterionScoringItem(
     team2Score: Double?,
     onScoresChange: (Double?, Double?) -> Unit
 ) {
-    var sliderValue by remember { mutableStateOf(maxPoints * 0.53f) } // 53-47 varsayılan oranı
+    var sliderValue by remember { 
+        android.util.Log.d("RankingScreen", "🎯 SLIDER DEFAULT: ${maxPoints * 0.53f} (53% of $maxPoints)")
+        mutableStateOf(maxPoints * 0.53f) 
+    } // 53-47 varsayılan oranı
     
     // Slider değeri değiştiğinde skorları güncelle
     LaunchedEffect(sliderValue) {

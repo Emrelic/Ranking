@@ -206,11 +206,20 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             emptyMap()
                         }
                         
+                        // 🆕 EMRE_CORRECT için test kriterleri yükle
+                        val defaultCriteria = if (method == "EMRE_CORRECT" && _uiState.value.criteriaNames.isEmpty()) {
+                            android.util.Log.w("RankingViewModel", "⚠️ EMRE_CORRECT detected with empty criteria - loading test criteria")
+                            listOf("Melodi", "Ritim", "Vokal", "Uyum")
+                        } else {
+                            _uiState.value.criteriaNames
+                        }
+                        
                         _uiState.value = _uiState.value.copy(
                             leagueSettings = settings,
                             currentSession = activeSession,
                             hasActiveSession = activeSession != null,
                             completedScores = completedScores,
+                            criteriaNames = defaultCriteria,
                             allSongs = songList,
                             method = method
                         )
@@ -1712,13 +1721,29 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val currentMatch = _uiState.value.currentMatch
         val criteriaNames = _uiState.value.criteriaNames
         
-        if (currentMatch != null && criteriaNames.isNotEmpty()) {
+        android.util.Log.d("RankingViewModel", "🔍 OPEN CRITERIA SCORING CONDITIONS:")
+        android.util.Log.d("RankingViewModel", "currentMatch: $currentMatch")
+        android.util.Log.d("RankingViewModel", "criteriaNames: $criteriaNames")
+        android.util.Log.d("RankingViewModel", "criteriaNames.size: ${criteriaNames.size}")
+        
+        if (currentMatch != null) {
             android.util.Log.d("RankingViewModel", "🎯 OPENING CRITERIA SCORING FOR MATCH: ${currentMatch.id}")
+            
+            // Eğer criteriaNames boşsa test için varsayılan kriterler kullan
+            val finalCriteriaNames = if (criteriaNames.isNotEmpty()) {
+                criteriaNames
+            } else {
+                android.util.Log.w("RankingViewModel", "⚠️ NO CRITERIA FOUND - USING TEST CRITERIA")
+                listOf("Melodi", "Ritim", "Vokal", "Uyum") // Test kriterleri
+            }
             
             _uiState.value = _uiState.value.copy(
                 showCriteriaScoring = true,
-                currentMatchCriteriaNames = criteriaNames
+                currentMatchCriteriaNames = finalCriteriaNames,
+                criteriaNames = finalCriteriaNames // UI state'i de güncelle
             )
+        } else {
+            android.util.Log.e("RankingViewModel", "❌ CANNOT OPEN CRITERIA SCORING - NO CURRENT MATCH")
         }
     }
     
