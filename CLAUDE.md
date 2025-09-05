@@ -114,13 +114,38 @@ adb logcat -s "EmreSystemCorrect"
 **📝 İSTİŞARE KAYDI:** `KRITERLER_ISTISARE.md` - 22 soru tamamlandı
 **🏁 COMMIT:** `b729de9` - Ana sayfa redesign + Kriterler sistemi
 
-### ⚠️ 2025-09-03 - TURNUVA SİSTEMİ İYİLEŞTİRMELERİ - DEVAM EDİYOR
-**Hedef:** Turnuva akışı ve sistem seçenekleri iyileştirme
+### ✅ 2025-09-03 - TURNUVA SİSTEMİ İYİLEŞTİRMELERİ - TAMAMLANDI
+**Hedef:** Turnuva akışı ve sistem seçenekleri iyileştirme ✅
 - ✅ NewTournamentScreen sistem seçenekleri genişletildi (6 sistem)
 - ✅ SongListScreen'deki klasik usuller NewTournament'a taşındı
 - ✅ Smart navigation sistemi: SWISS/EMRE_CORRECT → Tournament, diğerleri → Classic
 - ✅ Turnuvalar database'e kaydediliyor, Devam Eden Turnuvalar'da görünüyor
-- ⚠️ **SORUN**: TournamentRankingScreen açılıyor ama initialize edilmiyor
+- ✅ TournamentRankingViewModel initialize sorunu çözüldü
 
-**📝 COMMIT:** `df54110` - Navigation çalışıyor, initialize sorunu var
-**🔧 NEXT:** TournamentRankingViewModel initialize sorununu çözmek
+**📝 COMMIT:** `df54110` - Navigation sistemi tamamlandı
+
+### 🔄 2025-09-05 - KRİTER PUANLAMA SİSTEMİ DEBUG - DEVAM EDİYOR
+**Hedef:** Kriter puanlama butonu ve UI özelliklerini çalıştırmak
+- ✅ Kriter puanlama tam ekran sayfası implement edildi
+- ✅ %53-47 varsayılan slider değeri eklendi  
+- ✅ FilterChip puan seçenekleri (1,2,3,5,6,7,10,20,50,100) eklendi
+- ✅ Özel puan textbox eklendi
+- ✅ Kıyaslamalı/Ayrı ayrı puanlama modu switch'i eklendi
+- ✅ Comprehensive debug logging eklendi
+- ✅ systemBarsPadding import'u düzeltildi
+- ✅ Material3 components (FilterChip, Slider, Switch) eklendi
+
+**❌ MEVCUT SORUNLAR:**
+- Kriter butonu görünüyor ama tıklanamıyor/açılmıyor
+- UI güncellemeleri telefonda yansımıyor olabilir
+- Debug loglar button click'i yakalamıyor
+- APK versiyonu 2.1 yüklendi ama eski UI görünüyor
+
+**📝 COMMIT:** `f4ff2db` - Kriter puanlama sistemi debug
+**🔧 NEXT:** Button click sorununu çözmek ve kriter sayfasını aktif hale getirmek
+
+## Son Durum (2025-09-05)
+- 🎯 **Geliştirilmiş İsviçre Sistemi tamamen çalışır durumda**
+- 🎯 **Kriterler sistemi backend implementasyonu tamamlandı**
+- 🎯 **Ana sayfa redesign ve navigation yenilendi**  
+- ⚠️ **Kriter puanlama UI butonu tıklanmıyor - debug devam ediyor**
