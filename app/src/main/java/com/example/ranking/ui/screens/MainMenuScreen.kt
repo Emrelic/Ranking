@@ -99,7 +99,12 @@ fun MainMenuScreen(
                     title = "Kriterler",
                     description = "$criterionListsCount kriter listesi",
                     icon = Icons.Default.Star,
-                    onClick = onNavigateToCriteria,
+                    onClick = { 
+                        android.util.Log.d("MainMenuScreen", "🌟 KRİTERLER KARTINA BASILDI!")
+                        android.util.Log.d("MainMenuScreen", "🌟 onNavigateToCriteria çağrılıyor...")
+                        onNavigateToCriteria()
+                        android.util.Log.d("MainMenuScreen", "🌟 onNavigateToCriteria çağrıldı!")
+                    },
                     modifier = Modifier.weight(1f)
                 )
                 

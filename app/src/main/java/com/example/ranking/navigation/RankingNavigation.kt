@@ -1,6 +1,15 @@
 package com.example.ranking.navigation
 
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,7 +31,16 @@ fun RankingNavigation(
             android.util.Log.d("RankingNavigation", "🏠 MAIN_MENU COMPOSABLE REACHED!")
             MainMenuScreen(
                 onNavigateToLists = { navController.navigate("lists") },
-                onNavigateToCriteria = { navController.navigate("criteria") },
+                onNavigateToCriteria = { 
+                    android.util.Log.d("RankingNavigation", "🌟 NAVIGATE TO CRITERIA CLICKED!")
+                    android.util.Log.d("RankingNavigation", "🌟 Current backstack: ${navController.currentBackStackEntry?.destination?.route}")
+                    try {
+                        navController.navigate("criteria")
+                        android.util.Log.d("RankingNavigation", "🌟 Navigate criteria SUCCESSFUL!")
+                    } catch (e: Exception) {
+                        android.util.Log.e("RankingNavigation", "❌ Navigate criteria FAILED: ${e.message}", e)
+                    }
+                },
                 onNavigateToActiveTournaments = { navController.navigate("active_tournaments") },
                 onNavigateToArchive = { navController.navigate("archive") },
                 onNavigateToNewTournament = { navController.navigate("new_tournament_direct") }
@@ -38,11 +56,15 @@ fun RankingNavigation(
         }
         
         composable("criteria") {
-            CriteriaScreen(
+            android.util.Log.d("RankingNavigation", "🌟 CRİTERİA COMPOSABLE REACHED!")
+            
+            // SIFIRDAN BASIT KRITERLER SAYFASI
+            SimpleCriteriaScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToCreateCriteria = { navController.navigate("create_criteria") },
-                onNavigateToEditCriteria = { criteriaId -> navController.navigate("edit_criteria/$criteriaId") }
+                onNavigateToCreateCriteria = { navController.navigate("create_criteria") }
             )
+            
+            android.util.Log.d("RankingNavigation", "🌟 SIMPLE CRİTERİA SCREEN SUCCESS!")
         }
         
         composable("create_criteria") {
@@ -258,6 +280,67 @@ fun RankingNavigation(
         
         composable("test") {
             TestScreen()
+        }
+    }
+}
+
+// SIFIRDAN BASIT KRITERLER SAYFASI - ViewModel yok, sadece UI
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SimpleCriteriaScreen(
+    onNavigateBack: () -> Unit,
+    onNavigateToCreateCriteria: () -> Unit
+) {
+    android.util.Log.d("SimpleCriteriaScreen", "🎯 SIMPLE CRITERIA SCREEN BAŞLADI!")
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Kriterler") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToCreateCriteria) {
+                        Icon(Icons.Default.Add, contentDescription = "Yeni Kriter")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                Icons.Default.Star,
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Kriterler Sayfası",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Sıfırdan yazılan basit version",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(onClick = onNavigateToCreateCriteria) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Yeni Kriter Listesi Oluştur")
+            }
         }
     }
 }

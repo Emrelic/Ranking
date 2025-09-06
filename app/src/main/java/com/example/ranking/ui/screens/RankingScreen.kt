@@ -1,6 +1,7 @@
 package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,13 +18,14 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.data.Song
 import com.example.ranking.ui.viewmodel.RankingViewModel
@@ -147,7 +149,10 @@ fun RankingScreen(
         }
         
         // 🆕 KRİTER PUANLAMA TAM EKRAN ENTEGRASYONU
+        android.util.Log.d("RankingScreen", "🔍 CRITERIA CHECK - showCriteriaScoring: ${uiState.showCriteriaScoring}")
+        
         if (uiState.showCriteriaScoring) {
+            android.util.Log.d("RankingScreen", "🚨 CRITERIA DIALOG AÇILIYOR!")
             val currentMatch = uiState.currentMatch
             val song1 = uiState.song1
             val song2 = uiState.song2
@@ -517,18 +522,6 @@ private fun MatchBasedContent(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // TEST BUTONU - ALWAYS VISIBLE
-            Button(
-                onClick = { 
-                    android.util.Log.d("RankingScreen", "🔥 TEST BUTONU BASILDI!")
-                    viewModel.openCriteriaScoring()
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-            ) {
-                Text("🔥 TEST KRİTER BUTONU", color = Color.White)
-            }
-            
             Spacer(modifier = Modifier.height(16.dp))
             
             if (useScores) {
@@ -733,12 +726,42 @@ private fun MatchBasedContent(
                         }
                     }
                 
-                    Text(
-                        text = "VS",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                    // Berabere butonu VS yerine ortada (voting area)
+                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
+                        val allowDraws = uiState.leagueSettings?.allowDraws ?: true
+                        if (allowDraws) {
+                            Button(
+                                onClick = { onMatchResult(match.id, null) },
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .height(56.dp)
+                                    .width(140.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                )
+                            ) {
+                                Text(
+                                    "Berabere",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "VS",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "VS",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
                     
                     uiState.song2?.let { song2 ->
                         Box(
@@ -817,36 +840,41 @@ private fun MatchBasedContent(
                         }
                     }
                     
-                    // KRİTER PUANLAMA BUTONU - ÜST SIRADA
-                    if (method == "EMRE_CORRECT" && uiState.currentMatch != null && uiState.song1 != null && uiState.song2 != null) {
+                    // Ana kriter butonu - sadece kriter listeleri seçili ise görünür
+                    if (uiState.criteriaNames.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Button(
                             onClick = { 
-                                android.util.Log.d("RankingScreen", "🚨 KRITER BUTONU BASILDI!")
+                                android.util.Log.d("RankingScreen", "🔥 KRİTER BUTONU BASILDI!")
+                                android.util.Log.d("RankingScreen", "📊 criteriaNames.size: ${uiState.criteriaNames.size}")
+                                android.util.Log.d("RankingScreen", "📊 criteriaNames: ${uiState.criteriaNames}")
+                                android.util.Log.d("RankingScreen", "📊 currentMatch: ${uiState.currentMatch}")
+                                android.util.Log.d("RankingScreen", "📊 song1: ${uiState.song1?.name}")
+                                android.util.Log.d("RankingScreen", "📊 song2: ${uiState.song2?.name}")
                                 viewModel.openCriteriaScoring()
-                                android.util.Log.d("RankingScreen", "🚨 VIEWMODEL OPEN CRITERIA CALLED!")
+                                android.util.Log.d("RankingScreen", "📊 openCriteriaScoring() çağrıldı!")
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
+                                containerColor = MaterialTheme.colorScheme.tertiary
                             )
                         ) {
-                            Text("⭐ Kriter Puanlaması")
+                            Text("⭐ Kriterler Puanlaması")
                         }
-                    }
-                    
-                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
-                        val allowDraws = uiState.leagueSettings?.allowDraws ?: true
-                        if (allowDraws) {
-                            Button(
-                                onClick = { onMatchResult(match.id, null) },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary
-                                )
-                            ) {
-                                Text("Berabere")
-                            }
+                        
+                        // TEST BUTONU - showCriteriaScoring direkt true yap
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { 
+                                android.util.Log.d("RankingScreen", "🔥 TEST BUTONU - showCriteriaScoring = true!")
+                                viewModel.setShowCriteriaScoringForTest(true)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Red
+                            )
+                        ) {
+                            Text("TEST: Kriter Dialog Aç", color = Color.White)
                         }
                     }
                 }
@@ -1411,17 +1439,81 @@ fun CriteriaScoringScreen(
     onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
     onDismiss: () -> Unit
 ) {
+    android.util.Log.d("CriteriaScoringScreen", "🚀 CRITERIA SCORING SCREEN BAŞLADI!")
+    android.util.Log.d("CriteriaScoringScreen", "📊 criteriaNames.size: ${criteriaNames.size}")
+    android.util.Log.d("CriteriaScoringScreen", "📊 team1Name: $team1Name")
+    android.util.Log.d("CriteriaScoringScreen", "📊 team2Name: $team2Name")
+    
+    // BASIT TEST UI - render edildiğini görmek için - TAM EKRAN KIRMIZI
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Red) // TAM KIRMIZI - alpha yok
+            .zIndex(1000f) // En üstte olsun
+            .clickable { 
+                android.util.Log.d("CriteriaScoringScreen", "🔥 KIRMIZI ALAN TIKLANDI - KAPANIYOR!")
+                onDismiss() 
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.9f),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Yellow, // SARI ARKA PLAN ile fark edilir olsun
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp) // Yüksek elevation
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "🎯 KRİTER PUANLAMA SAYFASI",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "$team1Name vs $team2Name",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "${criteriaNames.size} kriter mevcut",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(onClick = onDismiss) {
+                    Text("Kapat")
+                }
+            }
+        }
+    }
+    
+    android.util.Log.d("CriteriaScoringScreen", "✅ BASIT TEST UI RENDER EDİLDİ!")
+}
+
+/* KOMPLEKS UI ŞIMDILIK YORUMDA - önce basit test çalıştır
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CriteriaScoringScreenComplexOLD(
+    criteriaNames: List<String>,
+    team1Name: String,
+    team2Name: String,
+    onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
+    onDismiss: () -> Unit
+) {
     var criteriaScores by remember { 
         mutableStateOf(criteriaNames.associateWith { Pair(null as Double?, null as Double?) }) 
     }
     var isComparative by remember { mutableStateOf(false) }
     var maxPoints by remember { mutableStateOf(100) }
     var customPoints by remember { mutableStateOf("") }
-    
-    android.util.Log.d("CriteriaScoringScreen", "📊 CRITERIA SCORING SCREEN CREATED")
-    android.util.Log.d("CriteriaScoringScreen", "criteriaNames.size: ${criteriaNames.size}")
-    android.util.Log.d("CriteriaScoringScreen", "team1Name: $team1Name")
-    android.util.Log.d("CriteriaScoringScreen", "team2Name: $team2Name")
     
     // Tam ekran Surface ile wrap etelim
     Surface(
@@ -1885,4 +1977,4 @@ fun ComparativeCriterionScoringItem(
             }
         }
     }
-}
+}*/

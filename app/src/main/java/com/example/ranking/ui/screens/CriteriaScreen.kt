@@ -25,29 +25,36 @@ fun CriteriaScreen(
     onNavigateToEditCriteria: (Long) -> Unit,
     viewModel: CriteriaViewModel = viewModel()
 ) {
+    android.util.Log.d("CriteriaScreen", "🌟 CRİTERİA SCREEN COMPOSABLE BAŞLADI!")
+    android.util.Log.d("CriteriaScreen", "🌟 viewModel: $viewModel")
     val criterionLists by viewModel.criterionLists.collectAsState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var listToDelete by remember { mutableStateOf<com.example.ranking.data.CriterionList?>(null) }
     var deleteError by remember { mutableStateOf<String?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        TopAppBar(
-            title = { Text("Kriterler") },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Kriterler") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToCreateCriteria) {
+                        Icon(Icons.Default.Add, contentDescription = "Yeni Kriter Listesi")
+                    }
                 }
-            },
-            actions = {
-                IconButton(onClick = onNavigateToCreateCriteria) {
-                    Icon(Icons.Default.Add, contentDescription = "Yeni Kriter Listesi")
-                }
-            }
-        )
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
+        ) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -150,6 +157,7 @@ fun CriteriaScreen(
                     }
                 }
             )
+        }
         }
     }
 }

@@ -1718,6 +1718,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
      * Kriter puanlama dialog'unu aç
      */
     fun openCriteriaScoring() {
+        android.util.Log.d("RankingViewModel", "🚀 openCriteriaScoring() BAŞLADI!")
         val currentMatch = _uiState.value.currentMatch
         val criteriaNames = _uiState.value.criteriaNames
         
@@ -1742,9 +1743,23 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 currentMatchCriteriaNames = finalCriteriaNames,
                 criteriaNames = finalCriteriaNames // UI state'i de güncelle
             )
+            
+            android.util.Log.d("RankingViewModel", "✅ UI STATE GÜNCELLENDI!")
+            android.util.Log.d("RankingViewModel", "✅ showCriteriaScoring: ${_uiState.value.showCriteriaScoring}")
+            android.util.Log.d("RankingViewModel", "✅ finalCriteriaNames.size: ${finalCriteriaNames.size}")
         } else {
             android.util.Log.e("RankingViewModel", "❌ CANNOT OPEN CRITERIA SCORING - NO CURRENT MATCH")
         }
+    }
+    
+    // TEST FONKSIYONU - showCriteriaScoring direkt set et
+    fun setShowCriteriaScoringForTest(show: Boolean) {
+        android.util.Log.d("RankingViewModel", "🧪 TEST: setShowCriteriaScoringForTest($show)")
+        _uiState.value = _uiState.value.copy(
+            showCriteriaScoring = show,
+            criteriaNames = if (show) listOf("Test Kriter 1", "Test Kriter 2", "Test Kriter 3") else emptyList()
+        )
+        android.util.Log.d("RankingViewModel", "🧪 TEST: showCriteriaScoring = ${_uiState.value.showCriteriaScoring}")
     }
     
     /**

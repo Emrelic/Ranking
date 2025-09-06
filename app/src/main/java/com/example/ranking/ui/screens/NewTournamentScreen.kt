@@ -3,7 +3,9 @@ package com.example.ranking.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -15,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.ui.viewmodel.NewTournamentViewModel
@@ -42,8 +45,8 @@ fun NewTournamentScreen(
     var useCriteria by remember { mutableStateOf(false) }
     var scoringType by remember { mutableStateOf("comparative") }
     var scoreScale by remember { mutableStateOf(10) }
-    var drawThresholdMin by remember { mutableStateOf(40) }
-    var drawThresholdMax by remember { mutableStateOf(60) }
+    var drawThresholdMin by remember { mutableStateOf(47) }
+    var drawThresholdMax by remember { mutableStateOf(53) }
     var autoWinnerFromCriteria by remember { mutableStateOf(false) }
     var autoOpenCriteriaPanel by remember { mutableStateOf(false) }
     var mandatoryCriteria by remember { mutableStateOf(false) }
@@ -598,12 +601,47 @@ private fun CriteriaSettingsStep(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Slider(
-                value = scoreScale.toFloat(),
-                onValueChange = { onScoreScaleChanged(it.toInt()) },
-                valueRange = 5f..100f,
-                steps = 18
-            )
+            
+            // Preset score scale buttons
+            val presetScales = listOf(1, 2, 3, 5, 7, 10, 20, 50, 100)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(presetScales) { scale ->
+                    FilterChip(
+                        onClick = { onScoreScaleChanged(scale) },
+                        label = { Text(scale.toString()) },
+                        selected = scoreScale == scale
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Custom scale input
+            var customScaleText by remember { mutableStateOf("") }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Özel:")
+                OutlinedTextField(
+                    value = customScaleText,
+                    onValueChange = { 
+                        customScaleText = it
+                        val customScale = it.toIntOrNull()
+                        if (customScale != null && customScale in 1..1000) {
+                            onScoreScaleChanged(customScale)
+                        }
+                    },
+                    label = { Text("Puan") },
+                    placeholder = { Text("Örn: 15") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.width(100.dp),
+                    singleLine = true
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
