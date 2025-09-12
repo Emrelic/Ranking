@@ -54,6 +54,10 @@ fun NewTournamentScreen(
     LaunchedEffect(selectedSongList, selectedSystemType, selectedCriterionList) {
         if (selectedSongList != null) {
             val systemName = when (selectedSystemType) {
+                "DIRECT_SCORING" -> "Direkt Puanlama"
+                "LEAGUE" -> "Lig"
+                "ELIMINATION" -> "Ön Eleme"
+                "FULL_ELIMINATION" -> "Tam Eleme"
                 "SWISS" -> "İsviçre"
                 "EMRE_CORRECT" -> "Geliştirilmiş İsviçre"
                 else -> selectedSystemType
@@ -343,6 +347,10 @@ private fun SystemTypeSelectionStep(
         Spacer(modifier = Modifier.height(16.dp))
 
         val systems = listOf(
+            "DIRECT_SCORING" to Pair("Direkt Puanlama", "Her öğeye 0-100 arası puan verin"),
+            "LEAGUE" to Pair("Lig Sistemi", "Öğeler birbiri ile eşleşir, kazanan 2 puan alır"),
+            "ELIMINATION" to Pair("Ön Eleme + Gruplu Eleme", "Önce gruplar, sonra elemeli turnuva"),
+            "FULL_ELIMINATION" to Pair("Tam Eleme Sistemi", "Tamamı elemeli turnuva sistemi"),
             "SWISS" to Pair("İsviçre Sistemi", "Eşit puanlı rakiplerle eşleşme sistemi"),
             "EMRE_CORRECT" to Pair("Geliştirilmiş İsviçre Sistemi", "Puan bazlı eşleştirme ile adil sıralama - İlk tur eşleştirme seçeneği")
         )

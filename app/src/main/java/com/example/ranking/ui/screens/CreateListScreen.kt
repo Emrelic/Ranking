@@ -124,7 +124,7 @@ fun CreateListScreen(
             when (selectedOption) {
                 "manual" -> {
                     Text(
-                        text = "Her satıra bir öğe yazın (Sanatçı - Albüm - Öğe veya Sanatçı - Öğe formatında)",
+                        text = "Desteklenen formatlar:\n• Her satıra bir öğe\n• Virgülle ayırılmış: öğe1, öğe2, öğe3\n• Excel'den kopyala-yapıştır (tab ayrımlı)\n• Format: Sanatçı - Albüm - Öğe veya Sanatçı - Öğe",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -136,7 +136,7 @@ fun CreateListScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp),
-                        placeholder = { Text("Örnek:\nAdele - 25 - Hello\nColdplay - X&Y - Fix You\nEd Sheeran - ÷ - Shape of You") },
+                        placeholder = { Text("Örnek:\nAdele - 25 - Hello\nColdplay - X&Y - Fix You\n\nVeya virgülle:\nHello, Fix You, Shape of You\n\nVeya Excel'den kopyala-yapıştır") },
                         maxLines = 10
                     )
                 }

@@ -66,7 +66,8 @@ class RankingRepository(
                     artist = csvSong.artist, 
                     album = csvSong.album,
                     trackNumber = csvSong.trackNumber,
-                    listId = listId
+                    listId = listId,
+                    csvData = csvSong.csvData
                 )
             }
             

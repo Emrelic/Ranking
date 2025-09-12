@@ -101,8 +101,8 @@ fun RankingNavigation(
             NewTournamentScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onTournamentCreated = { tournamentId ->
-                    // Navigate to tournament-based ranking
-                    navController.navigate("tournament_ranking/$tournamentId") {
+                    // Navigate based on system type
+                    navController.navigate("tournament_routing/$tournamentId") {
                         popUpTo("main_menu")
                     }
                 }
@@ -114,8 +114,26 @@ fun RankingNavigation(
             NewTournamentScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onTournamentCreated = { tournamentId ->
-                    // Navigate to tournament-based ranking
-                    navController.navigate("tournament_ranking/$tournamentId") {
+                    // TEMP: SIMPLEST WORKAROUND - go to main menu
+                    navController.navigate("main_menu") {
+                        popUpTo("main_menu")
+                    }
+                }
+            )
+        }
+        
+        // Tournament routing - redirect to appropriate screen based on system type
+        composable("tournament_routing/{tournamentId}") { backStackEntry ->
+            val tournamentId = backStackEntry.arguments?.getString("tournamentId")?.toLongOrNull() ?: 0L
+            TournamentRoutingScreen(
+                tournamentId = tournamentId,
+                onNavigateToTournamentRanking = { tId ->
+                    navController.navigate("tournament_ranking/$tId") {
+                        popUpTo("main_menu")
+                    }
+                },
+                onNavigateToClassicRanking = { listId, systemType ->
+                    navController.navigate("ranking/$listId/$systemType") {
                         popUpTo("main_menu")
                     }
                 }

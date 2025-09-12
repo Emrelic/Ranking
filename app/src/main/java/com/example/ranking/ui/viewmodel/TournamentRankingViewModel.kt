@@ -33,6 +33,7 @@ class TournamentRankingViewModel(application: Application) : AndroidViewModel(ap
     val showCriteriaDialog: StateFlow<Boolean> = _showCriteriaDialog.asStateFlow()
     
     fun initializeTournament(tournamentId: Long) {
+        android.util.Log.d("TournamentRankingViewModel", "initializeTournament called with ID: $tournamentId")
         viewModelScope.launch {
             try {
                 _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)

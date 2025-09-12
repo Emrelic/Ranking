@@ -11,5 +11,6 @@ data class Song(
     val artist: String = "",
     val album: String = "",
     val trackNumber: Int = 0,
-    val listId: Long
+    val listId: Long,
+    val csvData: String? = null // JSON formatted tabular data from CSV: {"column1": "value1", "column2": "value2"}
 )

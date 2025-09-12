@@ -49,9 +49,52 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                             return@launch
                         }
                         
-                        val lines = manualSongs.split("\n")
-                            .map { it.trim() }
-                            .filter { it.isNotBlank() }
+                        // Smart parsing: Handle different input formats
+                        Log.d("CreateListViewModel", "Raw input: '$manualSongs'")
+                        
+                        val lines = when {
+                            // CSV-style multi-line data (each line contains comma-separated values)
+                            manualSongs.contains("\n") && manualSongs.contains(",") -> {
+                                Log.d("CreateListViewModel", "Using CSV multi-line parsing - each line will be processed as comma-separated values")
+                                manualSongs.split("\n")
+                                    .map { it.trim() }
+                                    .filter { it.isNotBlank() }
+                                    .flatMap { line -> 
+                                        // Process each line individually as comma-separated
+                                        if (line.contains(",")) {
+                                            line.split(",").map { it.trim() }.filter { it.isNotBlank() }
+                                        } else {
+                                            listOf(line)
+                                        }
+                                    }
+                            }
+                            
+                            // Single line with comma separation: "Item1, Item2, Item3"
+                            manualSongs.contains(",") && !manualSongs.contains("\n") -> {
+                                Log.d("CreateListViewModel", "Using comma separation")
+                                manualSongs.split(",")
+                                    .map { it.trim() }
+                                    .filter { it.isNotBlank() }
+                            }
+                            
+                            // Tab separated (Excel copy-paste): "Item1	Item2	Item3"
+                            manualSongs.contains("\t") -> {
+                                Log.d("CreateListViewModel", "Using tab separation")
+                                manualSongs.split("\t")
+                                    .map { it.trim() }
+                                    .filter { it.isNotBlank() }
+                            }
+                            
+                            // Default: line separated
+                            else -> {
+                                Log.d("CreateListViewModel", "Using line separation")
+                                manualSongs.split("\n")
+                                    .map { it.trim() }
+                                    .filter { it.isNotBlank() }
+                            }
+                        }
+                        
+                        Log.d("CreateListViewModel", "Parsed lines: ${lines.joinToString(" | ")}")
                         
                         if (lines.isEmpty()) {
                             onError("Geçerli öğe bulunamadı")

@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.data.Song
 import com.example.ranking.ui.viewmodel.RankingViewModel
+import org.json.JSONObject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -496,21 +497,10 @@ private fun MatchBasedContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Column(
+                                TeamCardContent(
+                                    song = song1,
                                     modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(
-                                        text = song1.name,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    if (song1.artist.isNotBlank()) {
-                                        Text(
-                                            text = song1.artist,
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
-                                    }
-                                }
+                                )
                                 OutlinedTextField(
                                     value = score1Text,
                                     onValueChange = { 
@@ -545,21 +535,10 @@ private fun MatchBasedContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Column(
+                                TeamCardContent(
+                                    song = song2,
                                     modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(
-                                        text = song2.name,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    if (song2.artist.isNotBlank()) {
-                                        Text(
-                                            text = song2.artist,
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
-                                    }
-                                }
+                                )
                                 OutlinedTextField(
                                     value = score2Text,
                                     onValueChange = { 
@@ -1311,6 +1290,116 @@ private fun MatchingsListContent(
                 style = MaterialTheme.typography.labelLarge
             )
         }
+    }
+}
+
+@Composable
+private fun TeamCardContent(
+    song: Song,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+    ) {
+        // Ana başlık (song name)
+        Text(
+            text = song.name,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
+        
+        // Eğer artist varsa göster
+        if (song.artist.isNotBlank()) {
+            Text(
+                text = song.artist,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        
+        // CSV tabular data varsa küçük tablo göster
+        song.csvData?.let { csvData ->
+            if (csvData.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                CsvDataTable(csvData = csvData)
+            }
+        }
+    }
+}
+
+@Composable 
+private fun CsvDataTable(csvData: String) {
+    val parsedData = remember(csvData) {
+        parseCsvDataToMap(csvData)
+    }
+    
+    if (parsedData.isNotEmpty()) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                parsedData.forEach { (columnHeader, columnValue) ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Sütun başlığı (etiket)
+                        Text(
+                            text = "$columnHeader:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                        // Sütun değeri  
+                        Text(
+                            text = columnValue,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.End,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun parseCsvDataToMap(csvData: String): Map<String, String> {
+    return try {
+        val jsonObject = JSONObject(csvData)
+        val keys = jsonObject.keys().asSequence().toList()
+        val result = mutableMapOf<String, String>()
+        
+        // Her sütun başlığını satır etiketi yap, değerini karşısına yazdır
+        keys.forEach { key ->
+            val value = jsonObject.optString(key, "")
+            if (value.isNotBlank()) {
+                result[key] = value
+            }
+        }
+        
+        result
+    } catch (e: Exception) {
+        emptyMap()
     }
 }
 

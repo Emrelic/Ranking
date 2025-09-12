@@ -27,6 +27,8 @@ fun TournamentRankingScreen(
     viewModel: TournamentRankingViewModel = viewModel()
 ) {
     LaunchedEffect(tournamentId) {
+        android.util.Log.d("TournamentRankingScreen", "LaunchedEffect triggered for tournamentId: $tournamentId")
+        android.util.Log.d("TournamentRankingScreen", "ViewModel class: ${viewModel::class.java.simpleName}")
         viewModel.initializeTournament(tournamentId)
     }
     

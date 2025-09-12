@@ -16,11 +16,13 @@ class CsvReader {
         val trackNumber: Int = 0,
         val artist: String = "",
         val album: String = "",
-        val name: String
+        val name: String,
+        val csvData: String? = null // JSON formatted tabular data
     )
     
     suspend fun readCsvFromUri(context: Context, uri: Uri): List<CsvSong> {
         val songs = mutableListOf<CsvSong>()
+        var csvHeaders: List<String>? = null
         
         try {
             Log.d("CsvReader", "CSV dosyası açılıyor: $uri")
@@ -51,11 +53,9 @@ class CsvReader {
                         line?.let { currentLine ->
                             Log.d("CsvReader", "Satır $lineNumber (raw): $currentLine")
                             
-                            // Log the raw bytes of this line for debugging
-                            val lineBytes = currentLine.toByteArray(StandardCharsets.UTF_8)
-                            Log.d("CsvReader", "Satır bytes: ${lineBytes.joinToString(" ") { "%02X".format(it) }}")
+                            val normalizedLine = currentLine.trim().normalize()
                             
-                            // Skip header if it exists
+                            // Check if this is a header line
                             if (isFirstLine && (currentLine.lowercase().contains("öğe") || 
                                               currentLine.lowercase().contains("şarkı") || 
                                               currentLine.lowercase().contains("song") ||
@@ -64,16 +64,17 @@ class CsvReader {
                                               currentLine.lowercase().contains("albüm") ||
                                               currentLine.lowercase().contains("album") ||
                                               currentLine.lowercase().contains("numara"))) {
-                                Log.d("CsvReader", "Header satırı atlandı: $currentLine")
+                                // Parse header row to get column names
+                                csvHeaders = parseHeaderLine(normalizedLine)
+                                Log.d("CsvReader", "Header sütunları: ${csvHeaders?.joinToString(" | ")}")
                                 isFirstLine = false
                                 return@let
                             }
                             isFirstLine = false
                             
-                            val normalizedLine = currentLine.trim().normalize()
                             Log.d("CsvReader", "Normalize edilmiş satır: $normalizedLine")
                             
-                            val song = parseCsvLine(normalizedLine)
+                            val song = parseCsvLineWithHeaders(normalizedLine, csvHeaders)
                             if (song.name.isNotBlank()) {
                                 songs.add(song)
                                 Log.d("CsvReader", "Öğe eklendi: ${song.name} - ${song.artist}")
@@ -93,6 +94,77 @@ class CsvReader {
         }
         
         return songs
+    }
+    
+    private fun parseHeaderLine(line: String): List<String> {
+        if (line.isBlank()) return emptyList()
+        
+        // Handle different CSV separators (comma, semicolon, tab)
+        val separator = when {
+            line.contains(";") && line.count { it == ';' } > line.count { it == ',' } -> ";"
+            line.contains("\t") -> "\t"
+            else -> ","
+        }
+        
+        // Split and clean header parts
+        return line.split(separator).map { header ->
+            header.trim()
+                .removeSurrounding("\"")
+                .removeSurrounding("'")
+                .trim()
+                .normalize()
+        }
+    }
+    
+    private fun parseCsvLineWithHeaders(line: String, headers: List<String>?): CsvSong {
+        if (line.isBlank()) return CsvSong(name = "")
+        
+        // Handle different CSV separators (comma, semicolon, tab)
+        val separator = when {
+            line.contains(";") && line.count { it == ';' } > line.count { it == ',' } -> ";"
+            line.contains("\t") -> "\t"
+            else -> ","
+        }
+        
+        // Split and clean parts
+        val parts = line.split(separator).map { part ->
+            part.trim()
+                .removeSurrounding("\"")
+                .removeSurrounding("'")
+                .trim()
+                .normalize()
+        }
+        
+        Log.d("CsvReader", "Ayrıştırılan parçalar (${parts.size}): ${parts.joinToString(" | ")}")
+        
+        // Create JSON data from headers and values
+        val csvData = if (headers != null && headers.isNotEmpty() && parts.size >= headers.size) {
+            val dataMap = mutableMapOf<String, String>()
+            for (i in headers.indices) {
+                if (i < parts.size) {
+                    dataMap[headers[i]] = parts[i]
+                }
+            }
+            // Convert to JSON string (simple manual JSON creation for this case)
+            val jsonEntries = dataMap.map { "\"${it.key}\": \"${it.value.replace("\"", "\\\"")}\""  }
+            "{${jsonEntries.joinToString(", ")}}"
+        } else {
+            null
+        }
+        
+        Log.d("CsvReader", "Oluşturulan CSV data: $csvData")
+        
+        // Use existing logic for parsing basic fields
+        val baseSong = parseCsvLine(line)
+        
+        // Return CsvSong with CSV data
+        return CsvSong(
+            trackNumber = baseSong.trackNumber,
+            artist = baseSong.artist,
+            album = baseSong.album,
+            name = baseSong.name,
+            csvData = csvData
+        )
     }
     
     private fun parseCsvLine(line: String): CsvSong {
