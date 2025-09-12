@@ -49,72 +49,111 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                             return@launch
                         }
                         
-                        // Smart parsing: Handle different input formats
-                        Log.d("CreateListViewModel", "Raw input: '$manualSongs'")
+                        Log.d("CreateListViewModel", "Raw manual input: '$manualSongs'")
                         
-                        val lines = when {
-                            // CSV-style multi-line data (each line contains comma-separated values)
-                            manualSongs.contains("\n") && manualSongs.contains(",") -> {
-                                Log.d("CreateListViewModel", "Using CSV multi-line parsing - each line will be processed as comma-separated values")
-                                manualSongs.split("\n")
-                                    .map { it.trim() }
-                                    .filter { it.isNotBlank() }
-                                    .flatMap { line -> 
-                                        // Process each line individually as comma-separated
-                                        if (line.contains(",")) {
-                                            line.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                                        } else {
-                                            listOf(line)
+                        // Check if input looks like CSV table (has headers and multiple rows with commas)
+                        val inputLines = manualSongs.split("\n").map { it.trim() }.filter { it.isNotBlank() }
+                        val isCSVTable = inputLines.size >= 2 && 
+                                         inputLines.first().contains(",") && 
+                                         inputLines.drop(1).all { it.contains(",") }
+                        
+                        if (isCSVTable) {
+                            Log.d("CreateListViewModel", "Detected CSV table format - processing as structured data")
+                            
+                            try {
+                                val headers = inputLines.first().split(",").map { it.trim() }
+                                val dataRows = inputLines.drop(1)
+                                
+                                Log.d("CreateListViewModel", "CSV Headers: ${headers.joinToString(" | ")}")
+                                Log.d("CreateListViewModel", "CSV Data rows: ${dataRows.size}")
+                                
+                                // Find the name column (first non-empty header, or first column)
+                                val nameColumnIndex = 0 // Use first column as name
+                                val nameColumnHeader = if (nameColumnIndex < headers.size) headers[nameColumnIndex] else "Name"
+                                
+                                dataRows.forEachIndexed { index, row ->
+                                    val values = row.split(",").map { it.trim() }
+                                    
+                                    if (values.isNotEmpty() && values[0].isNotBlank()) {
+                                        val songName = values[0] // First column as song name
+                                        
+                                        // Create CSV data JSON for additional columns
+                                        val csvDataMap = mutableMapOf<String, String>()
+                                        for (i in headers.indices) {
+                                            if (i < values.size && values[i].isNotBlank()) {
+                                                csvDataMap[headers[i]] = values[i]
+                                            }
                                         }
+                                        
+                                        // Convert to JSON string
+                                        val csvDataJson = if (csvDataMap.size > 1) { // More than just name column
+                                            val jsonEntries = csvDataMap.map { "\"${it.key}\": \"${it.value.replace("\"", "\\\"")}\""  }
+                                            "{${jsonEntries.joinToString(", ")}}"
+                                        } else {
+                                            null
+                                        }
+                                        
+                                        Log.d("CreateListViewModel", "Row $index: Name='$songName', CSV data='$csvDataJson'")
+                                        
+                                        // Extract artist/album from known headers or use defaults
+                                        val artist = csvDataMap["Artist"] ?: csvDataMap["artist"] ?: 
+                                                   csvDataMap["Sanatçı"] ?: csvDataMap["sanatçı"] ?: ""
+                                        val album = csvDataMap["Album"] ?: csvDataMap["album"] ?: 
+                                                  csvDataMap["Albüm"] ?: csvDataMap["albüm"] ?: ""
+                                        
+                                        repository.addSongWithCsvData(listId, songName, artist, album, csvDataJson)
                                     }
-                            }
-                            
-                            // Single line with comma separation: "Item1, Item2, Item3"
-                            manualSongs.contains(",") && !manualSongs.contains("\n") -> {
-                                Log.d("CreateListViewModel", "Using comma separation")
-                                manualSongs.split(",")
-                                    .map { it.trim() }
-                                    .filter { it.isNotBlank() }
-                            }
-                            
-                            // Tab separated (Excel copy-paste): "Item1	Item2	Item3"
-                            manualSongs.contains("\t") -> {
-                                Log.d("CreateListViewModel", "Using tab separation")
-                                manualSongs.split("\t")
-                                    .map { it.trim() }
-                                    .filter { it.isNotBlank() }
-                            }
-                            
-                            // Default: line separated
-                            else -> {
-                                Log.d("CreateListViewModel", "Using line separation")
-                                manualSongs.split("\n")
-                                    .map { it.trim() }
-                                    .filter { it.isNotBlank() }
-                            }
-                        }
-                        
-                        Log.d("CreateListViewModel", "Parsed lines: ${lines.joinToString(" | ")}")
-                        
-                        if (lines.isEmpty()) {
-                            onError("Geçerli öğe bulunamadı")
-                            return@launch
-                        }
-                        
-                        lines.forEach { line ->
-                            val (songName, artist, album) = if (line.contains(" - ")) {
-                                val parts = line.split(" - ", limit = 3)
-                                when (parts.size) {
-                                    3 -> Triple(parts[2].trim(), parts[0].trim(), parts[1].trim())
-                                    2 -> Triple(parts[1].trim(), parts[0].trim(), "")
-                                    else -> Triple(line, "", "")
                                 }
-                            } else {
-                                Triple(line, "", "")
+                                
+                                Log.d("CreateListViewModel", "CSV table processing completed")
+                                
+                            } catch (e: Exception) {
+                                Log.e("CreateListViewModel", "CSV table parsing error: ${e.message}", e)
+                                onError("CSV tablo formatı işlenirken hata oluştu: ${e.message}")
+                                return@launch
                             }
                             
-                            if (songName.isNotBlank()) {
-                                repository.addSong(listId, songName, artist, album)
+                        } else {
+                            // Original simple parsing logic for non-CSV inputs
+                            Log.d("CreateListViewModel", "Using simple list parsing")
+                            
+                            val lines = when {
+                                // Single line with comma separation: "Item1, Item2, Item3"
+                                manualSongs.contains(",") && !manualSongs.contains("\n") -> {
+                                    manualSongs.split(",").map { it.trim() }.filter { it.isNotBlank() }
+                                }
+                                
+                                // Tab separated (Excel copy-paste): "Item1	Item2	Item3"
+                                manualSongs.contains("\t") -> {
+                                    manualSongs.split("\t").map { it.trim() }.filter { it.isNotBlank() }
+                                }
+                                
+                                // Default: line separated
+                                else -> {
+                                    manualSongs.split("\n").map { it.trim() }.filter { it.isNotBlank() }
+                                }
+                            }
+                            
+                            if (lines.isEmpty()) {
+                                onError("Geçerli öğe bulunamadı")
+                                return@launch
+                            }
+                            
+                            lines.forEach { line ->
+                                val (songName, artist, album) = if (line.contains(" - ")) {
+                                    val parts = line.split(" - ", limit = 3)
+                                    when (parts.size) {
+                                        3 -> Triple(parts[2].trim(), parts[0].trim(), parts[1].trim())
+                                        2 -> Triple(parts[1].trim(), parts[0].trim(), "")
+                                        else -> Triple(line, "", "")
+                                    }
+                                } else {
+                                    Triple(line, "", "")
+                                }
+                                
+                                if (songName.isNotBlank()) {
+                                    repository.addSong(listId, songName, artist, album)
+                                }
                             }
                         }
                     }

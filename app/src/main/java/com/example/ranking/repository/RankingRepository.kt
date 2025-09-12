@@ -50,6 +50,13 @@ class RankingRepository(
         return songId
     }
     
+    suspend fun addSongWithCsvData(listId: Long, name: String, artist: String = "", album: String = "", csvData: String? = null): Long {
+        val song = Song(name = name, artist = artist, album = album, trackNumber = 0, listId = listId, csvData = csvData)
+        val songId = songDao.insertSong(song)
+        updateSongCount(listId)
+        return songId
+    }
+    
     suspend fun importSongsFromCsv(context: Context, listId: Long, uri: Uri) {
         try {
             Log.d("RankingRepository", "CSV okuma başlıyor: $uri")
