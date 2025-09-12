@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -517,12 +518,26 @@ private fun MatchBasedContent(
                         }
                     }
                     
-                    Text(
-                        text = "VS",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                    // Vertical VS text (V above S)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = "V",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "S",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     
                     uiState.song2?.let { song2 ->
                         Card(
@@ -643,30 +658,45 @@ private fun MatchBasedContent(
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
-                                        .offset(x = 4.dp, y = 4.dp) // Tam köşeye yerleştir
+                                        .offset(x = 4.dp, y = 4.dp)
                                         .background(
-                                            Color(0xFFFF9800), // Turuncu/Amber
-                                            RoundedCornerShape(8.dp) // Küçük border radius
+                                            Color(0xFF4CAF50), // Green badge
+                                            CircleShape
                                         )
-                                        .padding(horizontal = 6.dp, vertical = 2.dp) // Kompakt padding
+                                        .padding(8.dp)
                                 ) {
                                     Text(
                                         text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = Color.White,
+                                        modifier = Modifier.align(Alignment.Center)
                                     )
                                 }
                             }
                         }
                     }
                 
-                    Text(
-                        text = "VS",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
+                    // Vertical VS text (V above S)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = "V",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "S",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     
                     uiState.song2?.let { song2 ->
                         Box(
@@ -727,18 +757,19 @@ private fun MatchBasedContent(
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
-                                        .offset(x = 4.dp, y = 4.dp) // Tam köşeye yerleştir
+                                        .offset(x = 4.dp, y = 4.dp)
                                         .background(
-                                            Color(0xFFFF9800), // Turuncu/Amber
-                                            RoundedCornerShape(8.dp) // Küçük border radius
+                                            Color(0xFF4CAF50), // Green badge
+                                            CircleShape
                                         )
-                                        .padding(horizontal = 6.dp, vertical = 2.dp) // Kompakt padding
+                                        .padding(8.dp)
                                 ) {
                                     Text(
                                         text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = Color.White,
+                                        modifier = Modifier.align(Alignment.Center)
                                     )
                                 }
                             }
@@ -1188,14 +1219,24 @@ private fun MatchingsListContent(
                             }
                         }
                         
-                        // VS
-                        Text(
-                            text = "VS",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
+                        // Vertical VS text (V above S)
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(horizontal = 4.dp)
-                        )
+                        ) {
+                            Text(
+                                text = "V",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = "S",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         
                         // İkinci takım Card
                         Card(
@@ -1338,47 +1379,41 @@ private fun CsvDataTable(csvData: String) {
     }
     
     if (parsedData.isNotEmpty()) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-            )
+        // Green table format with alternating rows
+        Column(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                parsedData.forEach { (columnHeader, columnValue) ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Top,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        // Sütun başlığı (etiket)
-                        Text(
-                            text = "$columnHeader:",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
-                        )
-                        // Sütun değeri  
-                        Text(
-                            text = columnValue,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.End,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+            parsedData.entries.forEachIndexed { index, (key, value) ->
+                val backgroundColor = when {
+                    index % 2 == 0 -> Color(0xFFE8F5E8) // Light green for even rows
+                    else -> Color(0xFFC8E6C9) // Medium green for odd rows
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(backgroundColor)
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = key,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF1B5E20), // Dark green text for visibility
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF1B5E20), // Dark green text for visibility
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             }
+            
+            // Empty spacer at bottom to prevent overlap
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
