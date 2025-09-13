@@ -31,6 +31,7 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
         manualSongs: String,
         csvUri: Uri?,
         csvDelimiter: String = ",",
+        displayMode: String = "cards",
         onSuccess: (Long) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -87,12 +88,20 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                                             }
                                         }
                                         
-                                        // Convert to JSON string
+                                        // Convert to JSON string with display mode metadata
                                         val csvDataJson = if (csvDataMap.size > 1) { // More than just name column
+                                            csvDataMap["_displayMode"] = displayMode // Add metadata
                                             val jsonEntries = csvDataMap.map { "\"${it.key}\": \"${it.value.replace("\"", "\\\"")}\""  }
                                             "{${jsonEntries.joinToString(", ")}}"
                                         } else {
-                                            null
+                                            // Even for single column, add displayMode if it's table format
+                                            if (displayMode == "table") {
+                                                csvDataMap["_displayMode"] = displayMode
+                                                val jsonEntries = csvDataMap.map { "\"${it.key}\": \"${it.value.replace("\"", "\\\"")}\""  }
+                                                "{${jsonEntries.joinToString(", ")}}"
+                                            } else {
+                                                null
+                                            }
                                         }
                                         
                                         Log.d("CreateListViewModel", "Row $index: Name='$songName', CSV data='$csvDataJson'")
@@ -168,7 +177,7 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                         
                         try {
                             Log.d("CreateListViewModel", "CSV dosyası yükleniyor: $csvUri")
-                            repository.importSongsFromCsv(context, listId, csvUri)
+                            repository.importSongsFromCsvWithDisplayMode(context, listId, csvUri, displayMode)
                             Log.d("CreateListViewModel", "CSV dosyası başarıyla yüklendi")
                         } catch (e: Exception) {
                             Log.e("CreateListViewModel", "CSV yükleme hatası: ${e.message}", e)

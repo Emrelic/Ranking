@@ -609,42 +609,12 @@ private fun MatchBasedContent(
                                     .fillMaxWidth()
                                     .fillMaxHeight()
                             ) {
-                                Column(
+                                TeamCardContent(
+                                    song = song1,
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp), // Eşit padding
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center // Ortada hizalama
-                                ) {
-                                    // Padişah ismi - BÜYÜK FONT - TAM GÖRÜNÜR
-                                    Text(
-                                        text = song1.name,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 2,
-                                        softWrap = true
-                                    )
-                                    if (song1.artist.isNotBlank()) {
-                                        Text(
-                                            text = song1.artist,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 1,
-                                            softWrap = true
-                                        )
-                                    }
-                                    if (song1.album.isNotBlank()) {
-                                        Text(
-                                            text = song1.album,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 1,
-                                            softWrap = true
-                                        )
-                                    }
-                                }
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
                             }
                             
                             // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
@@ -708,42 +678,12 @@ private fun MatchBasedContent(
                                     .fillMaxWidth()
                                     .fillMaxHeight()
                             ) {
-                                Column(
+                                TeamCardContent(
+                                    song = song2,
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp), // Aynı eşit padding
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center // Aynı ortada hizalama
-                                ) {
-                                    // Padişah ismi - BÜYÜK FONT - TAM GÖRÜNÜR
-                                    Text(
-                                        text = song2.name,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        maxLines = 2,
-                                        softWrap = true
-                                    )
-                                    if (song2.artist.isNotBlank()) {
-                                        Text(
-                                            text = song2.artist,
-                                            style = MaterialTheme.typography.titleMedium,
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 1,
-                                            softWrap = true
-                                        )
-                                    }
-                                    if (song2.album.isNotBlank()) {
-                                        Text(
-                                            text = song2.album,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 1,
-                                            softWrap = true
-                                        )
-                                    }
-                                }
+                                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
                             }
                             
                             // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
@@ -1165,34 +1105,11 @@ private fun MatchingsListContent(
                                     .fillMaxWidth()
                                     .padding(12.dp)
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = song1?.name ?: "Bilinmiyor",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        softWrap = true
+                                song1?.let { song ->
+                                    TeamCardContent(
+                                        song = song,
+                                        modifier = Modifier.padding(0.dp)
                                     )
-                                    if (song1?.artist?.isNotBlank() == true) {
-                                        Text(
-                                            text = song1.artist,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center,
-                                            softWrap = true
-                                        )
-                                    }
-                                    if (song1?.album?.isNotBlank() == true) {
-                                        Text(
-                                            text = song1.album,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                            textAlign = TextAlign.Center,
-                                            softWrap = true
-                                        )
-                                    }
                                 }
                                 
                                 // Puan rozeti sol alt köşe (sadece EMRE_CORRECT için)
@@ -1250,34 +1167,11 @@ private fun MatchingsListContent(
                                     .fillMaxWidth()
                                     .padding(12.dp)
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        text = song2?.name ?: "Bilinmiyor",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        textAlign = TextAlign.Center,
-                                        softWrap = true
+                                song2?.let { song ->
+                                    TeamCardContent(
+                                        song = song,
+                                        modifier = Modifier.padding(0.dp)
                                     )
-                                    if (song2?.artist?.isNotBlank() == true) {
-                                        Text(
-                                            text = song2.artist,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center,
-                                            softWrap = true
-                                        )
-                                    }
-                                    if (song2?.album?.isNotBlank() == true) {
-                                        Text(
-                                            text = song2.album,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                            textAlign = TextAlign.Center,
-                                            softWrap = true
-                                        )
-                                    }
                                 }
                                 
                                 // Puan rozeti sağ alt köşe (sadece EMRE_CORRECT için)
@@ -1362,7 +1256,7 @@ internal fun TeamCardContent(
             )
         }
         
-        // CSV tabular data varsa küçük tablo göster
+        // CSV tabular data varsa display mode'a göre göster
         song.csvData?.let { csvData ->
             if (csvData.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1494,6 +1388,83 @@ private fun extractPointsFromCsv(csvData: String): Double {
         0.0
     } catch (e: Exception) {
         0.0
+    }
+}
+
+private fun extractDisplayModeFromCsv(csvData: String): String {
+    return try {
+        val jsonObject = JSONObject(csvData)
+        jsonObject.optString("_displayMode", "cards")
+    } catch (e: Exception) {
+        "cards"
+    }
+}
+
+@Composable
+private fun FullTableDisplay(csvData: String) {
+    val parsedData = remember(csvData) {
+        parseCsvDataToMap(csvData).filterKeys { !it.startsWith("_") } // Remove metadata
+    }
+    
+    if (parsedData.isNotEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFF1F8E9) // Light green background
+            )
+        ) {
+            Column {
+                // Green header with team name
+                val teamName = parsedData.values.firstOrNull() ?: "Team"
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF4CAF50)) // Green header
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = teamName.uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+                
+                // Table rows with alternating colors
+                parsedData.entries.drop(1).forEachIndexed { index, (key, value) ->
+                    val backgroundColor = when {
+                        index % 2 == 0 -> Color(0xFFE8F5E8) // Light green for even rows
+                        else -> Color(0xFFC8E6C9) // Medium green for odd rows
+                    }
+                    
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(backgroundColor)
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = key,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF2E7D32), // Dark green text
+                            modifier = Modifier.weight(1.5f)
+                        )
+                        Text(
+                            text = value,
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF1B5E20), // Darker green text  
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

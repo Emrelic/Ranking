@@ -61,7 +61,7 @@ fun RankingNavigation(
         composable("home") {
             HomeScreen(
                 onNavigateToCreateList = { navController.navigate("create_list") },
-                onNavigateToSongList = { listId -> navController.navigate("song_list/$listId") },
+                onNavigateToSongList = { listId -> navController.navigate("list_view/$listId") },
                 onNavigateToArchive = { navController.navigate("archive") },
                 onNavigateToTest = { navController.navigate("test") },
                 onNavigateToRanking = { listId, method -> navController.navigate("ranking/$listId/$method") }
@@ -72,8 +72,8 @@ fun RankingNavigation(
             CreateListScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onListCreated = { listId -> 
-                    navController.navigate("song_list/$listId") {
-                        popUpTo("home")
+                    navController.navigate("list_view/$listId") {
+                        popUpTo("lists")
                     }
                 }
             )
@@ -257,8 +257,7 @@ fun RankingNavigation(
             val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
             ListViewScreen(
                 listId = listId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToTournament = { id -> navController.navigate("new_tournament/$id") }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

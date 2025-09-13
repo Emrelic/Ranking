@@ -58,6 +58,10 @@ class RankingRepository(
     }
     
     suspend fun importSongsFromCsv(context: Context, listId: Long, uri: Uri) {
+        importSongsFromCsvWithDisplayMode(context, listId, uri, "cards")
+    }
+    
+    suspend fun importSongsFromCsvWithDisplayMode(context: Context, listId: Long, uri: Uri, displayMode: String = "cards") {
         try {
             Log.d("RankingRepository", "CSV okuma başlıyor: $uri")
             val csvSongs = csvReader.readCsvFromUri(context, uri)
@@ -68,13 +72,29 @@ class RankingRepository(
             }
             
             val songs = csvSongs.map { csvSong ->
+                // Add displayMode to csvData if it exists
+                val updatedCsvData = if (csvSong.csvData != null) {
+                    try {
+                        val jsonObject = org.json.JSONObject(csvSong.csvData)
+                        jsonObject.put("_displayMode", displayMode)
+                        jsonObject.toString()
+                    } catch (e: Exception) {
+                        csvSong.csvData
+                    }
+                } else if (displayMode == "table") {
+                    // If no csvData but table mode requested, create minimal metadata
+                    "{\"_displayMode\": \"$displayMode\", \"Name\": \"${csvSong.name}\"}"
+                } else {
+                    csvSong.csvData
+                }
+                
                 Song(
                     name = csvSong.name, 
                     artist = csvSong.artist, 
                     album = csvSong.album,
                     trackNumber = csvSong.trackNumber,
                     listId = listId,
-                    csvData = csvSong.csvData
+                    csvData = updatedCsvData
                 )
             }
             

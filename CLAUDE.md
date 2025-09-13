@@ -140,3 +140,49 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 **Sonraki Adım:** Database schema implementation ve UI geliştirme
 
 **⏰ LİMİT DURUMU:** 5 saat limit yaklaşıyor - kayıt tamamlandı, 5 saat sonra devam
+
+---
+
+### 🎯 2025-09-13 - CSV TABLO SİSTEMİ VE LİSTE YÖNETİMİ
+
+**TAMAMLANAN GELİŞTİRMELER (Commit: 869f915):**
+✅ **CSV Puan Ekstraktörü**: Puan/Point/Score alanlarını otomatik algılar
+✅ **ListViewScreen**: Sadece liste içeriği gösterir, turnuva başlatmaz  
+✅ **Liste vs Turnuva Ayrımı**: Görüntüleme ve turnuva başlatma ayrı rotalar
+✅ **Aktif Turnuva Sil**: Onay dialogu ile turnuva silme özelliği
+✅ **TeamCardContent Internal**: Cross-file erişim düzeltildi
+✅ **Tournament Delete Fix**: DAO parametresi hatas düzeltildi
+
+**📋 GÜNCEL SORUNLAR LİSTESİ:**
+1. 🔄 **CSV Import Format**: Tablo formatı düzgün yüklenmiyor
+2. 🔄 **Navigation Flow**: Yeni liste → turnuva algoritması yönlendirmesi engellenmeli  
+3. 🔄 **List Content Display**: Mevcut listeler tablo formatlarını göstermeli
+4. 🔄 **CreateList Navigation**: Liste oluşturduktan sonra turnuva yönlendirmesi kaldırılmalı
+5. 🔄 **Display Mode Options**: Manuel liste için "Takım Kartları" vs "Tablo" gösterim seçenekleri
+6. ✅ **Tournament Delete**: Tamamlandı
+
+**🎯 YENİ TAMAMLANAN GELİŞTİRMELER (2025-09-13 Sonu - TEST EDİLMEDİ):**
+✅ **Tab Sistemi**: ListViewScreen'e "Takım Kartları" ve "Tablo Formatı" sekmeleri eklendi
+✅ **Display Mode Temizleme**: TeamCardContent'ten display mode metni kaldırıldı  
+✅ **CSV Data Transfer**: Veriler düzgün JSON formatında aktarılıyor (log'da doğrulandı)
+✅ **Tournament Navigation Silme**: Liste içinden turnuva başlatma butonu tamamen kaldırıldı
+✅ **Voting Screen Team Cards**: Oylama ve eşleşme ekranlarında tam team card gösterimi
+
+**🔧 DETAYLI İMPLEMENTASYON:**
+- **ListViewScreen.kt**: TabRow sistemi eklendi (Takım Kartları ↔ Tablo Formatı)
+- **RankingScreen.kt**: TeamCardContent voting butonlarında ve match listelerinde entegre edildi  
+- **RankingNavigation.kt**: HomeScreen'den list_view route'ına yönlendirme düzeltildi
+- **TeamCardContent**: Display mode conditional logic tamamen kaldırıldı
+
+**⚠️ KRİTİK UYARI: YUKARIDAKİ TÜM ÖZELLİKLER TEST EDİLMEDİ**
+- APK telefona başarıyla yüklendi
+- Kod seviyesinde implementasyon tamamlandı
+- **MANUEL TEST GEREKİYOR** - Kullanıcı tarafından test edilmeli
+- Potansiyel buglar mevcut olabilir
+
+**📸 REFERANS:** Kullanıcı tablo format örneği gönderdi - yeşil başlık, alternating rows
+
+**🎯 SONRAKİ ADIMLAR (Test Sonrası):**
+- Manual testler yapılacak
+- Bulunan buglar düzeltilecek
+- Kullanıcı feedback'i ile iyileştirmeler
