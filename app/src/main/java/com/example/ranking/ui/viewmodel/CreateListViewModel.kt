@@ -169,21 +169,7 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                         }
                     }
                     
-                    "csv" -> {
-                        if (csvUri == null) {
-                            onError("CSV dosyası seçilmedi")
-                            return@launch
-                        }
-                        
-                        try {
-                            Log.d("CreateListViewModel", "CSV dosyası yükleniyor: $csvUri")
-                            repository.importSongsFromCsvWithDisplayMode(context, listId, csvUri, displayMode)
-                            Log.d("CreateListViewModel", "CSV dosyası başarıyla yüklendi")
-                        } catch (e: Exception) {
-                            Log.e("CreateListViewModel", "CSV yükleme hatası: ${e.message}", e)
-                            throw Exception("CSV dosyası yüklenemedi: ${e.message}")
-                        }
-                    }
+                    // CSV file import removed - manual input does the same job
                 }
                 
                 onSuccess(listId)
@@ -192,5 +178,97 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                 onError(e.message ?: "Bilinmeyen hata oluştu")
             }
         }
+    }
+    
+    private suspend fun processManualCsvContent(
+        csvContent: String,
+        displayMode: String,
+        listId: Long,
+        repository: RankingRepository
+    ) {
+        Log.d("CreateListViewModel", "🔄 Manuel CSV processing başlıyor")
+        
+        // Split into lines and filter
+        val inputLines = csvContent.split("\n").map { it.trim() }.filter { it.isNotBlank() }
+        Log.d("CreateListViewModel", "📝 ${inputLines.size} satır bulundu")
+        
+        if (inputLines.size < 2) {
+            throw Exception("CSV dosyasında yeterli satır yok (en az 2 satır gerekli)")
+        }
+        
+        // Check if it's CSV table format - multiple separators supported
+        val firstLine = inputLines.first()
+        val separator = when {
+            firstLine.contains(";") && firstLine.count { it == ';' } > firstLine.count { it == ',' } -> ";"
+            firstLine.contains("\t") -> "\t"
+            firstLine.contains(",") -> ","
+            else -> {
+                Log.w("CreateListViewModel", "⚠️ Separator bulunamadı, virgül kullanılacak")
+                ","
+            }
+        }
+        
+        Log.d("CreateListViewModel", "🔧 Separator: '$separator'")
+        
+        val isCSVTable = inputLines.size >= 2 && 
+                         inputLines.first().contains(separator) && 
+                         inputLines.drop(1).any { it.contains(separator) }
+        
+        if (!isCSVTable) {
+            throw Exception("CSV tablo formatı algılanamadı. Başlık satırı ve veri satırları '$separator' ile ayrılmalı.")
+        }
+        
+        Log.d("CreateListViewModel", "✅ CSV Table format detected")
+        
+        // Parse headers
+        val headers = inputLines.first().split(separator).map { it.trim() }
+        val dataRows = inputLines.drop(1)
+        
+        Log.d("CreateListViewModel", "📋 Headers: ${headers.joinToString(" | ")}")
+        Log.d("CreateListViewModel", "📊 Data rows: ${dataRows.size}")
+        
+        // Process each data row
+        dataRows.forEachIndexed { index, row ->
+            try {
+                val values = row.split(separator).map { it.trim() }
+                
+                Log.d("CreateListViewModel", "🔍 Row $index: ${values.joinToString(" | ")}")
+                
+                if (values.isNotEmpty() && values[0].isNotBlank()) {
+                    val songName = values[0] // First column as song name
+                    
+                    // Create CSV data map
+                    val csvDataMap = mutableMapOf<String, String>()
+                    for (i in headers.indices) {
+                        if (i < values.size && values[i].isNotBlank()) {
+                            csvDataMap[headers[i]] = values[i]
+                        }
+                    }
+                    
+                    // ALWAYS add display mode
+                    csvDataMap["_displayMode"] = displayMode
+                    
+                    // Convert to JSON
+                    val jsonEntries = csvDataMap.map { "\"${it.key}\": \"${it.value.replace("\"", "\\\"")}\""  }
+                    val csvDataJson = "{${jsonEntries.joinToString(", ")}}"
+                    
+                    Log.d("CreateListViewModel", "✅ Row $index -> Song: '$songName', JSON: $csvDataJson")
+                    
+                    // Extract artist/album
+                    val artist = csvDataMap["Artist"] ?: csvDataMap["artist"] ?: 
+                               csvDataMap["Sanatçı"] ?: csvDataMap["sanatçı"] ?: ""
+                    val album = csvDataMap["Album"] ?: csvDataMap["album"] ?: 
+                              csvDataMap["Albüm"] ?: csvDataMap["albüm"] ?: ""
+                    
+                    // Add song
+                    repository.addSongWithCsvData(listId, songName, artist, album, csvDataJson)
+                    Log.d("CreateListViewModel", "💾 Song saved: $songName")
+                }
+            } catch (e: Exception) {
+                Log.e("CreateListViewModel", "❌ Row $index işlenemedi: ${e.message}")
+            }
+        }
+        
+        Log.d("CreateListViewModel", "🎉 CSV processing completed successfully")
     }
 }

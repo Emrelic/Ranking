@@ -55,20 +55,15 @@ class CsvReader {
                             
                             val normalizedLine = currentLine.trim().normalize()
                             
-                            // Check if this is a header line
-                            if (isFirstLine && (currentLine.lowercase().contains("öğe") || 
-                                              currentLine.lowercase().contains("şarkı") || 
-                                              currentLine.lowercase().contains("song") ||
-                                              currentLine.lowercase().contains("sanatçı") ||
-                                              currentLine.lowercase().contains("artist") ||
-                                              currentLine.lowercase().contains("albüm") ||
-                                              currentLine.lowercase().contains("album") ||
-                                              currentLine.lowercase().contains("numara"))) {
-                                // Parse header row to get column names
-                                csvHeaders = parseHeaderLine(normalizedLine)
-                                Log.d("CsvReader", "Header sütunları: ${csvHeaders?.joinToString(" | ")}")
-                                isFirstLine = false
-                                return@let
+                            // Check if this is a header line - ALWAYS assume first line is header if it has separators
+                            if (isFirstLine) {
+                                if (currentLine.contains(",") || currentLine.contains(";") || currentLine.contains("\t")) {
+                                    // First line has separators - assume it's a header
+                                    csvHeaders = parseHeaderLine(normalizedLine)
+                                    Log.d("CsvReader", "✅ AUTO HEADER DETECT! Header sütunları: ${csvHeaders?.joinToString(" | ")}")
+                                    isFirstLine = false
+                                    return@let
+                                }
                             }
                             isFirstLine = false
                             
@@ -152,7 +147,8 @@ class CsvReader {
             null
         }
         
-        Log.d("CsvReader", "Oluşturulan CSV data: $csvData")
+        Log.d("CsvReader", "✅ CSV data oluşturuldu - Headers: ${headers?.size ?: 0}, Parts: ${parts.size}")
+        Log.d("CsvReader", "✅ Oluşturulan CSV data: $csvData")
         
         // Use existing logic for parsing basic fields
         val baseSong = parseCsvLine(line)

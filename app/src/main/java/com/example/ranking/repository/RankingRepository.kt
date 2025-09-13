@@ -72,19 +72,30 @@ class RankingRepository(
             }
             
             val songs = csvSongs.map { csvSong ->
+                Log.d("RankingRepository", "🔄 Processing CSV song: ${csvSong.name}")
+                Log.d("RankingRepository", "🔄 Original CSV data: ${csvSong.csvData}")  
+                Log.d("RankingRepository", "🔄 Display mode: $displayMode")
+                Log.d("RankingRepository", "🔄 CSV data null check: ${csvSong.csvData != null}")
+                
                 // Add displayMode to csvData if it exists
                 val updatedCsvData = if (csvSong.csvData != null) {
                     try {
                         val jsonObject = org.json.JSONObject(csvSong.csvData)
                         jsonObject.put("_displayMode", displayMode)
-                        jsonObject.toString()
+                        val result = jsonObject.toString()
+                        Log.d("RankingRepository", "✅ Updated CSV data with display mode: $result")
+                        result
                     } catch (e: Exception) {
+                        Log.e("RankingRepository", "❌ Error adding display mode: ${e.message}")
                         csvSong.csvData
                     }
                 } else if (displayMode == "table") {
                     // If no csvData but table mode requested, create minimal metadata
-                    "{\"_displayMode\": \"$displayMode\", \"Name\": \"${csvSong.name}\"}"
+                    val result = "{\"_displayMode\": \"$displayMode\", \"Name\": \"${csvSong.name}\"}"
+                    Log.d("RankingRepository", "✅ Created minimal table data: $result")
+                    result
                 } else {
+                    Log.d("RankingRepository", "⚠️ No CSV data and cards mode - keeping null")
                     csvSong.csvData
                 }
                 

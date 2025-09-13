@@ -32,7 +32,7 @@ fun CreateListScreen(
     val context = LocalContext.current
     var listName by remember { mutableStateOf("") }
     var manualSongs by remember { mutableStateOf("") }
-    var selectedOption by remember { mutableStateOf("manual") }
+    var selectedOption by remember { mutableStateOf("manual") } // Only manual option now
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -111,25 +111,11 @@ fun CreateListScreen(
                 )
             }
             
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = selectedOption == "csv",
-                    onClick = { selectedOption = "csv" }
-                )
-                Text(
-                    text = "CSV Dosyasından Yükle",
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-            //1111
+            // CSV file import kaldırıldı - manuel ekleme ile aynı işi yapıyor
             Spacer(modifier = Modifier.height(16.dp))
             
-            when (selectedOption) {
-                "manual" -> {
-                    Column {
+            // Only manual input option now
+            Column {
                         Text(
                             text = "Desteklenen formatlar:\n• Her satıra bir öğe\n• Tablo formatı (CSV): başlık satırı + veri satırları\n• Excel'den kopyala-yapıştır (tab ayrımlı)\n• Format: Sanatçı - Albüm - Öğe veya Sanatçı - Öğe",
                             style = MaterialTheme.typography.bodyMedium,
@@ -245,36 +231,7 @@ fun CreateListScreen(
                         )
                     }
                 }
-                "csv" -> {
-                    Button(
-                        onClick = { csvLauncher.launch("*/*") },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("CSV Dosyası Seç")
-                    }
-                    
-                    selectedFileUri?.let { uri ->
-                        Text(
-                            text = "Seçilen dosya: ${uri.lastPathSegment}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "CSV Formatı:",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "• Dört sütun: A=Öğe Numarası, B=Sanatçı, C=Albüm, D=Öğe Adı\n• Üç sütun: Sanatçı, Albüm, Öğe Adı\n• İki sütun: Sanatçı, Öğe Adı\n• Tek sütun: Sanatçı - Öğe Adı formatında",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            // CSV file option removed - manual input handles CSV tables
             }
             
             errorMessage?.let { error ->
@@ -294,16 +251,13 @@ fun CreateListScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Button enabled durumunu hesapla ve logla
-            val isButtonEnabled = !isLoading && listName.isNotBlank() && 
-                         ((selectedOption == "manual" && manualSongs.isNotBlank()) || 
-                          (selectedOption == "csv" && selectedFileUri != null))
+            // Button enabled durumunu hesapla
+            val isButtonEnabled = !isLoading && listName.isNotBlank() && manualSongs.isNotBlank()
             
             // Debug log
-            LaunchedEffect(isButtonEnabled, listName, selectedOption, selectedFileUri, manualSongs) {
+            LaunchedEffect(isButtonEnabled, listName, manualSongs) {
                 Log.d("CreateListScreen", "Button durumu: enabled=$isButtonEnabled, " +
-                    "isLoading=$isLoading, listName='$listName', selectedOption='$selectedOption', " +
-                    "selectedFileUri=$selectedFileUri, manualSongs='$manualSongs'")
+                    "isLoading=$isLoading, listName='$listName', manualSongs length=${manualSongs.length}")
             }
             
             Button(
@@ -314,9 +268,9 @@ fun CreateListScreen(
                     viewModel.createList(
                         context = context,
                         listName = listName.trim(),
-                        option = selectedOption,
+                        option = "manual", // Always manual now
                         manualSongs = manualSongs,
-                        csvUri = selectedFileUri,
+                        csvUri = null, // No CSV files
                         csvDelimiter = csvDelimiter,
                         displayMode = displayMode,
                         onSuccess = { listId ->

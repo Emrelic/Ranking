@@ -202,32 +202,10 @@ private fun DirectScoringContent(
                     modifier = Modifier.padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = song.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
+                    TeamCardContent(
+                        song = song,
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    
-                    if (song.artist.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = song.artist,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    
-                    if (song.album.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = song.album,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                            textAlign = TextAlign.Center
-                        )
-                    }
                 }
             }
             
@@ -321,22 +299,10 @@ private fun CompletedScoreItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
+            TeamCardContent(
+                song = song,
                 modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = song.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                if (song.artist.isNotBlank()) {
-                    Text(
-                        text = song.artist,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            )
             
             if (isEditing) {
                 Row(
@@ -1233,6 +1199,9 @@ internal fun TeamCardContent(
     song: Song,
     modifier: Modifier = Modifier
 ) {
+    // Debug CSV data
+    android.util.Log.d("TeamCardContent", "Song: ${song.name}, CSV data exists: ${song.csvData != null}, CSV data: '${song.csvData}'")
+    
     Column(
         modifier = modifier
     ) {
@@ -1259,6 +1228,7 @@ internal fun TeamCardContent(
         // CSV tabular data varsa display mode'a göre göster
         song.csvData?.let { csvData ->
             if (csvData.isNotBlank()) {
+                android.util.Log.d("TeamCardContent", "Showing CSV table for song: ${song.name}")
                 Spacer(modifier = Modifier.height(8.dp))
                 CsvDataTable(csvData = csvData, teamPoints = extractPointsFromCsv(csvData))
             }
@@ -1271,6 +1241,10 @@ private fun CsvDataTable(csvData: String, teamPoints: Double = 0.0) {
     val parsedData = remember(csvData) {
         parseCsvDataToMap(csvData)
     }
+    
+    android.util.Log.d("CsvDataTable", "📊 CSV data: $csvData")
+    android.util.Log.d("CsvDataTable", "📊 Parsed data size: ${parsedData.size}")
+    android.util.Log.d("CsvDataTable", "📊 Parsed data: $parsedData")
     
     if (parsedData.isNotEmpty()) {
         // Blue table format with header and alternating rows
