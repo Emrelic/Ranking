@@ -24,6 +24,7 @@ fun TournamentRankingScreen(
     tournamentId: Long,
     onNavigateBack: () -> Unit,
     onNavigateToResults: (Long) -> Unit,
+    onNavigateToRanking: (Long, String) -> Unit = { _, _ -> },
     viewModel: TournamentRankingViewModel = viewModel()
 ) {
     LaunchedEffect(tournamentId) {
@@ -38,6 +39,21 @@ fun TournamentRankingScreen(
     val standings = uiState.standings
     val criteriaSettings = uiState.criteriaSettings
     val showCriteriaDialog by viewModel.showCriteriaDialog.collectAsState()
+    
+    // Handle redirect to working RankingScreen
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { error ->
+            if (error.startsWith("REDIRECT_TO_RANKING_SCREEN:")) {
+                val parts = error.split(":")
+                if (parts.size >= 3) {
+                    val listId = parts[1].toLongOrNull() ?: 0L
+                    val systemType = parts[2]
+                    android.util.Log.d("TournamentRankingScreen", "Redirecting to RankingScreen: listId=$listId, systemType=$systemType")
+                    onNavigateToRanking(listId, systemType)
+                }
+            }
+        }
+    }
     
     Column(
         modifier = Modifier.fillMaxSize()

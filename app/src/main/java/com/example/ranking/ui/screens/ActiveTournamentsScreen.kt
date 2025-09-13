@@ -74,7 +74,8 @@ fun ActiveTournamentsScreen(
                 items(tournaments) { tournament ->
                     TournamentCard(
                         tournament = tournament,
-                        onContinue = { onNavigateToTournament(tournament.id) }
+                        onContinue = { onNavigateToTournament(tournament.id) },
+                        onDelete = { viewModel.deleteTournament(tournament.id) }
                     )
                 }
             }
@@ -85,11 +86,13 @@ fun ActiveTournamentsScreen(
 @Composable
 private fun TournamentCard(
     tournament: com.example.ranking.data.Tournament,
-    onContinue: () -> Unit
+    onContinue: () -> Unit,
+    onDelete: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = onContinue
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -158,25 +161,61 @@ private fun TournamentCard(
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "Devam etmek için tıklayın",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
+                Button(
+                    onClick = onContinue,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Devam Et")
+                }
                 
-                Icon(
-                    Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                IconButton(
+                    onClick = { showDeleteDialog = true },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Sil")
+                }
             }
         }
+    }
+    
+    // Delete confirmation dialog
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Turnuvayı Sil") },
+            text = { 
+                Text("\"${tournament.name}\" turnuvasını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Sil")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteDialog = false }
+                ) {
+                    Text("İptal")
+                }
+            }
+        )
     }
 }

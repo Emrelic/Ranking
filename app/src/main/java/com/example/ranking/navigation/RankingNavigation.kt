@@ -31,7 +31,7 @@ fun RankingNavigation(
             ListsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCreateList = { navController.navigate("create_list") },
-                onNavigateToSongList = { listId -> navController.navigate("song_list/$listId") }
+                onNavigateToSongList = { listId -> navController.navigate("list_view/$listId") }
             )
         }
         
@@ -147,6 +147,12 @@ fun RankingNavigation(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { tId ->
                     navController.navigate("tournament_results/$tId")
+                },
+                onNavigateToRanking = { listId, systemType ->
+                    // Redirect to working RankingScreen system
+                    navController.navigate("ranking/$listId/$systemType") {
+                        popUpTo("main_menu")
+                    }
                 }
             )
         }
@@ -244,6 +250,16 @@ fun RankingNavigation(
         
         composable("test") {
             TestScreen()
+        }
+        
+        // List view screen - only shows content, no tournament creation
+        composable("list_view/{listId}") { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
+            ListViewScreen(
+                listId = listId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToTournament = { id -> navController.navigate("new_tournament/$id") }
+            )
         }
     }
 }

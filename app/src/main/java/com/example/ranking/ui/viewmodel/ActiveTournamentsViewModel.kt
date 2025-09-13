@@ -27,4 +27,19 @@ class ActiveTournamentsViewModel(application: Application) : AndroidViewModel(ap
             }
         }
     }
+    
+    fun deleteTournament(tournamentId: Long) {
+        viewModelScope.launch {
+            try {
+                // First get the tournament object, then delete it
+                val tournament = database.tournamentDao().getTournamentById(tournamentId)
+                if (tournament != null) {
+                    database.tournamentDao().deleteTournament(tournament)
+                }
+                // List will automatically update through the collect above
+            } catch (e: Exception) {
+                // Handle error if needed
+            }
+        }
+    }
 }

@@ -1335,7 +1335,7 @@ private fun MatchingsListContent(
 }
 
 @Composable
-private fun TeamCardContent(
+internal fun TeamCardContent(
     song: Song,
     modifier: Modifier = Modifier
 ) {
@@ -1366,54 +1366,95 @@ private fun TeamCardContent(
         song.csvData?.let { csvData ->
             if (csvData.isNotBlank()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                CsvDataTable(csvData = csvData)
+                CsvDataTable(csvData = csvData, teamPoints = extractPointsFromCsv(csvData))
             }
         }
     }
 }
 
 @Composable 
-private fun CsvDataTable(csvData: String) {
+private fun CsvDataTable(csvData: String, teamPoints: Double = 0.0) {
     val parsedData = remember(csvData) {
         parseCsvDataToMap(csvData)
     }
     
     if (parsedData.isNotEmpty()) {
-        // Green table format with alternating rows
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            parsedData.entries.forEachIndexed { index, (key, value) ->
-                val backgroundColor = when {
-                    index % 2 == 0 -> Color(0xFFE8F5E8) // Light green for even rows
-                    else -> Color(0xFFC8E6C9) // Medium green for odd rows
-                }
+        // Blue table format with header and alternating rows
+        Box {
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Header with team name (first value from CSV)
+                val teamName = parsedData.values.firstOrNull() ?: "Team"
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(backgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 3.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .background(Color(0xFF1976D2)) // Dark blue header
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = key,
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1B5E20), // Dark green text for visibility
-                        modifier = Modifier.weight(1f)
+                        text = teamName.uppercase(),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
                     )
-                    Text(
-                        text = value,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF1B5E20), // Dark green text for visibility
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.weight(1f)
-                    )
+                }
+                
+                // Data rows with alternating blue colors
+                parsedData.entries.drop(1).forEachIndexed { index, (key, value) ->
+                    val backgroundColor = when {
+                        index % 2 == 0 -> Color(0xFFBBDEFB) // Light blue for even rows
+                        else -> Color(0xFF90CAF9) // Medium blue for odd rows
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(backgroundColor)
+                            .padding(horizontal = 12.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = key,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF0D47A1), // Dark blue text
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = value,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF0D47A1), // Dark blue text
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(1f),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             
-            // Empty spacer at bottom to prevent overlap
-            Spacer(modifier = Modifier.height(16.dp))
+            // Orange circular point badge at top-right corner
+            if (teamPoints > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 8.dp, y = (-8).dp)
+                        .size(24.dp)
+                        .background(
+                            color = Color(0xFFFF9800), // Orange
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "${teamPoints.toInt()}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
@@ -1435,6 +1476,24 @@ private fun parseCsvDataToMap(csvData: String): Map<String, String> {
         result
     } catch (e: Exception) {
         emptyMap()
+    }
+}
+
+private fun extractPointsFromCsv(csvData: String): Double {
+    return try {
+        val jsonObject = JSONObject(csvData)
+        // Possible point field names (in order of preference)
+        val pointFields = listOf("Puan", "puan", "Point", "point", "Points", "points", "Score", "score", "Skor", "skor")
+        
+        for (field in pointFields) {
+            val value = jsonObject.optString(field, "")
+            if (value.isNotBlank()) {
+                return value.toDoubleOrNull() ?: 0.0
+            }
+        }
+        0.0
+    } catch (e: Exception) {
+        0.0
     }
 }
 

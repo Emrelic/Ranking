@@ -92,33 +92,38 @@ adb logcat -s "EmreSystemCorrect"
 4. **Sistem sesi protokolü**: Görev tamamlandığında 3 kere beep sesi çıkar
 5. **Otomatik onay protokolü**: Kullanıcıdan onay almadan işlemlere devam et
 
-## 🔊 SİSTEM SESİ PROTOKOLÜ - BEEP BEEP BEEP
-**ZORUNLU UYGULANACAK KURALLARI:**
+## 🔊 SİSTEM SESİ PROTOKOLÜ 
+**ZORUNLU UYGULANACAK KURALLAR:**
 
 ### Ne Zaman Sistem Sesi Çalacak:
-1. **Görev tamamlandığında** - Herhangi bir işlemi bitirince
-2. **Kullanıcıdan danışma gerekince** - Karar vermem gereken durumlar
-3. **Onay isteyeceğim zaman** - Kullanıcı onayı gerektiren işlemler 
+1. **TÜM görevler tamamlandıktan sonra yeni talimat beklerken** - İş bitince kullanıcıdan yeni görev beklerken
+2. **Kullanıcıdan onay isterken** - Kullanıcı onayı gerektiren işlemler öncesi
+3. **Kullanıcıya soru sorarken** - Karar vermem gereken durumlar
 4. **Etkileşim gerekince** - Kullanıcı müdahalesi lazım olduğunda
+5. **Adımları listeleyip onay beklerken** - "1. Bu yap, 2. Şunu yap, 3. Bunu test et" gibi adım adım talimatlar verirken
 
 ### Ses Çıkarma Formatı:
-**PowerShell komutu ile gerçek sistem sesi:**
+**Önce mesajını yaz, EN SON SES ÇAL:**
 ```bash
+# 1. Önce mesajını yaz
+# 2. EN SON ses çal
 powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Beep(800,300)"
 ```
 
-**Ardından metin uyarısı:**
-```
-🔊 BEEP BEEP BEEP 🔊
-[Mesajım burada]
-```
+**SES MESAJIN EN SONUNDA ÇALACAK - böylece kullanıcı mesajı okur sonra ses duyar**
 
 ### Örnekler:
-- Görev bitince: "🔊 BEEP BEEP BEEP 🔊 CSV tablo sistemi tamamlandı!"
-- Danışma: "🔊 BEEP BEEP BEEP 🔊 Database migration yapmamı istiyor musun?"
-- Onay: "🔊 BEEP BEEP BEEP 🔊 Bu dosyaları silmemi onaylıyor musun?"
+- Tüm iş bitti: *ses çal* → "Refactoring tamamlandı! Sonraki adım?"
+- Onay: *ses çal* → "Bu dosyaları silmemi onaylıyor musun?"  
+- Soru: *ses çal* → "Hangi ayarları kullanmamı istiyorsun?"
 
-**NOT:** Her oturumda bu protokolü oku ve zorunlu uygula.
+### ÇALMAYACAK DURUMLAR:
+❌ Ara görev tamamlandığında
+❌ Build successful olduğunda  
+❌ Dosya yazıldığında
+❌ İş devam ederken
+
+**NOT:** Sadece benden etkileşim/onay/talimat isteyeceğin zaman çal!
 
 ## Yeni Geliştirmeler Planı
 
