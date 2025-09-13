@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -35,6 +36,10 @@ fun CreateListScreen(
     var selectedFileUri by remember { mutableStateOf<Uri?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    
+    // CSV parsing settings
+    var csvDelimiter by remember { mutableStateOf(",") }
+    var showCsvSettings by remember { mutableStateOf(false) }
     
     val csvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -123,22 +128,96 @@ fun CreateListScreen(
             
             when (selectedOption) {
                 "manual" -> {
-                    Text(
-                        text = "Desteklenen formatlar:\n• Her satıra bir öğe\n• Virgülle ayırılmış: öğe1, öğe2, öğe3\n• Excel'den kopyala-yapıştır (tab ayrımlı)\n• Format: Sanatçı - Albüm - Öğe veya Sanatçı - Öğe",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = manualSongs,
-                        onValueChange = { manualSongs = it },
-                        label = { Text("Öğe Listesi") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        placeholder = { Text("Örnek:\nAdele - 25 - Hello\nColdplay - X&Y - Fix You\n\nVeya virgülle:\nHello, Fix You, Shape of You\n\nVeya Excel'den kopyala-yapıştır") },
-                        maxLines = 10
-                    )
+                    Column {
+                        Text(
+                            text = "Desteklenen formatlar:\n• Her satıra bir öğe\n• Tablo formatı (CSV): başlık satırı + veri satırları\n• Excel'den kopyala-yapıştır (tab ayrımlı)\n• Format: Sanatçı - Albüm - Öğe veya Sanatçı - Öğe",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // CSV Settings Toggle
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = showCsvSettings,
+                                onCheckedChange = { showCsvSettings = it }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Tablo formatı ayarları")
+                        }
+                        
+                        // CSV Settings Panel
+                        AnimatedVisibility(visible = showCsvSettings) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
+                                ) {
+                                    Text(
+                                        text = "Ayırıcı Karakter",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        FilterChip(
+                                            onClick = { csvDelimiter = "," },
+                                            label = { Text("Virgül (,)") },
+                                            selected = csvDelimiter == ","
+                                        )
+                                        FilterChip(
+                                            onClick = { csvDelimiter = ";" },
+                                            label = { Text("Noktalı virgül (;)") },
+                                            selected = csvDelimiter == ";"
+                                        )
+                                        FilterChip(
+                                            onClick = { csvDelimiter = "\t" },
+                                            label = { Text("Tab") },
+                                            selected = csvDelimiter == "\t"
+                                        )
+                                        FilterChip(
+                                            onClick = { csvDelimiter = "|" },
+                                            label = { Text("Pipe (|)") },
+                                            selected = csvDelimiter == "|"
+                                        )
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    Text(
+                                        text = "Tablo örneği:\nÜlke${csvDelimiter}Kıta${csvDelimiter}Nüfus${csvDelimiter}GSYİH\nTürkiye${csvDelimiter}Asya${csvDelimiter}84 Milyon${csvDelimiter}819 Milyar",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    )
+                                }
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        OutlinedTextField(
+                            value = manualSongs,
+                            onValueChange = { manualSongs = it },
+                            label = { Text("Öğe Listesi") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            placeholder = { Text("Basit liste örneği:\nHello\nFix You\nShape of You\n\nTablo örneği:\nÜlke,Kıta,Nüfus\nTürkiye,Asya,84M\nFransa,Avrupa,68M") },
+                            maxLines = 10
+                        )
+                    }
                 }
                 "csv" -> {
                     Button(
@@ -212,6 +291,7 @@ fun CreateListScreen(
                         option = selectedOption,
                         manualSongs = manualSongs,
                         csvUri = selectedFileUri,
+                        csvDelimiter = csvDelimiter,
                         onSuccess = { listId ->
                             isLoading = false
                             onListCreated(listId)

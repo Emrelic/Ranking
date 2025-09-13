@@ -92,6 +92,34 @@ adb logcat -s "EmreSystemCorrect"
 4. **Sistem sesi protokolü**: Görev tamamlandığında 3 kere beep sesi çıkar
 5. **Otomatik onay protokolü**: Kullanıcıdan onay almadan işlemlere devam et
 
+## 🔊 SİSTEM SESİ PROTOKOLÜ - BEEP BEEP BEEP
+**ZORUNLU UYGULANACAK KURALLARI:**
+
+### Ne Zaman Sistem Sesi Çalacak:
+1. **Görev tamamlandığında** - Herhangi bir işlemi bitirince
+2. **Kullanıcıdan danışma gerekince** - Karar vermem gereken durumlar
+3. **Onay isteyeceğim zaman** - Kullanıcı onayı gerektiren işlemler 
+4. **Etkileşim gerekince** - Kullanıcı müdahalesi lazım olduğunda
+
+### Ses Çıkarma Formatı:
+**PowerShell komutu ile gerçek sistem sesi:**
+```bash
+powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Beep(800,300)"
+```
+
+**Ardından metin uyarısı:**
+```
+🔊 BEEP BEEP BEEP 🔊
+[Mesajım burada]
+```
+
+### Örnekler:
+- Görev bitince: "🔊 BEEP BEEP BEEP 🔊 CSV tablo sistemi tamamlandı!"
+- Danışma: "🔊 BEEP BEEP BEEP 🔊 Database migration yapmamı istiyor musun?"
+- Onay: "🔊 BEEP BEEP BEEP 🔊 Bu dosyaları silmemi onaylıyor musun?"
+
+**NOT:** Her oturumda bu protokolü oku ve zorunlu uygula.
+
 ## Yeni Geliştirmeler Planı
 
 ### 🎯 2025-09-03 - KRİTERLER SİSTEMİ GELİŞTİRİLMESİ (DEVAM EDİYOR)

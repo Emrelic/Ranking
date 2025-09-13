@@ -30,6 +30,7 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
         option: String,
         manualSongs: String,
         csvUri: Uri?,
+        csvDelimiter: String = ",",
         onSuccess: (Long) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -51,28 +52,29 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                         
                         Log.d("CreateListViewModel", "Raw manual input: '$manualSongs'")
                         
-                        // Check if input looks like CSV table (has headers and multiple rows with commas)
+                        // Check if input looks like CSV table (has headers and multiple rows with chosen delimiter)
                         val inputLines = manualSongs.split("\n").map { it.trim() }.filter { it.isNotBlank() }
                         val isCSVTable = inputLines.size >= 2 && 
-                                         inputLines.first().contains(",") && 
-                                         inputLines.drop(1).all { it.contains(",") }
+                                         inputLines.first().contains(csvDelimiter) && 
+                                         inputLines.drop(1).all { it.contains(csvDelimiter) }
                         
                         if (isCSVTable) {
                             Log.d("CreateListViewModel", "Detected CSV table format - processing as structured data")
                             
                             try {
-                                val headers = inputLines.first().split(",").map { it.trim() }
+                                val headers = inputLines.first().split(csvDelimiter).map { it.trim() }
                                 val dataRows = inputLines.drop(1)
                                 
                                 Log.d("CreateListViewModel", "CSV Headers: ${headers.joinToString(" | ")}")
                                 Log.d("CreateListViewModel", "CSV Data rows: ${dataRows.size}")
+                                Log.d("CreateListViewModel", "Using delimiter: '$csvDelimiter'")
                                 
                                 // Find the name column (first non-empty header, or first column)
                                 val nameColumnIndex = 0 // Use first column as name
                                 val nameColumnHeader = if (nameColumnIndex < headers.size) headers[nameColumnIndex] else "Name"
                                 
                                 dataRows.forEachIndexed { index, row ->
-                                    val values = row.split(",").map { it.trim() }
+                                    val values = row.split(csvDelimiter).map { it.trim() }
                                     
                                     if (values.isNotEmpty() && values[0].isNotBlank()) {
                                         val songName = values[0] // First column as song name
