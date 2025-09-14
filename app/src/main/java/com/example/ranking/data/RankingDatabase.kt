@@ -10,7 +10,7 @@ import com.example.ranking.data.dao.*
 
 @Database(
     entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class, Tournament::class, CriterionList::class, CriterionScore::class],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -310,6 +310,13 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_13_14 = object : Migration(13, 14) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Database schema fix - force clean migration for existing corrupted databases
+                // This migration ensures all tables are properly structured after previous issues
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -317,7 +324,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

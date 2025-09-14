@@ -37,12 +37,27 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
     ) {
         viewModelScope.launch {
             try {
+                Log.d("CreateListViewModel", "🚀 CreateList başlatıldı - Name: '$listName', Option: '$option', DisplayMode: '$displayMode'")
+                
                 if (listName.isBlank()) {
+                    Log.e("CreateListViewModel", "❌ Liste adı boş")
                     onError("Liste adı boş olamaz")
                     return@launch
                 }
                 
+                Log.d("CreateListViewModel", "📝 Repository.createSongList çağrılıyor...")
+                if (repository == null) {
+                    Log.e("CreateListViewModel", "❌ Repository null!")
+                    onError("Repository initialization hatası")
+                    return@launch
+                }
                 val listId = repository.createSongList(listName)
+                Log.d("CreateListViewModel", "✅ Liste oluşturuldu, ID: $listId")
+                if (listId <= 0) {
+                    Log.e("CreateListViewModel", "❌ Invalid listId: $listId")
+                    onError("Liste oluşturulamadı - geçersiz ID")
+                    return@launch
+                }
                 
                 when (option) {
                     "manual" -> {
@@ -169,12 +184,42 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                         }
                     }
                     
-                    // CSV file import removed - manual input does the same job
+                    "csv" -> {
+                        if (csvUri == null) {
+                            onError("CSV dosyası seçilmedi")
+                            return@launch
+                        }
+                        
+                        try {
+                            Log.d("CreateListViewModel", "🔄 CSV dosyası okunuyor: $csvUri")
+                            
+                            // CSV file'ı string olarak oku
+                            val csvContent = context.contentResolver.openInputStream(csvUri)?.use { inputStream ->
+                                inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                                    reader.readText()
+                                }
+                            } ?: throw Exception("CSV dosyası okunamadı")
+                            
+                            Log.d("CreateListViewModel", "✅ CSV okundu, boyut: ${csvContent.length} karakter")
+                            Log.d("CreateListViewModel", "📄 CSV önizleme: ${csvContent.take(200)}")
+                            
+                            // Manuel ekleme ile AYNI mantığı kullan - csvDelimiter parametresi ile
+                            processManualCsvContent(csvContent, csvDelimiter, displayMode, listId, repository)
+                            
+                            Log.d("CreateListViewModel", "🎉 CSV file başarıyla işlendi!")
+                            
+                        } catch (e: Exception) {
+                            Log.e("CreateListViewModel", "❌ CSV dosyası hatası: ${e.message}", e)
+                            throw Exception("CSV dosyası işlenemedi: ${e.message}")
+                        }
+                    }
                 }
                 
                 onSuccess(listId)
                 
             } catch (e: Exception) {
+                Log.e("CreateListViewModel", "❌❌❌ FATAL ERROR in createList: ${e.message}", e)
+                Log.e("CreateListViewModel", "❌ Stack trace: ${e.stackTraceToString()}")
                 onError(e.message ?: "Bilinmeyen hata oluştu")
             }
         }
@@ -182,62 +227,77 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
     
     private suspend fun processManualCsvContent(
         csvContent: String,
+        csvDelimiter: String,
         displayMode: String,
         listId: Long,
         repository: RankingRepository
     ) {
-        Log.d("CreateListViewModel", "🔄 Manuel CSV processing başlıyor")
+        Log.d("CreateListViewModel", "🔄 SMART CSV PARSER BAŞLATIYOR")
         
-        // Split into lines and filter
-        val inputLines = csvContent.split("\n").map { it.trim() }.filter { it.isNotBlank() }
-        Log.d("CreateListViewModel", "📝 ${inputLines.size} satır bulundu")
+        // Clean and split lines
+        val inputLines = csvContent.replace("\r\n", "\n").replace("\r", "\n")
+            .split("\n").map { it.trim() }.filter { it.isNotBlank() }
         
-        if (inputLines.size < 2) {
-            throw Exception("CSV dosyasında yeterli satır yok (en az 2 satır gerekli)")
+        if (inputLines.isEmpty()) {
+            throw Exception("CSV dosyası boş")
         }
         
-        // Check if it's CSV table format - multiple separators supported
-        val firstLine = inputLines.first()
-        val separator = when {
-            firstLine.contains(";") && firstLine.count { it == ';' } > firstLine.count { it == ',' } -> ";"
-            firstLine.contains("\t") -> "\t"
-            firstLine.contains(",") -> ","
-            else -> {
-                Log.w("CreateListViewModel", "⚠️ Separator bulunamadı, virgül kullanılacak")
-                ","
+        Log.d("CreateListViewModel", "📝 Toplam ${inputLines.size} satır bulundu")
+        
+        // SMART DELIMITER DETECTION - Kullanıcının seçimini öncelikle dene
+        var detectedDelimiter = csvDelimiter
+        val firstLine = inputLines[0]
+        
+        // Eğer kullanıcı delimiter'ı çalışmıyorsa otomatik algıla
+        if (!firstLine.contains(csvDelimiter)) {
+            Log.d("CreateListViewModel", "⚠️ UI delimiter '$csvDelimiter' bulunamadı, otomatik algılama...")
+            
+            val delimiters = listOf(",", ";", "\t", "|", ":")
+            var bestDelimiter = ","
+            var maxColumns = 0
+            
+            for (delimiter in delimiters) {
+                val columns = firstLine.split(delimiter).size
+                if (columns > maxColumns && firstLine.contains(delimiter)) {
+                    maxColumns = columns
+                    bestDelimiter = delimiter
+                }
             }
+            
+            detectedDelimiter = bestDelimiter
+            Log.d("CreateListViewModel", "🎯 Otomatik algılanan delimiter: '$detectedDelimiter' ($maxColumns sütun)")
         }
         
-        Log.d("CreateListViewModel", "🔧 Separator: '$separator'")
-        
-        val isCSVTable = inputLines.size >= 2 && 
-                         inputLines.first().contains(separator) && 
-                         inputLines.drop(1).any { it.contains(separator) }
-        
-        if (!isCSVTable) {
-            throw Exception("CSV tablo formatı algılanamadı. Başlık satırı ve veri satırları '$separator' ile ayrılmalı.")
+        // SINGLE ROW SPECIAL HANDLING - Tek satır varsa header yok demektir
+        if (inputLines.size == 1) {
+            Log.d("CreateListViewModel", "📋 Tek satır modu - header yok")
+            val values = inputLines[0].split(detectedDelimiter).map { it.trim() }.filter { it.isNotBlank() }
+            
+            values.forEachIndexed { index, value ->
+                if (value.isNotBlank()) {
+                    repository.addSong(listId, value, "", "")
+                    Log.d("CreateListViewModel", "💾 Basit öğe eklendi: '$value'")
+                }
+            }
+            return
         }
         
-        Log.d("CreateListViewModel", "✅ CSV Table format detected")
-        
-        // Parse headers
-        val headers = inputLines.first().split(separator).map { it.trim() }
+        // MULTI ROW PARSING - Headers + Data
+        val headers = inputLines[0].split(detectedDelimiter).map { it.trim() }
         val dataRows = inputLines.drop(1)
         
-        Log.d("CreateListViewModel", "📋 Headers: ${headers.joinToString(" | ")}")
-        Log.d("CreateListViewModel", "📊 Data rows: ${dataRows.size}")
+        Log.d("CreateListViewModel", "📊 Headers (${headers.size}): ${headers.joinToString(" | ")}")
+        Log.d("CreateListViewModel", "📋 Data rows: ${dataRows.size}")
         
         // Process each data row
-        dataRows.forEachIndexed { index, row ->
+        dataRows.forEachIndexed { rowIndex, row ->
             try {
-                val values = row.split(separator).map { it.trim() }
-                
-                Log.d("CreateListViewModel", "🔍 Row $index: ${values.joinToString(" | ")}")
+                val values = row.split(detectedDelimiter).map { it.trim() }
                 
                 if (values.isNotEmpty() && values[0].isNotBlank()) {
-                    val songName = values[0] // First column as song name
+                    val songName = values[0]
                     
-                    // Create CSV data map
+                    // Create comprehensive CSV data map
                     val csvDataMap = mutableMapOf<String, String>()
                     for (i in headers.indices) {
                         if (i < values.size && values[i].isNotBlank()) {
@@ -245,30 +305,32 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                         }
                     }
                     
-                    // ALWAYS add display mode
-                    csvDataMap["_displayMode"] = displayMode
+                    // Smart JSON creation
+                    val csvDataJson = if (csvDataMap.size > 1 || displayMode == "table") {
+                        csvDataMap["_displayMode"] = displayMode
+                        val jsonEntries = csvDataMap.map { 
+                            "\"${it.key.replace("\"", "\\\"")}\": \"${it.value.replace("\"", "\\\"")}\""
+                        }
+                        "{${jsonEntries.joinToString(", ")}}"
+                    } else {
+                        null
+                    }
                     
-                    // Convert to JSON
-                    val jsonEntries = csvDataMap.map { "\"${it.key}\": \"${it.value.replace("\"", "\\\"")}\""  }
-                    val csvDataJson = "{${jsonEntries.joinToString(", ")}}"
+                    // Smart artist/album extraction
+                    val artist = listOf("Artist", "artist", "Sanatçı", "sanatçı", "Sanatci", "ARTIST")
+                        .firstNotNullOfOrNull { csvDataMap[it] } ?: ""
+                    val album = listOf("Album", "album", "Albüm", "albüm", "ALBUM")
+                        .firstNotNullOfOrNull { csvDataMap[it] } ?: ""
                     
-                    Log.d("CreateListViewModel", "✅ Row $index -> Song: '$songName', JSON: $csvDataJson")
-                    
-                    // Extract artist/album
-                    val artist = csvDataMap["Artist"] ?: csvDataMap["artist"] ?: 
-                               csvDataMap["Sanatçı"] ?: csvDataMap["sanatçı"] ?: ""
-                    val album = csvDataMap["Album"] ?: csvDataMap["album"] ?: 
-                              csvDataMap["Albüm"] ?: csvDataMap["albüm"] ?: ""
-                    
-                    // Add song
                     repository.addSongWithCsvData(listId, songName, artist, album, csvDataJson)
-                    Log.d("CreateListViewModel", "💾 Song saved: $songName")
+                    Log.d("CreateListViewModel", "✅ Row ${rowIndex + 1}: '$songName' (${csvDataMap.size} fields)")
                 }
             } catch (e: Exception) {
-                Log.e("CreateListViewModel", "❌ Row $index işlenemedi: ${e.message}")
+                Log.e("CreateListViewModel", "❌ Row ${rowIndex + 1} error: ${e.message}")
+                // Continue processing other rows
             }
         }
         
-        Log.d("CreateListViewModel", "🎉 CSV processing completed successfully")
+        Log.d("CreateListViewModel", "🎉 SMART CSV PARSING COMPLETED")
     }
 }
