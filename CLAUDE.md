@@ -125,6 +125,42 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 
 **NOT:** Sadece benden etkileşim/onay/talimat isteyeceğin zaman çal!
 
+# ÇALIŞMA PROTOKOLLERI
+
+## 🔄 BERABER ÇALIŞMA PROTOKOLÜ
+1. **🔧 Otomatik Build & Deploy:**
+   - Her yenilik → APK build → telefona yükleme
+   - Kullanıcı sorgulamaz, otomatik yapılır
+
+2. **🔊 SİSTEM BEEP PROTOKOLÜ:**
+   - **Temel kurallar:**
+     - Soru sorulacağı zaman → 3x beep
+     - Onay alınacağı zaman → 3x beep  
+     - Sonuç sunulacağı zaman → 3x beep
+     - Etkileşim gerekince → 3x beep
+     - **Görev bitirip sunacağı zaman → 3x beep**
+     - **1,2,3 tuş seçenekleri sunacağı zaman → 3x beep**
+     
+   - **Sessizlik yönetimi:**
+     - Çalışma bitip 3 dakika sessizlik → 3x beep
+     - 3 beep çalındı, cevap gelmedi → 3 dakika sonra tekrar 3x beep
+     - Ara dakikalarda → 1x beep (cevap gelene kadar)
+     
+   - **Durdurma sistemi:**
+     - "beep çalmayı bırak" VEYA "bçb" → o dönüş için beep durdur
+     - Geçici durdurma: Sadece o andaki dönüş için geçerli
+     - Otomatik yeniden başlatma: Yeni mesaj/görev geldiğinde beep protokolü yeniden aktif
+
+3. **💾 Hızlı Commit Protokolü:**
+   - "tmm" diyince → anında commit + push
+   - "[özellik adı] tamam" diyince → commit + push
+   - Yarım kalan iş riski ortadan kalkar
+
+4. **🎨 Görsel Protokol İsteği:**
+   - Kullanıcı mesajları turuncu/farklı renkte görünmeli (sınırlı CLI desteği)
+
+---
+
 ## Yeni Geliştirmeler Planı
 
 ### 🎯 2025-09-03 - KRİTERLER SİSTEMİ GELİŞTİRİLMESİ (DEVAM EDİYOR)
