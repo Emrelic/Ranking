@@ -257,6 +257,16 @@ fun RankingNavigation(
             val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
             ListViewScreen(
                 listId = listId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToEdit = { navController.navigate("list_edit/$listId") }
+            )
+        }
+        
+        // List edit screen - table editing functionality
+        composable("list_edit/{listId}") { backStackEntry ->
+            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
+            ListEditScreen(
+                listId = listId,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

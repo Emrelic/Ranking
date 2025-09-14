@@ -111,11 +111,24 @@ fun CreateListScreen(
                 )
             }
             
-            // CSV file import kaldırıldı - manuel ekleme ile aynı işi yapıyor
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RadioButton(
+                    selected = selectedOption == "csv",
+                    onClick = { selectedOption = "csv" }
+                )
+                Text(
+                    text = "CSV Dosyasından Yükle",
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             
-            // Only manual input option now
-            Column {
+            when (selectedOption) {
+                "manual" -> {
+                    Column {
                         Text(
                             text = "Desteklenen formatlar:\n• Her satıra bir öğe\n• Tablo formatı (CSV): başlık satırı + veri satırları\n• Excel'den kopyala-yapıştır (tab ayrımlı)\n• Format: Sanatçı - Albüm - Öğe veya Sanatçı - Öğe",
                             style = MaterialTheme.typography.bodyMedium,
@@ -231,7 +244,86 @@ fun CreateListScreen(
                         )
                     }
                 }
-            // CSV file option removed - manual input handles CSV tables
+                
+                "csv" -> {
+                    Column {
+                        Text(
+                            text = "CSV dosyanızı seçin. Dosya şu formatlardan birinde olmalı:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(
+                            text = "• Başlık satırı + veri satırları\n• Virgül (,) ile ayrılmış\n• Örnek: Ülke,Kıta,Nüfus\\nTürkiye,Asya,84M",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Display Mode seçimi
+                        if (showCsvSettings) {
+                            Column {
+                                Text(
+                                    text = "Görüntüleme Modu",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    FilterChip(
+                                        onClick = { displayMode = "cards" },
+                                        label = { Text("Takım Kartları") },
+                                        selected = displayMode == "cards"
+                                    )
+                                    FilterChip(
+                                        onClick = { displayMode = "table" },
+                                        label = { Text("Tablo Formatı") },
+                                        selected = displayMode == "table"
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                        }
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = showCsvSettings,
+                                onCheckedChange = { showCsvSettings = it }
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Gelişmiş ayarlar")
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Button(
+                            onClick = { csvLauncher.launch("*/*") },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("CSV Dosyası Seç")
+                        }
+                        
+                        selectedFileUri?.let { uri ->
+                            Text(
+                                text = "Seçilen dosya: ${uri.lastPathSegment}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+                        }
+                    }
+                }
             }
             
             errorMessage?.let { error ->
@@ -252,12 +344,15 @@ fun CreateListScreen(
             Spacer(modifier = Modifier.height(32.dp))
             
             // Button enabled durumunu hesapla
-            val isButtonEnabled = !isLoading && listName.isNotBlank() && manualSongs.isNotBlank()
+            val isButtonEnabled = !isLoading && listName.isNotBlank() && 
+                                  ((selectedOption == "manual" && manualSongs.isNotBlank()) ||
+                                   (selectedOption == "csv" && selectedFileUri != null))
             
             // Debug log
-            LaunchedEffect(isButtonEnabled, listName, manualSongs) {
+            LaunchedEffect(isButtonEnabled, listName, selectedOption, manualSongs, selectedFileUri) {
                 Log.d("CreateListScreen", "Button durumu: enabled=$isButtonEnabled, " +
-                    "isLoading=$isLoading, listName='$listName', manualSongs length=${manualSongs.length}")
+                    "isLoading=$isLoading, listName='$listName', option='$selectedOption', " +
+                    "manualSongs length=${manualSongs.length}, csvFile=${selectedFileUri?.lastPathSegment}")
             }
             
             Button(
@@ -268,9 +363,9 @@ fun CreateListScreen(
                     viewModel.createList(
                         context = context,
                         listName = listName.trim(),
-                        option = "manual", // Always manual now
+                        option = selectedOption,
                         manualSongs = manualSongs,
-                        csvUri = null, // No CSV files
+                        csvUri = selectedFileUri,
                         csvDelimiter = csvDelimiter,
                         displayMode = displayMode,
                         onSuccess = { listId ->

@@ -57,6 +57,27 @@ class RankingRepository(
         return songId
     }
     
+    suspend fun updateSongWithCsvData(songId: Long, name: String, artist: String = "", album: String = "", csvData: String? = null) {
+        val existingSong = songDao.getSongById(songId)
+        if (existingSong != null) {
+            val updatedSong = existingSong.copy(
+                name = name,
+                artist = artist,
+                album = album,
+                csvData = csvData
+            )
+            songDao.updateSong(updatedSong)
+            Log.d("RankingRepository", "✅ Song updated: ID=$songId, Name='$name'")
+        } else {
+            Log.e("RankingRepository", "❌ Song not found for update: ID=$songId")
+        }
+    }
+    
+    suspend fun deleteSong(songId: Long) {
+        songDao.deleteSongById(songId)
+        Log.d("RankingRepository", "✅ Song deleted: ID=$songId")
+    }
+    
     suspend fun importSongsFromCsv(context: Context, listId: Long, uri: Uri) {
         importSongsFromCsvWithDisplayMode(context, listId, uri, "cards")
     }

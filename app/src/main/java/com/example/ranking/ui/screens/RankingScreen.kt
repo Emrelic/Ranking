@@ -1,6 +1,7 @@
 package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -301,7 +302,8 @@ private fun CompletedScoreItem(
         ) {
             TeamCardContent(
                 song = song,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .width(600.dp) // Fixed large width for table display
             )
             
             if (isEditing) {
@@ -466,7 +468,8 @@ private fun MatchBasedContent(
                             ) {
                                 TeamCardContent(
                                     song = song1,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .width(600.dp) // Fixed large width for table display
                                 )
                                 OutlinedTextField(
                                     value = score1Text,
@@ -518,7 +521,8 @@ private fun MatchBasedContent(
                             ) {
                                 TeamCardContent(
                                     song = song2,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .width(600.dp) // Fixed large width for table display
                                 )
                                 OutlinedTextField(
                                     value = score2Text,
@@ -569,19 +573,13 @@ private fun MatchBasedContent(
                         Box(
                             modifier = Modifier.height(140.dp) // Sabit yükseklik - simetrik çerçeve
                         ) {
-                            Button(
-                                onClick = { onMatchResult(match.id, song1.id) },
+                            TeamCardContent(
+                                song = song1,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight()
-                            ) {
-                                TeamCardContent(
-                                    song = song1,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                            }
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                onClick = { onMatchResult(match.id, song1.id) }
+                            )
                             
                             // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
                             if (method == "EMRE_CORRECT") {
@@ -638,19 +636,13 @@ private fun MatchBasedContent(
                         Box(
                             modifier = Modifier.height(140.dp) // Aynı sabit yükseklik - simetrik çerçeve
                         ) {
-                            Button(
-                                onClick = { onMatchResult(match.id, song2.id) },
+                            TeamCardContent(
+                                song = song2,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight()
-                            ) {
-                                TeamCardContent(
-                                    song = song2,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                            }
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                onClick = { onMatchResult(match.id, song2.id) }
+                            )
                             
                             // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
                             if (method == "EMRE_CORRECT") {
@@ -1074,7 +1066,9 @@ private fun MatchingsListContent(
                                 song1?.let { song ->
                                     TeamCardContent(
                                         song = song,
-                                        modifier = Modifier.padding(0.dp)
+                                        modifier = Modifier
+                                            .padding(0.dp)
+                                            .width(600.dp) // Fixed large width for table display
                                     )
                                 }
                                 
@@ -1136,7 +1130,9 @@ private fun MatchingsListContent(
                                 song2?.let { song ->
                                     TeamCardContent(
                                         song = song,
-                                        modifier = Modifier.padding(0.dp)
+                                        modifier = Modifier
+                                            .padding(0.dp)
+                                            .width(600.dp) // Fixed large width for table display
                                     )
                                 }
                                 
@@ -1197,7 +1193,8 @@ private fun MatchingsListContent(
 @Composable
 internal fun TeamCardContent(
     song: Song,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     // Debug CSV data
     android.util.Log.d("TeamCardContent", "Song: ${song.name}, CSV data exists: ${song.csvData != null}, CSV data: '${song.csvData}'")
@@ -1230,14 +1227,22 @@ internal fun TeamCardContent(
             if (csvData.isNotBlank()) {
                 android.util.Log.d("TeamCardContent", "Showing CSV table for song: ${song.name}")
                 Spacer(modifier = Modifier.height(8.dp))
-                CsvDataTable(csvData = csvData, teamPoints = extractPointsFromCsv(csvData))
+                CsvDataTable(
+                    csvData = csvData, 
+                    teamPoints = extractPointsFromCsv(csvData),
+                    onClick = onClick
+                )
             }
         }
     }
 }
 
 @Composable 
-private fun CsvDataTable(csvData: String, teamPoints: Double = 0.0) {
+private fun CsvDataTable(
+    csvData: String, 
+    teamPoints: Double = 0.0,
+    onClick: (() -> Unit)? = null
+) {
     val parsedData = remember(csvData) {
         parseCsvDataToMap(csvData)
     }
@@ -1247,57 +1252,61 @@ private fun CsvDataTable(csvData: String, teamPoints: Double = 0.0) {
     android.util.Log.d("CsvDataTable", "📊 Parsed data: $parsedData")
     
     if (parsedData.isNotEmpty()) {
-        // Blue table format with header and alternating rows
-        Box {
+        // Green table format with header and scrollable rows - CLICKABLE
+        Box(
+            modifier = onClick?.let { 
+                Modifier.clickable { it() } 
+            } ?: Modifier
+        ) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(min = 700.dp) // Larger table width
             ) {
                 // Header with team name (first value from CSV)
                 val teamName = parsedData.values.firstOrNull() ?: "Team"
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1976D2)) // Dark blue header
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                        .background(Color(0xFF1B5E20)) // Very dark green header (button-like)
+                        .padding(horizontal = 12.dp, vertical = 10.dp), // Slightly larger padding
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
                         text = teamName.uppercase(),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.titleMedium, // Larger header text
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                         textAlign = TextAlign.Center
                     )
                 }
                 
-                // Data rows with alternating blue colors
-                parsedData.entries.drop(1).forEachIndexed { index, (key, value) ->
-                    val backgroundColor = when {
-                        index % 2 == 0 -> Color(0xFFBBDEFB) // Light blue for even rows
-                        else -> Color(0xFF90CAF9) // Medium blue for odd rows
-                    }
-                    Row(
+                // Scrollable data rows with alternating green colors
+                val dataRows = parsedData.entries.drop(1)
+                    .filterNot { (key, _) -> key.startsWith("_") } // Skip metadata like _displayMode
+                
+                // Use LazyColumn only if many rows, otherwise regular Column
+                val shouldScroll = dataRows.size > 8 // Scroll only if more than 8 rows
+                
+                if (shouldScroll) {
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(backgroundColor)
-                            .padding(horizontal = 12.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .heightIn(min = 0.dp, max = 500.dp), // Larger max height
+                        verticalArrangement = Arrangement.spacedBy(1.dp)
                     ) {
-                        Text(
-                            text = key,
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF0D47A1), // Dark blue text
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = value,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF0D47A1), // Dark blue text
-                            textAlign = TextAlign.End,
-                            modifier = Modifier.weight(1f),
-                            fontWeight = FontWeight.Bold
-                        )
+                        itemsIndexed(dataRows.toList()) { index, (key, value) ->
+                            TableRow(index, key, value)
+                        }
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(1.dp)
+                    ) {
+                        dataRows.forEachIndexed { index, (key, value) ->
+                            TableRow(index, key, value)
+                        }
                     }
                 }
             }
@@ -1375,6 +1384,37 @@ private fun extractDisplayModeFromCsv(csvData: String): String {
 }
 
 @Composable
+private fun TableRow(index: Int, key: String, value: String) {
+    val backgroundColor = when {
+        index % 2 == 0 -> Color(0xFF388E3C) // Darker green for even rows (button-like)
+        else -> Color(0xFF4CAF50) // Medium-dark green for odd rows
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor)
+            .padding(horizontal = 12.dp, vertical = 8.dp), // Slightly larger padding
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = key,
+            style = MaterialTheme.typography.bodyMedium, // Larger text
+            fontWeight = FontWeight.Medium,
+            color = Color.White, // White text for better contrast
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium, // Larger text
+            color = Color.White, // White text for better contrast
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1f),
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 private fun FullTableDisplay(csvData: String) {
     val parsedData = remember(csvData) {
         parseCsvDataToMap(csvData).filterKeys { !it.startsWith("_") } // Remove metadata
@@ -1382,9 +1422,11 @@ private fun FullTableDisplay(csvData: String) {
     
     if (parsedData.isNotEmpty()) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .widthIn(min = 700.dp), // Larger width consistent with CsvDataTable
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFF1F8E9) // Light green background
+                containerColor = Color(0xFFE8F5E8) // Light green background
             )
         ) {
             Column {
@@ -1393,7 +1435,7 @@ private fun FullTableDisplay(csvData: String) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF4CAF50)) // Green header
+                        .background(Color(0xFF1B5E20)) // Very dark green header - consistent
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -1408,8 +1450,8 @@ private fun FullTableDisplay(csvData: String) {
                 // Table rows with alternating colors
                 parsedData.entries.drop(1).forEachIndexed { index, (key, value) ->
                     val backgroundColor = when {
-                        index % 2 == 0 -> Color(0xFFE8F5E8) // Light green for even rows
-                        else -> Color(0xFFC8E6C9) // Medium green for odd rows
+                        index % 2 == 0 -> Color(0xFF388E3C) // Darker green for even rows - consistent
+                        else -> Color(0xFF4CAF50) // Medium-dark green for odd rows - consistent
                     }
                     
                     Row(
@@ -1424,14 +1466,14 @@ private fun FullTableDisplay(csvData: String) {
                             text = key,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF2E7D32), // Dark green text
+                            color = Color.White, // White text for better contrast
                             modifier = Modifier.weight(1.5f)
                         )
                         Text(
                             text = value,
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1B5E20), // Darker green text  
+                            color = Color.White, // White text for better contrast
                             textAlign = TextAlign.End,
                             modifier = Modifier.weight(1f)
                         )

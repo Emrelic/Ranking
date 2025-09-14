@@ -32,4 +32,7 @@ interface SongDao {
 
     @Query("SELECT COUNT(*) FROM songs WHERE listId = :listId")
     suspend fun getSongCountByListId(listId: Long): Int
+    
+    @Query("DELETE FROM songs WHERE id = :songId")
+    suspend fun deleteSongById(songId: Long)
 }

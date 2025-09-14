@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +31,7 @@ import com.example.ranking.data.Song
 fun ListViewScreen(
     listId: Long,
     onNavigateBack: () -> Unit,
+    onNavigateToEdit: (() -> Unit)? = null,
     viewModel: SongListViewModel = viewModel()
 ) {
     LaunchedEffect(listId) {
@@ -55,6 +57,13 @@ fun ListViewScreen(
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                }
+            },
+            actions = {
+                if (onNavigateToEdit != null && songs.isNotEmpty()) {
+                    IconButton(onClick = onNavigateToEdit) {
+                        Icon(Icons.Default.Edit, contentDescription = "Düzenle")
+                    }
                 }
             }
         )
