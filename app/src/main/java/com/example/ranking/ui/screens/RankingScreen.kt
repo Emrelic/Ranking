@@ -373,6 +373,8 @@ private fun MatchBasedContent(
     onMatchResultWithScore: (Long, Long?, Int?, Int?) -> Unit = { id, winner, _, _ -> onMatchResult(id, winner) },
     onComplete: () -> Unit
 ) {
+    android.util.Log.d("MatchBasedContent", "🎯 Method: $method, showInitialRanking: ${uiState.showInitialRanking}, showMatchingsList: ${uiState.showMatchingsList}, isComplete: ${uiState.isComplete}, currentMatch: ${uiState.currentMatch?.id}")
+    
     // İlk sıralama tablosunu göster (EMRE_CORRECT için)
     if (method == "EMRE_CORRECT" && uiState.showInitialRanking) {
         InitialRankingContent(
@@ -384,7 +386,8 @@ private fun MatchBasedContent(
     }
     
     // Eşleştirmeler listesini göster (EMRE_CORRECT için)
-    if (method == "EMRE_CORRECT" && uiState.showMatchingsList) {
+    if (method == "EMRE_CORRECT" && (uiState.showMatchingsList || !uiState.isComplete)) {
+        android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT")
         MatchingsListContent(
             uiState = uiState,
             viewModel = viewModel
@@ -594,7 +597,7 @@ private fun MatchBasedContent(
                                         .align(Alignment.BottomEnd)
                                         .offset(x = 4.dp, y = 4.dp)
                                         .background(
-                                            Color(0xFF4CAF50), // Green badge
+                                            MaterialTheme.colorScheme.primary, // Material Theme primary
                                             CircleShape
                                         )
                                         .padding(8.dp)
@@ -657,7 +660,7 @@ private fun MatchBasedContent(
                                         .align(Alignment.BottomEnd)
                                         .offset(x = 4.dp, y = 4.dp)
                                         .background(
-                                            Color(0xFF4CAF50), // Green badge
+                                            MaterialTheme.colorScheme.primary, // Material Theme primary
                                             CircleShape
                                         )
                                         .padding(8.dp)
@@ -1034,16 +1037,28 @@ private fun MatchingsListContent(
                 val song1 = uiState.allSongs.find { it.id == match.songId1 }
                 val song2 = uiState.allSongs.find { it.id == match.songId2 }
                 
-                Column {
-                    // Eşleşme numarası - alternating match numbering kullan
-                    val matchNumber = if (match.matchNumber > 0) match.matchNumber else index + 1
-                    Text(
-                        text = "${matchNumber}. Eşleşme",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            android.util.Log.d("MatchingsListContent", "🎯 Maç tıklandı: ${match.id}")
+                            // Bu maçı currentMatch olarak ayarla ve oylama ekranına geç
+                            viewModel.selectMatch(match)
+                        },
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        // Eşleşme numarası - alternating match numbering kullan
+                        val matchNumber = if (match.matchNumber > 0) match.matchNumber else index + 1
+                        Text(
+                            text = "${matchNumber}. Eşleşme",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
                     
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -1051,39 +1066,30 @@ private fun MatchingsListContent(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         
-                        // İlk takım Card
-                        Card(
-                            modifier = Modifier.weight(1f),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
+                        // İlk takım - direkt içerik (gri kutu yok)
+                        Box(
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                            ) {
-                                song1?.let { song ->
-                                    TeamCardContent(
-                                        song = song,
-                                        modifier = Modifier
-                                            .padding(0.dp)
-                                            .width(600.dp) // Fixed large width for table display
-                                    )
-                                }
-                                
-                                // Puan rozeti sol alt köşe (sadece EMRE_CORRECT için)
-                                val team1Points = if (uiState.emreState?.teams?.isNotEmpty() == true) {
-                                    uiState.emreState.teams.find { it.song.id == song1?.id }?.points ?: 0.0
-                                } else {
-                                    0.0
-                                }
-                                
+                            song1?.let { song ->
+                                TeamCardContent(
+                                    song = song,
+                                    modifier = Modifier.fillMaxWidth() // Ekran kenarlarına kadar uzansın
+                                )
+                            }
+                            
+                            // Puan rozeti sol alt köşe (sadece EMRE_CORRECT için)
+                            val team1Points = if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                uiState.emreState.teams.find { it.song.id == song1?.id }?.points ?: 0.0
+                            } else {
+                                0.0
+                            }
+                            
+                            if (team1Points > 0) {
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomStart)
                                         .padding(4.dp)
-                                        .background(Color(0xFF4CAF50), RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
@@ -1096,10 +1102,10 @@ private fun MatchingsListContent(
                             }
                         }
                         
-                        // Vertical VS text (V above S)
+                        // Vertical VS text (V above S) - daraltılmış
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(horizontal = 4.dp)
+                            modifier = Modifier.padding(horizontal = 2.dp) // Daha dar VS alanı
                         ) {
                             Text(
                                 text = "V",
@@ -1115,39 +1121,30 @@ private fun MatchingsListContent(
                             )
                         }
                         
-                        // İkinci takım Card
-                        Card(
-                            modifier = Modifier.weight(1f),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
+                        // İkinci takım - direkt içerik (gri kutu yok)
+                        Box(
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp)
-                            ) {
-                                song2?.let { song ->
-                                    TeamCardContent(
-                                        song = song,
-                                        modifier = Modifier
-                                            .padding(0.dp)
-                                            .width(600.dp) // Fixed large width for table display
-                                    )
-                                }
-                                
-                                // Puan rozeti sağ alt köşe (sadece EMRE_CORRECT için)
-                                val team2Points = if (uiState.emreState?.teams?.isNotEmpty() == true) {
-                                    uiState.emreState.teams.find { it.song.id == song2?.id }?.points ?: 0.0
-                                } else {
-                                    0.0
-                                }
-                                
+                            song2?.let { song ->
+                                TeamCardContent(
+                                    song = song,
+                                    modifier = Modifier.fillMaxWidth() // Ekran kenarlarına kadar uzansın
+                                )
+                            }
+                            
+                            // Puan rozeti sağ alt köşe (sadece EMRE_CORRECT için)
+                            val team2Points = if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                uiState.emreState.teams.find { it.song.id == song2?.id }?.points ?: 0.0
+                            } else {
+                                0.0
+                            }
+                            
+                            if (team2Points > 0) {
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.BottomEnd)
                                         .padding(4.dp)
-                                        .background(Color(0xFF4CAF50), RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Text(
@@ -1163,6 +1160,7 @@ private fun MatchingsListContent(
                 }
             }
         }
+    }
         
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -1223,16 +1221,22 @@ internal fun TeamCardContent(
         }
         
         // CSV tabular data varsa display mode'a göre göster
+        android.util.Log.d("TeamCardContent", "🔍 Song: ${song.name}, csvData: '${song.csvData}'")
         song.csvData?.let { csvData ->
+            android.util.Log.d("TeamCardContent", "🔍 CSV data is not null: '$csvData'")
             if (csvData.isNotBlank()) {
-                android.util.Log.d("TeamCardContent", "Showing CSV table for song: ${song.name}")
+                android.util.Log.d("TeamCardContent", "✅ Showing CSV table for song: ${song.name}")
                 Spacer(modifier = Modifier.height(8.dp))
                 CsvDataTable(
                     csvData = csvData, 
                     teamPoints = extractPointsFromCsv(csvData),
                     onClick = onClick
                 )
+            } else {
+                android.util.Log.d("TeamCardContent", "❌ CSV data is blank for song: ${song.name}")
             }
+        } ?: run {
+            android.util.Log.d("TeamCardContent", "❌ CSV data is null for song: ${song.name}")
         }
     }
 }
@@ -1261,14 +1265,14 @@ private fun CsvDataTable(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .widthIn(min = 700.dp) // Larger table width
+                    .padding(4.dp) // Mobile friendly padding
             ) {
                 // Header with team name (first value from CSV)
                 val teamName = parsedData.values.firstOrNull() ?: "Team"
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1B5E20)) // Very dark green header (button-like)
+                        .background(MaterialTheme.colorScheme.primary) // Material Theme primary header
                         .padding(horizontal = 12.dp, vertical = 10.dp), // Slightly larger padding
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -1304,7 +1308,7 @@ private fun CsvDataTable(
                         .offset(x = 8.dp, y = (-8).dp)
                         .size(24.dp)
                         .background(
-                            color = Color(0xFFFF9800), // Orange
+                            color = MaterialTheme.colorScheme.secondary, // Material Theme secondary
                             shape = CircleShape
                         ),
                     contentAlignment = Alignment.Center
@@ -1446,9 +1450,9 @@ private fun FullTableDisplay(csvData: String) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(min = 700.dp), // Larger width consistent with CsvDataTable
+                .fillMaxWidth().padding(4.dp), // Mobile friendly width
             colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFE8F5E8) // Light green background
+                containerColor = MaterialTheme.colorScheme.primaryContainer // Material Theme primary container
             )
         ) {
             Column {
@@ -1457,7 +1461,7 @@ private fun FullTableDisplay(csvData: String) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(0xFF1B5E20)) // Very dark green header - consistent
+                        .background(MaterialTheme.colorScheme.primary) // Material Theme primary header
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -1472,8 +1476,8 @@ private fun FullTableDisplay(csvData: String) {
                 // Table rows with alternating colors
                 parsedData.entries.drop(1).forEachIndexed { index, (key, value) ->
                     val backgroundColor = when {
-                        index % 2 == 0 -> Color(0xFF388E3C) // Darker green for even rows - consistent
-                        else -> Color(0xFF4CAF50) // Medium-dark green for odd rows - consistent
+                        index % 2 == 0 -> MaterialTheme.colorScheme.primaryContainer // Material Theme primary container for even rows
+                        else -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) // Material Theme primary with transparency for odd rows
                     }
                     
                     Row(

@@ -114,7 +114,7 @@ fun RankingNavigation(
             NewTournamentScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onTournamentCreated = { tournamentId ->
-                    // Navigate to tournament routing to start the tournament
+                    // Directly navigate to classic ranking screen to bypass tournament routing issues
                     navController.navigate("tournament_routing/$tournamentId") {
                         popUpTo("main_menu")
                     }

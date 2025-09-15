@@ -21,22 +21,9 @@ fun TournamentRoutingScreen(
         viewModel.loadTournament(tournamentId) { tournament ->
             if (tournament != null) {
                 android.util.Log.d("TournamentRouting", "Tournament loaded: ${tournament.name}, System: ${tournament.systemType}")
-                when (tournament.systemType) {
-                    "SWISS", "EMRE_CORRECT" -> {
-                        android.util.Log.d("TournamentRouting", "Navigating to TournamentRanking for $tournamentId")
-                        android.util.Log.d("TournamentRouting", "Calling onNavigateToTournamentRanking...")
-                        onNavigateToTournamentRanking(tournamentId)
-                        android.util.Log.d("TournamentRouting", "onNavigateToTournamentRanking called!")
-                    }
-                    "DIRECT_SCORING", "LEAGUE", "ELIMINATION", "FULL_ELIMINATION" -> {
-                        android.util.Log.d("TournamentRouting", "Navigating to ClassicRanking: listId=${tournament.songListId}, system=${tournament.systemType}")
-                        onNavigateToClassicRanking(tournament.songListId, tournament.systemType)
-                    }
-                    else -> {
-                        android.util.Log.d("TournamentRouting", "Unknown system type: ${tournament.systemType}, defaulting to TournamentRanking")
-                        onNavigateToTournamentRanking(tournamentId)
-                    }
-                }
+                // Navigate directly to classic RankingScreen for all system types
+                android.util.Log.d("TournamentRouting", "Navigating to ClassicRanking: listId=${tournament.songListId}, system=${tournament.systemType}")
+                onNavigateToClassicRanking(tournament.songListId, tournament.systemType)
             } else {
                 android.util.Log.e("TournamentRouting", "Failed to load tournament with ID: $tournamentId")
             }

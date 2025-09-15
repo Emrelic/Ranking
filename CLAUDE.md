@@ -377,3 +377,55 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - Sütun sırası değişikliği tüm satırlara uygulanır ✅
 - Unsaved changes tracking ile kaydetme zorunluluğu ✅
 - Drag gesture iptali durumunda state temizleme ✅
+
+---
+
+### 🎯 2025-09-15 AKŞAM - EMRE_CORRECT NAVİGASYON SORUNU ⚠️
+
+**🚫 DEVAM EDEN SORUN:**
+- **Eşleştirmeler listesinden puanlama ekranına geçiş çalışmıyor**
+- **Maç kartları tıklanabilir halde ama navigation tetiklenmiyor**
+- **showMatchingsList state yönetimi problemi**
+
+**🔧 YAPILAN FİXLER (2025-09-15):**
+1. **Syntax Error Fix**: RankingScreen.kt line 1190 - Extra closing brace kaldırıldı
+2. **Clickable Card Implementation**: MatchingsListContent'e Card + clickable modifier eklendi
+3. **selectMatch() Function**: RankingViewModel'e individual match selection eklendi
+4. **APK Build & Deploy**: Başarılı build ve telefona yükleme (R58M3418NMR)
+
+**📱 LOGCAT ANALİZİ:**
+```
+MatchBasedContent: showInitialRanking: false, showMatchingsList: false, isComplete: false, currentMatch: null
+MatchBasedContent: 🎯 Showing MatchingsList for EMRE_CORRECT
+```
+
+**🔍 PROBLEM TESPİTİ:**
+- **State Inconsistency**: showMatchingsList=false ama yine de MatchingsList gösteriliyor
+- **Navigation Logic**: selectMatch() çağırılıyor ama UI state geçişi olmuyor
+- **Click Response**: Match kartları tıklanabilir ama selectMatch() response'u eksik
+
+**📋 TÜM YAPILAN DEĞİŞİKLİKLER:**
+- **RankingViewModel.kt**: startScoring() EMRE_CORRECT için fixed
+- **RankingViewModel.kt**: resumeSession() 3-state logic eklendi  
+- **RankingViewModel.kt**: selectMatch() function implementasyonu
+- **RankingScreen.kt**: MatchingsListContent Card + clickable eklendi
+- **RankingScreen.kt**: Syntax error (line 1190) düzeltildi
+
+**❌ HALA ÇALIŞMIYOR:**
+- **Match tıklama → Puanlama ekranı navigation**
+- **State synchronization problems between UI and ViewModel**
+- **showMatchingsList control logic eksik/hatalı**
+
+**🔄 SONRAKI SESSION İÇİN TODO:**
+1. **selectMatch() function debug**: Detaylı log ve state tracking
+2. **UI State Flow Analysis**: showMatchingsList → currentMatch transition
+3. **Navigation Logic Review**: MatchBasedContent decision tree kontrolü
+4. **Event Handling**: onClick events'ların ViewModel'e ulaşıp ulaşmadığını kontrol
+
+**💾 SESSION SUMMARY:**
+- Core algorithm (EMRE_CORRECT) çalışıyor ✅
+- Matching list generation çalışıyor ✅  
+- UI clickable cards implemented ✅
+- Navigation eşleştirmeler → puanlama HALA BROKEN ❌
+
+**⏰ LİMİT DURUMU:** Çalışma süresi tamamlandı, yarın devam edilecek

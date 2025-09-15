@@ -309,8 +309,31 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     fun startScoring() {
         android.util.Log.d("RankingViewModel", "🎯 Puanlama ekranına geçiliyor...")
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(showMatchingsList = false)
-            loadNextMatch()
+            // EMRE_CORRECT sistemi için eşleştirmeler listesini gizleme
+            // Bu sistem eşleştirmeler listesinden bireysel maçlara geçiş yapar
+            val shouldHideMatchingsList = currentMethod != "EMRE_CORRECT"
+            
+            _uiState.value = _uiState.value.copy(showMatchingsList = !shouldHideMatchingsList)
+            
+            // EMRE_CORRECT dışındaki sistemler için bir sonraki maçı yükle
+            if (currentMethod != "EMRE_CORRECT") {
+                loadNextMatch()
+            }
+        }
+    }
+    
+    fun selectMatch(match: Match) {
+        android.util.Log.d("RankingViewModel", "🎯 Maç seçildi: ${match.id} - Song1: ${match.songId1}, Song2: ${match.songId2}")
+        viewModelScope.launch {
+            val song1 = songs.find { it.id == match.songId1 }
+            val song2 = songs.find { it.id == match.songId2 }
+            
+            _uiState.value = _uiState.value.copy(
+                showMatchingsList = false,
+                currentMatch = match,
+                song1 = song1,
+                song2 = song2
+            )
         }
     }
     
@@ -1180,8 +1203,32 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     
                     emreState = state
                     calculateCurrentStandings()
+                    
+                    // Tamamlanmamış maçlar varsa eşleştirmeler listesini göster
+                    val incompleteMatches = allMatches.filter { !it.isCompleted }
+                    if (incompleteMatches.isNotEmpty()) {
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            showInitialRanking = false,
+                            showMatchingsList = true,
+                            matchingsList = incompleteMatches.sortedBy { it.matchNumber },
+                            emreState = emreState
+                        )
+                    } else {
+                        // Tüm maçlar tamamlanmış ama turnuva bitmemiş - sonraki turu bekle
+                        loadNextMatch()
+                    }
+                } else {
+                    // Hiç maç yok - yeni başlayan turnuva, ilk sıralama tablosunu göster
+                    emreState = EmreSystemCorrect.initializeEmreTournament(songs)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        showInitialRanking = true,
+                        emreState = emreState,
+                        allSongs = songs,
+                        currentMatch = null
+                    )
                 }
-                loadNextMatch()
             }
             else -> {
                 // For other match-based methods, resume from current match
