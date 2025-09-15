@@ -1285,28 +1285,13 @@ private fun CsvDataTable(
                 val dataRows = parsedData.entries.drop(1)
                     .filterNot { (key, _) -> key.startsWith("_") } // Skip metadata like _displayMode
                 
-                // Use LazyColumn only if many rows, otherwise regular Column
-                val shouldScroll = dataRows.size > 8 // Scroll only if more than 8 rows
-                
-                if (shouldScroll) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .heightIn(min = 0.dp, max = 500.dp), // Larger max height
-                        verticalArrangement = Arrangement.spacedBy(1.dp)
-                    ) {
-                        itemsIndexed(dataRows.toList()) { index, (key, value) ->
-                            TableRow(index, key, value)
-                        }
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(1.dp)
-                    ) {
-                        dataRows.forEachIndexed { index, (key, value) ->
-                            TableRow(index, key, value)
-                        }
+                // Always show all rows without height limit
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(1.dp)
+                ) {
+                    dataRows.forEachIndexed { index, (key, value) ->
+                        TableRow(index, key, value)
                     }
                 }
             }
@@ -1385,32 +1370,69 @@ private fun extractDisplayModeFromCsv(csvData: String): String {
 
 @Composable
 private fun TableRow(index: Int, key: String, value: String) {
+    // Use Material Theme primary colors for button-like appearance
     val backgroundColor = when {
-        index % 2 == 0 -> Color(0xFF388E3C) // Darker green for even rows (button-like)
-        else -> Color(0xFF4CAF50) // Medium-dark green for odd rows
+        index % 2 == 0 -> MaterialTheme.colorScheme.primary // Primary color for even rows
+        else -> MaterialTheme.colorScheme.primaryContainer // Primary container for odd rows
     }
+    val textColor = when {
+        index % 2 == 0 -> MaterialTheme.colorScheme.onPrimary // Text on primary
+        else -> MaterialTheme.colorScheme.onPrimaryContainer // Text on primary container
+    }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor)
-            .padding(horizontal = 12.dp, vertical = 8.dp), // Slightly larger padding
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = key,
-            style = MaterialTheme.typography.bodyMedium, // Larger text
+            style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = Color.White, // White text for better contrast
+            color = textColor,
             modifier = Modifier.weight(1f)
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium, // Larger text
-            color = Color.White, // White text for better contrast
-            textAlign = TextAlign.End,
-            modifier = Modifier.weight(1f),
-            fontWeight = FontWeight.Bold
-        )
+
+        // Multi-line value support - like ListViewScreen implementation
+        val valueLines = value.split(Regex("\\n|;|,")).filter { it.trim().isNotBlank() }
+        if (valueLines.size > 1) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.End
+            ) {
+                valueLines.take(3).forEach { line -> // Show max 3 lines
+                    Text(
+                        text = line.trim(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = textColor,
+                        textAlign = TextAlign.End,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
+                if (valueLines.size > 3) {
+                    Text(
+                        text = "...",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = textColor,
+                        textAlign = TextAlign.End
+                    )
+                }
+            }
+        } else {
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                color = textColor,
+                textAlign = TextAlign.End,
+                modifier = Modifier.weight(1f),
+                fontWeight = FontWeight.Bold,
+                maxLines = 2
+            )
+        }
     }
 }
 

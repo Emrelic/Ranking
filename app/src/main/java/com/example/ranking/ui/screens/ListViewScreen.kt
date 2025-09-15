@@ -43,22 +43,20 @@ fun ListViewScreen(
     LaunchedEffect(listId) {
         viewModel.loadSongs(listId)
     }
-    
+
     val songs by viewModel.songs.collectAsState()
     val songList by viewModel.songList.collectAsState()
-    
+
     // Tab state
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Takım Kartları", "Tablo Formatı")
-    
+
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
         TopAppBar(
-            title = { 
-                Text(songList?.name ?: "Liste İçeriği") 
+            title = {
+                Text(songList?.name ?: "Liste İçeriği")
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
@@ -73,9 +71,7 @@ fun ListViewScreen(
                 }
             }
         )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
+
         if (songs.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -88,37 +84,26 @@ fun ListViewScreen(
                 )
             }
         } else {
-            // Liste bilgisi
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+            // Liste bilgisi - Compact header
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primaryContainer)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = songList?.name ?: "Liste",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Toplam ${songs.size} öğe",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        text = "Oluşturulma: ${songList?.createdAt ?: ""}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                    )
-                }
+                Text(
+                    text = songList?.name ?: "Liste",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "Toplam ${songs.size} öğe",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Tab Row
             TabRow(
                 selectedTabIndex = selectedTabIndex,
@@ -132,15 +117,14 @@ fun ListViewScreen(
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Content based on selected tab
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (selectedTabIndex == 0) {
-                    // Team Cards View
+
+            // Content based on selected tab - FULL SCREEN
+            if (selectedTabIndex == 0) {
+                // Team Cards View
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     itemsIndexed(songs) { index, song ->
                         Card(
                             modifier = Modifier.fillMaxWidth()
@@ -157,7 +141,7 @@ fun ListViewScreen(
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.width(40.dp)
                                 )
-                                
+
                                 TeamCardContent(
                                     song = song,
                                     modifier = Modifier.weight(1f)
@@ -165,158 +149,21 @@ fun ListViewScreen(
                             }
                         }
                     }
+                }
+            } else {
+                // Table View - FULL SCREEN SEAMLESS TABLE like ListEditScreen
+                val songsWithCsvData = songs.filter { it.csvData != null }
+
+                if (songsWithCsvData.isNotEmpty() && songsWithCsvData.first().csvData != null) {
+                    // All CSV songs have structured data - show full screen table
+                    FullScreenTableDisplay(csvData = songsWithCsvData.first().csvData!!, allSongs = songs)
                 } else {
-                    // Table View - Show data in table format if available
-                    val songsWithCsvData = songs.filter { it.csvData != null }
-                    
-                    if (songsWithCsvData.isNotEmpty() && songsWithCsvData.first().csvData != null) {
-                        // All CSV songs have structured data - show full table
-                        item {
-                            FullTableDisplay(csvData = songsWithCsvData.first().csvData!!, allSongs = songs)
-                        }
-                    } else {
-                        // Show individual CSV tables for each song
-                        itemsIndexed(songs) { index, song ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "${index + 1}.",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.width(40.dp)
-                                    )
-                                    
-                                    // Show CSV data or regular song card
-                                    if (song.csvData != null) {
-                                        CsvDataTableLocal(
-                                            csvData = song.csvData,
-                                            teamPoints = extractPointsFromCsvLocal(song.csvData)
-                                        )
-                                    } else {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = song.name,
-                                                style = MaterialTheme.typography.titleMedium,
-                                                fontWeight = FontWeight.Bold,
-                                                maxLines = 2
-                                            )
-                                            if (song.artist.isNotBlank()) {
-                                                Text(
-                                                    text = song.artist,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-// Helper functions
-private fun extractDisplayModeFromCsv(csvData: String): String {
-    return try {
-        val jsonObject = JSONObject(csvData)
-        jsonObject.optString("_displayMode", "cards")
-    } catch (e: Exception) {
-        "cards"
-    }
-}
-
-private fun parseCsvDataToMap(csvData: String): Map<String, String> {
-    return try {
-        val jsonObject = JSONObject(csvData)
-        val keys = jsonObject.keys().asSequence().toList()
-        val result = mutableMapOf<String, String>()
-        
-        keys.forEach { key ->
-            val value = jsonObject.optString(key, "")
-            if (value.isNotBlank()) {
-                result[key] = value
-            }
-        }
-        
-        result
-    } catch (e: Exception) {
-        emptyMap()
-    }
-}
-
-@Composable
-private fun FullTableDisplay(csvData: String) {
-    val parsedData = remember(csvData) {
-        parseCsvDataToMap(csvData).filterKeys { !it.startsWith("_") } // Remove metadata
-    }
-    
-    if (parsedData.isNotEmpty()) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFF1F8E9) // Light green background
-            )
-        ) {
-            Column {
-                // Green header with team name
-                val teamName = parsedData.values.firstOrNull() ?: "Team"
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF4CAF50)) // Green header
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = teamName.uppercase(),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
-                
-                // Table rows with alternating colors
-                parsedData.entries.drop(1).forEachIndexed { index, (key, value) ->
-                    val backgroundColor = when {
-                        index % 2 == 0 -> Color(0xFFE8F5E8) // Light green for even rows
-                        else -> Color(0xFFC8E6C9) // Medium green for odd rows
-                    }
-                    
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(backgroundColor)
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    // No CSV data available
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = key,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF2E7D32), // Dark green text
-                            modifier = Modifier.weight(1.5f)
-                        )
-                        Text(
-                            text = value,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1B5E20), // Darker green text  
-                            textAlign = TextAlign.End,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Text("Tablo verisi bulunamadı")
                     }
                 }
             }
@@ -324,8 +171,9 @@ private fun FullTableDisplay(csvData: String) {
     }
 }
 
+// FULL SCREEN SEAMLESS TABLE - Like ListEditScreen
 @Composable
-private fun FullTableDisplay(csvData: String, allSongs: List<com.example.ranking.data.Song>) {
+private fun FullScreenTableDisplay(csvData: String, allSongs: List<com.example.ranking.data.Song>) {
     // Extract headers from the first song's CSV data
     val headers = remember(csvData) {
         try {
@@ -335,195 +183,70 @@ private fun FullTableDisplay(csvData: String, allSongs: List<com.example.ranking
             listOf("Name")
         }
     }
-    
-    Card(
+
+    // FULL SCREEN TABLE - NO PADDING, NO CARD WRAPPER
+    Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(600.dp), // Fixed height to avoid layout conflicts
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .fillMaxSize()
+            .background(Color.White)
     ) {
-        Column(
+        val tableScrollState = rememberScrollState()
+
+        // Header Row - Full width, no padding
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp)
+                .fillMaxWidth()
+                .horizontalScroll(tableScrollState),
+            horizontalArrangement = Arrangement.spacedBy(1.dp)
         ) {
-            val tableScrollState = rememberScrollState()
-
-            // Header Row - exactly like ListEditScreen
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(tableScrollState),
-                horizontalArrangement = Arrangement.spacedBy(1.dp)
-            ) {
-                headers.forEachIndexed { columnIndex, header ->
-                    Surface(
-                        modifier = Modifier
-                            .width(120.dp)
-                            .height(48.dp),
-                        color = MaterialTheme.colorScheme.primary, // Use system primary color
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+            headers.forEachIndexed { columnIndex, header ->
+                Surface(
+                    modifier = Modifier
+                        .width(120.dp)
+                        .height(48.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize().padding(4.dp)
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize().padding(4.dp)
-                        ) {
-                            Text(
-                                text = header,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                maxLines = 2
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Data Rows - Column with verticalScroll for vertical scrolling
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(1.dp)
-            ) {
-                allSongs.forEachIndexed { rowIndex, song ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(tableScrollState),
-                        horizontalArrangement = Arrangement.spacedBy(1.dp)
-                    ) {
-                        headers.forEachIndexed { columnIndex, header ->
-                            val cellValue = song.csvData?.let { csvData ->
-                                try {
-                                    val jsonObject = JSONObject(csvData)
-                                    jsonObject.optString(header, if (header == "Name" || header.contains("Ulke")) song.name else "")
-                                } catch (e: Exception) {
-                                    if (header == "Name" || header.contains("Ulke")) song.name else ""
-                                }
-                            } ?: (if (header == "Name" || header.contains("Ulke")) song.name else "")
-
-                            Surface(
-                                modifier = Modifier
-                                    .width(120.dp)
-                                    .height(40.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-                            ) {
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize().padding(4.dp)
-                                ) {
-                                    // Handle multi-line values
-                                    val lines = cellValue.split(Regex("\\n|;|,")).filter { it.trim().isNotBlank() }
-                                    if (lines.size > 1) {
-                                        Column(
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            lines.take(3).forEach { line -> // Show max 3 lines
-                                                Text(
-                                                    text = line.trim(),
-                                                    fontSize = 9.sp,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    textAlign = TextAlign.Center,
-                                                    maxLines = 1
-                                                )
-                                            }
-                                            if (lines.size > 3) {
-                                                Text("...", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                            }
-                                        }
-                                    } else {
-                                        Text(
-                                            text = cellValue,
-                                            fontSize = 10.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 2
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                        Text(
+                            text = header,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 2
+                        )
                     }
                 }
             }
         }
-    }
-}
 
-@Composable
-private fun CsvDataTableLocal(csvData: String, teamPoints: Double = 0.0) {
-    val parsedData = remember(csvData) {
-        parseCsvDataToMap(csvData)
-    }
-
-    if (parsedData.isNotEmpty()) {
-        // Professional table like ListEditScreen
-        Box {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp), // Fixed height for consistent display
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-            ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp)
-            ) {
-                val headers = parsedData.keys.toList()
-                val scrollState = rememberScrollState()
-
-                // Header Row - exactly like ListEditScreen
+        // Data Rows - Full screen vertical scroll
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(1.dp)
+        ) {
+            allSongs.forEachIndexed { rowIndex, song ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(scrollState),
+                        .horizontalScroll(tableScrollState),
                     horizontalArrangement = Arrangement.spacedBy(1.dp)
                 ) {
                     headers.forEachIndexed { columnIndex, header ->
-                        Surface(
-                            modifier = Modifier
-                                .width(120.dp)
-                                .height(48.dp),
-                            color = MaterialTheme.colorScheme.primary, // Use system primary color
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
-                        ) {
-                            Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxSize().padding(4.dp)
-                            ) {
-                                Text(
-                                    text = header,
-                                    color = MaterialTheme.colorScheme.onPrimary,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center,
-                                    maxLines = 2
-                                )
+                        val cellValue = song.csvData?.let { csvData ->
+                            try {
+                                val jsonObject = JSONObject(csvData)
+                                jsonObject.optString(header, if (header == "Name" || header.contains("Ulke")) song.name else "")
+                            } catch (e: Exception) {
+                                if (header == "Name" || header.contains("Ulke")) song.name else ""
                             }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // Data Row
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(scrollState),
-                    horizontalArrangement = Arrangement.spacedBy(1.dp)
-                ) {
-                    headers.forEachIndexed { columnIndex, header ->
-                        val cellValue = parsedData[header] ?: ""
+                        } ?: (if (header == "Name" || header.contains("Ulke")) song.name else "")
 
                         Surface(
                             modifier = Modifier
@@ -569,30 +292,36 @@ private fun CsvDataTableLocal(csvData: String, teamPoints: Double = 0.0) {
                     }
                 }
             }
-            }
+        }
+    }
+}
 
-            // Orange circular point badge at top-right corner
-            if (teamPoints > 0) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = (-8).dp, y = 8.dp)
-                        .size(24.dp)
-                        .background(
-                            color = Color(0xFFFF9800), // Orange
-                            shape = androidx.compose.foundation.shape.CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "${teamPoints.toInt()}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+// Helper functions
+private fun extractDisplayModeFromCsv(csvData: String): String {
+    return try {
+        val jsonObject = JSONObject(csvData)
+        jsonObject.optString("_displayMode", "cards")
+    } catch (e: Exception) {
+        "cards"
+    }
+}
+
+private fun parseCsvDataToMap(csvData: String): Map<String, String> {
+    return try {
+        val jsonObject = JSONObject(csvData)
+        val keys = jsonObject.keys().asSequence().toList()
+        val result = mutableMapOf<String, String>()
+
+        keys.forEach { key ->
+            val value = jsonObject.optString(key, "")
+            if (value.isNotBlank()) {
+                result[key] = value
             }
         }
+
+        result
+    } catch (e: Exception) {
+        emptyMap()
     }
 }
 
@@ -601,7 +330,7 @@ private fun extractPointsFromCsvLocal(csvData: String): Double {
         val jsonObject = JSONObject(csvData)
         // Possible point field names (in order of preference)
         val pointFields = listOf("Puan", "puan", "Point", "point", "Points", "points", "Score", "score", "Skor", "skor")
-        
+
         for (field in pointFields) {
             val value = jsonObject.optString(field, "")
             if (value.isNotBlank()) {
