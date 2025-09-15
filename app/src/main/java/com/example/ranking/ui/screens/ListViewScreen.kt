@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.Surface
@@ -338,7 +339,7 @@ private fun FullTableDisplay(csvData: String, allSongs: List<com.example.ranking
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp), // Fixed height for consistent display
+            .height(600.dp), // Fixed height to avoid layout conflicts
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -383,9 +384,11 @@ private fun FullTableDisplay(csvData: String, allSongs: List<com.example.ranking
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Data Rows
+            // Data Rows - Column with verticalScroll for vertical scrolling
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(1.dp)
             ) {
                 allSongs.forEachIndexed { rowIndex, song ->
