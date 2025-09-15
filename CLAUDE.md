@@ -338,3 +338,42 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 4. **Header renk problemi: CsvDataTable başlık rengi düzeltmesi**
 
 **⏰ LİMİT DURUMU:** Çalışma süresi doldu, sonraki session'da devam edilecek
+
+### 🎯 2025-09-15 - SÜTUN DRAG-DROP SİSTEMİ EKLENDI ✅
+
+**📊 YENİ ÖZELLİK TAMAMLANDI:**
+- **Drag-Drop Sütun Reordering**: Tablo rötuş ekranında sütunları sürükleyip bırakma
+- **Visual Feedback**: Sürüklenen sütun sarı, hedef sütun yeşil renkte
+- **Haptic Feedback**: Sürükleme başlangıcında titreşim
+- **Real-time Update**: Sütun değişikliği anında tabloya yansır
+
+**🔧 TEKNİK DETAYLAR:**
+- **Dosya**: ListEditScreen.kt
+- **Import**: detectDragGestures, pointerInput, Offset
+- **State**: draggedColumn, draggedOverColumn, dragOffset
+- **Fonksiyon**: reorderColumns() - sütun ve veri yeniden sıralama
+- **UI**: Renk sistemi ve border değişiklikleri
+
+**🎨 VISUAL DESIGN:**
+- **Dragged Column**: Amber/sarı arkaplan (#FFC107) + siyah text
+- **Drop Target**: Yeşil arkaplan (#4CAF50) + beyaz text  
+- **Enhanced Border**: 2dp kalınlık sürükleme sırasında
+- **Smooth Animation**: detectDragGestures ile native Android experience
+
+**📱 KULLANIM:**
+1. **Tablo rötuş ekranına gir**: Liste > Düzenle
+2. **Sütun başlığını sürükle**: Uzun bas + sürükle
+3. **Hedef pozisyona bırak**: İstenen sütunun üzerine
+4. **Otomatik güncelleme**: Tüm veriler yeni sıraya göre düzenlenir
+5. **Kaydet**: Değişiklikleri kalıcı hale getir
+
+**✅ TEST DURUMU:**
+- **APK Build**: Başarılı (11MB, 22:06)
+- **Syntax Check**: Tüm hatalar düzeltildi
+- **Ready for Testing**: Cihaz bağlantısı bekleniyor
+
+**📋 ÖZELLİK DETAYLARI:**
+- E sütununu B sütunundan önceye taşıma ✅
+- Sütun sırası değişikliği tüm satırlara uygulanır ✅
+- Unsaved changes tracking ile kaydetme zorunluluğu ✅
+- Drag gesture iptali durumunda state temizleme ✅

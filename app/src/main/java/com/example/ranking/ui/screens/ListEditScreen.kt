@@ -5,6 +5,8 @@ import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
@@ -50,12 +52,40 @@ fun ListEditScreen(
     var editingText by remember { mutableStateOf("") }
     var selectedColumn by remember { mutableStateOf<Int?>(null) }
     var draggedColumn by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableStateOf(Offset.Zero) }
+    var draggedOverColumn by remember { mutableStateOf<Int?>(null) }
     var originalSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
     
     // UNIFIED SCROLL STATE - TÜM TABLO İÇİN TEK SCROLL
     val tableScrollState = rememberScrollState()
+    
+    // Reorder columns function
+    fun reorderColumns(fromIndex: Int, toIndex: Int) {
+        if (fromIndex != toIndex && fromIndex in headers.indices && toIndex in headers.indices) {
+            val newHeaders = headers.toMutableList()
+            val draggedHeader = newHeaders.removeAt(fromIndex)
+            newHeaders.add(toIndex, draggedHeader)
+            headers = newHeaders
+            
+            // Reorder data in all rows
+            val newListData = listData.map { row ->
+                val newRow = mutableMapOf<String, String>()
+                newHeaders.forEach { header ->
+                    newRow[header] = row[header] ?: ""
+                }
+                newRow
+            }
+            listData = newListData
+            hasUnsavedChanges = true
+            
+            // Reset drag states
+            draggedColumn = null
+            draggedOverColumn = null
+            dragOffset = Offset.Zero
+        }
+    }
     
     // Load list data with debug logs
     LaunchedEffect(listId) {
@@ -297,15 +327,51 @@ fun ListEditScreen(
                             horizontalArrangement = Arrangement.spacedBy(1.dp)
                         ) {
                             headers.forEachIndexed { columnIndex, header ->
+                                val isDragged = draggedColumn == columnIndex
+                                val isDraggedOver = draggedOverColumn == columnIndex && draggedColumn != null
+                                
                                 Surface(
                                     modifier = Modifier
                                         .width(120.dp)
                                         .height(48.dp)
+                                        .pointerInput(columnIndex) {
+                                            detectDragGestures(
+                                                onDragStart = {
+                                                    draggedColumn = columnIndex
+                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                },
+                                                onDragEnd = {
+                                                    draggedOverColumn?.let { targetIndex ->
+                                                        if (draggedColumn != null) {
+                                                            reorderColumns(draggedColumn!!, targetIndex)
+                                                        }
+                                                    }
+                                                    draggedColumn = null
+                                                    draggedOverColumn = null
+                                                    dragOffset = Offset.Zero
+                                                },
+                                                onDrag = { change, offset ->
+                                                    dragOffset += offset
+                                                    // Calculate which column we're over
+                                                    val xPosition = change.position.x + (columnIndex * 121)
+                                                    val targetColumn = (xPosition / 121).toInt().coerceIn(0, headers.size - 1)
+                                                    draggedOverColumn = targetColumn
+                                                }
+                                            )
+                                        }
                                         .clickable { 
                                             selectedColumn = if (selectedColumn == columnIndex) null else columnIndex
                                         },
-                                    color = if (selectedColumn == columnIndex) Color(0xFFE3F2FD) else Color(0xFF1976D2),
-                                    border = BorderStroke(1.dp, Color(0xFF1976D2))
+                                    color = when {
+                                        isDragged -> Color(0xFFFFC107) // Dragged column - amber
+                                        isDraggedOver -> Color(0xFF4CAF50) // Drop target - green
+                                        selectedColumn == columnIndex -> Color(0xFFE3F2FD)
+                                        else -> Color(0xFF1976D2)
+                                    },
+                                    border = BorderStroke(
+                                        width = if (isDragged || isDraggedOver) 2.dp else 1.dp,
+                                        color = if (isDragged || isDraggedOver) Color.Black else Color(0xFF1976D2)
+                                    )
                                 ) {
                                     Box(
                                         contentAlignment = Alignment.Center,
@@ -313,7 +379,12 @@ fun ListEditScreen(
                                     ) {
                                         Text(
                                             text = header,
-                                            color = if (selectedColumn == columnIndex) Color(0xFF1976D2) else Color.White,
+                                            color = when {
+                                                isDragged -> Color.Black // Dragged column - black text
+                                                isDraggedOver -> Color.White // Drop target - white text
+                                                selectedColumn == columnIndex -> Color(0xFF1976D2)
+                                                else -> Color.White
+                                            },
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
                                             textAlign = TextAlign.Center,
