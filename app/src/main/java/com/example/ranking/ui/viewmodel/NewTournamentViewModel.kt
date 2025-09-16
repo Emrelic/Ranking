@@ -54,8 +54,10 @@ class NewTournamentViewModel(application: Application) : AndroidViewModel(applic
     ) {
         viewModelScope.launch {
             try {
+                android.util.Log.d("NewTournamentViewModel", "Creating tournament: $name, system: $systemType")
+
                 val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-                
+
                 val tournament = Tournament(
                     name = name,
                     startDate = currentDate,
@@ -65,11 +67,16 @@ class NewTournamentViewModel(application: Application) : AndroidViewModel(applic
                     criteriaSettings = criteriaSettings?.let { gson.toJson(it) },
                     isCompleted = false
                 )
-                
+
+                android.util.Log.d("NewTournamentViewModel", "Tournament object created: $tournament")
+
                 val tournamentId = database.tournamentDao().insertTournament(tournament)
+                android.util.Log.d("NewTournamentViewModel", "Tournament inserted with ID: $tournamentId")
+
                 onSuccess(tournamentId)
-                
+
             } catch (e: Exception) {
+                android.util.Log.e("NewTournamentViewModel", "Failed to create tournament", e)
                 onError("Turnuva oluşturulamadı: ${e.message}")
             }
         }

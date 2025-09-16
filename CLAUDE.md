@@ -189,6 +189,17 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 
 # ÇALIŞMA PROTOKOLLERI
 
+## 📝 NOT DEFTERLERİ PROTOKOLÜ
+- **"ntk" komutu**: Tüm .md uzantılı not defterlerini okur
+- **Dosyalar**: CLAUDE.md + diğer tüm .md dosyaları projeye dahil
+- **"Not defterleri" = .md dosyaları**: Markdown uzantılı tüm dokümanlar
+
+### 📋 YAPILACAKLAR NOT DEFTERİ
+- **"ynd" komutu**: Yeni madde ekle (Yapılacaklar Not Defteri)
+- **Dosya**: YAPILACAKLAR.md
+- **Format**: [Kullanıcı madde] + ynd → otomatik kayıt
+- **Otomatik tarih**: Her maddeye tarih damgası eklenir
+
 ## 🔄 BERABER ÇALIŞMA PROTOKOLÜ
 1. **🔧 Otomatik Build & Deploy:**
    - Her yenilik → APK build → telefona yükleme
@@ -217,6 +228,22 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
      - **"BTŞ"** = Beep Teşekkür (Beep yaptığın için teşekkürler)
      - **"BTK"** = Beep Tenkid (Beep yapmadığın için tenkid)
      - Bu kısaltmalar beep protokolü performansını takip etmek için kullanılır
+
+## 🔥 YILDIZLI KOMUT SİSTEMİ (*)
+**Her komut * ile başlar - Hızlı erişim için:**
+- **"*btk"** = Beep protokolünü uygulamadığın için tenkid
+- **"*btş"** = Beep protokolü uyguladığın için teşekkür
+- **"*tmm"** = Bu özellik tamam, commit + push yap
+- **"*yle"** = Yapılacaklar listesine ekle
+- **"*ncp"** = Not defterlerini doldur, commit + push
+- **"*bty"** = Build et telefona yükle
+- **"*nto"** = Not defterlerini oku (ntk equivalent)
+- **"*çpe"** = Çalışma protokolüne ekle
+- **"*ege"** = Ekran görüntülerine ekle
+- **"*tsp"** = Sorunun ne olduğunu tespit et (bütün ihtimalleri listele)
+- **"*tdv"** = Tespitleri tedavi et, düzelt
+- **"*kyg"** = Kısayolları kod listesini göster
+- **Karışıklık önleme:** Bazı kodlar * ile başlayacak, protokolden ayırt et
 
 3. **💾 Hızlı Commit Protokolü:**
    - "tmm" diyince → anında commit + push

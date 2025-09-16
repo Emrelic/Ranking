@@ -385,8 +385,8 @@ private fun MatchBasedContent(
         return
     }
     
-    // Eşleştirmeler listesini göster (EMRE_CORRECT için)
-    if (method == "EMRE_CORRECT" && (uiState.showMatchingsList || !uiState.isComplete)) {
+    // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
+    if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
         android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT")
         MatchingsListContent(
             uiState = uiState,

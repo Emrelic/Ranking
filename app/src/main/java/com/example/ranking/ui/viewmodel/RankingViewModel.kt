@@ -307,18 +307,24 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     fun startScoring() {
-        android.util.Log.d("RankingViewModel", "🎯 Puanlama ekranına geçiliyor...")
+        android.util.Log.d("RankingViewModel", "🎯 startScoring() ÇAĞRILDI!")
+        android.util.Log.d("RankingViewModel", "🔍 currentMethod: '$currentMethod'")
         viewModelScope.launch {
-            // EMRE_CORRECT sistemi için eşleştirmeler listesini gizleme
-            // Bu sistem eşleştirmeler listesinden bireysel maçlara geçiş yapar
-            val shouldHideMatchingsList = currentMethod != "EMRE_CORRECT"
-            
-            _uiState.value = _uiState.value.copy(showMatchingsList = !shouldHideMatchingsList)
-            
-            // EMRE_CORRECT dışındaki sistemler için bir sonraki maçı yükle
-            if (currentMethod != "EMRE_CORRECT") {
+            // EMRE_CORRECT sistemi için logic
+            android.util.Log.d("RankingViewModel", "📝 Method kontrol ediliyor...")
+
+            if (currentMethod == "EMRE_CORRECT") {
+                android.util.Log.d("RankingViewModel", "✅ EMRE_CORRECT sistemi - İlk maçı yüklüyorum...")
+                // EMRE_CORRECT için ilk maçı yükle ve puanlama ekranını göster
+                loadNextMatch()
+            } else {
+                android.util.Log.d("RankingViewModel", "✅ Diğer sistem ($currentMethod) - MatchingsList gizliyorum...")
+                // Diğer sistemler için eşleştirmeler listesini gizle
+                _uiState.value = _uiState.value.copy(showMatchingsList = false)
                 loadNextMatch()
             }
+
+            android.util.Log.d("RankingViewModel", "🏁 startScoring() tamamlandı!")
         }
     }
     
