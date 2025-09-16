@@ -140,6 +140,7 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
     fun saveListChanges(
         listId: Long,
         updatedSongs: List<Pair<Long, Map<String, String>>>, // (songId, data) pairs
+        headers: List<String> = emptyList(), // Sütun sırası bilgisi
         displayMode: String = "table",
         onSuccess: () -> Unit,
         onError: (String) -> Unit
@@ -147,14 +148,24 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             try {
                 Log.d("ListEditViewModel", "🔄 Saving ${updatedSongs.size} song changes")
+                Log.d("ListEditViewModel", "📊 Headers order: $headers")
                 
                 updatedSongs.forEach { (songId, songData) ->
-                    // Create JSON from song data
+                    // Create JSON from song data - HEADER SIRASI KORUNARAK
                     val csvDataMap = songData.toMutableMap()
                     csvDataMap["_displayMode"] = displayMode
-                    
-                    val jsonEntries = csvDataMap.map { 
-                        "\"${it.key.replace("\"", "\\\"")}\": \"${it.value.replace("\"", "\\\"")}\""
+
+                    // Header sırası varsa kullan, yoksa mevcut key sırasını kullan
+                    val orderedKeys = if (headers.isNotEmpty()) {
+                        headers + "_displayMode" // Önce header sırası, sonra displayMode
+                    } else {
+                        csvDataMap.keys.toList() // Fallback: mevcut key sırası
+                    }
+
+                    val jsonEntries = orderedKeys.mapNotNull { key ->
+                        csvDataMap[key]?.let { value ->
+                            "\"${key.replace("\"", "\\\"")}\": \"${value.replace("\"", "\\\"")}\""
+                        }
                     }
                     val csvDataJson = "{${jsonEntries.joinToString(", ")}}"
                     

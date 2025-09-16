@@ -272,6 +272,7 @@ fun ListEditScreen(
                             viewModel.saveListChanges(
                                 listId = listId,
                                 updatedSongs = updatedSongs,
+                                headers = headers, // Sütun sırası bilgisi
                                 displayMode = "table",
                                 onSuccess = {
                                     hasUnsavedChanges = false
@@ -338,24 +339,41 @@ fun ListEditScreen(
                                             detectDragGestures(
                                                 onDragStart = {
                                                     draggedColumn = columnIndex
+                                                    draggedOverColumn = columnIndex // Start with current column
                                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                    Log.d("DragDrop", "🎯 Drag başladı - Column: $columnIndex")
                                                 },
                                                 onDragEnd = {
-                                                    draggedOverColumn?.let { targetIndex ->
-                                                        if (draggedColumn != null) {
-                                                            reorderColumns(draggedColumn!!, targetIndex)
-                                                        }
+                                                    Log.d("DragDrop", "🎯 Drag bitti - From: $draggedColumn, To: $draggedOverColumn")
+                                                    if (draggedColumn != null && draggedOverColumn != null &&
+                                                        draggedColumn != draggedOverColumn) {
+                                                        reorderColumns(draggedColumn!!, draggedOverColumn!!)
+                                                        Log.d("DragDrop", "✅ Sütun yeniden sıralandı")
                                                     }
+                                                    // Reset all drag states
                                                     draggedColumn = null
                                                     draggedOverColumn = null
                                                     dragOffset = Offset.Zero
                                                 },
                                                 onDrag = { change, offset ->
                                                     dragOffset += offset
-                                                    // Calculate which column we're over
-                                                    val xPosition = change.position.x + (columnIndex * 121)
-                                                    val targetColumn = (xPosition / 121).toInt().coerceIn(0, headers.size - 1)
-                                                    draggedOverColumn = targetColumn
+
+                                                    // Calculate target column with scroll offset consideration
+                                                    val columnWidth = 121f // 120dp + 1dp spacing
+                                                    val scrollOffset = tableScrollState.value
+
+                                                    // Total X position = scroll position + current drag position
+                                                    val totalX = scrollOffset + change.position.x
+
+                                                    // Calculate target column index
+                                                    val targetColumn = (totalX / columnWidth).toInt()
+                                                        .coerceIn(0, headers.size - 1)
+
+                                                    // Only update if target changed
+                                                    if (targetColumn != draggedOverColumn) {
+                                                        draggedOverColumn = targetColumn
+                                                        Log.d("DragDrop", "📍 Column $columnIndex → Column $targetColumn (x=${totalX.toInt()}, scroll=$scrollOffset)")
+                                                    }
                                                 }
                                             )
                                         }

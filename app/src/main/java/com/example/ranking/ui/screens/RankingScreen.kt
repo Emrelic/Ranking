@@ -304,7 +304,7 @@ private fun CompletedScoreItem(
             TeamCardContent(
                 song = song,
                 modifier = Modifier
-                    .width(600.dp) // Fixed large width for table display
+                    .weight(1f) // Take available width for table display
             )
             
             if (isEditing) {
@@ -473,7 +473,7 @@ private fun MatchBasedContent(
                                 TeamCardContent(
                                     song = song1,
                                     modifier = Modifier
-                                        .width(600.dp) // Fixed large width for table display
+                                        .weight(1f) // Take available width for table display
                                 )
                                 OutlinedTextField(
                                     value = score1Text,
@@ -526,7 +526,7 @@ private fun MatchBasedContent(
                                 TeamCardContent(
                                     song = song2,
                                     modifier = Modifier
-                                        .width(600.dp) // Fixed large width for table display
+                                        .weight(1f) // Take available width for table display
                                 )
                                 OutlinedTextField(
                                     value = score2Text,
@@ -1264,19 +1264,19 @@ private fun CsvDataTable(
                     Modifier.clickable { it() }
                 } ?: Modifier,
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                border = BorderStroke(1.dp, Color(0xFF1976D2)) // Image #1 ince mavi çerçeve
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline) // Material Theme çerçeve
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp) // Mobile friendly padding
+                        .padding(0.dp) // No padding for full width
                 ) {
                     // Header with team name (first value from CSV)
                     val teamName = parsedData.values.firstOrNull() ?: "Team"
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF1976D2)) // Image #1 koyu mavi başlık
+                            .background(Color(0xFF1976D2)) // Koyu mavi başlık (Blue 700)
                             .padding(horizontal = 12.dp, vertical = 10.dp), // Slightly larger padding
                         horizontalArrangement = Arrangement.Center
                     ) {
@@ -1379,21 +1379,21 @@ private fun extractDisplayModeFromCsv(csvData: String): String {
 
 @Composable
 private fun TableRow(index: Int, key: String, value: String) {
-    // Image #1 mavi tema - açık mavi tonları alternatif satırlar
+    // Custom Blue tema - koyu-orta-açık alternatif satırlar
     val backgroundColor = when {
-        index % 2 == 0 -> Color(0xFF42A5F5) // Açık mavi - çift satırlar
-        else -> Color(0xFF90CAF9) // Daha açık mavi - tek satırlar
+        index % 2 == 0 -> Color(0xFF2196F3) // Orta mavi - çift satırlar (Blue 500)
+        else -> Color(0xFF42A5F5) // Açık mavi - tek satırlar (Blue 400)
     }
     val textColor = when {
-        index % 2 == 0 -> Color.White // Açık mavi üstünde beyaz text
-        else -> Color(0xFF0D47A1) // Çok açık mavi üstünde koyu mavi text
+        index % 2 == 0 -> Color.White // Orta mavi üstünde beyaz text
+        else -> Color.White // Açık mavi üstünde beyaz text
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {

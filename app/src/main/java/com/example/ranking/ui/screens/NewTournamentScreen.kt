@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -15,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.ui.viewmodel.NewTournamentViewModel
@@ -41,8 +43,8 @@ fun NewTournamentScreen(
     var useCriteria by remember { mutableStateOf(false) }
     var scoringType by remember { mutableStateOf("comparative") }
     var scoreScale by remember { mutableStateOf(10) }
-    var drawThresholdMin by remember { mutableStateOf(40) }
-    var drawThresholdMax by remember { mutableStateOf(60) }
+    var drawThresholdMin by remember { mutableStateOf(50) }
+    var drawThresholdMax by remember { mutableStateOf(50) }
     var autoWinnerFromCriteria by remember { mutableStateOf(false) }
     var autoOpenCriteriaPanel by remember { mutableStateOf(false) }
     var mandatoryCriteria by remember { mutableStateOf(false) }
@@ -580,41 +582,211 @@ private fun CriteriaSettingsStep(
 
             // Score Scale
             Text(
-                text = "Puan Skalası: $scoreScale",
+                text = "Puan Skalası",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            Slider(
-                value = scoreScale.toFloat(),
-                onValueChange = { onScoreScaleChanged(it.toInt()) },
-                valueRange = 5f..100f,
-                steps = 18
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Preset scale options
+            val presetScales = listOf(1, 2, 3, 4, 5, 6, 7, 10, 20, 100)
+            var customScale by remember { mutableStateOf("") }
+            var useCustomScale by remember { mutableStateOf(false) }
+
+            // Update useCustomScale based on current scoreScale
+            LaunchedEffect(scoreScale) {
+                useCustomScale = scoreScale !in presetScales
+                if (useCustomScale) {
+                    customScale = scoreScale.toString()
+                }
+            }
+
+            // Preset buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                presetScales.chunked(5).forEach { chunk ->
+                    Column {
+                        chunk.forEach { scale ->
+                            FilterChip(
+                                onClick = {
+                                    onScoreScaleChanged(scale)
+                                    useCustomScale = false
+                                },
+                                label = { Text(scale.toString()) },
+                                selected = scoreScale == scale && !useCustomScale,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Custom scale input
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                FilterChip(
+                    onClick = {
+                        useCustomScale = !useCustomScale
+                        if (useCustomScale && customScale.isBlank()) {
+                            customScale = scoreScale.toString()
+                        } else if (!useCustomScale) {
+                            // Select closest preset
+                            val closest = presetScales.minByOrNull { kotlin.math.abs(it - scoreScale) } ?: 10
+                            onScoreScaleChanged(closest)
+                        }
+                    },
+                    label = { Text("Başka") },
+                    selected = useCustomScale,
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+
+                if (useCustomScale) {
+                    OutlinedTextField(
+                        value = customScale,
+                        onValueChange = { newValue ->
+                            customScale = newValue
+                            val intValue = newValue.toIntOrNull()
+                            if (intValue != null && intValue in 1..999) {
+                                onScoreScaleChanged(intValue)
+                            }
+                        },
+                        label = { Text("Özel Skala") },
+                        modifier = Modifier.width(120.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        )
+                    )
+                }
+            }
+
+            Text(
+                text = "Seçilen: $scoreScale",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Draw Threshold
             Text(
-                text = "Beraberlik Aralığı: %$drawThresholdMin-%$drawThresholdMax",
+                text = "Beraberlik Aralığı",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
-            
-            Row {
-                Text("Min:", modifier = Modifier.padding(top = 12.dp))
-                Slider(
-                    value = drawThresholdMin.toFloat(),
-                    onValueChange = { onDrawThresholdMinChanged(it.toInt()) },
-                    valueRange = 20f..50f,
-                    modifier = Modifier.weight(1f)
+            Text(
+                text = "Eğer takımlar %$drawThresholdMin-%$drawThresholdMax arasında puan alırsa berabere sayılır",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Column {
+                // Main slider for position (where the center of the range is)
+                Text(
+                    text = "Merkez Pozisyon: %${(drawThresholdMin + drawThresholdMax) / 2}",
+                    style = MaterialTheme.typography.bodyMedium
                 )
-                Text("Max:", modifier = Modifier.padding(top = 12.dp))
                 Slider(
-                    value = drawThresholdMax.toFloat(),
-                    onValueChange = { onDrawThresholdMaxChanged(it.toInt()) },
-                    valueRange = 51f..80f,
-                    modifier = Modifier.weight(1f)
+                    value = ((drawThresholdMin + drawThresholdMax) / 2).toFloat(),
+                    onValueChange = { centerValue ->
+                        val center = centerValue.toInt()
+                        val halfRange = (drawThresholdMax - drawThresholdMin) / 2
+                        val newMin = (center - halfRange).coerceIn(0, 100 - halfRange * 2)
+                        val newMax = (center + halfRange).coerceIn(halfRange * 2, 100)
+                        onDrawThresholdMinChanged(newMin)
+                        onDrawThresholdMaxChanged(newMax)
+                    },
+                    valueRange = 0f..100f,
+                    modifier = Modifier.fillMaxWidth()
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Range width slider
+                Text(
+                    text = "Aralık Genişliği: ${drawThresholdMax - drawThresholdMin} puan",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Slider(
+                    value = (drawThresholdMax - drawThresholdMin).toFloat(),
+                    onValueChange = { rangeWidth ->
+                        val range = rangeWidth.toInt()
+                        val center = (drawThresholdMin + drawThresholdMax) / 2
+                        val halfRange = range / 2
+                        val newMin = (center - halfRange).coerceIn(0, 100 - range)
+                        val newMax = (center + halfRange).coerceIn(range, 100)
+                        onDrawThresholdMinChanged(newMin)
+                        onDrawThresholdMaxChanged(newMax)
+                    },
+                    valueRange = 0f..50f, // Maximum 50 point range
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                // Visual representation
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Text(
+                            text = "Örnek Sonuçlar:",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "• ${drawThresholdMin - 1}%-${drawThresholdMax + 1}% → İlk takım galip",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "• $drawThresholdMin%-$drawThresholdMax% → Beraberlik",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            text = "• ${drawThresholdMax + 1}%-${drawThresholdMin - 1}% → İkinci takım galip",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                // Quick presets
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val presets = listOf(
+                        "50-50" to Pair(50, 50),
+                        "45-55" to Pair(45, 55),
+                        "40-60" to Pair(40, 60),
+                        "30-70" to Pair(30, 70)
+                    )
+
+                    presets.forEach { (label, range) ->
+                        FilterChip(
+                            onClick = {
+                                onDrawThresholdMinChanged(range.first)
+                                onDrawThresholdMaxChanged(range.second)
+                            },
+                            label = { Text(label, style = MaterialTheme.typography.bodySmall) },
+                            selected = drawThresholdMin == range.first && drawThresholdMax == range.second
+                        )
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
