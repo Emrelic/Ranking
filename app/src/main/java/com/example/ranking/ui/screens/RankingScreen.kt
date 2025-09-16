@@ -2,6 +2,7 @@ package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -1256,50 +1257,54 @@ private fun CsvDataTable(
     android.util.Log.d("CsvDataTable", "📊 Parsed data: $parsedData")
     
     if (parsedData.isNotEmpty()) {
-        // Green table format with header and scrollable rows - CLICKABLE
-        Box(
-            modifier = onClick?.let { 
-                Modifier.clickable { it() } 
-            } ?: Modifier
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp) // Mobile friendly padding
+        // Image #1 mavi table format with header and scrollable rows - CLICKABLE + border
+        Box {
+            Card(
+                modifier = onClick?.let {
+                    Modifier.clickable { it() }
+                } ?: Modifier,
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                border = BorderStroke(1.dp, Color(0xFF1976D2)) // Image #1 ince mavi çerçeve
             ) {
-                // Header with team name (first value from CSV)
-                val teamName = parsedData.values.firstOrNull() ?: "Team"
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primary) // Material Theme primary header
-                        .padding(horizontal = 12.dp, vertical = 10.dp), // Slightly larger padding
-                    horizontalArrangement = Arrangement.Center
+                        .padding(4.dp) // Mobile friendly padding
                 ) {
-                    Text(
-                        text = teamName.uppercase(),
-                        style = MaterialTheme.typography.titleMedium, // Larger header text
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                
-                // Scrollable data rows with alternating green colors
-                val dataRows = parsedData.entries.drop(1)
-                    .filterNot { (key, _) -> key.startsWith("_") } // Skip metadata like _displayMode
-                
-                // Always show all rows without height limit
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(1.dp)
-                ) {
-                    dataRows.forEachIndexed { index, (key, value) ->
-                        TableRow(index, key, value)
+                    // Header with team name (first value from CSV)
+                    val teamName = parsedData.values.firstOrNull() ?: "Team"
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF1976D2)) // Image #1 koyu mavi başlık
+                            .padding(horizontal = 12.dp, vertical = 10.dp), // Slightly larger padding
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = teamName.uppercase(),
+                            style = MaterialTheme.typography.titleMedium, // Larger header text
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    // Scrollable data rows with alternating green colors
+                    val dataRows = parsedData.entries.drop(1)
+                        .filterNot { (key, _) -> key.startsWith("_") } // Skip metadata like _displayMode
+
+                    // Always show all rows without height limit
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(1.dp)
+                    ) {
+                        dataRows.forEachIndexed { index, (key, value) ->
+                            TableRow(index, key, value)
+                        }
                     }
                 }
             }
-            
+
             // Orange circular point badge at top-right corner
             if (teamPoints > 0) {
                 Box(
@@ -1374,14 +1379,14 @@ private fun extractDisplayModeFromCsv(csvData: String): String {
 
 @Composable
 private fun TableRow(index: Int, key: String, value: String) {
-    // Use Material Theme primary colors for button-like appearance
+    // Image #1 mavi tema - açık mavi tonları alternatif satırlar
     val backgroundColor = when {
-        index % 2 == 0 -> MaterialTheme.colorScheme.primary // Primary color for even rows
-        else -> MaterialTheme.colorScheme.primaryContainer // Primary container for odd rows
+        index % 2 == 0 -> Color(0xFF42A5F5) // Açık mavi - çift satırlar
+        else -> Color(0xFF90CAF9) // Daha açık mavi - tek satırlar
     }
     val textColor = when {
-        index % 2 == 0 -> MaterialTheme.colorScheme.onPrimary // Text on primary
-        else -> MaterialTheme.colorScheme.onPrimaryContainer // Text on primary container
+        index % 2 == 0 -> Color.White // Açık mavi üstünde beyaz text
+        else -> Color(0xFF0D47A1) // Çok açık mavi üstünde koyu mavi text
     }
 
     Row(

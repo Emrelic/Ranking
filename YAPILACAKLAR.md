@@ -17,7 +17,9 @@
 - +Sütun, +Satır, -Sütun, Kaydet butonlarına açıklayıcı text
 - UI/UX iyileştirmesi
 
-### [2025-09-16] - Takım Kartları Format Güncellemesi (Image #1)
+### [2025-09-16] - ⭐ ÖNCELİKLİ - Takım Kartları Format Güncellemesi (Image #1)
+- **DURUM**: Turnuva başlatılıyor, puanlama ekranına geçiliyor ama takım kartları doğru görünmüyor
+- **İHTİYAÇ**: EKRAN_GORUNTULERI.md'den takım kartları görüntüsünü bul, o format uygulanacak
 - **Başlık satırı**: Koyu mavi arkaplan (AFGANİSTAN, ARNAVUTLUK)
 - **Veri satırları**: İki sütunlu format (Label | Değer)
 - **Renk teması**: Açık mavi tonları, alternatif satır renkleri

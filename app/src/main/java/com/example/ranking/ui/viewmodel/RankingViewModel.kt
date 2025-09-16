@@ -434,7 +434,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             completedMatches = completed,
             totalMatches = total,
             progress = if (total > 0) completed.toFloat() / total else 0f,
-            emreState = if (currentMethod == "EMRE_CORRECT") emreState else null
+            emreState = if (currentMethod == "EMRE_CORRECT") emreState else null,
+            showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
+            showInitialRanking = false  // İlk sıralama tablosunu da gizle
         )
         android.util.Log.d("RankingViewModel", "🔍 UI State güncellendi! currentMatch null mu: ${_uiState.value.currentMatch == null}")
     }
