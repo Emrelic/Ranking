@@ -54,5 +54,31 @@ Claude: EKRAN_GORUNTULERI.md'ye kaydedildi ve analiz edildi!
 ### 🏆 TURNUVA EKRANLARı
 (Turnuva ekranı örnekleri burada)
 
+### 🎯 KRİTER SİSTEMİ EKRANLARı
+
+#### [Image #3] - Kriter Değerlendirme Tam Ekran Dialogu (2025-09-17) ✅ TAMAMLANDI
+**Tarih**: 2025-09-17
+**Açıklama**: Tam ekran kriter değerlendirme dialogu - Final implementasyon
+**Gereksinimler** ✅:
+- **Tam ekran layout**: %100 ekran boyutu (fillMaxSize + RoundedCornerShape(0.dp)) ✅
+- **Header**: "Kriter Değerlendirmesi" başlık + "Kapat" butonu sağ üstte ✅
+- **Takım isimleri**: Mavi/Yeşil renk kodlu takım kartları (primaryContainer/secondaryContainer) ✅
+- **Kriter listesi**: Gerçek database'ten alınan kriter isimleri (Tournament→CriterionList) ✅
+- **Aktif/pasif switch**: Her kriter için on/off durumu ✅
+- **Puanlama sistemi**: Turnuva ayarlarına göre dropdown veya slider ✅
+- **Alt butonlar**: Dikdörtgen İptal/Kaydet (40dp height, 4dp radius, 12sp font) ✅
+- **Renk farkı**: Takım 1 mavi (#1976D2), Takım 2 yeşil (#388E3C) ✅
+- **Border effects**: Aktif kriterler 2dp border, pasif 1dp ✅
+
+#### [Image #4] - Kriter Puanlama Tipleri (2025-09-17) ✅ TAMAMLANDI
+**Tarih**: 2025-09-17
+**Açıklama**: İki farklı puanlama tipi implementasyonu
+**Gereksinimler** ✅:
+- **Ayrı Ayrı Puanlama**: ScoreDropdown (1-scoreScale arası seçim) ✅
+- **Kıyaslamalı Puanlama**: ComparativeScoring (0-scoreScale Slider) ✅
+- **Dinamik scoreScale**: Tournament settings'ten alınan değer (1-100 arası) ✅
+- **Real-time feedback**: Anlık puan gösterimi ✅
+- **Settings entegrasyonu**: criteriaSettings JSON parse ✅
+
 ### ⚙️ AYAR EKRANLARı
 (Ayar sayfası tasarımları burada)
