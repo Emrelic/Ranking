@@ -377,7 +377,7 @@ private fun MatchBasedContent(
     onComplete: () -> Unit
 ) {
     android.util.Log.d("MatchBasedContent", "🎯 Method: $method, showInitialRanking: ${uiState.showInitialRanking}, showMatchingsList: ${uiState.showMatchingsList}, isComplete: ${uiState.isComplete}, currentMatch: ${uiState.currentMatch?.id}")
-    
+
     // İlk sıralama tablosunu göster (EMRE_CORRECT için)
     if (method == "EMRE_CORRECT" && uiState.showInitialRanking) {
         InitialRankingContent(
@@ -387,7 +387,7 @@ private fun MatchBasedContent(
         )
         return
     }
-    
+
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
         android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT")
@@ -397,7 +397,7 @@ private fun MatchBasedContent(
         )
         return
     }
-    
+
     if (uiState.isComplete) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -416,310 +416,437 @@ private fun MatchBasedContent(
         }
         return
     }
-    
+
     uiState.currentMatch?.let { match ->
         var score1Text by remember { mutableStateOf("") }
         var score2Text by remember { mutableStateOf("") }
         val useScores = uiState.leagueSettings?.useScores ?: false
-        
+
         Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize()
         ) {
-            LinearProgressIndicator(
-                progress = { uiState.progress },
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "${uiState.completedMatches + 1} / ${uiState.totalMatches}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            
-            if (method == "SWISS" || method == "EMRE_CORRECT") {
-                Text(
-                    text = "Tur: ${match.round}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            // 1. ÜST BÖLÜM: Sıkıştırılmış ilerleme ve tur bilgisi
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                LinearProgressIndicator(
+                    progress = { uiState.progress },
+                    modifier = Modifier.fillMaxWidth()
                 )
-            }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            Text(
-                text = if (useScores) "Maç Skoru Girin" else "Hangisi daha iyi?",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            if (useScores) {
-                // Score input mode
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    uiState.song1?.let { song1 ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                TeamCardContent(
-                                    song = song1,
-                                    modifier = Modifier
-                                        .weight(1f) // Take available width for table display
-                                )
-                                OutlinedTextField(
-                                    value = score1Text,
-                                    onValueChange = { 
-                                        if (it.all { char -> char.isDigit() }) {
-                                            score1Text = it
-                                        }
-                                    },
-                                    label = { Text("Skor") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    modifier = Modifier.width(80.dp),
-                                    singleLine = true
-                                )
-                            }
-                        }
-                    }
-                    
-                    // Vertical VS text (V above S)
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 8.dp)
-                    ) {
+                    Text(
+                        text = "${uiState.completedMatches + 1} / ${uiState.totalMatches}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                    if (method == "SWISS" || method == "EMRE_CORRECT") {
                         Text(
-                            text = "V",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            text = "Tur: ${match.round}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
-                            text = "S",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    
-                    uiState.song2?.let { song2 ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                TeamCardContent(
-                                    song = song2,
-                                    modifier = Modifier
-                                        .weight(1f) // Take available width for table display
-                                )
-                                OutlinedTextField(
-                                    value = score2Text,
-                                    onValueChange = { 
-                                        if (it.all { char -> char.isDigit() }) {
-                                            score2Text = it
-                                        }
-                                    },
-                                    label = { Text("Skor") },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    modifier = Modifier.width(80.dp),
-                                    singleLine = true
-                                )
-                            }
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Button(
-                        onClick = {
-                            val score1 = score1Text.toIntOrNull()
-                            val score2 = score2Text.toIntOrNull()
-                            
-                            if (score1 != null && score2 != null) {
-                                val winner = when {
-                                    score1 > score2 -> uiState.song1?.id
-                                    score2 > score1 -> uiState.song2?.id
-                                    else -> null // Draw
-                                }
-                                onMatchResultWithScore(match.id, winner, score1, score2)
-                                score1Text = ""
-                                score2Text = ""
-                            }
-                        },
-                        enabled = score1Text.toIntOrNull() != null && score2Text.toIntOrNull() != null,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Skoru Kaydet")
                     }
                 }
-            } else {
-                // Traditional winner selection mode  
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // 2. MENÜ BUTONLARI: Tab yapısında
+            if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    uiState.song1?.let { song1 ->
-                        Box(
-                            modifier = Modifier.height(140.dp) // Sabit yükseklik - simetrik çerçeve
-                        ) {
-                            TeamCardContent(
-                                song = song1,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                onClick = { onMatchResult(match.id, song1.id) }
-                            )
-                            
-                            // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
-                            if (method == "EMRE_CORRECT") {
-                                val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
-                                    uiState.emreState.teams.find { it.song.id == song1.id }?.points ?: 0.0
-                                } else {
-                                    0.0
-                                }
-                                
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .offset(x = 4.dp, y = 4.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.primary, // Material Theme primary
-                                            CircleShape
-                                        )
-                                        .padding(8.dp)
-                                ) {
-                                    Text(
-                                        text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                
-                    // Vertical VS text (V above S)
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .padding(horizontal = 8.dp)
+                    Button(
+                        onClick = { viewModel.pauseSession() },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.outline
+                        )
                     ) {
-                        Text(
-                            text = "V",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                        Text("Duraklat", fontSize = 10.sp)
+                    }
+                    Button(
+                        onClick = { viewModel.deleteCurrentSession() },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.outline
                         )
-                        Text(
-                            text = "S",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                    ) {
+                        Text("Sıfırla", fontSize = 10.sp)
+                    }
+                    Button(
+                        onClick = { /* Fixture navigation */ },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.outline
+                        )
+                    ) {
+                        Text("Fikstür", fontSize = 10.sp)
+                    }
+                    var showStandings by remember { mutableStateOf(false) }
+                    Button(
+                        onClick = { showStandings = !showStandings },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.outline
+                        )
+                    ) {
+                        Text("Puan", fontSize = 10.sp)
+                    }
+
+                    // Puan durumu dialogu
+                    if (showStandings) {
+                        StandingsDialog(
+                            uiState = uiState,
+                            method = method,
+                            onDismiss = { showStandings = false }
                         )
                     }
-                    
-                    uiState.song2?.let { song2 ->
-                        Box(
-                            modifier = Modifier.height(140.dp) // Aynı sabit yükseklik - simetrik çerçeve
-                        ) {
-                            TeamCardContent(
-                                song = song2,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                                onClick = { onMatchResult(match.id, song2.id) }
-                            )
-                            
-                            // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
-                            if (method == "EMRE_CORRECT") {
-                                val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
-                                    uiState.emreState.teams.find { it.song.id == song2.id }?.points ?: 0.0
-                                } else {
-                                    0.0
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            // 3. ANA İÇERİK: Genişletilmiş takım kartları
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = if (useScores) "Maç Skoru Girin" else "Hangisi daha iyi?",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+            
+                // TAKIM KARTLARI: 3x büyütülmüş, scrollable container
+                if (useScores) {
+                    // Score input mode
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)  // Ana alanda tüm boş alanı kapla
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
+                            uiState.song1?.let { song1 ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        // BÜYÜK TABLO ALANI: 3x genişlik
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .fillMaxHeight()
+                                        ) {
+                                            TeamCardContent(
+                                                song = song1,
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(8.dp)
+                                            )
+                                        }
+
+                                        OutlinedTextField(
+                                            value = score1Text,
+                                            onValueChange = {
+                                                if (it.all { char -> char.isDigit() }) {
+                                                    score1Text = it
+                                                }
+                                            },
+                                            label = { Text("Skor") },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            modifier = Modifier.width(80.dp),
+                                            singleLine = true
+                                        )
+                                    }
                                 }
-                                
+                            }
+                        }
+
+                        item {
+                            // Vertical VS text (V above S)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "V",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "S",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        item {
+                            uiState.song2?.let { song2 ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        // BÜYÜK TABLO ALANI: 3x genişlik
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .fillMaxHeight()
+                                        ) {
+                                            TeamCardContent(
+                                                song = song2,
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(8.dp)
+                                            )
+                                        }
+
+                                        OutlinedTextField(
+                                            value = score2Text,
+                                            onValueChange = {
+                                                if (it.all { char -> char.isDigit() }) {
+                                                    score2Text = it
+                                                }
+                                            },
+                                            label = { Text("Skor") },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            modifier = Modifier.width(80.dp),
+                                            singleLine = true
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        item {
+                            Button(
+                                onClick = {
+                                    val score1 = score1Text.toIntOrNull()
+                                    val score2 = score2Text.toIntOrNull()
+
+                                    if (score1 != null && score2 != null) {
+                                        val winner = when {
+                                            score1 > score2 -> uiState.song1?.id
+                                            score2 > score1 -> uiState.song2?.id
+                                            else -> null // Draw
+                                        }
+                                        onMatchResultWithScore(match.id, winner, score1, score2)
+                                        score1Text = ""
+                                        score2Text = ""
+                                    }
+                                },
+                                enabled = score1Text.toIntOrNull() != null && score2Text.toIntOrNull() != null,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Skoru Kaydet")
+                            }
+                        }
+                    }
+                } else {
+                    // Traditional winner selection mode - scrollable
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)  // Ana alanda tüm boş alanı kapla
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
+                            uiState.song1?.let { song1 ->
                                 Box(
                                     modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .offset(x = 4.dp, y = 4.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.primary, // Material Theme primary
-                                            CircleShape
-                                        )
-                                        .padding(8.dp)
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
                                 ) {
-                                    Text(
-                                        text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.White,
-                                        modifier = Modifier.align(Alignment.Center)
+                                    TeamCardContent(
+                                        song = song1,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(8.dp),
+                                        onClick = { onMatchResult(match.id, song1.id) }
                                     )
+
+                                    // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
+                                    if (method == "EMRE_CORRECT") {
+                                        val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                            uiState.emreState.teams.find { it.song.id == song1.id }?.points ?: 0.0
+                                        } else {
+                                            0.0
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .offset(x = 4.dp, y = 4.dp)
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary,
+                                                    CircleShape
+                                                )
+                                                .padding(8.dp)
+                                        ) {
+                                            Text(
+                                                text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                modifier = Modifier.align(Alignment.Center)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        item {
+                            // Vertical VS text (V above S)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "V",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "S",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        item {
+                            uiState.song2?.let { song2 ->
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
+                                ) {
+                                    TeamCardContent(
+                                        song = song2,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(8.dp),
+                                        onClick = { onMatchResult(match.id, song2.id) }
+                                    )
+
+                                    // Puan göstergesi TAM KÖŞEDE - yazıları kapatmayacak şekilde
+                                    if (method == "EMRE_CORRECT") {
+                                        val currentPoints = if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                            uiState.emreState.teams.find { it.song.id == song2.id }?.points ?: 0.0
+                                        } else {
+                                            0.0
+                                        }
+
+                                        Box(
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .offset(x = 4.dp, y = 4.dp)
+                                                .background(
+                                                    MaterialTheme.colorScheme.primary,
+                                                    CircleShape
+                                                )
+                                                .padding(8.dp)
+                                        ) {
+                                            Text(
+                                                text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}p" else "${currentPoints}p",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                modifier = Modifier.align(Alignment.Center)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                    
-                    if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
-                        val allowDraws = uiState.leagueSettings?.allowDraws ?: true
-                        if (allowDraws) {
-                            Button(
-                                onClick = { onMatchResult(match.id, null) },
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary
-                                )
-                            ) {
-                                Text("Berabere")
-                            }
-                        }
-                        
-                        // Kriter Değerlendirme Butonu
-                        var showCriteriaDialog by remember { mutableStateOf(false) }
+                }
+            }
+
+            // 4. ALT BÖLÜM: Berabere ve kriter butonları - aşağıya taşındı
+            if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val allowDraws = uiState.leagueSettings?.allowDraws ?: true
+                    if (allowDraws) {
                         Button(
-                            onClick = { showCriteriaDialog = true },
+                            onClick = { onMatchResult(match.id, null) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary
+                                containerColor = MaterialTheme.colorScheme.secondary
                             )
                         ) {
-                            Text("Kriterler ile Değerlendir")
+                            Text("Berabere")
                         }
-                        
-                        // Kriter Değerlendirme Dialogu
-                        if (showCriteriaDialog) {
-                            CriteriaEvaluationDialog(
-                                match = match,
-                                song1 = uiState.song1,
-                                song2 = uiState.song2,
-                                tournamentId = match.tournamentId,
-                                onDismiss = { showCriteriaDialog = false },
-                                onSave = { criteriaScores ->
-                                    // Kriter skorlarını kaydet ve maç sonucunu belirle
-                                    showCriteriaDialog = false
-                                }
-                            )
-                        }
+                    }
+
+                    // Kriter Değerlendirme Butonu
+                    var showCriteriaDialog by remember { mutableStateOf(false) }
+                    Button(
+                        onClick = { showCriteriaDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    ) {
+                        Text("Kriterler ile Değerlendir")
+                    }
+
+                    // Kriter Değerlendirme Dialogu
+                    if (showCriteriaDialog) {
+                        CriteriaEvaluationDialog(
+                            match = match,
+                            song1 = uiState.song1,
+                            song2 = uiState.song2,
+                            tournamentId = match.tournamentId,
+                            onDismiss = { showCriteriaDialog = false },
+                            onSave = { criteriaScores ->
+                                // Kriter skorlarını kaydet ve maç sonucunu belirle
+                                showCriteriaDialog = false
+                            }
+                        )
                     }
                 }
             }
@@ -1555,7 +1682,10 @@ private fun CriteriaEvaluationDialog(
     onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
     viewModel: RankingViewModel = viewModel()
 ) {
-    Dialog(onDismissRequest = onDismiss) {
+    // TAM EKRAN OVERLAY (Dialog yerine)
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
         Surface(
             modifier = Modifier.fillMaxSize(), // TAM EKRAN
             shape = RoundedCornerShape(0.dp), // KÖŞE YUVARLAĞI YOK
