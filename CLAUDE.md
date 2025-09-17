@@ -238,6 +238,7 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **"*ncp"** = Not defterlerini doldur, commit + push
 - **"*bty"** = Build et telefona yükle
 - **"*nto"** = Not defterlerini oku (ntk equivalent)
+- **"*mo"** = md uzantılı tüm not defterlerini oku
 - **"*çpe"** = Çalışma protokolüne ekle
 - **"*ege"** = Ekran görüntülerine ekle
 - **"*tsp"** = Sorunun ne olduğunu tespit et (bütün ihtimalleri listele)

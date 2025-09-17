@@ -43,8 +43,8 @@ fun NewTournamentScreen(
     var useCriteria by remember { mutableStateOf(false) }
     var scoringType by remember { mutableStateOf("comparative") }
     var scoreScale by remember { mutableStateOf(10) }
-    var drawThresholdMin by remember { mutableStateOf(50) }
-    var drawThresholdMax by remember { mutableStateOf(50) }
+    var drawThresholdMin by remember { mutableStateOf(51) }
+    var drawThresholdMax by remember { mutableStateOf(51) }
     var autoWinnerFromCriteria by remember { mutableStateOf(false) }
     var autoOpenCriteriaPanel by remember { mutableStateOf(false) }
     var mandatoryCriteria by remember { mutableStateOf(false) }
@@ -577,6 +577,23 @@ private fun CriteriaSettingsStep(
                     selected = scoringType == "comparative"
                 )
             }
+            
+            // Scoring type explanations
+            if (scoringType == "separate") {
+                Text(
+                    text = "Her takıma aşağıda belirlenecek puan üzerinden bir puan verilir. Mesela 10 üzerinden bir takım 5, diğer takım 9 alabilir.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            } else {
+                Text(
+                    text = "Aşağıda tayin edilecek puan iki takım arasında bölüştürülür. Örnek: 10 seçilirse 7-3 veya 9-1 şeklinde.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -682,7 +699,7 @@ private fun CriteriaSettingsStep(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Eğer takımlar %$drawThresholdMin-%$drawThresholdMax arasında puan alırsa berabere sayılır",
+                text = "Bir takımın galip gelebilmesi için yüzdesel olarak alması gereken minimum puan. Eğer bu ayar %60 seçilirse takımlardan birisi %60 puan ağırlığı almadıkça berabere olarak değerlendirilecektir. Bu husus ancak 'Galibi kriter puanına göre belirle' kutucuğu işaretlenmiş olursa geçerli olacaktır.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -794,7 +811,7 @@ private fun CriteriaSettingsStep(
             // Options
             SettingsSwitch(
                 title = "Galibi kriter puanına göre belirle",
-                description = "Fazla puan alan otomatik galip olur",
+                description = "İşaretlenir ise her karşılaşmada kriter puanlama ekranı açılacak ve burada gerçekleşen sonuca göre bir takım kazanacak veya berabere kalacaktır. Öbür türlü kriter oylaması sadece kullanıcının nazarına sunulacak ve son karar kullanıcıya bırakılacaktır.",
                 checked = autoWinnerFromCriteria,
                 onCheckedChange = onAutoWinnerFromCriteriaChanged
             )
@@ -807,8 +824,8 @@ private fun CriteriaSettingsStep(
             )
 
             SettingsSwitch(
-                title = "Kriter oylaması mecburi",
-                description = "Tüm kriterler doldurulmadan maç tamamlanamaz",
+                title = "Kriter oylaması mecburi tutulsun",
+                description = "İşaretlenir ise kriterleri doldurmak mecburi tutulacaktır. Öbür türlü kullanıcının insiyatifinde olacak ve kullanıcı isterse kriter ekranını açacaktır.",
                 checked = mandatoryCriteria,
                 onCheckedChange = onMandatoryCriteriaChanged
             )

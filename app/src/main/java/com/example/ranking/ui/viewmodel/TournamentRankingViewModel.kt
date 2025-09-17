@@ -226,6 +226,17 @@ class TournamentRankingViewModel(application: Application) : AndroidViewModel(ap
         viewModelScope.launch {
             try {
                 val tournamentId = _uiState.value.tournament?.id ?: return@launch
+                val criteriaSettings = _uiState.value.criteriaSettings
+                
+                // Mecburi kriter kontrolü
+                val mandatoryCriteria = criteriaSettings?.get("mandatoryCriteria") as? Boolean ?: false
+                if (mandatoryCriteria) {
+                    val validationError = validateMandatoryCriteria(scores)
+                    if (validationError != null) {
+                        _uiState.value = _uiState.value.copy(errorMessage = validationError)
+                        return@launch
+                    }
+                }
                 
                 scores.forEach { (criterionName, scorePair) ->
                     val criterionScore = CriterionScore(
@@ -242,9 +253,77 @@ class TournamentRankingViewModel(application: Application) : AndroidViewModel(ap
                 // Reload criteria scores
                 loadCurrentMatchCriteriaScores(matchId)
                 
+                // Auto-determine winner if enabled
+                val autoWinnerFromCriteria = criteriaSettings?.get("autoWinnerFromCriteria") as? Boolean ?: false
+                
+                if (autoWinnerFromCriteria) {
+                    val result = processCriteriaResults(scores, criteriaSettings)
+                    if (result != null) {
+                        recordMatchResultFromCriteria(matchId, result)
+                        closeCriteriaDialog()
+                    }
+                }
+                
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(errorMessage = "Kriter skorları kaydedilemedi: ${e.message}")
             }
+        }
+    }
+    
+    /**
+     * Mecburi kriter kontrolü
+     * @param scores Kriter skorları
+     * @return Hata mesajı veya null (geçerli ise)
+     */
+    private fun validateMandatoryCriteria(scores: Map<String, Pair<Double?, Double?>>): String? {
+        val incompleteCount = scores.values.count { 
+            it.first == null || it.second == null 
+        }
+        
+        return if (incompleteCount > 0) {
+            "Kriter oylaması mecburi tutulduğu için tüm kriterler doldurulmalıdır. $incompleteCount kriter eksik."
+        } else null
+    }
+    
+    /**
+     * Kriter puanlarına göre maç sonucunu belirle
+     * @param scores Map<CriterionName, Pair<Team1Score?, Team2Score?>>
+     * @param criteriaSettings Turnuva kriter ayarları
+     * @return 1 = Team1 wins, 2 = Team2 wins, 0 = Draw, null = Not enough data
+     */
+    private fun processCriteriaResults(
+        scores: Map<String, Pair<Double?, Double?>>, 
+        criteriaSettings: Map<String, Any>?
+    ): Int? {
+        if (criteriaSettings == null) return null
+        
+        val drawThresholdPercent = criteriaSettings["drawThresholdPercent"] as? List<*>
+        val minThreshold = (drawThresholdPercent?.getOrNull(0) as? Double)?.toInt() ?: 51
+        
+        // Null olmayan skorları filtrele
+        val validScores = scores.values.filter { 
+            it.first != null && it.second != null 
+        }.map { 
+            it.first!! to it.second!! 
+        }
+        
+        if (validScores.isEmpty()) return null
+        
+        // Toplam puanları hesapla
+        val team1Total = validScores.sumOf { it.first }
+        val team2Total = validScores.sumOf { it.second }
+        val grandTotal = team1Total + team2Total
+        
+        if (grandTotal == 0.0) return null
+        
+        // Yüzdelik hesapla
+        val team1Percentage = (team1Total / grandTotal) * 100
+        
+        // Sonucu belirle
+        return when {
+            team1Percentage >= minThreshold -> 1 // Team1 galip
+            team1Percentage <= (100 - minThreshold) -> 2 // Team2 galip
+            else -> 0 // Beraberlik
         }
     }
 }

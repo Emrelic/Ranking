@@ -1621,4 +1621,42 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             testReportTitle = ""
         )
     }
+    
+    suspend fun getCriteriaForTournament(tournamentId: Long): List<String> {
+        return try {
+            // Tournament'tan criterionListId'yi al
+            val tournament = database.tournamentDao().getTournamentById(tournamentId)
+            if (tournament?.criterionListId != null) {
+                // CriterionList'ten criteria JSON'unu al
+                val criterionList = database.criterionListDao().getCriterionListById(tournament.criterionListId)
+                if (criterionList != null) {
+                    // JSON'u parse et ve liste olarak döndür
+                    val gson = Gson()
+                    val criteriaArray = gson.fromJson(criterionList.criteria, Array<String>::class.java)
+                    return criteriaArray.toList()
+                }
+            }
+            emptyList()
+        } catch (e: Exception) {
+            android.util.Log.e("RankingViewModel", "Criteria alma hatası: ${e.message}", e)
+            emptyList()
+        }
+    }
+    
+    suspend fun getCriteriaSettingsForTournament(tournamentId: Long): Map<String, Any>? {
+        return try {
+            // Tournament'tan criteriaSettings JSON'unu al
+            val tournament = database.tournamentDao().getTournamentById(tournamentId)
+            if (tournament?.criteriaSettings != null) {
+                // JSON'u parse et ve Map olarak döndür
+                val gson = Gson()
+                val type = object : com.google.gson.reflect.TypeToken<Map<String, Any>>() {}.type
+                return gson.fromJson(tournament.criteriaSettings, type)
+            }
+            null
+        } catch (e: Exception) {
+            android.util.Log.e("RankingViewModel", "Criteria settings alma hatası: ${e.message}", e)
+            null
+        }
+    }
 }

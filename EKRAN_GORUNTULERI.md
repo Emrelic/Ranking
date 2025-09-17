@@ -4,9 +4,9 @@
 
 ### 🎯 2025-09-16 - Eşleştirme Ekranı Tasarımı
 
-#### [Image #1] - Takım Kartları Hedef Format
+#### [Image #1] - Oylama Ekranı Takım Kartları (Yan Yana Format)
 **Tarih**: 2025-09-16
-**Açıklama**: Afganistan vs Arnavutluk takım kartları örneği
+**Açıklama**: Afganistan vs Arnavutluk oylama ekranı - yan yana kart formatı
 **Gereksinimler**:
 - **Başlık satırı**: Koyu mavi arkaplan (AFGANİSTAN, ARNAVUTLUK)
 - **Veri satırları**: İki sütunlu format (Label | Değer)
@@ -14,8 +14,19 @@
 - **İçerik**: Kıta, Nüfus (Milyon), Yüzölçümü (km²), GSYİH (Milyar USD), Kişi Başına GSYİH (USD)
 - **Layout**: Yan yana iki kart, temiz tablo formatı
 - **Çerçeve**: İnce çerçeve ile kart sınırları
+- **Hedef**: Oylama ekranında TeamCardContent component formatı
 
-**Hedef**: TeamCardContent component'ini bu format ve renk temasıyla güncellemek
+#### [Image #2] - Eşleştirme Ekranı Takım Kartları (Alt Alta Format)
+**Tarih**: 2025-09-16
+**Açıklama**: Afganistan vs Arnavutluk eşleştirme ekranı - alt alta kart formatı + VS ortada
+**Gereksinimler**:
+- **Başlık satırı**: Koyu mavi arkaplan (AFGANİSTAN, ARNAVUTLUK)
+- **Veri satırları**: İki sütunlu format (Label | Değer)
+- **Renk teması**: Açık mavi tonları, alternatif satır renkleri
+- **Layout**: İlk kart üstte, VS ortada, ikinci kart altta
+- **VS Element**: Ortada "vs" yazısı
+- **Çerçeve**: İnce çerçeve ile kart sınırları
+- **Hedef**: Eşleştirme listesi ekranında MatchCard component formatı
 
 ---
 
