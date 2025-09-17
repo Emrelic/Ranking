@@ -17,15 +17,22 @@
 - +Sütun, +Satır, -Sütun, Kaydet butonlarına açıklayıcı text
 - UI/UX iyileştirmesi
 
-### [2025-09-16] - ⭐ ÖNCELİKLİ - Takım Kartları Format Güncellemesi (Image #1)
-- **DURUM**: Turnuva başlatılıyor, puanlama ekranına geçiliyor ama takım kartları doğru görünmüyor
-- **İHTİYAÇ**: EKRAN_GORUNTULERI.md'den takım kartları görüntüsünü bul, o format uygulanacak
-- **Başlık satırı**: Koyu mavi arkaplan (AFGANİSTAN, ARNAVUTLUK)
-- **Veri satırları**: İki sütunlu format (Label | Değer)
-- **Renk teması**: Açık mavi tonları, alternatif satır renkleri
-- **Layout**: Yan yana iki kart, tablo formatı + ince çerçeve
-- **TeamCardContent component güncellenmesi gerekli**
-- **Referans**: Image #1 - Afganistan vs Arnavutluk kart tasarımı
+### [2025-09-17] - ⭐ ÖNCELİKLİ - Oylama Ekranı Tasarımı Tam Yeniden Yapılandırma (DEVAM EDİYOR)
+- **DURUM**: Oylama ekranının tamamen yeniden tasarlanması gereken kapsamlı UI değişikliği
+- **MEVCUT PROBLEM**: TeamVotingPanel implementasyonu syntax hatası (line 2357 - missing '}')
+- **HEDEF TASARIM**:
+  - Usul ibaresini kaldır
+  - Fikstür/skor/geri butonlarını üste sıkıştır
+  - "Hangisi daha iyi" yazısını progress bar altına taşı ve küçült
+  - Dış takım isimlerini ve VS yazısını kaldır
+  - İki ayrı kaydırılabilir pencere/panel oluştur
+  - Beraberlik butonunu ortala, skor rozetlerini sağ alt köşeye
+  - Sabit ekran layout'u, altta kriter butonu
+- **TEKNİK DURUM**:
+  - RankingScreen.kt'de TeamVotingPanel function eklendi (lines 2307-2406)
+  - MatchBasedContent function'da Row-based layout implementasyonu (lines 546-702)
+  - Build failure: "Expecting '}'" hatası line 2357'de
+- **SONRAKİ ADIM**: Syntax hatasını düzelt, APK build et, test et
 
 ---
 
@@ -47,7 +54,7 @@ Claude: YAPILACAKLAR.md'ye kaydedildi!
 
 ### [2025-09-17] - ✅ TAMAMLANDI - Kriter Değerlendirme Sistemi Tam İmplementasyonu
 - **Tam ekran kriter dialogu**: %100 ekran boyutunu kaplayan modern dialog ✅
-- **Gerçek database entegrasyonu**: Demo data yerine Tournament'tan gerçek kriterler ✅  
+- **Gerçek database entegrasyonu**: Demo data yerine Tournament'tan gerçek kriterler ✅
 - **Dikdörtgen butonlar + küçük fontlar**: Modern minimal tasarım ✅
 - **Aktif/pasif kriter sistemi**: Switch ile kriter on/off ✅
 - **Turnuva ayarları entegrasyonu**: Tournament başlangıcında belirlenen settings ✅
@@ -55,6 +62,16 @@ Claude: YAPILACAKLAR.md'ye kaydedildi!
 - **Tablo formatı ve satır kenarlıkları**: Card border'lar ve visual formatting ✅
 - **Commit**: ecc2bc1 - Kriter Değerlendirme Sistemi Tam Implementasyonu
 - **APK Deploy**: Başarılı - Sistem tamamen çalışır durumda
+
+### [2025-09-17] - ✅ TAMAMLANDI - İsviçre Sistemi Kapsamlı Persistence Sistemi
+- **Real-time persistence**: Her maç başladığında, seçim yapıldığında, skorlar girildiğinde otomatik kayıt ✅
+- **Complete fixture management**: Tüm turların eşleşmeleri ve live standings kayıt ✅
+- **Advanced session resume**: Maç ortasında çıkış sonrası tam durum geri yükleme ✅
+- **Multi-level recovery**: 4 seviyeli kurtarma sistemi (Basic/Mid-match/Selection/Multi-round) ✅
+- **Database schema v9**: 11 tablo ile tam persistence architecture ✅
+- **Swiss algorithm integrity**: Duplicate pairing prevention ve optimal eşleştirme ✅
+- **APK Status**: Process ID 21704 - Stable running, crash-free ✅
+- **Test Ready**: Comprehensive testing scenarios hazır ✅
 
 ## 🔄 DEVAM EDEN MADDELER
 (Üzerinde çalışılan maddeler burada)
