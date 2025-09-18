@@ -10,6 +10,16 @@ Bu dosya kullanıcının her promptunu otomatik olarak kaydeder. Manuel ekleme t
 
 ## 📅 2025-09-18
 
+### [16:30]
+```
+not defterlerini oku *mo
+```
+
+### [16:15]
+```
+bak orada söylediğim şeyleri hallet
+```
+
 ### [16:05]
 ```
 yeni turnuvada oylama ekranında tıkladığımız kriterler ile değerlendir butonu ile açtığımız kriterler sayfasında en tepedeki

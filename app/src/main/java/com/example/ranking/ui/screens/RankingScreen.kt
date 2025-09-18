@@ -1650,7 +1650,7 @@ private fun CriteriaEvaluationDialog(
     onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
     viewModel: RankingViewModel = viewModel()
 ) {
-    // TAM EKRAN OVERLAY - Yeni temiz tasarım
+    // TAM EKRAN OVERLAY - Temizlenmiş tasarım
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -1662,7 +1662,7 @@ private fun CriteriaEvaluationDialog(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                // 1. EN TEPEDE SADECE BAŞLIK
+                // 1. EN TEPEDE KRİTER DEĞERLENDİRMESİ YAZISI
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1732,7 +1732,8 @@ private fun CriteriaEvaluationDialog(
 
                 // Scrollable kriterler listesi
                 LazyColumn(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(0.dp) // Kenarları ekranla birleştir
                 ) {
                     items(finalCriteria) { criterion ->
                         NewCriterionEvaluationBox(
