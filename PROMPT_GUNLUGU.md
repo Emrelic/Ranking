@@ -10,6 +10,28 @@ Bu dosya kullanıcının her promptunu otomatik olarak kaydeder. Manuel ekleme t
 
 ## 📅 2025-09-18
 
+### [16:05]
+```
+yeni turnuvada oylama ekranında tıkladığımız kriterler ile değerlendir butonu ile açtığımız kriterler sayfasında en tepedeki
+  geliştirilmiş isviçre sistemi gibi oylama usulünü anlatan yazıyı kaldıralım
+  fikstür puan filan butonlarını ve menülerini kaldıralım
+  tur ilerleme çubuğunu kaldır
+  berabere ve kriter değerlendir butonlarını kaldır
+
+  en tepede kriter değerlendirmesi yazısı olmalı
+  onun altında bir bant şeklinde satır ve bu satır ikiye bölünmüş. sağda bir takım solda bir takım olmalı ve bir taraf açık yeşil bir taraf açık mavi renk olmalı.
+  kriter listesinden gelen her öğe bir siyah çizgi çerçeve içinde  ve bu siyah çerçeve ile çerçevelenmiş kutucuğun ayrısı açık mavi yarısı açık yeşil olacak
+  kutucuğun sağ üst köşesinde bu kriterin değerlendirilmesine dair tıklanınce bu ekranı açan kapatınca sadece ksiterin ismini görünecek şekilde kapatan buton ve bu işlev çok iyi. aynen korunsun
+  sol üst kısma ise kriterin metni yazılmalı. onun altında puan seç dropdownları olmalı.
+  bu siyah kutucuğun sağ ve sol kenarlarını ekranın bittiği yerle birleştirelim
+  bu kriterler scroll ile aşağıya doğru kadırılmalı tıpkı şimdi olduğu gii bu özelliğide koruyalım
+  tüm bu kriter çerçevelerinin en altında bittiği yerde ise iki takımın toplam puanları görülmeli.
+  bunun altında da kime galibiyet vereceğimize veya beraberlik işaretleyebilmemize imkan veren butonlar olmalı.
+
+şimdi en tepedeki söylemiş olduğum şeyleri kaldırmamışsın. neden kaldırmadın.
+neyse şimdilik commit push yap sonra devame deriz
+```
+
 ### [15:50]
 ```
 commit push yap *ncp
