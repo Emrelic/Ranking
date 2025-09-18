@@ -10,6 +10,16 @@ Bu dosya kullanıcının her promptunu otomatik olarak kaydeder. Manuel ekleme t
 
 ## 📅 2025-09-18
 
+### [16:40]
+```
+kriterler kriter listesinden gelmiyor. kafaya göre teknik yetenek yaratıcılık performans orijinallik sahne hakimiyeti diye birşeyler belirlenmiş. halbuki 27 maddelik bir kriter listesi seçtik oradaki her bir maddenin gelmesi lazım
+```
+
+### [16:35]
+```
+kriterler sayfasındaki öğeler seçilen kriter listesinden alınmalı.
+```
+
 ### [16:30]
 ```
 not defterlerini oku *mo
