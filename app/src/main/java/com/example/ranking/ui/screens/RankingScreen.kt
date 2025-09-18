@@ -63,42 +63,67 @@ fun RankingScreen(
                 }
             },
             actions = {
-                // Session management buttons
-                if (uiState.hasActiveSession) {
-                    TextButton(
-                        onClick = { viewModel.pauseSession() }
-                    ) {
-                        Text("Duraklat")
+                // Köşeleri yuvarlatılmış dikdörtgen butonlar - sayfanın en tepesinde
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    // Session management buttons
+                    if (uiState.hasActiveSession) {
+                        Button(
+                            onClick = { viewModel.pauseSession() },
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier.height(32.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            Text("Duraklat", fontSize = 10.sp)
+                        }
+
+                        Button(
+                            onClick = { viewModel.deleteCurrentSession() },
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier.height(32.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Text("Sıfırla", fontSize = 10.sp)
+                        }
                     }
-                    
-                    TextButton(
-                        onClick = { viewModel.deleteCurrentSession() }
-                    ) {
-                        Text("Sıfırla")
+
+                    if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "ELIMINATION", "FULL_ELIMINATION")) {
+                        Button(
+                            onClick = { onNavigateToFixture(listId, method) },
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier.height(32.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        ) {
+                            Text("Fikstür", fontSize = 10.sp)
+                        }
                     }
-                }
-                
-                if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "ELIMINATION", "FULL_ELIMINATION")) {
-                    TextButton(
-                        onClick = { onNavigateToFixture(listId, method) }
-                    ) {
-                        Text("Fikstür")
-                    }
-                }
-                if (method == "LEAGUE" || method == "EMRE_CORRECT") {
-                    var showStandings by remember { mutableStateOf(false) }
-                    TextButton(
-                        onClick = { showStandings = !showStandings }
-                    ) {
-                        Text(if (showStandings) "Maçlar" else "Puan Durumu")
-                    }
-                    
-                    if (showStandings) {
-                        StandingsDialog(
-                            uiState = uiState,
-                            method = method,
-                            onDismiss = { showStandings = false }
-                        )
+                    if (method == "LEAGUE" || method == "EMRE_CORRECT") {
+                        var showStandings by remember { mutableStateOf(false) }
+                        Button(
+                            onClick = { showStandings = !showStandings },
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier.height(32.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                            )
+                        ) {
+                            Text(if (showStandings) "Maçlar" else "Puan", fontSize = 10.sp)
+                        }
+
+                        if (showStandings) {
+                            StandingsDialog(
+                                uiState = uiState,
+                                method = method,
+                                onDismiss = { showStandings = false }
+                            )
+                        }
                     }
                 }
             }
@@ -457,64 +482,7 @@ private fun MatchBasedContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 2. MENÜ BUTONLARI: Tab yapısında
-            if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Button(
-                        onClick = { viewModel.pauseSession() },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.outline
-                        )
-                    ) {
-                        Text("Duraklat", fontSize = 10.sp)
-                    }
-                    Button(
-                        onClick = { viewModel.deleteCurrentSession() },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.outline
-                        )
-                    ) {
-                        Text("Sıfırla", fontSize = 10.sp)
-                    }
-                    Button(
-                        onClick = { /* Fixture navigation */ },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.outline
-                        )
-                    ) {
-                        Text("Fikstür", fontSize = 10.sp)
-                    }
-                    var showStandings by remember { mutableStateOf(false) }
-                    Button(
-                        onClick = { showStandings = !showStandings },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.outline
-                        )
-                    ) {
-                        Text("Puan", fontSize = 10.sp)
-                    }
-
-                    // Puan durumu dialogu
-                    if (showStandings) {
-                        StandingsDialog(
-                            uiState = uiState,
-                            method = method,
-                            onDismiss = { showStandings = false }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+            // Duplicate menü butonları kaldırıldı - üstteki TopAppBar'daki butonlar kullanılıyor
 
             // 3. ANA İÇERİK: Genişletilmiş takım kartları
             Column(
@@ -1682,112 +1650,92 @@ private fun CriteriaEvaluationDialog(
     onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
     viewModel: RankingViewModel = viewModel()
 ) {
-    // TAM EKRAN OVERLAY (Dialog yerine)
+    // TAM EKRAN OVERLAY - Yeni temiz tasarım
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
         Surface(
-            modifier = Modifier.fillMaxSize(), // TAM EKRAN
-            shape = RoundedCornerShape(0.dp), // KÖŞE YUVARLAĞI YOK
+            modifier = Modifier.fillMaxSize(),
+            shape = RoundedCornerShape(0.dp),
             color = MaterialTheme.colorScheme.background
         ) {
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
-                // Başlık
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // 1. EN TEPEDE SADECE BAŞLIK
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "Kriter Değerlendirmesi",
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    TextButton(onClick = onDismiss) {
-                        Text("Kapat")
-                    }
                 }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Takım isimleri
+
+                // 2. TAKIM BANTLARI - İkiye bölünmüş açık renkli satır
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
                 ) {
-                    Column(
+                    // Sol yarı - Açık mavi (Takım 1)
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .background(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .padding(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxHeight()
+                            .background(Color(0xFFE3F2FD)), // Açık mavi
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = song1?.name ?: "Takım 1",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            color = Color(0xFF1976D2) // Koyu mavi
                         )
                     }
-                    
-                    Spacer(modifier = Modifier.width(16.dp))
-                    
-                    Column(
+                    // Sağ yarı - Açık yeşil (Takım 2)
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .background(
-                                MaterialTheme.colorScheme.secondaryContainer,
-                                RoundedCornerShape(8.dp)
-                            )
-                            .padding(12.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .fillMaxHeight()
+                            .background(Color(0xFFE8F5E8)), // Açık yeşil
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = song2?.name ?: "Takım 2",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            color = Color(0xFF388E3C) // Koyu yeşil
                         )
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // Gerçek kriterler - Tournament'taki criterionListId'den alınıyor
+
+                // 3. KRİTERLER VE PUANLAMA
                 val criteriaScores = remember { mutableStateMapOf<String, Pair<Double?, Double?>>() }
                 var criteria by remember { mutableStateOf<List<String>>(emptyList()) }
-                
-                // Turnuva ID'sinden criteria'ları ve settings'leri al
                 var criteriaSettings by remember { mutableStateOf<Map<String, Any>?>(null) }
+
                 LaunchedEffect(tournamentId) {
                     if (tournamentId != null) {
                         criteria = viewModel.getCriteriaForTournament(tournamentId)
                         criteriaSettings = viewModel.getCriteriaSettingsForTournament(tournamentId)
                     }
                 }
-                
-                // Eğer criteria bulunamazsa demo data kullan
+
                 val finalCriteria = if (criteria.isNotEmpty()) criteria else listOf(
-                    "Teknik Yetenek",
-                    "Yaratıcılık", 
-                    "Performans",
-                    "Orijinallik",
-                    "Sahne Hâkimiyeti"
+                    "Teknik Yetenek", "Yaratıcılık", "Performans", "Orijinallik", "Sahne Hâkimiyeti"
                 )
-                
+
+                // Scrollable kriterler listesi
                 LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.weight(1f)
                 ) {
                     items(finalCriteria) { criterion ->
-                        CriterionEvaluationRow(
+                        NewCriterionEvaluationBox(
                             criterionName = criterion,
                             team1Name = song1?.name ?: "Takım 1",
                             team2Name = song2?.name ?: "Takım 2",
@@ -1799,46 +1747,252 @@ private fun CriteriaEvaluationDialog(
                         )
                     }
                 }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Alt butonlar - DİKDÖRTGEN + KÜÇÜK PUNTO
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+
+                // 4. TOPLAM PUANLAR VE GALİBİYET BUTONLARI
+                FinalScoreAndResultSection(
+                    criteriaScores = criteriaScores,
+                    team1Name = song1?.name ?: "Takım 1",
+                    team2Name = song2?.name ?: "Takım 2",
+                    onDismiss = onDismiss,
+                    onSave = onSave
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NewCriterionEvaluationBox(
+    criterionName: String,
+    team1Name: String,
+    team2Name: String,
+    currentScores: Pair<Double?, Double?>,
+    criteriaSettings: Map<String, Any>?,
+    onScoresChanged: (Double?, Double?) -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val scoringType = criteriaSettings?.get("scoringType") as? String ?: "separate"
+    val scoreScale = (criteriaSettings?.get("scoreScale") as? Double)?.toInt() ?: 10
+
+    // Siyah çerçeveli, full-width kutu
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 0.dp, vertical = 4.dp) // Kenarları ekranla birleştir
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(0.dp), // Dikdörtgen köşeler
+            border = BorderStroke(2.dp, Color.Black), // Siyah çerçeve
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (isExpanded) 120.dp else 60.dp)
+            ) {
+                // Sol yarı - Açık mavi
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Color(0xFFE3F2FD)) // Açık mavi
+                        .padding(8.dp)
                 ) {
-                    Button(
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp), // Daha küçük yükseklik
-                        shape = RoundedCornerShape(4.dp), // Dikdörtgen
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.outline
-                        )
-                    ) {
-                        Text(
-                            "İptal",
-                            fontSize = 12.sp // Küçük punto
-                        )
-                    }
-                    
-                    Button(
-                        onClick = { onSave(criteriaScores.toMap()) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp), // Daha küçük yükseklik
-                        shape = RoundedCornerShape(4.dp), // Dikdörtgen
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Text(
-                            "Kaydet",
-                            fontSize = 12.sp // Küçük punto
-                        )
+                    if (isExpanded) {
+                        Column {
+                            Text(
+                                text = criterionName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1976D2)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Dropdown - Takım 1 puanı
+                            if (scoringType == "separate") {
+                                ScoreDropdown(
+                                    score = currentScores.first,
+                                    maxScore = scoreScale,
+                                    onScoreSelected = { score ->
+                                        onScoresChanged(score, currentScores.second)
+                                    }
+                                )
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = criterionName,
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1976D2)
+                            )
+                        }
                     }
                 }
+
+                // Sağ yarı - Açık yeşil
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(Color(0xFFE8F5E8)) // Açık yeşil
+                        .padding(8.dp)
+                ) {
+                    if (isExpanded) {
+                        Column {
+                            Spacer(modifier = Modifier.height(24.dp)) // Kriter ismi için boşluk
+
+                            // Dropdown - Takım 2 puanı
+                            if (scoringType == "separate") {
+                                ScoreDropdown(
+                                    score = currentScores.second,
+                                    maxScore = scoreScale,
+                                    onScoreSelected = { score ->
+                                        onScoresChanged(currentScores.first, score)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Sağ üst köşe genişlet/daralt butonu
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.TopEnd
+            ) {
+                IconButton(
+                    onClick = { isExpanded = !isExpanded },
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .size(24.dp)
+                ) {
+                    Text(
+                        text = if (isExpanded) "−" else "+",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FinalScoreAndResultSection(
+    criteriaScores: Map<String, Pair<Double?, Double?>>,
+    team1Name: String,
+    team2Name: String,
+    onDismiss: () -> Unit,
+    onSave: (Map<String, Pair<Double?, Double?>>) -> Unit
+) {
+    // Toplam puanları hesapla
+    val team1Total = criteriaScores.values.mapNotNull { it.first }.sum()
+    val team2Total = criteriaScores.values.mapNotNull { it.second }.sum()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        // Toplam puanlar
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Color(0xFFE3F2FD), RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = team1Name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1976D2)
+                    )
+                    Text(
+                        text = "Toplam: ${team1Total.toInt()}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1976D2)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(Color(0xFFE8F5E8), RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = team2Name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF388E3C)
+                    )
+                    Text(
+                        text = "Toplam: ${team2Total.toInt()}",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF388E3C)
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Sonuç butonları
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = { onSave(criteriaScores) }, // Takım 1 kazandı
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF1976D2)
+                )
+            ) {
+                Text("$team1Name Kazandı", color = Color.White)
+            }
+
+            Button(
+                onClick = { onSave(criteriaScores) }, // Beraberlik
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Gray
+                )
+            ) {
+                Text("Beraberlik", color = Color.White)
+            }
+
+            Button(
+                onClick = { onSave(criteriaScores) }, // Takım 2 kazandı
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF388E3C)
+                )
+            ) {
+                Text("$team2Name Kazandı", color = Color.White)
             }
         }
     }

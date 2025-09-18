@@ -95,11 +95,44 @@ Claude: YAPILACAKLAR.md'ye kaydedildi!
 - **APK Status**: Process ID 21704 - Stable running, crash-free ✅
 - **Test Ready**: Comprehensive testing scenarios hazır ✅
 
-## 🔄 DEVAM EDEN MADDELER
-(Üzerinde çalışılan maddeler burada)
+## 🔄 DEVAM EDEN MADDELER - YENİ TURNUVA SÜRECİ İYİLEŞTİRMELERİ (2025-09-18)
+
+### 1. YENİ LİSTE EKLE KISAYOLU
+- **Hedef**: Yeni turnuva menüsü liste ekranında "Yeni Liste Ekle" butonu implementasyonu
+- **İşlev**: Yeni turnuva sürecinden çıkmadan liste ekleme sayfasına geçiş
+- **Navigation**: Liste eklendikten sonra otomatik olarak yeni turnuva sürecine geri dönüş
+- **Avantaj**: Ana sayfaya dönmeden liste ekleme imkanı
+
+### 2. YENİ KRİTER LİSTESİ EKLE KISAYOLU
+- **Hedef**: Yeni turnuva kriter ekranında "Yeni Kriter Listesi Ekle" butonu implementasyonu
+- **İşlev**: Mevcut kriter ekleme sayfasına yönlendirme
+- **Navigation**: Kriter eklendikten sonra yeni turnuva ayarları sayfasına dönüş
+- **Entegrasyon**: Yeni eklenen kriter listesi otomatik seçili duruma gelsin
+
+### 3. PROMPT GÜNLÜĞÜ SİSTEMİ
+- **Dosya**: PROMPT_GUNLUGU.md
+- **İşlev**: Her kullanıcı promptunu otomatik kaydetme
+- **Format**: Tarih + saat + prompt içeriği
+- **Otomatik**: Manuel ekleme talebi olmadan tüm promptlar kaydedilecek
+- **Not Defterlerine Ekleme**: Bu kural diğer tüm not defterlerine de eklenecek
 
 ## ⭐ ÖNCELİKLİ MADDELER
-(Acil/önemli maddeler burada)
+
+### Navigation Entegrasyonu (Yüksek Öncelik):
+- NewTournamentScreen → ListsScreen (seçim modu)
+- NewTournamentScreen → CriteriaScreen (seçim modu)
+- CreateListScreen → NewTournamentScreen (geri dönüş)
+- CreateCriteriaScreen → NewTournamentScreen (geri dönüş)
+
+### State Management (Yüksek Öncelik):
+- Yeni eklenen liste/kriter ID'si navigation argument olarak taşınacak
+- NewTournamentViewModel state'inde otomatik seçim yapılacak
+- Back navigation için proper parent activity tanımlaması
+
+### UI Değişiklikleri (Orta Öncelik):
+- Liste seçim ekranına "+" FAB butonu
+- Kriter seçim ekranına "+" FAB butonu
+- Navigation breadcrumb göstergesi (opsiyonel)
 
 ## 💡 FİKİR DEPOSU
 (Gelecek için fikirler burada)

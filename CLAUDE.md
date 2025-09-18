@@ -348,6 +348,13 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **Format**: [Kullanıcı madde] + ynd → otomatik kayıt
 - **Otomatik tarih**: Her maddeye tarih damgası eklenir
 
+### 📝 PROMPT GÜNLÜĞÜ SİSTEMİ
+**ZORUNLU KURAL**: Her kullanıcı promptu PROMPT_GUNLUGU.md dosyasına otomatik kaydedilmeli. Manuel "promptu ekle" talebi beklemeden, her prompt otomatik olarak günlüğe işlenmelidir.
+- **Dosya**: PROMPT_GUNLUGU.md
+- **Format**: [Tarih-Saat] Prompt İçeriği
+- **Otomatik**: Kullanıcı talebi olmadan tüm promptlar kaydedilir
+- **Kronolojik**: En yeni promptlar en üstte
+
 ## 🔄 BERABER ÇALIŞMA PROTOKOLÜ
 1. **🔧 Otomatik Build & Deploy:**
    - Her yenilik → APK build → telefona yükleme
