@@ -287,6 +287,46 @@ app/src/main/java/com/example/ranking/ui/viewmodel/TournamentRankingViewModel.kt
 - **Kriter sistemi**: %100 tamamlandı ve APK deploy edildi
 - **3x Büyük Tablo Layout**: %100 tamamlandı ve APK deploy edildi
 - **Tablo editing sistemi**: Tam çalışır durumda
+
+### ✅ TAMAMLANAN KRİTER DEĞERLENDİRME YENİ TASARIMI (2025-09-19)
+
+#### 🎨 MOCKUP'TAN GERÇEĞe İMPLEMENTASYON:
+**XML tasarımlarının gerçek Compose implementasyonuna uygulanması:**
+
+- **CriteriaEvaluationDialog**: Tam ekran tasarım güncellendi
+- **NewCriterionEvaluationBox**: Half-and-half color system implementasyonu
+- **FinalScoreAndResultSection**: Siyah çerçeveli toplam puan kutuları
+- **İki puanlama tipi desteği**: Separate/Comparative scoring sistemleri
+- **Modern expand/collapse**: Yuvarlak siyah buton (+/-)
+- **Clickable criteria cards**: Tıklayarak genişletme/daraltma
+
+#### 🔧 TEKNİK ÖZELLIKLER:
+- **Renk koordinasyonu**: Takım 1 mavi (#E3F2FD/#1976D2), Takım 2 yeşil (#F1F8E9/#388E3C)
+- **Siyah çerçeveli tasarım**: 2dp BorderStroke, 4dp RoundedCornerShape
+- **Tournament settings entegrasyonu**: scoringType (separate/comparative)
+- **Responsive layout**: 11sp-12sp font sizes, optimal padding
+- **Smart scoring logic**: Slider'da otomatik toplam dağıtım
+
+#### 📱 KULLANIM:
+1. **Ayrı ayrı mod**: Her takım için dropdown ile bağımsız puanlama
+2. **Kıyaslamalı mod**: Slider ile toplam puanın takımlar arası dağıtımı
+3. **Kriterler**: Tıklayarak aç/kapat, yarı yarıya renk sistemı
+4. **Toplam hesaplama**: Otomatik puan toplama ve görüntüleme
+5. **Galibiyet seçimi**: Üç butonla sonuç belirleme
+
+#### ✅ APK DEPLOY:
+- **Build**: Başarılı (3m 16s)
+- **Install**: Telefona yüklenmiş
+- **Test Ready**: XML mockup tasarımı %100 uygulandı
+
+#### 📋 DOSYA DEĞİŞİKLİKLERİ:
+```
+app/src/main/java/com/example/ranking/ui/screens/RankingScreen.kt
+- NewCriterionEvaluationBox: +157 satır güncelleme (half-and-half design)
+- FinalScoreAndResultSection: +47 satır güncelleme (siyah çerçeveli kutular)
+- Renk sistemi: XML mockup'a uygun mavi-yeşil koordinasyonu
+- Puanlama logic: Separate/comparative sistem desteği
+```
 - **Swiss system algoritması**: Stable ve test edilmiş
 - **Database structure**: Tam entegre ve optimize
 - **Production Status**: Ufak rötuşlar haricinde tamam
@@ -302,7 +342,13 @@ app/src/main/java/com/example/ranking/ui/viewmodel/TournamentRankingViewModel.kt
 4. **Sistem sesi protokolü**: Görev tamamlandığında 3 kere beep sesi çıkar
 5. **Otomatik onay protokolü**: Kullanıcıdan onay almadan işlemlere devam et
 
-## 🔊 SİSTEM SESİ PROTOKOLÜ 
+## 📝 PROMPT GÜNLÜĞÜ KONTROL SİSTEMİ
+**YENİ KURAL (2025-09-19):**
+- **"*p" komutu**: Sadece bu prompt'u günlüğe ekle
+- **Varsayılan davranış**: Otomatik ekleme DİSABLE edildi
+- **Manuel kontrol**: Kullanıcı "*p" demediği sürece ekleme
+
+## 🔊 SİSTEM SESİ PROTOKOLÜ
 **ZORUNLU UYGULANACAK KURALLAR:**
 
 ### Ne Zaman Sistem Sesi Çalacak:
@@ -386,6 +432,7 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 
 ## 🔥 YILDIZLI KOMUT SİSTEMİ (*)
 **Her komut * ile başlar - Hızlı erişim için:**
+- **"*p"** = Bu prompt'u günlüğe ekle (PROMPT_GUNLUGU.md'ye kaydet)
 - **"*btk"** = Beep protokolünü uygulamadığın için tenkid
 - **"*btş"** = Beep protokolü uyguladığın için teşekkür
 - **"*tmm"** = Bu özellik tamam, commit + push yap

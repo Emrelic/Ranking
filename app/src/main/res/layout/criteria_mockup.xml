@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- En Üst Başlık -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kriter Değerlendirme Sayfası"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="20dp"
+        android:textColor="#2E7D32" />
+
+    <!-- Takım Başlıkları - İki Renkli Bölge -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="0dp">
+
+        <!-- Takım 1 - Açık Mavi Bölge -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="2dp"
+            android:background="@drawable/black_border">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="TAKIM 1"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="#E3F2FD"
+                android:textColor="#1976D2"
+                android:layout_margin="3dp" />
+
+        </FrameLayout>
+
+        <!-- Takım 2 - Açık Yeşil Bölge -->
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/black_border">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="TAKIM 2"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:background="#F1F8E9"
+                android:textColor="#388E3C"
+                android:layout_margin="3dp" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- Büyük Scroll Çerçeve Pencere -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/black_border">
+
+        <!-- İki Renkli Arkaplan -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_margin="4dp">
+
+            <!-- Sol Yarı - Açık Mavi -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#E3F2FD" />
+
+            <!-- Sağ Yarı - Açık Yeşil -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="#F1F8E9" />
+
+        </LinearLayout>
+
+        <!-- Horizontal ScrollView -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:scrollbars="horizontal"
+            android:background="@android:color/transparent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+
+                <!-- Örnek Kriter Satırı 1 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="120dp"
+                        android:layout_height="40dp"
+                        android:text="Melodi"
+                        android:textSize="14sp"
+                        android:gravity="center_vertical"
+                        android:background="#E0E0E0"
+                        android:padding="8dp" />
+
+                    <Button
+                        android:layout_width="80dp"
+                        android:layout_height="40dp"
+                        android:text="8"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#E3F2FD" />
+
+                    <Button
+                        android:layout_width="80dp"
+                        android:layout_height="40dp"
+                        android:text="7"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#F1F8E9" />
+
+                </LinearLayout>
+
+                <!-- Örnek Kriter Satırı 2 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="120dp"
+                        android:layout_height="40dp"
+                        android:text="Ritim"
+                        android:textSize="14sp"
+                        android:gravity="center_vertical"
+                        android:background="#E0E0E0"
+                        android:padding="8dp" />
+
+                    <Button
+                        android:layout_width="80dp"
+                        android:layout_height="40dp"
+                        android:text="9"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#E3F2FD" />
+
+                    <Button
+                        android:layout_width="80dp"
+                        android:layout_height="40dp"
+                        android:text="6"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#F1F8E9" />
+
+                </LinearLayout>
+
+                <!-- Örnek Kriter Satırı 3 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="120dp"
+                        android:layout_height="40dp"
+                        android:text="Vokal"
+                        android:textSize="14sp"
+                        android:gravity="center_vertical"
+                        android:background="#E0E0E0"
+                        android:padding="8dp" />
+
+                    <Button
+                        android:layout_width="80dp"
+                        android:layout_height="40dp"
+                        android:text="7"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#E3F2FD" />
+
+                    <Button
+                        android:layout_width="80dp"
+                        android:layout_height="40dp"
+                        android:text="8"
+                        android:layout_marginStart="8dp"
+                        android:backgroundTint="#F1F8E9" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+    </FrameLayout>
+
+    <!-- Alt Butonlar - Ekranın En Altında -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp">
+
+        <!-- İptal Butonu -->
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="İPTAL"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="#F44336"
+            android:textColor="#FFFFFF"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Kaydet Butonu -->
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="KAYDET"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
