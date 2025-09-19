@@ -47,12 +47,16 @@ fun RankingScreen(
     }
     
     val uiState by viewModel.uiState.collectAsState()
+    var showCriteriaDialog by remember { mutableStateOf(false) }
     
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Ana içerik - Dialog açıkken gizle
+        if (!showCriteriaDialog) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
         TopAppBar(
             title = { 
                 Text(getMethodTitle(method))
@@ -160,7 +164,9 @@ fun RankingScreen(
                 viewModel = viewModel,
                 onMatchResult = viewModel::submitMatchResult,
                 onMatchResultWithScore = viewModel::submitMatchResultWithScore,
-                onComplete = { onNavigateToResults(listId, method) }
+                onComplete = { onNavigateToResults(listId, method) },
+                showCriteriaDialog = showCriteriaDialog,
+                onShowCriteriaDialog = { showCriteriaDialog = it }
             )
             "ELIMINATION" -> EliminationContent(
                 uiState = uiState,
@@ -172,6 +178,29 @@ fun RankingScreen(
                 onMatchResult = viewModel::submitMatchResult,
                 onComplete = { onNavigateToResults(listId, method) }
             )
+        }
+            }
+        }
+        
+        // Kriter Değerlendirme Dialogu - Ana içeriğin üstünde
+        if (showCriteriaDialog) {
+            val currentMatch = when (method) {
+                "LEAGUE", "SWISS", "EMRE_CORRECT" -> uiState.currentMatch
+                else -> null
+            }
+            currentMatch?.let { match ->
+                CriteriaEvaluationDialog(
+                    match = match,
+                    song1 = uiState.song1,
+                    song2 = uiState.song2,
+                    tournamentId = match.tournamentId,
+                    onDismiss = { showCriteriaDialog = false },
+                    onSave = { criteriaScores ->
+                        // Kriter skorlarını kaydet ve maç sonucunu belirle
+                        showCriteriaDialog = false
+                    }
+                )
+            }
         }
     }
 }
@@ -399,7 +428,9 @@ private fun MatchBasedContent(
     viewModel: RankingViewModel = viewModel(),
     onMatchResult: (Long, Long?) -> Unit,
     onMatchResultWithScore: (Long, Long?, Int?, Int?) -> Unit = { id, winner, _, _ -> onMatchResult(id, winner) },
-    onComplete: () -> Unit
+    onComplete: () -> Unit,
+    showCriteriaDialog: Boolean = false,
+    onShowCriteriaDialog: (Boolean) -> Unit = {}
 ) {
     android.util.Log.d("MatchBasedContent", "🎯 Method: $method, showInitialRanking: ${uiState.showInitialRanking}, showMatchingsList: ${uiState.showMatchingsList}, isComplete: ${uiState.isComplete}, currentMatch: ${uiState.currentMatch?.id}")
 
@@ -791,30 +822,14 @@ private fun MatchBasedContent(
                     }
 
                     // Kriter Değerlendirme Butonu
-                    var showCriteriaDialog by remember { mutableStateOf(false) }
                     Button(
-                        onClick = { showCriteriaDialog = true },
+                        onClick = { onShowCriteriaDialog(true) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.tertiary
                         )
                     ) {
                         Text("Kriterler ile Değerlendir")
-                    }
-
-                    // Kriter Değerlendirme Dialogu
-                    if (showCriteriaDialog) {
-                        CriteriaEvaluationDialog(
-                            match = match,
-                            song1 = uiState.song1,
-                            song2 = uiState.song2,
-                            tournamentId = match.tournamentId,
-                            onDismiss = { showCriteriaDialog = false },
-                            onSave = { criteriaScores ->
-                                // Kriter skorlarını kaydet ve maç sonucunu belirle
-                                showCriteriaDialog = false
-                            }
-                        )
                     }
                 }
             }
@@ -1650,7 +1665,7 @@ private fun CriteriaEvaluationDialog(
     onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
     viewModel: RankingViewModel = viewModel()
 ) {
-    // TAM EKRAN OVERLAY - Yeni temiz tasarım
+    // TAM EKRAN OVERLAY - Temizlenmiş tasarım
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -1662,7 +1677,7 @@ private fun CriteriaEvaluationDialog(
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                // 1. EN TEPEDE SADECE BAŞLIK
+                // 1. EN TEPEDE KRİTER DEĞERLENDİRMESİ YAZISI
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1749,9 +1764,13 @@ private fun CriteriaEvaluationDialog(
                 var criteriaSettings by remember { mutableStateOf<Map<String, Any>?>(null) }
 
                 LaunchedEffect(tournamentId) {
+                    android.util.Log.d("CriteriaDialog", "🎯 LaunchedEffect tournamentId: $tournamentId")
                     if (tournamentId != null) {
+                        android.util.Log.d("CriteriaDialog", "🎯 Calling getCriteriaForTournament...")
                         criteria = viewModel.getCriteriaForTournament(tournamentId)
+                        android.util.Log.d("CriteriaDialog", "🎯 Criteria received: $criteria (size: ${criteria.size})")
                         criteriaSettings = viewModel.getCriteriaSettingsForTournament(tournamentId)
+                        android.util.Log.d("CriteriaDialog", "🎯 CriteriaSettings received: $criteriaSettings")
                     }
                 }
 
@@ -1761,7 +1780,8 @@ private fun CriteriaEvaluationDialog(
 
                 // Scrollable kriterler listesi
                 LazyColumn(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(0.dp) // Kenarları ekranla birleştir
                 ) {
                     items(finalCriteria) { criterion ->
                         NewCriterionEvaluationBox(

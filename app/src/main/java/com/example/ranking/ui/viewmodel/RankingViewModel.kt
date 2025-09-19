@@ -1624,18 +1624,26 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     suspend fun getCriteriaForTournament(tournamentId: Long): List<String> {
         return try {
+            android.util.Log.d("RankingViewModel", "🎯 getCriteriaForTournament called with tournamentId: $tournamentId")
             // Tournament'tan criterionListId'yi al
             val tournament = database.tournamentDao().getTournamentById(tournamentId)
+            android.util.Log.d("RankingViewModel", "🎯 Tournament found: ${tournament?.name}, criterionListId: ${tournament?.criterionListId}")
+            
             if (tournament?.criterionListId != null) {
                 // CriterionList'ten criteria JSON'unu al
                 val criterionList = database.criterionListDao().getCriterionListById(tournament.criterionListId)
+                android.util.Log.d("RankingViewModel", "🎯 CriterionList found: ${criterionList?.name}, criteria: ${criterionList?.criteria}")
+                
                 if (criterionList != null) {
                     // JSON'u parse et ve liste olarak döndür
                     val gson = Gson()
                     val criteriaArray = gson.fromJson(criterionList.criteria, Array<String>::class.java)
-                    return criteriaArray.toList()
+                    val result = criteriaArray.toList()
+                    android.util.Log.d("RankingViewModel", "🎯 Parsed criteria: $result")
+                    return result
                 }
             }
+            android.util.Log.d("RankingViewModel", "🎯 No criteria found, returning empty list")
             emptyList()
         } catch (e: Exception) {
             android.util.Log.e("RankingViewModel", "Criteria alma hatası: ${e.message}", e)

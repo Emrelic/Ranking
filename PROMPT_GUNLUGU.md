@@ -157,6 +157,26 @@ sana yazı ile ekran tasarımını açıklayıp druyorum çok zor oluyor. en az�
 
 ## 📅 2025-09-18
 
+### [16:40]
+```
+kriterler kriter listesinden gelmiyor. kafaya göre teknik yetenek yaratıcılık performans orijinallik sahne hakimiyeti diye birşeyler belirlenmiş. halbuki 27 maddelik bir kriter listesi seçtik oradaki her bir maddenin gelmesi lazım
+```
+
+### [16:35]
+```
+kriterler sayfasındaki öğeler seçilen kriter listesinden alınmalı.
+```
+
+### [16:30]
+```
+not defterlerini oku *mo
+```
+
+### [16:15]
+```
+bak orada söylediğim şeyleri hallet
+```
+
 ### [16:05]
 ```
 yeni turnuvada oylama ekranında tıkladığımız kriterler ile değerlendir butonu ile açtığımız kriterler sayfasında en tepedeki
