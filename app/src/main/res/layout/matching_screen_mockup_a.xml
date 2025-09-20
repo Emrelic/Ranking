@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Başlık Bölümü -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1. Tur Eşleştirmeleri"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#1976D2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8 Eşleştirme"
+                android:textSize="16sp"
+                android:textColor="#666666" />
+
+        </LinearLayout>
+
+        <!-- EŞLEŞME KARTI A VERSİYONU - BÜYÜK KART -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="420dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Eşleşme Numarası -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="1. EŞLEŞME"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Ana Eşleştirme Alanı -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <!-- TAKIM 1 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:orientation="vertical"
+                        android:background="#E3F2FD"
+                        android:padding="12dp"
+                        android:layout_marginEnd="8dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="TAKIM 1"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2"
+                            android:gravity="center"
+                            android:layout_marginBottom="12dp" />
+
+                        <!-- Resim Alanı -->
+                        <ImageView
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="#BBDEFB"
+                            android:scaleType="centerCrop"
+                            android:layout_marginBottom="12dp"
+                            android:src="@drawable/ic_music_note" />
+
+                        <!-- Şarkı Bilgileri -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Şarkı Adı"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:layout_marginBottom="4dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Sanatçı Adı"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp" />
+
+                        <!-- Puan Gösterimi -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Puan: 2.5"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textColor="#1976D2"
+                            android:background="#FFFFFF"
+                            android:padding="8dp" />
+
+                        <Spacer
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <!-- Oynat Butonu -->
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:text="🎵 OYNAT"
+                            android:textSize="12sp"
+                            android:backgroundTint="#1976D2" />
+
+                    </LinearLayout>
+
+                    <!-- VS Bölümü -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="VS"
+                            android:textSize="32sp"
+                            android:textStyle="bold"
+                            android:textColor="#9E9E9E"
+                            android:gravity="center" />
+
+                    </LinearLayout>
+
+                    <!-- TAKIM 2 -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:orientation="vertical"
+                        android:background="#F1F8E9"
+                        android:padding="12dp"
+                        android:layout_marginStart="8dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="TAKIM 2"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#388E3C"
+                            android:gravity="center"
+                            android:layout_marginBottom="12dp" />
+
+                        <!-- Resim Alanı -->
+                        <ImageView
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="#C8E6C9"
+                            android:scaleType="centerCrop"
+                            android:layout_marginBottom="12dp"
+                            android:src="@drawable/ic_music_note" />
+
+                        <!-- Şarkı Bilgileri -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Şarkı Adı 2"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:layout_marginBottom="4dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Sanatçı Adı 2"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp" />
+
+                        <!-- Puan Gösterimi -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Puan: 1.5"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textColor="#388E3C"
+                            android:background="#FFFFFF"
+                            android:padding="8dp" />
+
+                        <Spacer
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <!-- Oynat Butonu -->
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:text="🎵 OYNAT"
+                            android:textSize="12sp"
+                            android:backgroundTint="#388E3C" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Alt Oylama Butonu -->
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="BU EŞLEŞMEYİ OYLA"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="#FF5722" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- İKİNCİ EŞLEŞME KARTI (Aynı yapı) -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="420dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="6dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2. EŞLEŞME"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#1976D2"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- İkinci eşleştirme aynı yapıda... -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:text="[İkinci eşleştirme kartı\naynı yapıda olacak...]"
+                    android:gravity="center"
+                    android:textColor="#999999"
+                    android:textSize="14sp"
+                    android:background="#F0F0F0" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Alt Genel Buton -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="TÜM EŞLEŞMELERİ GÖRÜNTÜLE"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#1976D2" />
+
+    </LinearLayout>
+
+</ScrollView>

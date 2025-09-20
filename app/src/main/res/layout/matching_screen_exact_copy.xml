@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?attr/colorSurface">
+
+    <!-- Başlık - Dinamik tur numarası -->
+    <TextView
+        android:id="@+id/tv_round_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1. Tur Eşleştirmeleri"
+        android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorOnSurface" />
+
+    <!-- Toplam eşleştirme sayısı -->
+    <TextView
+        android:id="@+id/tv_matching_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="8 Eşleştirme Oluşturuldu"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Eşleştirmeler listesi - LazyColumn = RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_matchings_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false" />
+
+    <!-- Spacer -->
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="16dp" />
+
+    <!-- Puanlama ekranına geç butonu -->
+    <Button
+        android:id="@+id/btn_start_scoring"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Puanlama Ekranına Geç"
+        android:textAppearance="@style/TextAppearance.Material3.LabelLarge"
+        android:backgroundTint="?attr/colorPrimary"
+        android:textColor="?attr/colorOnPrimary"
+        app:icon="@android:drawable/ic_media_play"
+        app:iconGravity="start"
+        app:iconPadding="8dp" />
+
+</LinearLayout>

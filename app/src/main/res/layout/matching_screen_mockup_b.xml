@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F5F5F5"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Başlık Bölümü -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1. Tur Eşleştirmeleri"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#1976D2" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="8 Eşleştirme"
+                android:textSize="16sp"
+                android:textColor="#666666" />
+
+        </LinearLayout>
+
+        <!-- KOMPAKT EŞLEŞME KARTI 1 - KAPALI DURUM -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <!-- Üst Satır: Başlık + Açma Butonu -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="1. EŞLEŞME"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#1976D2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Detay Aç ▼"
+                        android:textSize="12sp"
+                        android:textColor="#666666"
+                        android:clickable="true"
+                        android:padding="4dp" />
+
+                </LinearLayout>
+
+                <!-- Alt Satır: Eşleştirme Özeti -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="Şarkı A - Sanatçı A\nPuan: 2.5"
+                        android:textSize="12sp"
+                        android:background="#E3F2FD"
+                        android:padding="8dp"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" vs "
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#9E9E9E"
+                        android:layout_marginHorizontal="8dp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="Şarkı B - Sanatçı B\nPuan: 1.5"
+                        android:textSize="12sp"
+                        android:background="#F1F8E9"
+                        android:padding="8dp"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- AÇILMIŞ DETAY EŞLEŞME KARTI 2 - AÇIK DURUM -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="6dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <!-- Üst Satır: Başlık + Kapatma Butonu -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="2. EŞLEŞME"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#1976D2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Detay Kapat ▲"
+                        android:textSize="12sp"
+                        android:textColor="#666666"
+                        android:clickable="true"
+                        android:padding="4dp" />
+
+                </LinearLayout>
+
+                <!-- Detaylı Eşleştirme Alanı -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <!-- TAKIM 1 DETAY -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:orientation="vertical"
+                        android:background="#E3F2FD"
+                        android:padding="8dp"
+                        android:layout_marginEnd="4dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="TAKIM 1"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#1976D2"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp" />
+
+                        <!-- Küçük Resim -->
+                        <ImageView
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="#BBDEFB"
+                            android:scaleType="centerCrop"
+                            android:layout_marginBottom="8dp"
+                            android:src="@drawable/ic_music_note" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Şarkı Adı"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:layout_marginBottom="2dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Sanatçı"
+                            android:textSize="11sp"
+                            android:gravity="center"
+                            android:layout_marginBottom="6dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Puan: 2.5"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textColor="#1976D2"
+                            android:background="#FFFFFF"
+                            android:padding="4dp"
+                            android:layout_marginBottom="6dp" />
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="32dp"
+                            android:text="🎵 Oynat"
+                            android:textSize="10sp"
+                            android:backgroundTint="#1976D2" />
+
+                    </LinearLayout>
+
+                    <!-- VS Küçük -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:layout_marginHorizontal="4dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="VS"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="#9E9E9E" />
+
+                    </LinearLayout>
+
+                    <!-- TAKIM 2 DETAY -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:orientation="vertical"
+                        android:background="#F1F8E9"
+                        android:padding="8dp"
+                        android:layout_marginStart="4dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="TAKIM 2"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#388E3C"
+                            android:gravity="center"
+                            android:layout_marginBottom="8dp" />
+
+                        <ImageView
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="#C8E6C9"
+                            android:scaleType="centerCrop"
+                            android:layout_marginBottom="8dp"
+                            android:src="@drawable/ic_music_note" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Şarkı Adı 2"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:layout_marginBottom="2dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Sanatçı 2"
+                            android:textSize="11sp"
+                            android:gravity="center"
+                            android:layout_marginBottom="6dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Puan: 1.5"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textColor="#388E3C"
+                            android:background="#FFFFFF"
+                            android:padding="4dp"
+                            android:layout_marginBottom="6dp" />
+
+                        <Button
+                            android:layout_width="match_parent"
+                            android:layout_height="32dp"
+                            android:text="🎵 Oynat"
+                            android:textSize="10sp"
+                            android:backgroundTint="#388E3C" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Oylama Butonu -->
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="BU EŞLEŞMEYİ OYLA"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="#FF5722" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- KOMPAKT EŞLEŞME KARTI 3 - KAPALI DURUM -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="3. EŞLEŞME"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#1976D2" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Detay Aç ▼"
+                        android:textSize="12sp"
+                        android:textColor="#666666"
+                        android:clickable="true"
+                        android:padding="4dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="Şarkı C - Sanatçı C\nPuan: 1.0"
+                        android:textSize="12sp"
+                        android:background="#E3F2FD"
+                        android:padding="8dp"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" vs "
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#9E9E9E"
+                        android:layout_marginHorizontal="8dp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2"
+                        android:text="Şarkı D - Sanatçı D\nPuan: 3.0"
+                        android:textSize="12sp"
+                        android:background="#F1F8E9"
+                        android:padding="8dp"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Alt Navigasyon Butonları -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp">
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="PUANLAMA EKRANıNA GEÇ"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#1976D2" />
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="TÜMÜnÜ AÇ/KAPAT"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="#666666" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
