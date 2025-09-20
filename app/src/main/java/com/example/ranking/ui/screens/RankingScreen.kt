@@ -2,6 +2,7 @@ package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -193,11 +194,30 @@ fun RankingScreen(
                     match = match,
                     song1 = uiState.song1,
                     song2 = uiState.song2,
-                    tournamentId = match.tournamentId,
+                    tournamentId = match.tournamentId ?: match.listId, // Fallback: listId'yi tournament olarak kullan
                     onDismiss = { showCriteriaDialog = false },
-                    onSave = { criteriaScores ->
+                    onSave = { criteriaScores, winner ->
                         // Kriter skorlarını kaydet ve maç sonucunu belirle
                         showCriteriaDialog = false
+                        // Kazanan bilgisine göre arka sayfadaki butona basılmış gibi işle
+                        when (winner) {
+                            "team1" -> {
+                                // İlk takım kazandı - arka sayfadaki sol butonu işle
+                                android.util.Log.d("KriterDebug", "Takım 1 kazandı - ${uiState.song1?.name}")
+                            }
+                            "team2" -> {
+                                // İkinci takım kazandı - arka sayfadaki sağ butonu işle
+                                android.util.Log.d("KriterDebug", "Takım 2 kazandı - ${uiState.song2?.name}")
+                            }
+                            "draw" -> {
+                                // Beraberlik - arka sayfadaki beraberlik butonu işle
+                                android.util.Log.d("KriterDebug", "Beraberlik")
+                            }
+                            "save_only" -> {
+                                // Sadece kaydet - kazanan belirlenmedi
+                                android.util.Log.d("KriterDebug", "Sadece kaydet")
+                            }
+                        }
                     }
                 )
             }
@@ -1662,7 +1682,7 @@ private fun CriteriaEvaluationDialog(
     song2: Song?,
     tournamentId: Long?,
     onDismiss: () -> Unit,
-    onSave: (Map<String, Pair<Double?, Double?>>) -> Unit,
+    onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit, // Kazanan bilgisi eklendi
     viewModel: RankingViewModel = viewModel()
 ) {
     // TAM EKRAN OVERLAY - Temizlenmiş tasarım
@@ -1691,11 +1711,11 @@ private fun CriteriaEvaluationDialog(
                     )
                 }
 
-                // 2. TAKIM BAŞLIKLARI - XML tasarımına uygun çerçeveli yapı
+                // 2. TAKIM BAŞLIKLARI - Ekran kenarından kenara
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 0.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                     border = BorderStroke(2.dp, Color.Black),
                     shape = RoundedCornerShape(4.dp)
@@ -1712,7 +1732,7 @@ private fun CriteriaEvaluationDialog(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .padding(end = 2.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD)),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFBBDEFB)),
                             border = BorderStroke(2.dp, Color.Black),
                             shape = RoundedCornerShape(4.dp)
                         ) {
@@ -1737,7 +1757,7 @@ private fun CriteriaEvaluationDialog(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .padding(start = 2.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9)),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFDCEDC8)),
                             border = BorderStroke(2.dp, Color.Black),
                             shape = RoundedCornerShape(4.dp)
                         ) {
@@ -1774,9 +1794,7 @@ private fun CriteriaEvaluationDialog(
                     }
                 }
 
-                val finalCriteria = if (criteria.isNotEmpty()) criteria else listOf(
-                    "Teknik Yetenek", "Yaratıcılık", "Performans", "Orijinallik", "Sahne Hâkimiyeti"
-                )
+                val finalCriteria = criteria // Sadece gerçek kriter listesi
 
                 // Scrollable kriterler listesi
                 LazyColumn(
@@ -1823,98 +1841,89 @@ private fun NewCriterionEvaluationBox(
     val scoringType = criteriaSettings?.get("scoringType") as? String ?: "separate"
     val scoreScale = (criteriaSettings?.get("scoreScale") as? Double)?.toInt() ?: 10
 
-    // Siyah çerçeveli, full-width kutu - XML tasarımına uygun
-    Card(
+    // DEBUG: Scoring type kontrolü
+    android.util.Log.d("KriterDebug", "scoringType: $scoringType, scoreScale: $scoreScale")
+
+    // Checkbox açıldığında varsayılan puanları ayarla
+    LaunchedEffect(isExpanded) {
+        if (isExpanded && currentScores.first == null && currentScores.second == null) {
+            // Varsayılan olarak eşit puan dağıtımı (5-5 gibi)
+            val defaultScore = scoreScale / 2.0
+            onScoresChanged(defaultScore, defaultScore)
+        }
+    }
+
+    // XML MOCKUP TASARIMI - Ekran kenarından kenara siyah çerçeveli kutu (Card kaldırıldı)
+    // Kriter metni uzunluğuna göre dinamik yükseklik
+    val textHeight = remember(criterionName) {
+        // Uzun metinler için yükseklik artırımı
+        when {
+            criterionName.length > 50 -> if (isExpanded) 110.dp else 60.dp
+            criterionName.length > 30 -> if (isExpanded) 100.dp else 50.dp
+            else -> if (isExpanded) 90.dp else 40.dp
+        }
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-            .clickable { isExpanded = !isExpanded },
-        shape = RoundedCornerShape(4.dp),
-        border = BorderStroke(2.dp, Color.Black),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            .padding(horizontal = 0.dp, vertical = 0.dp) // TÜM boşlukları elimine et
+            .border(2.dp, Color.Black) // Siyah çerçeve
+            .clickable { isExpanded = !isExpanded }
     ) {
         Box {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (isExpanded) 120.dp else 60.dp)
+                    .height(textHeight)
             ) {
-                // Sol yarı - Açık mavi (Takım 1)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .background(Color(0xFFE3F2FD)) // XML'deki mavi renk
-                        .padding(8.dp)
-                ) {
-                    if (isExpanded) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = criterionName,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 11.sp),
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1976D2),
-                                textAlign = TextAlign.Center
+            // SOL YARI - AÇIK MAVİ BÖLGE (Takım 1)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(Color(0xFFBBDEFB)) // Biraz koyu mavi
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                if (isExpanded) {
+                    // Açık durum - Sol kısımda puanlama UI (kriter metni üstte overlay'da)
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        // Puanlama UI - SADECE AYRI AYRI MODDA dropdown
+                        if (scoringType == "separate") {
+                            android.util.Log.d("KriterDebug", "Sol dropdown gösteriliyor - scoringType: $scoringType")
+                            ScoreDropdown(
+                                score = currentScores.first,
+                                maxScore = scoreScale,
+                                onScoreSelected = { score ->
+                                    onScoresChanged(score, currentScores.second)
+                                }
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            // Puanlama sistemi - Ayara göre değişir
-                            if (scoringType == "comparative") {
-                                // Kıyaslamalı (slider) - sadece sol tarafta göster
-                                ComparativeScoring(
-                                    score = currentScores.first,
-                                    maxScore = scoreScale,
-                                    onScoreSelected = { score ->
-                                        // Slider sisteminde toplam puan dağıtılır
-                                        val team2Score = if (score != null) scoreScale - score else null
-                                        onScoresChanged(score, team2Score)
-                                    }
-                                )
-                            } else {
-                                // Ayrı ayrı (dropdown)
-                                ScoreDropdown(
-                                    score = currentScores.first,
-                                    maxScore = scoreScale,
-                                    onScoreSelected = { score ->
-                                        onScoresChanged(score, currentScores.second)
-                                    }
-                                )
-                            }
-                        }
-                    } else {
-                        // Kapalı halde - kriter ismi ortada
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = criterionName,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1976D2),
-                                textAlign = TextAlign.Center
-                            )
+                        } else {
+                            android.util.Log.d("KriterDebug", "Sol dropdown GÖSTERİLMİYOR - scoringType: $scoringType")
                         }
                     }
                 }
+            }
 
-                // Sağ yarı - Açık yeşil (Takım 2)
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .background(Color(0xFFF1F8E9)) // XML'deki yeşil renk
-                        .padding(8.dp)
-                ) {
-                    if (isExpanded && scoringType == "separate") {
-                        // Sadece "ayrı ayrı" modunda sağ taraf aktif
+            // SAĞ YARI - AÇIK YEŞİL BÖLGE (Takım 2)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(Color(0xFFDCEDC8)) // Biraz koyu yeşil
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                if (isExpanded) {
+                    // Açık durum - Sağ kısımda puanlama UI (kriter metni üstte overlay'da)
+                    if (scoringType == "separate") {
+                        // Ayrı ayrı - Dropdown (alt kısımda)
                         Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.Bottom
                         ) {
-                            Spacer(modifier = Modifier.height(24.dp)) // Kriter adı için boşluk
-
                             ScoreDropdown(
                                 score = currentScores.second,
                                 maxScore = scoreScale,
@@ -1923,50 +1932,151 @@ private fun NewCriterionEvaluationBox(
                                 }
                             )
                         }
-                    } else if (isExpanded && scoringType == "comparative") {
-                        // Kıyaslamalı modunda sağ taraf sadece puanı gösterir
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Spacer(modifier = Modifier.height(24.dp))
+                    }
+                } else {
+                    // Kapalı durum - Checkbox yeşil bölgenin en sağında
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Checkbox(
+                            checked = isExpanded,
+                            onCheckedChange = { isExpanded = !isExpanded },
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+            }
 
+            // KRİTER METNİ OVERLAY - Tüm genişliği kaplar, her durumda görünür
+            if (isExpanded) {
+                // Açık durum - Kriter metni üstte, arka plan transparan
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(textHeight)
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = criterionName,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1976D2),
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(Alignment.Top),
+                        maxLines = 4, // Uzun metinler için 4 satıra kadar
+                        overflow = TextOverflow.Visible
+                    )
+                }
+            } else {
+                // Kapalı durum - Kriter metni tüm genişlikte, checkbox hariç
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(textHeight)
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = criterionName,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 11.sp),
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1976D2),
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 4.dp, end = 30.dp, top = 4.dp, bottom = 4.dp) // Checkbox için sağdan yer bırak
+                            .wrapContentHeight(Alignment.Top),
+                        maxLines = when {
+                            criterionName.length > 50 -> 3
+                            criterionName.length > 30 -> 2
+                            else -> 2
+                        },
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            // SLIDER OVERLAY - Kıyaslamalı modda tüm genişliği kaplar
+            if (isExpanded && scoringType == "comparative") {
+                // Alt kısım arka planı - Sol yarı mavi, sağ yarı yeşil
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(textHeight)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFFBBDEFB)) // Mavi arka plan
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFFDCEDC8)) // Yeşil arka plan
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(textHeight)
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        // Slider - ortadan küçültülmüş, iki ucunda puanlar
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            // Sol puan - slider'ın sol ucunda (2x büyük font)
                             Text(
-                                text = if (currentScores.second != null) "${currentScores.second?.toInt()}" else "0",
-                                style = MaterialTheme.typography.titleLarge,
+                                text = "${currentScores.first?.toInt() ?: (scoreScale / 2)}",
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 32.sp), // 16sp -> 32sp (2 katı)
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1976D2),
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+
+                            // Slider - ortada, küçültülmüş
+                            Slider(
+                                value = currentScores.first?.toFloat() ?: (scoreScale / 2f),
+                                onValueChange = { newValue ->
+                                    val team1Score = newValue.toDouble()
+                                    val team2Score = scoreScale - team1Score
+                                    onScoresChanged(team1Score, team2Score)
+                                },
+                                valueRange = 0f..scoreScale.toFloat(),
+                                steps = scoreScale - 1,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 16.dp) // Soldan ve sağdan küçültme
+                            )
+
+                            // Sağ puan - slider'ın sağ ucunda (2x büyük font)
+                            Text(
+                                text = "${currentScores.second?.toInt() ?: (scoreScale / 2)}",
+                                style = MaterialTheme.typography.titleMedium.copy(fontSize = 32.sp), // 16sp -> 32sp (2 katı)
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF388E3C),
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(start = 8.dp)
                             )
                         }
                     }
                 }
             }
-
-            // Genişlet/daralt göstergesi - sağ üst köşe
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(4.dp),
-                contentAlignment = Alignment.TopEnd
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = Color.Black.copy(alpha = 0.7f),
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (isExpanded) "−" else "+",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
         }
+
     }
 }
 
@@ -1976,7 +2086,7 @@ private fun FinalScoreAndResultSection(
     team1Name: String,
     team2Name: String,
     onDismiss: () -> Unit,
-    onSave: (Map<String, Pair<Double?, Double?>>) -> Unit
+    onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit // Kazanan bilgisi eklendi
 ) {
     // Toplam puanları hesapla
     val team1Total = criteriaScores.values.mapNotNull { it.first }.sum()
@@ -1985,19 +2095,19 @@ private fun FinalScoreAndResultSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 0.dp, vertical = 0.dp) // Hiç padding yok - beyaz şeridi kaldır
     ) {
-        // Toplam puanlar - XML tasarımına uygun siyah çerçeveli
+        // Toplam puanlar - XML tasarımına uygun siyah çerçeveli, boşluksuz
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp) // Puan kutuları arasında boşluk yok
         ) {
             // Takım 1 toplam puanı - Siyah çerçeveli mavi kutu
             Card(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(4.dp),
                 border = BorderStroke(2.dp, Color.Black),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFE3F2FD))
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFBBDEFB))
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),
@@ -2007,13 +2117,15 @@ private fun FinalScoreAndResultSection(
                         text = team1Name,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1976D2)
+                        color = Color(0xFF1976D2),
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Toplam: ${team1Total.toInt()}",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 32.sp), // 2 katı puntoda
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1976D2)
+                        color = Color(0xFF1976D2),
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -2023,7 +2135,7 @@ private fun FinalScoreAndResultSection(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(4.dp),
                 border = BorderStroke(2.dp, Color.Black),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F8E9))
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFDCEDC8))
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),
@@ -2033,53 +2145,92 @@ private fun FinalScoreAndResultSection(
                         text = team2Name,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF388E3C)
+                        color = Color(0xFF388E3C),
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Toplam: ${team2Total.toInt()}",
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(fontSize = 32.sp), // 2 katı puntoda
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF388E3C)
+                        color = Color(0xFF388E3C),
+                        textAlign = TextAlign.Center
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Sonuç butonları
+        // Sonuç butonları - Dikdörtgen, boşluksuz, açık mavi/yeşil
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp) // Butonlar arası boşluk yok
         ) {
             Button(
-                onClick = { onSave(criteriaScores) }, // Takım 1 kazandı
-                modifier = Modifier.weight(1f),
+                onClick = { onSave(criteriaScores, "team1") }, // Takım 1 kazandı
+                modifier = Modifier
+                    .weight(1f)
+                    .height(60.dp), // Büyütüldü - metinler için daha fazla yer
+                shape = RoundedCornerShape(0.dp), // Dikdörtgen
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF1976D2)
+                    containerColor = Color(0xFFBBDEFB) // Biraz koyu mavi
                 )
             ) {
-                Text("$team1Name Kazandı", color = Color.White)
+                Text("$team1Name Kazandı", color = Color(0xFF1976D2), fontWeight = FontWeight.Bold)
             }
 
             Button(
-                onClick = { onSave(criteriaScores) }, // Beraberlik
-                modifier = Modifier.weight(1f),
+                onClick = { onSave(criteriaScores, "draw") }, // Beraberlik
+                modifier = Modifier
+                    .weight(1f)
+                    .height(60.dp), // Büyütüldü - metinler için daha fazla yer
+                shape = RoundedCornerShape(0.dp), // Dikdörtgen
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.Gray
                 )
             ) {
-                Text("Beraberlik", color = Color.White)
+                Text("Beraberlik", color = Color.White, fontWeight = FontWeight.Bold)
             }
 
             Button(
-                onClick = { onSave(criteriaScores) }, // Takım 2 kazandı
-                modifier = Modifier.weight(1f),
+                onClick = { onSave(criteriaScores, "team2") }, // Takım 2 kazandı
+                modifier = Modifier
+                    .weight(1f)
+                    .height(60.dp), // Büyütüldü - metinler için daha fazla yer
+                shape = RoundedCornerShape(0.dp), // Dikdörtgen
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF388E3C)
+                    containerColor = Color(0xFFDCEDC8) // Biraz koyu yeşil
                 )
             ) {
-                Text("$team2Name Kazandı", color = Color.White)
+                Text("$team2Name Kazandı", color = Color(0xFF388E3C), fontWeight = FontWeight.Bold)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp)) // Minimal beyaz boşluk
+
+        // İptal ve Kaydet butonları - Bant şeklinde, dikdörtgen
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(0.dp) // Butonlar bitişik
+        ) {
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(0.dp), // Dikdörtgen şekil
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                )
+            ) {
+                Text("İptal", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+
+            Button(
+                onClick = { onSave(criteriaScores, "save_only") }, // Sadece kaydet, kazanan yok
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(0.dp), // Dikdörtgen şekil
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2E7D32)
+                )
+            ) {
+                Text("Kaydet", color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -2249,7 +2400,7 @@ private fun ScoreDropdown(
         onExpandedChange = { expanded = !expanded }
     ) {
         OutlinedTextField(
-            value = score?.toString() ?: "Puan seç",
+            value = score?.toInt()?.toString() ?: "Puan seç",
             onValueChange = { },
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -2272,7 +2423,7 @@ private fun ScoreDropdown(
             )
             scores.forEach { scoreValue ->
                 DropdownMenuItem(
-                    text = { Text(scoreValue.toString(), fontSize = 11.sp) },
+                    text = { Text(scoreValue.toInt().toString(), fontSize = 11.sp) },
                     onClick = {
                         onScoreSelected(scoreValue)
                         expanded = false

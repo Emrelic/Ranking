@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.pow
@@ -1623,48 +1625,52 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     suspend fun getCriteriaForTournament(tournamentId: Long): List<String> {
-        return try {
-            android.util.Log.d("RankingViewModel", "🎯 getCriteriaForTournament called with tournamentId: $tournamentId")
-            // Tournament'tan criterionListId'yi al
-            val tournament = database.tournamentDao().getTournamentById(tournamentId)
-            android.util.Log.d("RankingViewModel", "🎯 Tournament found: ${tournament?.name}, criterionListId: ${tournament?.criterionListId}")
-            
-            if (tournament?.criterionListId != null) {
-                // CriterionList'ten criteria JSON'unu al
-                val criterionList = database.criterionListDao().getCriterionListById(tournament.criterionListId)
-                android.util.Log.d("RankingViewModel", "🎯 CriterionList found: ${criterionList?.name}, criteria: ${criterionList?.criteria}")
-                
-                if (criterionList != null) {
-                    // JSON'u parse et ve liste olarak döndür
-                    val gson = Gson()
-                    val criteriaArray = gson.fromJson(criterionList.criteria, Array<String>::class.java)
-                    val result = criteriaArray.toList()
-                    android.util.Log.d("RankingViewModel", "🎯 Parsed criteria: $result")
-                    return result
+        return withContext(Dispatchers.IO) {
+            try {
+                android.util.Log.d("RankingViewModel", "🎯 getCriteriaForTournament called with tournamentId: $tournamentId")
+                // Tournament'tan criterionListId'yi al
+                val tournament = database.tournamentDao().getTournamentById(tournamentId)
+                android.util.Log.d("RankingViewModel", "🎯 Tournament found: ${tournament?.name}, criterionListId: ${tournament?.criterionListId}")
+
+                if (tournament?.criterionListId != null) {
+                    // CriterionList'ten criteria JSON'unu al
+                    val criterionList = database.criterionListDao().getCriterionListById(tournament.criterionListId)
+                    android.util.Log.d("RankingViewModel", "🎯 CriterionList found: ${criterionList?.name}, criteria: ${criterionList?.criteria}")
+
+                    if (criterionList != null) {
+                        // JSON'u parse et ve liste olarak döndür
+                        val gson = Gson()
+                        val criteriaArray = gson.fromJson(criterionList.criteria, Array<String>::class.java)
+                        val result = criteriaArray.toList()
+                        android.util.Log.d("RankingViewModel", "🎯 Parsed criteria: $result")
+                        return@withContext result
+                    }
                 }
+                android.util.Log.d("RankingViewModel", "🎯 No criteria found, returning empty list")
+                emptyList()
+            } catch (e: Exception) {
+                android.util.Log.e("RankingViewModel", "Criteria alma hatası: ${e.message}", e)
+                emptyList()
             }
-            android.util.Log.d("RankingViewModel", "🎯 No criteria found, returning empty list")
-            emptyList()
-        } catch (e: Exception) {
-            android.util.Log.e("RankingViewModel", "Criteria alma hatası: ${e.message}", e)
-            emptyList()
         }
     }
     
     suspend fun getCriteriaSettingsForTournament(tournamentId: Long): Map<String, Any>? {
-        return try {
-            // Tournament'tan criteriaSettings JSON'unu al
-            val tournament = database.tournamentDao().getTournamentById(tournamentId)
-            if (tournament?.criteriaSettings != null) {
-                // JSON'u parse et ve Map olarak döndür
-                val gson = Gson()
-                val type = object : com.google.gson.reflect.TypeToken<Map<String, Any>>() {}.type
-                return gson.fromJson(tournament.criteriaSettings, type)
+        return withContext(Dispatchers.IO) {
+            try {
+                // Tournament'tan criteriaSettings JSON'unu al
+                val tournament = database.tournamentDao().getTournamentById(tournamentId)
+                if (tournament?.criteriaSettings != null) {
+                    // JSON'u parse et ve Map olarak döndür
+                    val gson = Gson()
+                    val type = object : com.google.gson.reflect.TypeToken<Map<String, Any>>() {}.type
+                    return@withContext gson.fromJson(tournament.criteriaSettings, type)
+                }
+                null
+            } catch (e: Exception) {
+                android.util.Log.e("RankingViewModel", "Criteria settings alma hatası: ${e.message}", e)
+                null
             }
-            null
-        } catch (e: Exception) {
-            android.util.Log.e("RankingViewModel", "Criteria settings alma hatası: ${e.message}", e)
-            null
         }
     }
 }

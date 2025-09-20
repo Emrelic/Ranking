@@ -75,7 +75,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb logcat -s "EmreSystemCorrect"
 ```
 
-## Son Durum (2025-09-17)
+## Son Durum (2025-09-20)
 - 🎯 **Geliştirilmiş İsviçre Sistemi tamamen çalışır durumda**
 - 🎯 **Alternating match numbering sistemi implementasyonu tamamlandı**
 - 🎯 **UI ordering ve voting sequence sorunları çözüldü**
@@ -83,7 +83,8 @@ adb logcat -s "EmreSystemCorrect"
 - 🎯 **Optimal turnuva ekranı layout'u production ready**
 - ✅ **İsviçre Sistemi Kapsamlı Persistence tamamlandı - Database v9**
 - ✅ **Kriter Değerlendirme Sistemi tam implementasyon tamamlandı**
-- 🔄 **Oylama Ekranı Yeniden Tasarımı DEVAM EDİYOR - Syntax fix gerekli (line 2357)**
+- ✅ **Oylama Ekranı Yeniden Tasarımı TAMAMLANDI - TeamVotingPanel implementasyonu**
+- ✅ **Kriter Değerlendirme Ekranı Son Düzenlemeler TAMAMLANDI (2025-09-20)**
 
 ## 🔧 YENİ GELİŞTİRMELER (2025-09-14)
 
@@ -446,6 +447,7 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **"*tsp"** = Sorunun ne olduğunu tespit et (bütün ihtimalleri listele)
 - **"*tdv"** = Tespitleri tedavi et, düzelt
 - **"*kyg"** = Kısayolları kod listesini göster
+- **"*tk"** = Bu kod tekmil ver (emir tekrarı - anlama derecesini açıkla)
 - **Karışıklık önleme:** Bazı kodlar * ile başlayacak, protokolden ayırt et
 
 3. **💾 Hızlı Commit Protokolü:**

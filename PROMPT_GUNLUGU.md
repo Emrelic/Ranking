@@ -10,6 +10,18 @@ Bu dosya kullanıcının her promptunu otomatik olarak kaydeder. Manuel ekleme t
 
 ## 📅 2025-09-19
 
+### [17:25]
+```
+tabloda varsayılan olarak sıra numarası olsun. bir satırı yer değiştirmek isteyeceğimiz zaman bu satır numarasından tutarak aşağı yukarı götürebilelim.
+ayrıca tabloda varsayılan olarak A B C D vesaire sutunları da olsun. bir sütunun yerini değiştirmek istediğimiz zaman A B C sutun numaralarından tutarak sağa sola kaydırabilelim.
+tabloda diğer kaydırma ve sürüklemeler scroll özelliğini çalıştırsın ve sağdaki soldaki verileri ekrana getirebilmemizi sağlasın.
+satır numarası ve sütun numarası meselesi bu yapıda satır ekleme silme ve yer değiştirme işlerini yapmak için kullanılsın.
+
+*tk = bu kod tekmil ver demek. emir tekrarı. yani benim söylediğim bir promtp ve isteği ne kadar anladığını bana açıklamanı istediğim zaman bu kodu yazacağım. bunu çalışma protokolüne ekle
+
+*p
+```
+
 ### [16:55]
 ```
 *ncp

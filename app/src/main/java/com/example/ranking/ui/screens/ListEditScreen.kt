@@ -57,10 +57,29 @@ fun ListEditScreen(
     var originalSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
+    var selectedRow by remember { mutableStateOf<Int?>(null) }
+    var draggedRow by remember { mutableStateOf<Int?>(null) }
+    var draggedOverRow by remember { mutableStateOf<Int?>(null) }
+    var rowDragOffset by remember { mutableStateOf(Offset.Zero) }
+    var showHeaderDesignDialog by remember { mutableStateOf(false) }
     
     // UNIFIED SCROLL STATE - TÜM TABLO İÇİN TEK SCROLL
     val tableScrollState = rememberScrollState()
     
+    // Reorder rows function
+    fun reorderRows(fromIndex: Int, toIndex: Int) {
+        if (fromIndex != toIndex && fromIndex in listData.indices && toIndex in listData.indices) {
+            val newListData = listData.toMutableList()
+            val draggedRow = newListData.removeAt(fromIndex)
+            newListData.add(toIndex, draggedRow)
+            listData = newListData
+            hasUnsavedChanges = true
+
+            // Reset drag states
+            // Note: State resets handled in UI layer
+        }
+    }
+
     // Reorder columns function
     fun reorderColumns(fromIndex: Int, toIndex: Int) {
         if (fromIndex != toIndex && fromIndex in headers.indices && toIndex in headers.indices) {
@@ -81,9 +100,7 @@ fun ListEditScreen(
             hasUnsavedChanges = true
             
             // Reset drag states
-            draggedColumn = null
-            draggedOverColumn = null
-            dragOffset = Offset.Zero
+            // Note: State resets handled in UI layer
         }
     }
     
@@ -195,43 +212,78 @@ fun ListEditScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                // Header Design Button
+                Button(
+                    onClick = {
+                        showHeaderDesignDialog = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9C27B0)),
+                    shape = RoundedCornerShape(0.dp),
+                    modifier = Modifier
+                        .height(48.dp)
+                        .weight(1f)
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Text("Başlık Ekle", fontSize = 9.sp, textAlign = TextAlign.Center)
+                    }
+                }
+
                 // Add Column
                 Button(
                     onClick = {
-                        showAddColumnDialog = true
-                        hasUnsavedChanges = true
+                        if (selectedColumn != null) {
+                            showAddColumnDialog = true
+                            hasUnsavedChanges = true
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                    enabled = selectedColumn != null,
+                    shape = RoundedCornerShape(0.dp),
                     modifier = Modifier
-                        .height(36.dp)
-                        .width(70.dp)
+                        .height(48.dp)
+                        .weight(1f)
                 ) {
-                    Icon(Icons.Default.AddCircle, contentDescription = null, modifier = Modifier.size(14.dp))
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text("+Sütun", fontSize = 10.sp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.AddCircle, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Text("Sütun Ekle", fontSize = 9.sp, textAlign = TextAlign.Center)
+                    }
                 }
                 
                 // Add Row
                 Button(
                     onClick = {
-                        showAddRowDialog = true
-                        hasUnsavedChanges = true
+                        if (selectedRow != null || listData.isNotEmpty()) {
+                            showAddRowDialog = true
+                            hasUnsavedChanges = true
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                    shape = RoundedCornerShape(0.dp),
                     modifier = Modifier
-                        .height(36.dp)
-                        .width(70.dp)
+                        .height(48.dp)
+                        .weight(1f)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text("+Satır", fontSize = 10.sp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Text("Satır Ekle", fontSize = 9.sp, textAlign = TextAlign.Center)
+                    }
                 }
                 
                 // Delete Column
                 Button(
-                    onClick = { 
+                    onClick = {
                         selectedColumn?.let { colIndex ->
                             if (headers.size > 1) {
                                 val headerToRemove = headers[colIndex]
@@ -246,13 +298,18 @@ fun ListEditScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),
                     enabled = selectedColumn != null,
+                    shape = RoundedCornerShape(0.dp),
                     modifier = Modifier
-                        .height(36.dp)
-                        .width(65.dp)
+                        .height(48.dp)
+                        .weight(1f)
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(14.dp))
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Text("-Sütun", fontSize = 10.sp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Text("Sil", fontSize = 9.sp, textAlign = TextAlign.Center)
+                    }
                 }
                 
                 // KAYDET BUTONU - TOOLBAR'DA
@@ -268,7 +325,7 @@ fun ListEditScreen(
                                     Pair(song.id, mapOf<String, String>())
                                 }
                             }
-                            
+
                             viewModel.saveListChanges(
                                 listId = listId,
                                 updatedSongs = updatedSongs,
@@ -288,22 +345,29 @@ fun ListEditScreen(
                         containerColor = if (hasUnsavedChanges) Color(0xFFFF9800) else Color(0xFFBDBDBD)
                     ),
                     enabled = hasUnsavedChanges && !isSaving,
+                    shape = RoundedCornerShape(0.dp),
                     modifier = Modifier
-                        .height(36.dp)
-                        .width(if (isSaving) 85.dp else 65.dp)
+                        .height(48.dp)
+                        .weight(1f)
                 ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(12.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        if (isSaving) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(14.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
+                        }
+                        Text(
+                            text = if (isSaving) "Kaydediyor..." else "Kaydet",
+                            fontSize = 9.sp,
+                            textAlign = TextAlign.Center
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("...", fontSize = 10.sp)
-                    } else {
-                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Text("Kaydet", fontSize = 10.sp)
                     }
                 }
             }
@@ -320,158 +384,270 @@ fun ListEditScreen(
                             .fillMaxSize()
                             .padding(8.dp)
                     ) {
-                        // Header Row
+                        // Header Row with Column Labels
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .horizontalScroll(tableScrollState),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(1.dp)
                         ) {
-                            headers.forEachIndexed { columnIndex, header ->
-                                val isDragged = draggedColumn == columnIndex
-                                val isDraggedOver = draggedOverColumn == columnIndex && draggedColumn != null
-                                
-                                Surface(
-                                    modifier = Modifier
-                                        .width(120.dp)
-                                        .height(48.dp)
-                                        .pointerInput(columnIndex) {
-                                            detectDragGestures(
-                                                onDragStart = {
-                                                    draggedColumn = columnIndex
-                                                    draggedOverColumn = columnIndex // Start with current column
-                                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                    Log.d("DragDrop", "🎯 Drag başladı - Column: $columnIndex")
-                                                },
-                                                onDragEnd = {
-                                                    Log.d("DragDrop", "🎯 Drag bitti - From: $draggedColumn, To: $draggedOverColumn")
-                                                    if (draggedColumn != null && draggedOverColumn != null &&
-                                                        draggedColumn != draggedOverColumn) {
-                                                        reorderColumns(draggedColumn!!, draggedOverColumn!!)
-                                                        Log.d("DragDrop", "✅ Sütun yeniden sıralandı")
-                                                    }
-                                                    // Reset all drag states
-                                                    draggedColumn = null
-                                                    draggedOverColumn = null
-                                                    dragOffset = Offset.Zero
-                                                },
-                                                onDrag = { change, offset ->
-                                                    dragOffset += offset
-
-                                                    // Calculate target column with scroll offset consideration
-                                                    val columnWidth = 121f // 120dp + 1dp spacing
-                                                    val scrollOffset = tableScrollState.value
-
-                                                    // Total X position = scroll position + current drag position
-                                                    val totalX = scrollOffset + change.position.x
-
-                                                    // Calculate target column index
-                                                    val targetColumn = (totalX / columnWidth).toInt()
-                                                        .coerceIn(0, headers.size - 1)
-
-                                                    // Only update if target changed
-                                                    if (targetColumn != draggedOverColumn) {
-                                                        draggedOverColumn = targetColumn
-                                                        Log.d("DragDrop", "📍 Column $columnIndex → Column $targetColumn (x=${totalX.toInt()}, scroll=$scrollOffset)")
-                                                    }
-                                                }
-                                            )
-                                        }
-                                        .clickable { 
-                                            selectedColumn = if (selectedColumn == columnIndex) null else columnIndex
-                                        },
-                                    color = when {
-                                        isDragged -> Color(0xFFFFC107) // Dragged column - amber
-                                        isDraggedOver -> Color(0xFF4CAF50) // Drop target - green
-                                        selectedColumn == columnIndex -> Color(0xFFE3F2FD)
-                                        else -> Color(0xFF1976D2)
-                                    },
-                                    border = BorderStroke(
-                                        width = if (isDragged || isDraggedOver) 2.dp else 1.dp,
-                                        color = if (isDragged || isDraggedOver) Color.Black else Color(0xFF1976D2)
-                                    )
+                            // Corner cell (row/column intersection)
+                            Surface(
+                                modifier = Modifier
+                                    .width(50.dp)
+                                    .height(48.dp),
+                                color = Color(0xFF757575),
+                                border = BorderStroke(1.dp, Color(0xFF424242))
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize().padding(4.dp)
+                                    Text(
+                                        text = "#",
+                                        color = Color.White,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            // Column Labels (A, B, C, D...) + Data Headers
+                            Row(
+                                modifier = Modifier.horizontalScroll(tableScrollState),
+                                horizontalArrangement = Arrangement.spacedBy(1.dp)
+                            ) {
+                                headers.forEachIndexed { columnIndex, header ->
+                                    val isDragged = draggedColumn == columnIndex
+                                    val isDraggedOver = draggedOverColumn == columnIndex && draggedColumn != null
+                                    val columnLetter = ('A' + columnIndex).toString()
+
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.spacedBy(1.dp)
                                     ) {
-                                        Text(
-                                            text = header,
+                                        // Column Letter (A, B, C, D...)
+                                        Surface(
+                                            modifier = Modifier
+                                                .width(120.dp)
+                                                .height(24.dp)
+                                                .pointerInput(columnIndex) {
+                                                    detectDragGestures(
+                                                        onDragStart = {
+                                                            draggedColumn = columnIndex
+                                                            draggedOverColumn = columnIndex
+                                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                            Log.d("ColumnDrag", "🎯 Column drag başladı - Column: $columnLetter")
+                                                        },
+                                                        onDragEnd = {
+                                                            Log.d("ColumnDrag", "🎯 Column drag bitti - From: ${if (draggedColumn != null) ('A' + draggedColumn!!).toString() else "null"}, To: ${if (draggedOverColumn != null) ('A' + draggedOverColumn!!).toString() else "null"}")
+                                                            if (draggedColumn != null && draggedOverColumn != null &&
+                                                                draggedColumn != draggedOverColumn) {
+                                                                reorderColumns(draggedColumn!!, draggedOverColumn!!)
+                                                                Log.d("ColumnDrag", "✅ Sütun yeniden sıralandı")
+                                                            }
+                                                            draggedColumn = null
+                                                            draggedOverColumn = null
+                                                            dragOffset = Offset.Zero
+                                                        },
+                                                        onDrag = { change, offset ->
+                                                            dragOffset += offset
+                                                            val columnWidth = 121f
+                                                            val scrollOffset = tableScrollState.value
+                                                            val totalX = scrollOffset + change.position.x
+                                                            val targetColumn = (totalX / columnWidth).toInt()
+                                                                .coerceIn(0, headers.size - 1)
+                                                            if (targetColumn != draggedOverColumn) {
+                                                                draggedOverColumn = targetColumn
+                                                                Log.d("ColumnDrag", "📍 Column $columnLetter → Column ${('A' + targetColumn).toString()}")
+                                                            }
+                                                        }
+                                                    )
+                                                },
                                             color = when {
-                                                isDragged -> Color.Black // Dragged column - black text
-                                                isDraggedOver -> Color.White // Drop target - white text
-                                                selectedColumn == columnIndex -> Color(0xFF1976D2)
-                                                else -> Color.White
+                                                isDragged -> Color(0xFFFFC107) // Amber
+                                                isDraggedOver -> Color(0xFF4CAF50) // Green
+                                                else -> Color(0xFF616161) // Dark grey
                                             },
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            textAlign = TextAlign.Center,
-                                            maxLines = 2
-                                        )
+                                            border = BorderStroke(1.dp, Color(0xFF424242))
+                                        ) {
+                                            Box(
+                                                contentAlignment = Alignment.Center,
+                                                modifier = Modifier.fillMaxSize()
+                                            ) {
+                                                Text(
+                                                    text = columnLetter,
+                                                    color = Color.White,
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+
+                                        // Data Header
+                                        Surface(
+                                            modifier = Modifier
+                                                .width(120.dp)
+                                                .height(24.dp)
+                                                .clickable {
+                                                    selectedColumn = if (selectedColumn == columnIndex) null else columnIndex
+                                                },
+                                            color = if (selectedColumn == columnIndex) Color(0xFFE3F2FD) else Color(0xFF1976D2),
+                                            border = BorderStroke(1.dp, Color(0xFF1976D2))
+                                        ) {
+                                            Box(
+                                                contentAlignment = Alignment.Center,
+                                                modifier = Modifier.fillMaxSize().padding(2.dp)
+                                            ) {
+                                                Text(
+                                                    text = header,
+                                                    color = if (selectedColumn == columnIndex) Color(0xFF1976D2) else Color.White,
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    textAlign = TextAlign.Center,
+                                                    maxLines = 1
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-                        
+
                         Spacer(modifier = Modifier.height(4.dp))
-                        
-                        // Data Rows
+
+                        // Data Rows with Row Numbers
                         LazyColumn(
                             modifier = Modifier.weight(1f),
                             verticalArrangement = Arrangement.spacedBy(1.dp)
                         ) {
                             itemsIndexed(listData) { rowIndex, row ->
+                                val isRowDragged = draggedRow == rowIndex
+                                val isRowDraggedOver = draggedOverRow == rowIndex && draggedRow != null
+                                val isRowSelected = selectedRow == rowIndex
+
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .horizontalScroll(tableScrollState),
+                                    modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(1.dp)
                                 ) {
-                                    headers.forEachIndexed { columnIndex, header ->
-                                        val cellValue = row[header] ?: ""
-                                        val isEditing = editingCell == Pair(rowIndex, columnIndex)
-                                        
-                                        Surface(
-                                            modifier = Modifier
-                                                .width(120.dp)
-                                                .height(40.dp)
-                                                .clickable {
-                                                    if (isEditing) {
-                                                        val updatedRow = row.toMutableMap()
-                                                        updatedRow[header] = editingText
-                                                        val updatedListData = listData.toMutableList()
-                                                        updatedListData[rowIndex] = updatedRow
-                                                        listData = updatedListData
-                                                        hasUnsavedChanges = true
-                                                        editingCell = null
-                                                    } else {
-                                                        editingCell = Pair(rowIndex, columnIndex)
-                                                        editingText = cellValue
+                                    // Row Number (1, 2, 3...)
+                                    Surface(
+                                        modifier = Modifier
+                                            .width(50.dp)
+                                            .height(48.dp)
+                                            .pointerInput(rowIndex) {
+                                                detectDragGestures(
+                                                    onDragStart = {
+                                                        draggedRow = rowIndex
+                                                        draggedOverRow = rowIndex
+                                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                        Log.d("RowDrag", "🎯 Row drag başladı - Row: ${rowIndex + 1}")
+                                                    },
+                                                    onDragEnd = {
+                                                        Log.d("RowDrag", "🎯 Row drag bitti - From: ${if (draggedRow != null) draggedRow!! + 1 else "null"}, To: ${if (draggedOverRow != null) draggedOverRow!! + 1 else "null"}")
+                                                        if (draggedRow != null && draggedOverRow != null &&
+                                                            draggedRow != draggedOverRow) {
+                                                            reorderRows(draggedRow!!, draggedOverRow!!)
+                                                            Log.d("RowDrag", "✅ Satır yeniden sıralandı")
+                                                        }
+                                                        draggedRow = null
+                                                        draggedOverRow = null
+                                                        rowDragOffset = Offset.Zero
+                                                    },
+                                                    onDrag = { change, offset ->
+                                                        rowDragOffset += offset
+                                                        val rowHeight = 41f
+                                                        val targetRow = ((change.position.y) / rowHeight).toInt()
+                                                            .coerceIn(0, listData.size - 1)
+                                                        if (targetRow != draggedOverRow) {
+                                                            draggedOverRow = targetRow
+                                                            Log.d("RowDrag", "📍 Row ${rowIndex + 1} → Row ${targetRow + 1}")
+                                                        }
                                                     }
-                                                },
-                                            color = if (isEditing) Color(0xFFFFF3E0) else Color.White,
-                                            border = BorderStroke(0.5.dp, Color(0xFFE0E0E0))
+                                                )
+                                            }
+                                            .clickable {
+                                                selectedRow = if (selectedRow == rowIndex) null else rowIndex
+                                            },
+                                        color = when {
+                                            isRowDragged -> Color(0xFFFFC107) // Amber
+                                            isRowDraggedOver -> Color(0xFF4CAF50) // Green
+                                            isRowSelected -> Color(0xFFE3F2FD) // Light blue
+                                            else -> Color(0xFF757575) // Grey
+                                        },
+                                        border = BorderStroke(1.dp, Color(0xFF424242))
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.Center,
+                                            modifier = Modifier.fillMaxSize()
                                         ) {
-                                            Box(
-                                                contentAlignment = Alignment.CenterStart,
+                                            Text(
+                                                text = "${rowIndex + 1}",
+                                                color = Color.White,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+
+                                    // Data Cells
+                                    Row(
+                                        modifier = Modifier
+                                            .background(
+                                                when {
+                                                    isRowDragged -> Color(0x30FFC107) // Semi-transparent amber
+                                                    isRowDraggedOver -> Color(0x304CAF50) // Semi-transparent green
+                                                    isRowSelected -> Color(0x30E3F2FD) // Semi-transparent blue
+                                                    else -> Color.Transparent
+                                                }
+                                            )
+                                            .horizontalScroll(tableScrollState),
+                                        horizontalArrangement = Arrangement.spacedBy(1.dp)
+                                    ) {
+                                        headers.forEachIndexed { columnIndex, header ->
+                                            val cellValue = row[header] ?: ""
+                                            val isEditing = editingCell == Pair(rowIndex, columnIndex)
+
+                                            Surface(
                                                 modifier = Modifier
-                                                    .fillMaxSize()
-                                                    .padding(horizontal = 6.dp, vertical = 4.dp)
+                                                    .width(120.dp)
+                                                    .height(48.dp)
+                                                    .clickable {
+                                                        if (isEditing) {
+                                                            val updatedRow = row.toMutableMap()
+                                                            updatedRow[header] = editingText
+                                                            val updatedListData = listData.toMutableList()
+                                                            updatedListData[rowIndex] = updatedRow
+                                                            listData = updatedListData
+                                                            hasUnsavedChanges = true
+                                                            editingCell = null
+                                                        } else {
+                                                            editingCell = Pair(rowIndex, columnIndex)
+                                                            editingText = cellValue
+                                                        }
+                                                    },
+                                                color = if (isEditing) Color(0xFFFFF3E0) else Color.White,
+                                                border = BorderStroke(0.5.dp, Color(0xFFE0E0E0))
                                             ) {
-                                                if (isEditing) {
-                                                    BasicTextField(
-                                                        value = editingText,
-                                                        onValueChange = { editingText = it },
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        singleLine = true
-                                                    )
-                                                } else {
-                                                    Text(
-                                                        text = cellValue,
-                                                        fontSize = 11.sp,
-                                                        maxLines = 2,
-                                                        color = Color.Black
-                                                    )
+                                                Box(
+                                                    contentAlignment = Alignment.CenterStart,
+                                                    modifier = Modifier
+                                                        .fillMaxSize()
+                                                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                                                ) {
+                                                    if (isEditing) {
+                                                        BasicTextField(
+                                                            value = editingText,
+                                                            onValueChange = { editingText = it },
+                                                            modifier = Modifier.fillMaxWidth(),
+                                                            singleLine = true
+                                                        )
+                                                    } else {
+                                                        Text(
+                                                            text = cellValue,
+                                                            fontSize = 11.sp,
+                                                            maxLines = 2,
+                                                            color = Color.Black
+                                                        )
+                                                    }
                                                 }
                                             }
                                         }
@@ -488,21 +664,58 @@ fun ListEditScreen(
                         Text("Liste yükleniyor...")
                     }
                 }
-            }  
+            }
         }
     }
-    
+
     // Add Column Dialog
     if (showAddColumnDialog) {
         AddColumnDialog(
+            selectedColumnIndex = selectedColumn,
             onDismiss = { showAddColumnDialog = false },
             onAddColumn = { columnName ->
-                headers = headers + columnName
+                val insertIndex = if (selectedColumn != null) {
+                    selectedColumn!! // Insert before selected column
+                } else {
+                    headers.size // Insert at end if no column selected
+                }
+
+                val newHeaders = headers.toMutableList()
+                newHeaders.add(insertIndex, columnName)
+                headers = newHeaders
+
                 listData = listData.map { row ->
-                    row + (columnName to "")
+                    val newRow = mutableMapOf<String, String>()
+                    newHeaders.forEach { header ->
+                        newRow[header] = if (header == columnName) "" else (row[header] ?: "")
+                    }
+                    newRow
                 }
                 hasUnsavedChanges = true
                 showAddColumnDialog = false
+                selectedColumn = null // Clear selection after adding
+            }
+        )
+    }
+
+    // Add Row Dialog
+    if (showAddRowDialog) {
+        AddRowDialog(
+            headers = headers,
+            selectedRowIndex = selectedRow,
+            onDismiss = { showAddRowDialog = false },
+            onAddRow = { newRowData ->
+                val insertIndex = if (selectedRow != null) {
+                    selectedRow!! + 1 // Insert after selected row
+                } else {
+                    listData.size // Insert at end if no row selected
+                }
+
+                val newListData = listData.toMutableList()
+                newListData.add(insertIndex, newRowData)
+                listData = newListData
+                hasUnsavedChanges = true
+                showAddRowDialog = false
             }
         )
     }
@@ -511,11 +724,51 @@ fun ListEditScreen(
     if (showAddRowDialog) {
         AddRowDialog(
             headers = headers,
+            selectedRowIndex = selectedRow,
             onDismiss = { showAddRowDialog = false },
             onAddRow = { newRowData ->
-                listData = listData + newRowData
+                val insertIndex = if (selectedRow != null) {
+                    selectedRow!! + 1 // Insert after selected row
+                } else {
+                    listData.size // Insert at end if no row selected
+                }
+
+                val newListData = listData.toMutableList()
+                newListData.add(insertIndex, newRowData)
+                listData = newListData
                 hasUnsavedChanges = true
                 showAddRowDialog = false
+            }
+        )
+    }
+
+    // Header Design Dialog
+    if (showHeaderDesignDialog) {
+        HeaderDesignDialog(
+            headers = headers,
+            onDismiss = { showHeaderDesignDialog = false },
+            onHeadersUpdated = { newHeaders ->
+                // Update headers while preserving existing data
+                val oldHeaders = headers
+                headers = newHeaders
+
+                // Remap existing data to new headers
+                listData = listData.map { row ->
+                    val newRow = mutableMapOf<String, String>()
+                    newHeaders.forEachIndexed { index, newHeader ->
+                        // If index is within old headers range, use old data
+                        val oldValue = if (index < oldHeaders.size) {
+                            row[oldHeaders[index]] ?: ""
+                        } else {
+                            "" // New column, empty value
+                        }
+                        newRow[newHeader] = oldValue
+                    }
+                    newRow
+                }
+
+                hasUnsavedChanges = true
+                showHeaderDesignDialog = false
             }
         )
     }
@@ -523,6 +776,7 @@ fun ListEditScreen(
 
 @Composable
 fun AddColumnDialog(
+    selectedColumnIndex: Int? = null,
     onDismiss: () -> Unit,
     onAddColumn: (String) -> Unit
 ) {
@@ -538,8 +792,12 @@ fun AddColumnDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Yeni Sütun Ekle",
-                    fontSize = 18.sp,
+                    if (selectedColumnIndex != null) {
+                        "Yeni Sütun Ekle (${('A' + selectedColumnIndex).toString()} sütunundan önce)"
+                    } else {
+                        "Yeni Sütun Ekle (En sağa)"
+                    },
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 
@@ -579,6 +837,7 @@ fun AddColumnDialog(
 @Composable
 fun AddRowDialog(
     headers: List<String>,
+    selectedRowIndex: Int? = null,
     onDismiss: () -> Unit,
     onAddRow: (Map<String, String>) -> Unit
 ) {
@@ -594,7 +853,11 @@ fun AddRowDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    "Yeni Satır Ekle",
+                    if (selectedRowIndex != null) {
+                        "Yeni Satır Ekle (${selectedRowIndex + 1}. satırın altına)"
+                    } else {
+                        "Yeni Satır Ekle (En alta)"
+                    },
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -629,6 +892,111 @@ fun AddRowDialog(
                         onClick = { onAddRow(rowData) }
                     ) {
                         Text("Ekle")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HeaderDesignDialog(
+    headers: List<String>,
+    onDismiss: () -> Unit,
+    onHeadersUpdated: (List<String>) -> Unit
+) {
+    var headerInputs by remember(headers) {
+        mutableStateOf(headers.mapIndexed { index, header ->
+            ('A' + index).toString() to header
+        }.toMap())
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier.padding(16.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    "Başlık Dizayn Et",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    "Her sütun için başlık belirleyin:",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(headers.size) { index ->
+                        val columnLetter = ('A' + index).toString()
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Column Letter
+                            Surface(
+                                modifier = Modifier.size(40.dp),
+                                color = Color(0xFF616161),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Text(
+                                        text = columnLetter,
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+
+                            // Header Input
+                            OutlinedTextField(
+                                value = headerInputs[columnLetter] ?: "",
+                                onValueChange = { newValue ->
+                                    headerInputs = headerInputs + (columnLetter to newValue)
+                                },
+                                label = { Text("$columnLetter Sütun Başlığı") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                placeholder = { Text("Başlık girin...") }
+                            )
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("İptal")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            val newHeaders = (0 until headers.size).map { index ->
+                                val columnLetter = ('A' + index).toString()
+                                headerInputs[columnLetter]?.takeIf { it.isNotBlank() } ?: columnLetter
+                            }
+                            onHeadersUpdated(newHeaders)
+                        }
+                    ) {
+                        Text("Uygula")
                     }
                 }
             }
