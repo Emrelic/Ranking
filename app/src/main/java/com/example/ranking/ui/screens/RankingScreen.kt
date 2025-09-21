@@ -1416,52 +1416,43 @@ private fun CsvDataTable(
     android.util.Log.d("CsvDataTable", "📊 Parsed data: $parsedData")
     
     if (parsedData.isNotEmpty()) {
-        // Image #1 mavi table format with header and scrollable rows - CLICKABLE + border
+        // DÜZ TABLO FORMAT - Image #1 gibi (Afganistan/Arnavutluk)
         Box {
-            Card(
-                modifier = onClick?.let {
+            Column(
+                modifier = (onClick?.let {
                     Modifier.clickable { it() }
-                } ?: Modifier,
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline) // Material Theme çerçeve
+                } ?: Modifier)
+                    .fillMaxWidth()
+                    .border(0.5.dp, Color(0xFF90CAF9)) // İnce mavi çerçeve
             ) {
-                Column(
+                // Header with team name (first value from CSV)
+                val firstEntry = parsedData.entries.firstOrNull()
+                val teamName = firstEntry?.value ?: "Team"
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp) // No padding for full width
+                        .background(Color(0xFF1976D2)) // Koyu mavi başlık (Blue 700)
+                        .height(40.dp) // Sabit başlık yüksekliği
+                        .border(0.5.dp, Color(0xFF90CAF9)), // Header border
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Header with team name (first value from CSV)
-                    val firstEntry = parsedData.entries.firstOrNull()
-                    val teamName = firstEntry?.value ?: "Team"
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF1976D2)) // Koyu mavi başlık (Blue 700)
-                            .padding(horizontal = 12.dp, vertical = 10.dp), // Slightly larger padding
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = teamName.uppercase(),
-                            style = MaterialTheme.typography.titleMedium, // Larger header text
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Text(
+                        text = teamName.uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                }
 
-                    // Scrollable data rows excluding header and metadata
-                    val dataRows = parsedData.entries.drop(1) // Skip first entry (used as header)
-                        .filterNot { (key, _) -> key.startsWith("_") } // Skip metadata like _displayMode
+                // Veri satırları - metadata olmadan
+                val dataRows = parsedData.entries.drop(1) // İlk entry'yi (header) atla
+                    .filterNot { (key, _) -> key.startsWith("_") } // Metadata atla
 
-                    // Always show all rows without height limit
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(1.dp)
-                    ) {
-                        dataRows.forEachIndexed { index, (key, value) ->
-                            TableRow(index, key, value)
-                        }
-                    }
+                // Tüm satırları göster - spacing olmadan
+                dataRows.forEachIndexed { index, (key, value) ->
+                    TableRow(index, key, value)
                 }
             }
 
@@ -1539,69 +1530,34 @@ private fun extractDisplayModeFromCsv(csvData: String): String {
 
 @Composable
 private fun TableRow(index: Int, key: String, value: String) {
-    // Image #1 format - açık mavi tonları ve koyu text
-    val backgroundColor = when {
-        index % 2 == 0 -> Color(0xFFE3F2FD) // Çok açık mavi - çift satırlar (Blue 50)
-        else -> Color(0xFFBBDEFB) // Açık mavi - tek satırlar (Blue 100)
-    }
-    val textColor = when {
-        index % 2 == 0 -> Color(0xFF0D47A1) // Koyu mavi text - çift satırlar
-        else -> Color(0xFF1565C0) // Orta mavi text - tek satırlar
-    }
-
-    Row(
+    // ALT ALTA FORMAT - Başlık + Değer dikey sıralama
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(backgroundColor)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+            .background(Color(0xFFE1F5FE)) // Açık mavi arka plan
+            .border(0.5.dp, Color(0xFF90CAF9)) // İnce mavi çerçeve
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
+        // Başlık - Bold ve koyu renk
         Text(
             text = key,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            color = textColor,
-            modifier = Modifier.weight(1f)
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp),
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF0D47A1), // Daha koyu mavi
+            textAlign = TextAlign.Start
         )
-
-        // Multi-line value support - like ListViewScreen implementation
-        val valueLines = value.split(Regex("\\n|;|,")).filter { it.trim().isNotBlank() }
-        if (valueLines.size > 1) {
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.End
-            ) {
-                valueLines.take(3).forEach { line -> // Show max 3 lines
-                    Text(
-                        text = line.trim(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = textColor,
-                        textAlign = TextAlign.End,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1
-                    )
-                }
-                if (valueLines.size > 3) {
-                    Text(
-                        text = "...",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = textColor,
-                        textAlign = TextAlign.End
-                    )
-                }
-            }
-        } else {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = textColor,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1f),
-                fontWeight = FontWeight.Bold,
-                maxLines = 2
-            )
-        }
+        
+        // Değer - Normal ağırlık
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp),
+            fontWeight = FontWeight.Normal,
+            color = Color(0xFF1976D2), // Orta mavi
+            textAlign = TextAlign.Start,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
