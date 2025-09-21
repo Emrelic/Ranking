@@ -2,6 +2,21 @@
 
 ## 📝 YENİ MADDELER
 
+### [2025-09-21] - ✅ TAMAMLANDI - Oylama Ekranı VS Satırı Yeniden Tasarımı
+- **DURUM**: VS satırına buton ekleme ve tam ekran tablo sistemi TAMAMLANDI ✅
+- **YENİ ÖZELLİKLER** ✅:
+  - VS yazısı yanında 4 buton: VS + Berabere + Tam Ekran + Skor Gir ✅
+  - Tam ekran tablo dialogu: Full screen, scroll desteği, tıklanabilir kartlar ✅
+  - Skor giriş sistemi: İki takım skoru + otomatik galibiyet hesaplama ✅
+  - Beraberlik butonu VS satırına taşındı ✅
+- **TEKNİK İMPLEMENTASYON** ✅:
+  - FullScreenTablesDialog: LazyColumn scroll, Dialog properties ✅
+  - ScoreInputDialog: Number input validation, winner calculation ✅
+  - Row layout VS satırında: spacedBy arrangement, center alignment ✅
+  - Click handlers: Match result callbacks, dialog state management ✅
+- **BUILD STATUS**: APK başarıyla build edildi (1m 36s) ve telefona deploy edildi ✅
+- **TEST READY**: Tüm yeni özellikler test edilmeye hazır ✅
+
 ### [2025-09-16] - Tablo Rötuşu Sütun Drag-Drop Sistemi Bozuk
 - E sütununu B sütununun yanına sürüklenince E sütunu B sütununa dönüşmeli
 - Sütun yer değiştirme işlevi çalışmıyor (önceden çalışıyordu)

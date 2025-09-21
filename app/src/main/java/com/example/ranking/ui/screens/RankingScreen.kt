@@ -14,11 +14,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.graphics.Color
@@ -501,16 +503,16 @@ private fun MatchBasedContent(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 1. ÜST BÖLÜM: Sıkıştırılmış ilerleme ve tur bilgisi
+            // 1. ÜST BÖLÜM: İlerleme çubuğu (daha sıkıştırılmış)
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp)
             ) {
                 LinearProgressIndicator(
                     progress = { uiState.progress },
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -531,24 +533,26 @@ private fun MatchBasedContent(
                 }
             }
 
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // 2. YENİ METİN: İlerleme çubuğunun hemen altında
+            Text(
+                text = if (useScores) "Maç Skoru Girin" else "İyi olanı veya galip geleni seçiniz",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(horizontal = 16.dp),
+                textAlign = TextAlign.Center
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Duplicate menü butonları kaldırıldı - üstteki TopAppBar'daki butonlar kullanılıyor
-
-            // 3. ANA İÇERİK: Genişletilmiş takım kartları
+            // 3. ANA İÇERİK: Takım kartları (takım isimleri kaldırıldı)
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = if (useScores) "Maç Skoru Girin" else "Hangisi daha iyi?",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
             
                 // TAKIM KARTLARI: 3x büyütülmüş, scrollable container
                 if (useScores) {
@@ -605,25 +609,89 @@ private fun MatchBasedContent(
                         }
 
                         item {
-                            // Vertical VS text (V above S)
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            // VS text ve butonlar (yan yana)
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "V",
-                                    style = MaterialTheme.typography.titleLarge,
+                                    text = "VS",
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
-                                Text(
-                                    text = "S",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
+                                
+                                // Beraberlik butonu
+                                val allowDraws = uiState.leagueSettings?.allowDraws ?: true
+                                if (allowDraws && (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT")) {
+                                    Button(
+                                        onClick = { onMatchResult(match.id, null) },
+                                        modifier = Modifier.height(32.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.secondary
+                                        )
+                                    ) {
+                                        Text("Berabere", fontSize = 10.sp)
+                                    }
+                                }
+                                
+                                // Tam ekran tablo butonu
+                                var showFullScreenTables by remember { mutableStateOf(false) }
+                                Button(
+                                    onClick = { showFullScreenTables = true },
+                                    modifier = Modifier.height(32.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.tertiary
+                                    )
+                                ) {
+                                    Text("Tam Ekran", fontSize = 10.sp)
+                                }
+                                
+                                // Skor gir butonu
+                                var showScoreDialog by remember { mutableStateOf(false) }
+                                Button(
+                                    onClick = { showScoreDialog = true },
+                                    modifier = Modifier.height(32.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary
+                                    )
+                                ) {
+                                    Text("Skor Gir", fontSize = 10.sp)
+                                }
+                                
+                                // Tam ekran tabloları dialogu
+                                if (showFullScreenTables) {
+                                    FullScreenTablesDialog(
+                                        song1 = uiState.song1,
+                                        song2 = uiState.song2,
+                                        onTeam1Click = { onMatchResult(match.id, uiState.song1?.id) },
+                                        onTeam2Click = { onMatchResult(match.id, uiState.song2?.id) },
+                                        onDrawClick = { 
+                                            if (allowDraws) onMatchResult(match.id, null)
+                                        },
+                                        allowDraws = allowDraws,
+                                        onDismiss = { showFullScreenTables = false }
+                                    )
+                                }
+                                
+                                // Skor giriş dialogu
+                                if (showScoreDialog) {
+                                    ScoreInputDialog(
+                                        onScoreSubmit = { score1, score2 ->
+                                            val winner = when {
+                                                score1 > score2 -> uiState.song1?.id
+                                                score2 > score1 -> uiState.song2?.id
+                                                else -> null // Draw
+                                            }
+                                            onMatchResultWithScore(match.id, winner, score1, score2)
+                                            showScoreDialog = false
+                                        },
+                                        onDismiss = { showScoreDialog = false }
+                                    )
+                                }
                             }
                         }
 
@@ -751,25 +819,89 @@ private fun MatchBasedContent(
                         }
 
                         item {
-                            // Vertical VS text (V above S)
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
+                            // VS text ve butonlar (yan yana)
+                            Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "V",
-                                    style = MaterialTheme.typography.titleLarge,
+                                    text = "VS",
+                                    style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary
                                 )
-                                Text(
-                                    text = "S",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
+                                
+                                // Beraberlik butonu
+                                val allowDraws = uiState.leagueSettings?.allowDraws ?: true
+                                if (allowDraws && (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT")) {
+                                    Button(
+                                        onClick = { onMatchResult(match.id, null) },
+                                        modifier = Modifier.height(32.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.secondary
+                                        )
+                                    ) {
+                                        Text("Berabere", fontSize = 10.sp)
+                                    }
+                                }
+                                
+                                // Tam ekran tablo butonu
+                                var showFullScreenTables by remember { mutableStateOf(false) }
+                                Button(
+                                    onClick = { showFullScreenTables = true },
+                                    modifier = Modifier.height(32.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.tertiary
+                                    )
+                                ) {
+                                    Text("Tam Ekran", fontSize = 10.sp)
+                                }
+                                
+                                // Skor gir butonu
+                                var showScoreDialog by remember { mutableStateOf(false) }
+                                Button(
+                                    onClick = { showScoreDialog = true },
+                                    modifier = Modifier.height(32.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary
+                                    )
+                                ) {
+                                    Text("Skor Gir", fontSize = 10.sp)
+                                }
+                                
+                                // Tam ekran tabloları dialogu
+                                if (showFullScreenTables) {
+                                    FullScreenTablesDialog(
+                                        song1 = uiState.song1,
+                                        song2 = uiState.song2,
+                                        onTeam1Click = { onMatchResult(match.id, uiState.song1?.id) },
+                                        onTeam2Click = { onMatchResult(match.id, uiState.song2?.id) },
+                                        onDrawClick = { 
+                                            if (allowDraws) onMatchResult(match.id, null)
+                                        },
+                                        allowDraws = allowDraws,
+                                        onDismiss = { showFullScreenTables = false }
+                                    )
+                                }
+                                
+                                // Skor giriş dialogu
+                                if (showScoreDialog) {
+                                    ScoreInputDialog(
+                                        onScoreSubmit = { score1, score2 ->
+                                            val winner = when {
+                                                score1 > score2 -> uiState.song1?.id
+                                                score2 > score1 -> uiState.song2?.id
+                                                else -> null // Draw
+                                            }
+                                            onMatchResultWithScore(match.id, winner, score1, score2)
+                                            showScoreDialog = false
+                                        },
+                                        onDismiss = { showScoreDialog = false }
+                                    )
+                                }
                             }
                         }
 
@@ -818,29 +950,16 @@ private fun MatchBasedContent(
                                 }
                             }
                         }
+                        
                     }
                 }
             }
 
-            // 4. ALT BÖLÜM: Berabere ve kriter butonları - aşağıya taşındı
+            // 4. ALT BÖLÜM: Sadece kriter butonu (berabere yukarı taşındı)
             if (method == "LEAGUE" || method == "SWISS" || method == "EMRE_CORRECT") {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    val allowDraws = uiState.leagueSettings?.allowDraws ?: true
-                    if (allowDraws) {
-                        Button(
-                            onClick = { onMatchResult(match.id, null) },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary
-                            )
-                        ) {
-                            Text("Berabere")
-                        }
-                    }
-
                     // Kriter Değerlendirme Butonu
                     Button(
                         onClick = { onShowCriteriaDialog(true) },
@@ -1360,20 +1479,13 @@ internal fun TeamCardContent(
     Column(
         modifier = modifier
     ) {
-        // Ana başlık (song name)
-        Text(
-            text = song.name,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        // Takım ismi kaldırıldı - sadece tablo gösterilecek
         
-        // Eğer artist varsa göster
+        // Eğer artist varsa göster (opsiyonel)
         if (song.artist.isNotBlank()) {
             Text(
                 text = song.artist,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -2438,4 +2550,185 @@ private fun getMethodTitle(method: String): String {
         "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
         else -> "Sıralama"
     }
+}
+
+@Composable
+private fun FullScreenTablesDialog(
+    song1: Song?,
+    song2: Song?,
+    onTeam1Click: () -> Unit,
+    onTeam2Click: () -> Unit,
+    onDrawClick: () -> Unit,
+    allowDraws: Boolean,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    // Birinci takım kartı (tam ekran, tıklanabilir)
+                    song1?.let { song ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onTeam1Click() },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            )
+                        ) {
+                            TeamCardContent(
+                                song = song,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            )
+                        }
+                    }
+                }
+                
+                item {
+                    // Beraberlik butonu (ortada)
+                    if (allowDraws) {
+                        Button(
+                            onClick = {
+                                onDrawClick()
+                                onDismiss()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        ) {
+                            Text(
+                                text = "BERABERE",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                
+                item {
+                    // İkinci takım kartı (tam ekran, tıklanabilir)
+                    song2?.let { song ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onTeam2Click() },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                            )
+                        ) {
+                            TeamCardContent(
+                                song = song,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Kapatma butonu (sağ üst köşe)
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp)
+                    .background(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                        CircleShape
+                    )
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = "Kapat",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScoreInputDialog(
+    onScoreSubmit: (Int, Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var score1Text by remember { mutableStateOf("") }
+    var score2Text by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Maç Skoru Girin") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                OutlinedTextField(
+                    value = score1Text,
+                    onValueChange = { 
+                        if (it.all { char -> char.isDigit() }) {
+                            score1Text = it
+                        }
+                    },
+                    label = { Text("1. Takım Skoru") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+                
+                OutlinedTextField(
+                    value = score2Text,
+                    onValueChange = { 
+                        if (it.all { char -> char.isDigit() }) {
+                            score2Text = it
+                        }
+                    },
+                    label = { Text("2. Takım Skoru") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val score1 = score1Text.toIntOrNull()
+                    val score2 = score2Text.toIntOrNull()
+                    if (score1 != null && score2 != null) {
+                        onScoreSubmit(score1, score2)
+                    }
+                },
+                enabled = score1Text.toIntOrNull() != null && score2Text.toIntOrNull() != null
+            ) {
+                Text("Kaydet")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("İptal")
+            }
+        }
+    )
 }
