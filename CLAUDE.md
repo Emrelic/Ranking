@@ -509,6 +509,7 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **"*yle"** = Yapılacaklar listesine ekle
 - **"*ncp"** = Not defterlerini doldur, commit + push
 - **"*bty"** = Build et telefona yükle
+- **"*ty"** = Telefona yükle (APK install)
 - **"*nto"** = Not defterlerini oku (ntk equivalent)
 - **"*mo"** = md uzantılı tüm not defterlerini oku
 - **"*çpe"** = Çalışma protokolüne ekle
