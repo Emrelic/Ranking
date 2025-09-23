@@ -2,9 +2,10 @@
 
 ## 📝 OTOMATIK PROMPT KAYIT SİSTEMİ
 
-Bu dosya kullanıcının her promptunu otomatik olarak kaydeder. Manuel ekleme talebi olmadan tüm promptlar buraya kaydedilir.
-
 **Format**: [Tarih-Saat] Prompt İçeriği
+
+### 📋 NOT: SADECE SON 7 GÜN
+Token tasarrufu için sadece son 7 günün promptları tutulur. Eski promptlar otomatik arşivlenir.
 
 ---
 
@@ -135,6 +136,26 @@ BU İKİ TASARIM VERSİYONUNU DA YAPALIM İİSİNİDE BANA GÖSTER
 ### [16:35]
 ```
 *p kodunu çalışma protokolüne yaz sonra okuyunca bunu uygulaman için
+```
+
+### [23:15] (2025-09-23)
+```
+bak bir proje için bir proje dosyasını terminalde açtı isek o terminal penceresi windowsda göreç çubuğunda proje ismi ile görünsün. claude diye görünmesin. birden fazla claude penceresi açık hepsi claude diye görünüyor halbuki biri tavlaap birisi g-zergah birisi ranking diye görünse iyi olur. bunu *çpe
+yani terminalde bir dizin dosyası açıp claude yi çalıştırdığımız zaman görev çubuğundaki pencere ismi proje ismi olsun.
+```
+
+### [23:XX] (2025-09-23)
+```
+benim merak ettiğim bir husus var. bir sürü md uzantılı not defterimiz var ve bir trminal ekranı açıp çalışmaya başladığımızda bunları oku diyorum sana. bunları okumak kaç token harcatıyor. acaba çok mu harcatıyot. gereksiz olarak limitten gidiyor olabilir mi. şu anda ne kadar token kaldıa acaaba  /cost diye bir komut varmış doğrumu.
+eğer gereksiz yere token harcıyor isek bu not defterlerini düzenleyelim.
+birincisi çalışma protokolünü bir ayrı yere koyalım. masaüstüne kaydedelim mesela.
+bu not defterlerindeki gereksiz şeyleri bir elesekmi ne dersin. amacımız he senin iş başında projeyi hatırlamanı sağlamak hemde bir önceki çalışmada yapılanları ve yapılacakları takip etmek ama bu arada limitide gereksiz tüketmememiz lazım. bir önceki yapılacak ve yapılmış şeyleri gündendeki promptları ve çalışma protokolünü filan hatırlasak yeter mi acaba. buna yönelik bir çalışma protokolü hazırlayalım.
+
+bu arada /cost komutu ne kadar token yiyor. bu komutu sana vermem ev seninde bana cevabını getirmen. eğer çok fazla değil ise her iş bitiminde /cost komutunu çalıştır. bunuda çalışma protokolüne ekleyelim. yapıp bitirdiğin işlere /cost komutunu çalıştırarak bize ne kadar limit kaldığını söyle.
+ayrıca
+ *con = " /cost komutu ile her iş bitiminde ne kadar token kaldığını ve toplam limitin ne kadar tüketildiğini bize haber verme protokolü işleme konsun"
+*cof = "/cost komutu ile ne kdar token kaldığını kullanıcıya bildirme işlemi off konuma alınsın"
+*çpe
 ```
 
 ### [16:32]
@@ -278,6 +299,27 @@ bir de senin tasarıma bak hiç ikisinin bir alakası varmı
 [2025-09-20 22:45] tamam gelişme var. ama örnek takım kartları koysana oraya çmesela benim sana gönderdiğim resimlerdeki örnekleri koyabilirsin
 
 [2025-09-20 22:47] devam et işi bitir
+
+### [22:37] Oylama Ekranı Yeniden Düzenleme Talebi
+
+**Kullanıcı Talebi:**
+- Kriterler ile değerlendir butonunu beraberlik butonunun yanına koy
+- Yukarıdaki butonları topla, VS yazılı yere VS tıklayınca pencerecik açılsın, bu pencerecikte yukarıdaki butonlar açılsın
+- Tur ilerleme çubuğunu en tepeye koy
+- "İyi veya galip olanı seçiniz" yazısını kaldır
+- Tur ilerleme çubuğunu en tepeye sıkıştır
+- Tur ilerleme çubuğundan ekranın en dibine kadar olan bölümü ölç
+- Bu ölçümün en ortasına: / beraberlik/ kriter ile değerlendir/ VS /tam ekran görüntüle/ skor gir butonlarını koy
+- Bu butonlar bu sıralamada olacak
+- Tur ilerleme çubuğu sabit olacak
+- Sonra birinci takımın takım başlığı başlayacak
+- Ondan sonra birinci takımın tablo pencereciği açılacak ve bu pencerecik içindeki tablo aşağı yukarı scroll edilebilecek
+- Bu pencerecikten sonra beraberlik / kriter ile değerlendir / VS / Tam ekran / Skor gir butonları geri kalan alanın tam ortasında yer alıp sabit vaziyette olacak
+- Bu butonlardan sonra ikinci takım etiketi yer alacak ve sabit olacak
+- İkinci takım etiketinden sonra bir pencerecik olup en ekran dibine kadar gidecek ve bu pencerecikte ikinci takımın tablo verisi aşağı yukarı scroll edilebilir halde olacak
+- Yani bu ekranın içinde iki adet pencerecik olacak ve pencerecik içindeki tablolar sağa sola scroll olabilecekler geri kalan ekran sabit olmasına rağmen
+
+**Status:** Yeni talep - işlenmeye başlanacak
 
 ---
 

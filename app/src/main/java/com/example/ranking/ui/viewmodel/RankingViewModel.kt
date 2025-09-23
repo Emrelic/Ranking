@@ -136,16 +136,39 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         
                         if (activeSession != null) {
                             // Resume existing session
+                            android.util.Log.d("RankingViewModel", "🔄 RESUME SESSION çağırılıyor - Session ID: ${activeSession.id}")
                             resumeSession(activeSession)
                         } else {
                             // Start new session
+                            android.util.Log.d("RankingViewModel", "🎯 Method seçimi: '$method'")
                             when (method) {
-                                "DIRECT_SCORING" -> initializeDirectScoring()
-                                "LEAGUE" -> initializeLeague()
-                                "ELIMINATION" -> initializeElimination()
-                                "FULL_ELIMINATION" -> initializeFullElimination()
-                                "SWISS" -> initializeSwiss()
-                                "EMRE_CORRECT" -> initializeEmre()
+                                "DIRECT_SCORING" -> {
+                                    android.util.Log.d("RankingViewModel", "✅ DIRECT_SCORING çağırılıyor")
+                                    initializeDirectScoring()
+                                }
+                                "LEAGUE" -> {
+                                    android.util.Log.d("RankingViewModel", "✅ LEAGUE çağırılıyor")
+                                    initializeLeague()
+                                }
+                                "ELIMINATION" -> {
+                                    android.util.Log.d("RankingViewModel", "✅ ELIMINATION çağırılıyor")
+                                    initializeElimination()
+                                }
+                                "FULL_ELIMINATION" -> {
+                                    android.util.Log.d("RankingViewModel", "✅ FULL_ELIMINATION çağırılıyor")
+                                    initializeFullElimination()
+                                }
+                                "SWISS" -> {
+                                    android.util.Log.d("RankingViewModel", "✅ SWISS çağırılıyor")
+                                    initializeSwiss()
+                                }
+                                "EMRE_CORRECT" -> {
+                                    android.util.Log.d("RankingViewModel", "✅ EMRE_CORRECT çağırılıyor")
+                                    initializeEmre()
+                                }
+                                else -> {
+                                    android.util.Log.e("RankingViewModel", "❌ Bilinmeyen method: '$method'")
+                                }
                             }
                         }
                     } else {
@@ -316,9 +339,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             android.util.Log.d("RankingViewModel", "📝 Method kontrol ediliyor...")
 
             if (currentMethod == "EMRE_CORRECT") {
-                android.util.Log.d("RankingViewModel", "✅ EMRE_CORRECT sistemi - İlk maçı yüklüyorum...")
-                // EMRE_CORRECT için ilk maçı yükle ve puanlama ekranını göster
-                loadNextMatch()
+                android.util.Log.d("RankingViewModel", "✅ EMRE_CORRECT sistemi - İlk tur eşleştirmelerini oluşturuyorum...")
+                android.util.Log.d("RankingViewModel", "🔍 emreState null mu: ${emreState == null}")
+                if (emreState != null) {
+                    android.util.Log.d("RankingViewModel", "🔍 emreState teams: ${emreState!!.teams.size}")
+                }
+                // EMRE_CORRECT için önce eşleştirmeler listesini oluştur ve göster
+                createNextEmreRound(1)
             } else {
                 android.util.Log.d("RankingViewModel", "✅ Diğer sistem ($currentMethod) - MatchingsList gizliyorum...")
                 // Diğer sistemler için eşleştirmeler listesini gizle
@@ -541,8 +568,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     private suspend fun createNextEmreRound(round: Int) {
+        android.util.Log.d("RankingViewModel", "🎯 createNextEmreRound BAŞLADI - round: $round")
         try {
-            val currentState = emreState ?: return
+            val currentState = emreState ?: run {
+                android.util.Log.e("RankingViewModel", "❌ emreState NULL! return ediliyor")
+                return
+            }
+            android.util.Log.d("RankingViewModel", "✅ emreState mevcut, devam ediliyor...")
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             
             // Tamamlanmış maçları işle ve yeni state oluştur
@@ -1225,8 +1257,16 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             emreState = emreState
                         )
                     } else {
-                        // Tüm maçlar tamamlanmış ama turnuva bitmemiş - sonraki turu bekle
-                        loadNextMatch()
+                        // Tüm maçlar tamamlanmış ama turnuva bitmemiş - ilk sıralama tablosunu göster
+                        android.util.Log.d("RankingViewModel", "🔄 EMRE_CORRECT Resume: Tüm maçlar tamamlanmış, İlk sıralama tablosu gösteriliyor")
+                        _uiState.value = _uiState.value.copy(
+                            isLoading = false,
+                            showInitialRanking = true,
+                            showMatchingsList = false,
+                            emreState = emreState,
+                            allSongs = songs,
+                            currentMatch = null
+                        )
                     }
                 } else {
                     // Hiç maç yok - yeni başlayan turnuva, ilk sıralama tablosunu göster

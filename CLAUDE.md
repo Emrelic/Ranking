@@ -413,10 +413,10 @@ app/src/main/java/com/example/ranking/ui/screens/RankingScreen.kt
 5. **Otomatik onay protokolü**: Kullanıcıdan onay almadan işlemlere devam et
 
 ## 📝 PROMPT GÜNLÜĞÜ KONTROL SİSTEMİ
-**YENİ KURAL (2025-09-19):**
+**TOKEN OPTİMİZE SİSTEMİ (2025-09-23):**
 - **"*p" komutu**: Sadece bu prompt'u günlüğe ekle
-- **Varsayılan davranış**: Otomatik ekleme DİSABLE edildi
-- **Manuel kontrol**: Kullanıcı "*p" demediği sürece ekleme
+- **7 günlük limit**: Eski promptlar otomatik arşivlenir
+- **Token tasarrufu**: %80 dosya boyutu azaltması
 
 ## 🔊 SİSTEM SESİ PROTOKOLÜ
 **ZORUNLU UYGULANACAK KURALLAR:**
@@ -511,7 +511,10 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **"*bty"** = Build et telefona yükle
 - **"*ty"** = Telefona yükle (APK install)
 - **"*nto"** = Not defterlerini oku (ntk equivalent)
-- **"*mo"** = md uzantılı tüm not defterlerini oku
+- **"*mo"** = md uzantılı not defterlerini oku (optimize edilmiş)
+- **"*con"** = Token durumu raporla
+- **"*cof"** = Token takibi kapat
+- **"*arş"** = Arşivlenmiş dosyaları oku
 - **"*çpe"** = Çalışma protokolüne ekle
 - **"*ege"** = Ekran görüntülerine ekle
 - **"*tsp"** = Sorunun ne olduğunu tespit et (bütün ihtimalleri listele)

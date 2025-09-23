@@ -109,3 +109,20 @@ Claude: EKRAN_GORUNTULERI.md'ye kaydedildi ve analiz edildi!
 **Technical Location**: `RankingScreen.kt` lines 2307-2406 (TeamVotingPanel), lines 546-702 (MatchBasedContent update)
 **Build Status**: APK başarıyla build edildi ve telefona deploy edildi (R58M3418NMR)
 **Test Ready**: Oylama ekranı yeni tasarımı test edilmeye hazır
+
+#### [Image #6] - Oylama Ekranı Final Tasarım Hedefi (2025-09-23)
+**Tarih**: 2025-09-23
+**Açıklama**: Afganistan vs Arnavutluk oylama ekranı - 5 bölümlü sabit layout sistemi
+**Gereksinimler**:
+- **Tur ilerleme çubuğu**: En tepede minimal padding (sıkıştırılmış)
+- **Takım 1 başlığı**: AFGANİSTAN - sabit, mavi arkaplan
+- **Takım 1 scroll penceresi**: Tablo verisi içinde scroll edilebilir (sağa/sola/yukarı/aşağı)
+- **Orta buton çubuğu**: BERABERLIK (büyük) | VS (ortada) | SKOR GİR + KRİTER (sağda 2 buton)
+- **Takım 2 başlığı**: ARNAVUTLUK - sabit, mavi arkaplan
+- **Takım 2 scroll penceresi**: Tablo verisi içinde scroll edilebilir - ekran dibine kadar
+- **VS popup sistemi**: VS butonuna tıklayınca üst butonlar (Duraklar/Sıfırla/Fikstür/Puan) popup ile açılır
+- **Layout**: 6 katmanlı fixed layout - VS buton çubuğu tam ekran ortasında
+- **Renk sistemi**: Takım başlıkları mavi, buton çubuğu yeşil/sarı/yeşil
+
+**Implementation Status**: Yeni talep - implementasyon gerekli
+**Technical Location**: RankingScreen.kt MatchBasedContent function - tam yeniden yapılandırma
