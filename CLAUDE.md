@@ -409,8 +409,9 @@ app/src/main/java/com/example/ranking/ui/screens/RankingScreen.kt
 1. **CLAUDE.md dosyasını oku** ve projeyi anla
 2. Önceki konuşmaları ve gelişmeleri kontrol et
 3. Güncel proje durumunu değerlendir
-4. **Sistem sesi protokolü**: Görev tamamlandığında 3 kere beep sesi çıkar
-5. **Otomatik onay protokolü**: Kullanıcıdan onay almadan işlemlere devam et
+4. **Sayfa title'ını "Ranking" olarak ayarla** (her çalışma başlangıcında)
+5. **Sistem sesi protokolü**: Görev tamamlandığında 3 kere beep sesi çıkar
+6. **Otomatik onay protokolü**: Kullanıcıdan onay almadan işlemlere devam et
 
 ## 📝 PROMPT GÜNLÜĞÜ KONTROL SİSTEMİ
 **TOKEN OPTİMİZE SİSTEMİ (2025-09-23):**
@@ -839,3 +840,31 @@ Yüzölçüm               (Bold, koyu mavi)
 - **Kod kalitesi**: Clean, maintainable, extensible
 - **Test hazırlığı**: APK build başarılı, deployment ready
 - **Documentation**: Tam kayıt altında, repro edilebilir
+
+### ⚠️ DEVAM EDEN SORUN (2025-09-23)
+
+#### 🚨 EŞLEŞTIRMELER LİSTESİ AÇILMIYOR SORUNU:
+**Kullanıcı EMRE_CORRECT sistemi başlatırken eşleştirmeler listesi gelmiyor:**
+
+**🔍 TESPİT EDİLEN:**
+- MatchingsListContent tam implement edildi ✅
+- UI condition checks çalışıyor ✅
+- selectMatch() function mevcut ✅
+- Debug logs eklendi ✅
+
+**❌ ÇALIŞMIYOR:**
+- showInitialRanking ekranı gelmiyor mu?
+- "Turnuvayı Başlat" butonu çalışmıyor mu?
+- startScoring() çağırılıyor ama showMatchingsList=true olmuyor mu?
+
+**🔧 YAPILAN DEĞİŞİKLİKLER:**
+- InitialRankingContent gelişmiş debug info eklendi
+- MatchingsListContent tamamen yeniden kodlandı
+- Debug messages: matchingsList size, state values
+- Enhanced logging: button clicks, state transitions
+
+**📋 SONRAKİ SESSION İÇİN:**
+1. Root cause analizi: initializeEmre() vs startScoring() flow
+2. State management debug: showInitialRanking → showMatchingsList transition
+3. Database matches oluşturma kontrolü: createNextEmreRound()
+4. Session management: aktif session var mı kontrolü

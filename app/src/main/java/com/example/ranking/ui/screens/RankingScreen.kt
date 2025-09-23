@@ -64,7 +64,7 @@ fun RankingScreen(
             ) {
         TopAppBar(
             title = { 
-                Text(getMethodTitle(method))
+                Text("Ranking")
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
@@ -338,16 +338,42 @@ private fun InitialRankingContent(
     viewModel: RankingViewModel
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("İlk sıralama tablosu")
-        Button(onClick = {
-            android.util.Log.d("InitialRankingContent", "🔥 Turnuvayı Başlat butonuna basıldı!")
-            viewModel.startScoring()
-        }) {
-            Text("Turnuvayı Başlat")
+        Text(
+            text = "🎯 EMRE_CORRECT İlk Sıralama",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.Blue,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        Text(
+            text = "Debug: showInitialRanking = ${uiState.showInitialRanking}",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Red,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        Text(
+            text = "Debug: emreState = ${uiState.emreState != null}",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Red,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        Button(
+            onClick = {
+                android.util.Log.d("InitialRankingContent", "🔥 Turnuvayı Başlat butonuna basıldı!")
+                android.util.Log.d("InitialRankingContent", "🔍 Önceki state: showMatchingsList=${uiState.showMatchingsList}")
+                viewModel.startScoring()
+                android.util.Log.d("InitialRankingContent", "🏁 startScoring() çağırıldı!")
+            },
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text("🚀 Turnuvayı Başlat", fontSize = 18.sp)
         }
     }
 }
@@ -358,11 +384,136 @@ private fun MatchingsListContent(
     viewModel: RankingViewModel
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
-        Text("Eşleştirmeler listesi")
+        // Header
+        Text(
+            text = "Eşleştirmeler - ${uiState.currentRound}. Tur",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        
+        // Debug info
+        Text(
+            text = "Debug: matchingsList size = ${uiState.matchingsList.size}",
+            style = MaterialTheme.typography.bodySmall,
+            color = Color.Red,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        
+        // Eşleştirmeler listesi
+        if (uiState.matchingsList.isEmpty()) {
+            Text(
+                text = "Henüz eşleştirme yok - startScoring() çağırılmadı mı?",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(uiState.matchingsList) { match ->
+                    MatchCard(
+                        match = match,
+                        songs = uiState.allSongs,
+                        onClick = { viewModel.selectMatch(match) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MatchCard(
+    match: Match,
+    songs: List<Song>,
+    onClick: () -> Unit
+) {
+    val song1 = songs.find { it.id == match.songId1 }
+    val song2 = songs.find { it.id == match.songId2 }
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Maç numarası
+            Text(
+                text = "${match.matchNumber}. Eşleşme",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            
+            // VS Layout
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Takım 1
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = song1?.name ?: "Takım 1",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        color = Color(0xFF1976D2) // Mavi
+                    )
+                }
+                
+                // VS
+                Text(
+                    text = "VS",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                
+                // Takım 2
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = song2?.name ?: "Takım 2",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        color = Color(0xFF388E3C) // Yeşil
+                    )
+                }
+            }
+            
+            // Tıklama ipucu
+            Text(
+                text = "Eşleşmeyi başlatmak için tıklayın",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+        }
     }
 }
 
@@ -635,6 +786,7 @@ private fun MatchBasedContent(
     onShowCriteriaDialog: (Boolean) -> Unit = {}
 ) {
     android.util.Log.d("MatchBasedContent", "🎯 Method: $method, showInitialRanking: ${uiState.showInitialRanking}, showMatchingsList: ${uiState.showMatchingsList}, isComplete: ${uiState.isComplete}, currentMatch: ${uiState.currentMatch?.id}")
+    android.util.Log.d("MatchBasedContent", "🔍 matchingsList size: ${uiState.matchingsList.size}")
 
     // İlk sıralama tablosunu göster (EMRE_CORRECT için)
     android.util.Log.d("MatchBasedContent", "🔍 EMRE_CORRECT check: method=$method, showInitialRanking=${uiState.showInitialRanking}")
@@ -650,7 +802,7 @@ private fun MatchBasedContent(
 
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
-        android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT")
+        android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT - Liste boyutu: ${uiState.matchingsList.size}")
         MatchingsListContent(
             uiState = uiState,
             viewModel = viewModel
