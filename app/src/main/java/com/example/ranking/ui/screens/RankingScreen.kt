@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -453,13 +455,13 @@ private fun MatchingsListContent(
                 modifier = Modifier.padding(16.dp)
             )
         } else {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 400.dp),
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(uiState.matchingsList) { match ->
+                uiState.matchingsList.forEach { match ->
                     if (isAdvancedView) {
                         // Gelişmiş görünüm - Büyük tablo kartları
                         AdvancedMatchCard(
@@ -475,33 +477,32 @@ private fun MatchingsListContent(
                             onClick = { viewModel.selectMatch(match) }
                         )
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 // Puanlama Ekranına Geç butonu
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            // İlk maçı seç ve puanlama ekranına geç
-                            if (uiState.matchingsList.isNotEmpty()) {
-                                viewModel.selectMatch(uiState.matchingsList.first())
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Text(
-                            text = "▶ Puanlama Ekranına Geç",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        // İlk maçı seç ve puanlama ekranına geç
+                        if (uiState.matchingsList.isNotEmpty()) {
+                            viewModel.selectMatch(uiState.matchingsList.first())
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text(
+                        text = "▶ Puanlama Ekranına Geç",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -605,11 +606,13 @@ private fun AdvancedMatchCard(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // Alt alta format - İki takım kartı
-            Column {
-                // İlk takım kartı
+            // Yan yana format - EKRAN_GORUNTULERI.md Image #1 formatı
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Sol takım kartı
                 Column(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.weight(1f)
                 ) {
                     // Header - Mavi başlık
                     Box(
@@ -620,7 +623,7 @@ private fun AdvancedMatchCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = song1?.name?.uppercase() ?: "TAKIM 1",
+                            text = song1?.name?.uppercase() ?: "AFGANİSTAN",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -676,24 +679,29 @@ private fun AdvancedMatchCard(
                     }
                 }
 
-                // VS ortada
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center
+                // VS ortada - Minimal
+                Column(
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        text = "VS",
+                        text = "V",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "S",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                // İkinci takım kartı
+                // Sağ takım kartı
                 Column(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.weight(1f)
                 ) {
                     // Header - Mavi başlık
                     Box(
@@ -704,7 +712,7 @@ private fun AdvancedMatchCard(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = song2?.name?.uppercase() ?: "TAKIM 2",
+                            text = song2?.name?.uppercase() ?: "ARNAVUTLUK",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
