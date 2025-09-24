@@ -383,6 +383,8 @@ private fun MatchingsListContent(
     uiState: RankingViewModel.RankingUiState,
     viewModel: RankingViewModel
 ) {
+    var isAdvancedView by remember { mutableStateOf(false) } // Basit görünüm varsayılan
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -395,13 +397,51 @@ private fun MatchingsListContent(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
-        // Debug info
+
+        // Toggle Butonları - Basit/Gelişmiş
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Button(
+                onClick = { isAdvancedView = false },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (!isAdvancedView) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Basit",
+                    color = if (!isAdvancedView) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Button(
+                onClick = { isAdvancedView = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isAdvancedView) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "Gelişmiş",
+                    color = if (isAdvancedView) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Sayaç bilgisi
         Text(
-            text = "Debug: matchingsList size = ${uiState.matchingsList.size}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Red,
-            modifier = Modifier.padding(bottom = 8.dp)
+            text = "${uiState.matchingsList.size} Eşleştirme",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
         
         // Eşleştirmeler listesi
@@ -418,11 +458,21 @@ private fun MatchingsListContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(uiState.matchingsList) { match ->
-                    MatchCard(
-                        match = match,
-                        songs = uiState.allSongs,
-                        onClick = { viewModel.selectMatch(match) }
-                    )
+                    if (isAdvancedView) {
+                        // Gelişmiş görünüm - Büyük tablo kartları
+                        AdvancedMatchCard(
+                            match = match,
+                            songs = uiState.allSongs,
+                            onClick = { viewModel.selectMatch(match) }
+                        )
+                    } else {
+                        // Basit görünüm - Küçük kartlar
+                        SimpleMatchCard(
+                            match = match,
+                            songs = uiState.allSongs,
+                            onClick = { viewModel.selectMatch(match) }
+                        )
+                    }
                 }
             }
         }
@@ -430,14 +480,14 @@ private fun MatchingsListContent(
 }
 
 @Composable
-private fun MatchCard(
+private fun SimpleMatchCard(
     match: Match,
     songs: List<Song>,
     onClick: () -> Unit
 ) {
     val song1 = songs.find { it.id == match.songId1 }
     val song2 = songs.find { it.id == match.songId2 }
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -458,61 +508,231 @@ private fun MatchCard(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
-            // VS Layout
+
+            // Basit VS Layout
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // Takım 1
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = song1?.name ?: "Takım 1",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        color = Color(0xFF1976D2) // Mavi
-                    )
-                }
-                
+                Text(
+                    text = song1?.name ?: "Takım 1",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF1976D2),
+                    modifier = Modifier.weight(1f)
+                )
+
                 // VS
                 Text(
                     text = "VS",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = Color(0xFF666666),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
-                
+
                 // Takım 2
+                Text(
+                    text = song2?.name ?: "Takım 2",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF388E3C),
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdvancedMatchCard(
+    match: Match,
+    songs: List<Song>,
+    onClick: () -> Unit
+) {
+    val song1 = songs.find { it.id == match.songId1 }
+    val song2 = songs.find { it.id == match.songId2 }
+    
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            // Maç numarası başlığı
+            Text(
+                text = "${match.matchNumber}. Eşleşme",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            // Takım isimleri başlık
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = song1?.name ?: "Takım 1",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = song2?.name ?: "Takım 2",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Tablo formatı - Ekran görüntüsündeki gibi
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                // Sol takım tablosu - Ekran görüntüsündeki format
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    // Header - Mavi başlık
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF2196F3))
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = song1?.name?.uppercase() ?: "TAKIM 1",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    // Tablo verileri
+                    song1?.csvData?.let { csvData ->
+                        if (csvData.isNotBlank() && csvData != "null") {
+                            val jsonData = remember(csvData) {
+                                try {
+                                    val data = org.json.JSONObject(csvData)
+                                    val keys = data.keys().asSequence().toList().filter { it != "name" }
+                                    keys.map { key -> key to data.optString(key, "") }
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+
+                            jsonData?.forEach { (key, value) ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color(0xFFE3F2FD))
+                                        .border(0.5.dp, Color(0xFF2196F3))
+                                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                                ) {
+                                    Text(
+                                        text = key,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0D47A1)
+                                    )
+                                    Text(
+                                        text = value,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFF1976D2)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // VS ortada
+                Column(
+                    modifier = Modifier.padding(horizontal = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = song2?.name ?: "Takım 2",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center,
-                        color = Color(0xFF388E3C) // Yeşil
+                        text = "V",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "S",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
                     )
                 }
+
+                // Sağ takım tablosu - Ekran görüntüsündeki format
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    // Header - Mavi başlık
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF2196F3))
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = song2?.name?.uppercase() ?: "TAKIM 2",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    // Tablo verileri
+                    song2?.csvData?.let { csvData ->
+                        if (csvData.isNotBlank() && csvData != "null") {
+                            val jsonData = remember(csvData) {
+                                try {
+                                    val data = org.json.JSONObject(csvData)
+                                    val keys = data.keys().asSequence().toList().filter { it != "name" }
+                                    keys.map { key -> key to data.optString(key, "") }
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+
+                            jsonData?.forEach { (key, value) ->
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(Color(0xFFE3F2FD))
+                                        .border(0.5.dp, Color(0xFF2196F3))
+                                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                                ) {
+                                    Text(
+                                        text = key,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0D47A1)
+                                    )
+                                    Text(
+                                        text = value,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFF1976D2)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            
-            // Tıklama ipucu
-            Text(
-                text = "Eşleşmeyi başlatmak için tıklayın",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-            )
         }
     }
 }

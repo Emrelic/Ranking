@@ -344,6 +344,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 if (emreState != null) {
                     android.util.Log.d("RankingViewModel", "🔍 emreState teams: ${emreState!!.teams.size}")
                 }
+
+                // ⚠️ KRİTİK FİX: showInitialRanking'i false yap ki MatchingsList görülebilsin
+                android.util.Log.d("RankingViewModel", "🔧 showInitialRanking=false yapılıyor...")
+                _uiState.value = _uiState.value.copy(showInitialRanking = false)
+
                 // EMRE_CORRECT için önce eşleştirmeler listesini oluştur ve göster
                 createNextEmreRound(1)
             } else {
@@ -602,12 +607,16 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 
                 // Her turda eşleştirmeler listesini göster
                 android.util.Log.d("RankingViewModel", "📋 ${round}. tur eşleştirmeler listesi gösteriliyor...")
+                android.util.Log.d("RankingViewModel", "🔧 State güncelleniyor: showInitialRanking=false, showMatchingsList=true")
+                android.util.Log.d("RankingViewModel", "📋 Matches count: ${pairingResult.matches.size}")
                 _uiState.value = _uiState.value.copy(
                     showInitialRanking = false,
                     showMatchingsList = true,
+                    currentMatch = null, // ⚠️ KRİTİK FİX: currentMatch'i null yap ki liste görülebilsin
                     matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
                     emreState = emreState
                 )
+                android.util.Log.d("RankingViewModel", "✅ State güncellemesi tamamlandı!")
             } else {
                 completeRanking()
             }
