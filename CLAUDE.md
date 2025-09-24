@@ -507,6 +507,8 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **"*btk"** = Beep protokolünü uygulamadığın için tenkid
 - **"*btş"** = Beep protokolü uyguladığın için teşekkür
 - **"*tmm"** = Bu özellik tamam, commit + push yap
+- **"*cmt"** = Commit yap
+- **"*ab"** = APK build et
 - **"*yle"** = Yapılacaklar listesine ekle
 - **"*ncp"** = Not defterlerini doldur, commit + push
 - **"*bty"** = Build et telefona yükle

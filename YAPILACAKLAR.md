@@ -2,6 +2,24 @@
 
 ## 📝 YENİ MADDELER
 
+### [2025-09-25] - ❌ BAŞARISIZ - Takım Kartı Crash Sorunu Devam Ediyor
+- **DURUM**: Takım kartlarına tıklama crash'i çözülemedi - farklı yaklaşımlar denendi ama başarısız
+- **DENENİLEN ÇÖZÜMLER** ❌:
+  - AdvancedMatchCard basitleştirme: Crash devam etti ❌
+  - LazyColumn height constraint: heightIn(max = 400.dp) eklendi ama yetersiz ❌
+  - Try-catch removal + remember ile safe JSON parsing: Hala crash oluyor ❌
+  - Alt alta format geri getirme: Tasarım farklı oldu, crash çözülmedi ❌
+- **SORUN**:
+  - Eski çalışan tasarım tam olarak restore edilemedi
+  - JSON parsing infinite height constraint sorunu devam ediyor
+  - Puanlama ekranına geçiş butonu da crash yapıyor
+- **SONRAKİ ADIMLAR**:
+  - Daha köklü çözüm gerekli - belki eski commit'e dönüş
+  - İnfinite height nested LazyColumn problemi tam çözümlenmelidir
+- **LİMİT DURUMU**: Session süresi doldu, sonraki çalışmada devam edilecek
+
+## 📝 YENİ MADDELER
+
 ### [2025-09-22] - ✅ TAMAMLANDI - Oylama Ekranı Kapsamlı Yeniden Tasarım Projesi
 - **DURUM**: Oylama ekranının tamamen yeniden yapılandırılması TAMAMLANDI ✅
 - **KAPSAMLI UI YENİDEN TASARIM** ✅:

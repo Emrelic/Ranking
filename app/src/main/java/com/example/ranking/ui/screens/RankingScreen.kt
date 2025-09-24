@@ -454,7 +454,9 @@ private fun MatchingsListContent(
             )
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 400.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(uiState.matchingsList) { match ->
@@ -473,6 +475,32 @@ private fun MatchingsListContent(
                             onClick = { viewModel.selectMatch(match) }
                         )
                     }
+                }
+
+                // Puanlama Ekranına Geç butonu
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            // İlk maçı seç ve puanlama ekranına geç
+                            if (uiState.matchingsList.isNotEmpty()) {
+                                viewModel.selectMatch(uiState.matchingsList.first())
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text = "▶ Puanlama Ekranına Geç",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -555,7 +583,7 @@ private fun AdvancedMatchCard(
 ) {
     val song1 = songs.find { it.id == match.songId1 }
     val song2 = songs.find { it.id == match.songId2 }
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -566,7 +594,7 @@ private fun AdvancedMatchCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(4.dp) // Minimal padding için 16dp → 4dp
         ) {
             // Maç numarası başlığı
             Text(
@@ -577,32 +605,11 @@ private fun AdvancedMatchCard(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // Takım isimleri başlık
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = song1?.name ?: "Takım 1",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = song2?.name ?: "Takım 2",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Tablo formatı - Ekran görüntüsündeki gibi
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Sol takım tablosu - Ekran görüntüsündeki format
+            // Alt alta format - İki takım kartı
+            Column {
+                // İlk takım kartı
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     // Header - Mavi başlık
                     Box(
@@ -627,57 +634,66 @@ private fun AdvancedMatchCard(
                                 try {
                                     val data = org.json.JSONObject(csvData)
                                     val keys = data.keys().asSequence().toList().filter { it != "name" }
-                                    keys.map { key -> key to data.optString(key, "") }
+                                    keys.take(5).map { key -> key to data.optString(key, "") }
                                 } catch (e: Exception) {
                                     null
                                 }
                             }
 
                             jsonData?.forEach { (key, value) ->
-                                Column(
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(Color(0xFFE3F2FD))
                                         .border(0.5.dp, Color(0xFF2196F3))
-                                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                                        .padding(vertical = 4.dp, horizontal = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
                                         text = key,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0D47A1)
+                                        color = Color(0xFF0D47A1),
+                                        modifier = Modifier.weight(1f)
                                     )
                                     Text(
                                         text = value,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFF1976D2)
+                                        color = Color(0xFF1976D2),
+                                        modifier = Modifier.weight(1f),
+                                        textAlign = TextAlign.End
                                     )
                                 }
+                            } ?: run {
+                                // Fallback gösterimi
+                                Text(
+                                    text = "Veri mevcut",
+                                    modifier = Modifier.padding(8.dp),
+                                    color = Color(0xFF1976D2)
+                                )
                             }
                         }
                     }
                 }
 
                 // VS ortada
-                Column(
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "V",
+                        text = "VS",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "S",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                // Sağ takım tablosu - Ekran görüntüsündeki format
+                // İkinci takım kartı
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     // Header - Mavi başlık
                     Box(
@@ -702,32 +718,43 @@ private fun AdvancedMatchCard(
                                 try {
                                     val data = org.json.JSONObject(csvData)
                                     val keys = data.keys().asSequence().toList().filter { it != "name" }
-                                    keys.map { key -> key to data.optString(key, "") }
+                                    keys.take(5).map { key -> key to data.optString(key, "") }
                                 } catch (e: Exception) {
                                     null
                                 }
                             }
 
                             jsonData?.forEach { (key, value) ->
-                                Column(
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(Color(0xFFE3F2FD))
                                         .border(0.5.dp, Color(0xFF2196F3))
-                                        .padding(vertical = 4.dp, horizontal = 8.dp)
+                                        .padding(vertical = 4.dp, horizontal = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
                                         text = key,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0D47A1)
+                                        color = Color(0xFF0D47A1),
+                                        modifier = Modifier.weight(1f)
                                     )
                                     Text(
                                         text = value,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFF1976D2)
+                                        color = Color(0xFF1976D2),
+                                        modifier = Modifier.weight(1f),
+                                        textAlign = TextAlign.End
                                     )
                                 }
+                            } ?: run {
+                                // Fallback gösterimi
+                                Text(
+                                    text = "Veri mevcut",
+                                    modifier = Modifier.padding(8.dp),
+                                    color = Color(0xFF1976D2)
+                                )
                             }
                         }
                     }
