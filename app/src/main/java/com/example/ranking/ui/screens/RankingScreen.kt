@@ -630,52 +630,64 @@ private fun AdvancedMatchCard(
                         )
                     }
 
-                    // Tablo verileri
-                    song1?.csvData?.let { csvData ->
-                        if (csvData.isNotBlank() && csvData != "null") {
-                            val jsonData = remember(csvData) {
-                                try {
+                    // Tablo verileri - CRASH-SAFE
+                    val jsonData1 = remember(song1?.csvData) {
+                        try {
+                            song1?.csvData?.let { csvData ->
+                                if (csvData.isNotBlank() && csvData != "null" && csvData.length > 2) {
+                                    android.util.Log.d("AdvancedMatchCard", "🔍 Song1 JSON parsing: $csvData")
                                     val data = org.json.JSONObject(csvData)
                                     val keys = data.keys().asSequence().toList().filter { it != "name" }
-                                    keys.take(5).map { key -> key to data.optString(key, "") }
-                                } catch (e: Exception) {
-                                    null
-                                }
+                                    keys.take(5).mapNotNull { key -> 
+                                        try {
+                                            val value = data.optString(key, "")
+                                            if (value.isNotEmpty()) key to value else null
+                                        } catch (e: Exception) {
+                                            android.util.Log.e("AdvancedMatchCard", "Key parsing error: $key", e)
+                                            null
+                                        }
+                                    }
+                                } else null
                             }
+                        } catch (e: Exception) {
+                            android.util.Log.e("AdvancedMatchCard", "JSON parsing error for song1", e)
+                            null
+                        }
+                    }
 
-                            jsonData?.forEach { (key, value) ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(Color(0xFFE3F2FD))
-                                        .border(0.5.dp, Color(0xFF2196F3))
-                                        .padding(vertical = 4.dp, horizontal = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = key,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0D47A1),
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        text = value,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFF1976D2),
-                                        modifier = Modifier.weight(1f),
-                                        textAlign = TextAlign.End
-                                    )
-                                }
-                            } ?: run {
-                                // Fallback gösterimi
+                    if (jsonData1?.isNotEmpty() == true) {
+                        jsonData1.forEach { (key, value) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFE3F2FD))
+                                    .border(0.5.dp, Color(0xFF2196F3))
+                                    .padding(vertical = 4.dp, horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text(
-                                    text = "Veri mevcut",
-                                    modifier = Modifier.padding(8.dp),
-                                    color = Color(0xFF1976D2)
+                                    text = key.take(20), // Limit text length
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0D47A1),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = value.take(30), // Limit text length
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF1976D2),
+                                    modifier = Modifier.weight(1f),
+                                    textAlign = TextAlign.End
                                 )
                             }
                         }
+                    } else {
+                        // Safe fallback
+                        Text(
+                            text = song1?.name ?: "Takım 1",
+                            modifier = Modifier.padding(8.dp),
+                            color = Color(0xFF1976D2)
+                        )
                     }
                 }
 
@@ -719,52 +731,64 @@ private fun AdvancedMatchCard(
                         )
                     }
 
-                    // Tablo verileri
-                    song2?.csvData?.let { csvData ->
-                        if (csvData.isNotBlank() && csvData != "null") {
-                            val jsonData = remember(csvData) {
-                                try {
+                    // Tablo verileri - CRASH-SAFE
+                    val jsonData2 = remember(song2?.csvData) {
+                        try {
+                            song2?.csvData?.let { csvData ->
+                                if (csvData.isNotBlank() && csvData != "null" && csvData.length > 2) {
+                                    android.util.Log.d("AdvancedMatchCard", "🔍 Song2 JSON parsing: $csvData")
                                     val data = org.json.JSONObject(csvData)
                                     val keys = data.keys().asSequence().toList().filter { it != "name" }
-                                    keys.take(5).map { key -> key to data.optString(key, "") }
-                                } catch (e: Exception) {
-                                    null
-                                }
+                                    keys.take(5).mapNotNull { key -> 
+                                        try {
+                                            val value = data.optString(key, "")
+                                            if (value.isNotEmpty()) key to value else null
+                                        } catch (e: Exception) {
+                                            android.util.Log.e("AdvancedMatchCard", "Key parsing error: $key", e)
+                                            null
+                                        }
+                                    }
+                                } else null
                             }
+                        } catch (e: Exception) {
+                            android.util.Log.e("AdvancedMatchCard", "JSON parsing error for song2", e)
+                            null
+                        }
+                    }
 
-                            jsonData?.forEach { (key, value) ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(Color(0xFFE3F2FD))
-                                        .border(0.5.dp, Color(0xFF2196F3))
-                                        .padding(vertical = 4.dp, horizontal = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Text(
-                                        text = key,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0D47A1),
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Text(
-                                        text = value,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFF1976D2),
-                                        modifier = Modifier.weight(1f),
-                                        textAlign = TextAlign.End
-                                    )
-                                }
-                            } ?: run {
-                                // Fallback gösterimi
+                    if (jsonData2?.isNotEmpty() == true) {
+                        jsonData2.forEach { (key, value) ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFFE3F2FD))
+                                    .border(0.5.dp, Color(0xFF2196F3))
+                                    .padding(vertical = 4.dp, horizontal = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
                                 Text(
-                                    text = "Veri mevcut",
-                                    modifier = Modifier.padding(8.dp),
-                                    color = Color(0xFF1976D2)
+                                    text = key.take(20), // Limit text length
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0D47A1),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = value.take(30), // Limit text length
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF1976D2),
+                                    modifier = Modifier.weight(1f),
+                                    textAlign = TextAlign.End
                                 )
                             }
                         }
+                    } else {
+                        // Safe fallback
+                        Text(
+                            text = song2?.name ?: "Takım 2",
+                            modifier = Modifier.padding(8.dp),
+                            color = Color(0xFF1976D2)
+                        )
                     }
                 }
             }
