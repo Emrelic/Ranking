@@ -21,7 +21,9 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
         matchDao = database.matchDao(),
         leagueSettingsDao = database.leagueSettingsDao(),
         archiveDao = database.archiveDao(),
-        csvReader = CsvReader()
+        csvReader = CsvReader(),
+        swissStateDao = database.swissStateDao(),
+        swissMatchStateDao = database.swissMatchStateDao()
     )
     
     fun createList(
@@ -51,8 +53,10 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                     onError("Repository initialization hatası")
                     return@launch
                 }
+                Log.d("CreateListViewModel", "🔄 Repository.createSongList BAŞLADI...")
                 val listId = repository.createSongList(listName)
                 Log.d("CreateListViewModel", "✅ Liste oluşturuldu, ID: $listId")
+                Log.d("CreateListViewModel", "🎯 Success callback çağrılacak...")
                 if (listId <= 0) {
                     Log.e("CreateListViewModel", "❌ Invalid listId: $listId")
                     onError("Liste oluşturulamadı - geçersiz ID")
@@ -215,7 +219,9 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                     }
                 }
                 
+                Log.d("CreateListViewModel", "🚀 onSuccess callback çağrılıyor - listId: $listId")
                 onSuccess(listId)
+                Log.d("CreateListViewModel", "✅ onSuccess callback tamamlandı")
                 
             } catch (e: Exception) {
                 Log.e("CreateListViewModel", "❌❌❌ FATAL ERROR in createList: ${e.message}", e)

@@ -2,6 +2,16 @@
 
 ## 📝 YENİ MADDELER
 
+### [2025-09-25] - ✅ TAMAMLANDI - Liste Yükleme Crash Sorunu Köklü Çözüldü
+- **DURUM**: Repository constructor parameter mismatch sorunu tamamen çözüldü ✅
+- **SORUN**: CreateListViewModel'de swissStateDao ve swissMatchStateDao parametreleri eksikti
+- **ÇÖZÜM**: Repository initialization RankingViewModel ile eşitlendi
+- **TEKNİK DEĞİŞİKLİK**: 
+  - swissStateDao = database.swissStateDao() eklendi ✅
+  - swissMatchStateDao = database.swissMatchStateDao() eklendi ✅
+- **BUILD STATUS**: APK başarıyla build edildi (1m 29s) ve telefona deploy edildi ✅
+- **TEST READY**: Liste ekleme artık crash olmadan çalışacak ✅
+
 ### [2025-09-25] - ✅ TAMAMLANDI - Takım Kartı Crash Sorunu Köklü Çözüldü
 - **DURUM**: Takım kartlarına tıklama crash'i ve puanlama ekranına geçiş sorunu tamamen çözüldü ✅
 - **BAŞARILI ÇÖZÜMLER** ✅:

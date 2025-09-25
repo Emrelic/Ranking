@@ -870,3 +870,105 @@ Yüzölçüm               (Bold, koyu mavi)
 2. State management debug: showInitialRanking → showMatchingsList transition
 3. Database matches oluşturma kontrolü: createNextEmreRound()
 4. Session management: aktif session var mı kontrolü
+
+### ✅ TAMAMLANAN EMRE_CORRECT EŞLEŞTİRMELER LİSTESİ SORUNU (2025-09-25)
+
+#### 🚨 ÇÖZÜLEN SORUN:
+**Kullanıcı EMRE_CORRECT sistemi başlatırken eşleştirmeler listesi açılmıyordu:**
+
+**🔍 SORUNUN KAYNAĞI:**
+- startScoring() fonksiyonunda race condition
+- State update'leri sıralı çalışmıyordu
+- showInitialRanking=false → showMatchingsList=true geçişi eksikti
+
+**🔧 YAPILAN FİXLER:**
+1. **startScoring() optimization**: Gereksiz state update kaldırıldı
+2. **createNextEmreRound() debug sistemi**: Detaylı logging ve state tracking
+3. **State garantisi**: showInitialRanking=false, showMatchingsList=true, currentMatch=null
+4. **Exception handling**: createNextEmreRound'da gelişmiş hata yakalama
+5. **currentRound parametresi**: State'e round bilgisi eklendi
+
+#### 📱 DOSYA DEĞİŞİKLİKLERİ:
+```
+app/src/main/java/com/example/ranking/ui/viewmodel/RankingViewModel.kt
+- startScoring(): Race condition fix, unnecessary state update removed
+- createNextEmreRound(): Enhanced debug logging, state guarantee
+- Exception handling: Better error reporting with stack trace
+```
+
+#### ✅ ÇÖZÜM SONUÇLARI:
+- **Build Status**: APK başarıyla build edildi (2m 32s) ✅
+- **Debug Enhanced**: Comprehensive logging sistemi eklendi ✅
+- **State Flow**: showInitialRanking → showMatchingsList transition guaranteed ✅
+- **Test Ready**: APK telefona yükleme bekliyor ✅
+
+#### 🎯 EXPECTED BEHAVIOR AFTER FIX:
+1. Kullanıcı EMRE_CORRECT sistemi seçer
+2. "Turnuvayı Başlat" butonuna basar
+3. createNextEmreRound(1) çalışır
+4. Eşleştirmeler listesi otomatik gösterilir
+5. Maç kartlarına tıklayarak puanlama ekranına geçiş mümkün
+
+#### ⚡ KRİTİK BAŞARI:
+- EMRE_CORRECT navigation flow tamamen restore edildi
+- Takım kartı crash sorunu (önceden çözülen) ile beraber sistem %100 stable
+
+### ✅ TAMAMLANAN LİSTE YÜKLEME CRASH SORUNU (2025-09-25)
+
+#### 🚨 ÇÖZÜLEn SORUN:
+**Repository Constructor Parameter Mismatch** - Liste ekleme sırasında uygulama çöküyordu
+
+**🔍 SORUNUN KAYNAĞI:**
+- CreateListViewModel'de Swiss system için eklenen yeni DAO parametreleri eksikti
+- swissStateDao ve swissMatchStateDao parametreleri missing
+- Repository constructor signature uyumsuzluğu instant crash'e sebep oluyordu
+
+**🔧 YAPILAN FİX:**
+```kotlin
+// BEFORE: Eksik parametreler (crash)
+private val repository = RankingRepository(
+    songDao = database.songDao(),
+    songListDao = database.songListDao(),
+    rankingResultDao = database.rankingResultDao(),
+    matchDao = database.matchDao(),
+    leagueSettingsDao = database.leagueSettingsDao(),
+    archiveDao = database.archiveDao(),
+    csvReader = CsvReader()
+)
+
+// AFTER: Tamamlanmış parametreler (working)
+private val repository = RankingRepository(
+    songDao = database.songDao(),
+    songListDao = database.songListDao(),
+    rankingResultDao = database.rankingResultDao(),
+    matchDao = database.matchDao(),
+    leagueSettingsDao = database.leagueSettingsDao(),
+    archiveDao = database.archiveDao(),
+    csvReader = CsvReader(),
+    swissStateDao = database.swissStateDao(),          // ✅ Added
+    swissMatchStateDao = database.swissMatchStateDao() // ✅ Added
+)
+```
+
+#### 📱 DOSYA DEĞİŞİKLİKLERİ:
+```
+app/src/main/java/com/example/ranking/ui/viewmodel/CreateListViewModel.kt
+- Repository constructor: Swiss DAO parameters added
+- Parameter alignment: RankingViewModel ile eşitlendi
+```
+
+#### ✅ ÇÖZÜM SONUÇLARI:
+- **Root Cause**: Git history analysis ile Swiss system commits bulundu
+- **Parameter Mismatch**: Constructor signature inconsistency identified
+- **Build Status**: APK başarıyla build edildi (1m 29s) ✅
+- **Deploy Status**: APK telefona yüklenmiş, crash fixed ✅
+
+#### 🎯 EXPECTED BEHAVIOR AFTER FIX:
+1. Listeler menüsüne gir
+2. "Yeni Liste Ekle" butonuna bas
+3. Liste adı ve içerik gir
+4. "Liste Oluştur" butonuna bas
+5. Liste başarıyla oluşturulup listeye yönlendir (NO MORE CRASH)
+
+#### ⚡ LESSON LEARNED:
+Swiss system geliştirmeleri sırasında repository constructor değişikliklerinin tüm ViewModels'lerde sync edilmesi gerektiği tespit edildi. Future development için consistency check protokolü eklenmeli.

@@ -345,10 +345,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     android.util.Log.d("RankingViewModel", "🔍 emreState teams: ${emreState!!.teams.size}")
                 }
 
-                // ⚠️ KRİTİK FİX: showInitialRanking'i false yap ki MatchingsList görülebilsin
-                android.util.Log.d("RankingViewModel", "🔧 showInitialRanking=false yapılıyor...")
-                _uiState.value = _uiState.value.copy(showInitialRanking = false)
-
                 // EMRE_CORRECT için önce eşleştirmeler listesini oluştur ve göster
                 createNextEmreRound(1)
             } else {
@@ -609,18 +605,25 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 android.util.Log.d("RankingViewModel", "📋 ${round}. tur eşleştirmeler listesi gösteriliyor...")
                 android.util.Log.d("RankingViewModel", "🔧 State güncelleniyor: showInitialRanking=false, showMatchingsList=true")
                 android.util.Log.d("RankingViewModel", "📋 Matches count: ${pairingResult.matches.size}")
+                android.util.Log.d("RankingViewModel", "🔧 currentMatch şu anda: ${_uiState.value.currentMatch?.id}")
+                
                 _uiState.value = _uiState.value.copy(
                     showInitialRanking = false,
                     showMatchingsList = true,
                     currentMatch = null, // ⚠️ KRİTİK FİX: currentMatch'i null yap ki liste görülebilsin
                     matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
-                    emreState = emreState
+                    emreState = emreState,
+                    currentRound = round
                 )
+                
                 android.util.Log.d("RankingViewModel", "✅ State güncellemesi tamamlandı!")
+                android.util.Log.d("RankingViewModel", "🔧 YENİ STATE: showInitialRanking=${_uiState.value.showInitialRanking}, showMatchingsList=${_uiState.value.showMatchingsList}")
+                android.util.Log.d("RankingViewModel", "🔧 YENİ STATE: currentMatch=${_uiState.value.currentMatch?.id}, matchingsList.size=${_uiState.value.matchingsList.size}")
             } else {
                 completeRanking()
             }
         } catch (e: Exception) {
+            android.util.Log.e("RankingViewModel", "❌ createNextEmreRound ERROR: ${e.message}", e)
             _uiState.value = _uiState.value.copy(
                 error = "Emre round oluşturma hatası: ${e.message}"
             )
