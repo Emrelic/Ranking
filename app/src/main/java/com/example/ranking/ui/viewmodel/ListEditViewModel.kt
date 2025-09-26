@@ -27,12 +27,9 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
     fun loadListData(listId: Long, onResult: (List<Song>) -> Unit) {
         viewModelScope.launch {
             try {
-                Log.d("ListEditViewModel", "🔄 Loading list data for ID: $listId")
                 val songs = repository.getSongsByListIdSync(listId)
-                Log.d("ListEditViewModel", "✅ Loaded ${songs.size} songs")
                 onResult(songs)
             } catch (e: Exception) {
-                Log.e("ListEditViewModel", "❌ Error loading list: ${e.message}", e)
                 onResult(emptyList())
             }
         }
@@ -47,7 +44,6 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
     ) {
         viewModelScope.launch {
             try {
-                Log.d("ListEditViewModel", "🔄 Updating song ID: $songId")
                 
                 // Create JSON from updated data
                 val csvDataMap = updatedData.toMutableMap()
@@ -68,11 +64,9 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
                 // Update song in database
                 repository.updateSongWithCsvData(songId, songName, artist, album, csvDataJson)
                 
-                Log.d("ListEditViewModel", "✅ Song updated successfully")
                 onSuccess()
                 
             } catch (e: Exception) {
-                Log.e("ListEditViewModel", "❌ Error updating song: ${e.message}", e)
                 onError("Şarkı güncellenemedi: ${e.message}")
             }
         }
@@ -87,7 +81,6 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
     ) {
         viewModelScope.launch {
             try {
-                Log.d("ListEditViewModel", "🔄 Adding new song to list: $listId")
                 
                 // Create JSON from song data
                 val csvDataMap = songData.toMutableMap()
@@ -108,11 +101,9 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
                 // Add song to database
                 repository.addSongWithCsvData(listId, songName, artist, album, csvDataJson)
                 
-                Log.d("ListEditViewModel", "✅ New song added successfully")
                 onSuccess()
                 
             } catch (e: Exception) {
-                Log.e("ListEditViewModel", "❌ Error adding song: ${e.message}", e)
                 onError("Şarkı eklenemedi: ${e.message}")
             }
         }
@@ -125,13 +116,10 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
     ) {
         viewModelScope.launch {
             try {
-                Log.d("ListEditViewModel", "🔄 Deleting song ID: $songId")
                 repository.deleteSong(songId)
-                Log.d("ListEditViewModel", "✅ Song deleted successfully")
                 onSuccess()
                 
             } catch (e: Exception) {
-                Log.e("ListEditViewModel", "❌ Error deleting song: ${e.message}", e)
                 onError("Şarkı silinemedi: ${e.message}")
             }
         }
@@ -147,8 +135,6 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
     ) {
         viewModelScope.launch {
             try {
-                Log.d("ListEditViewModel", "🔄 Saving ${updatedSongs.size} song changes")
-                Log.d("ListEditViewModel", "📊 Headers order: $headers")
                 
                 updatedSongs.forEach { (songId, songData) ->
                     // Create JSON from song data - HEADER SIRASI KORUNARAK
@@ -180,11 +166,9 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
                     repository.updateSongWithCsvData(songId, songName, artist, album, csvDataJson)
                 }
                 
-                Log.d("ListEditViewModel", "✅ All changes saved successfully")
                 onSuccess()
                 
             } catch (e: Exception) {
-                Log.e("ListEditViewModel", "❌ Error saving changes: ${e.message}", e)
                 onError("Değişiklikler kaydedilemedi: ${e.message}")
             }
         }

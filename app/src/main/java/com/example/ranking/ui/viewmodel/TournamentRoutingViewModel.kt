@@ -16,7 +16,6 @@ class TournamentRoutingViewModel(application: Application) : AndroidViewModel(ap
                 val tournament = database.tournamentDao().getTournamentById(tournamentId)
                 onResult(tournament)
             } catch (e: Exception) {
-                android.util.Log.e("TournamentRouting", "Failed to load tournament: ${e.message}")
                 onResult(null)
             }
         }

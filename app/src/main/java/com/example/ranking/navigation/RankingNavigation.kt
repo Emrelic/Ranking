@@ -166,42 +166,7 @@ fun RankingNavigation(
             )
         }
         
-        composable("league_settings/{listId}/{method}") { backStackEntry ->
-            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
-            val method = backStackEntry.arguments?.getString("method") ?: ""
-            LeagueSettingsScreen(
-                listId = listId,
-                method = method,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToRanking = { id, m -> 
-                    navController.navigate("ranking/$id/$m")
-                }
-            )
-        }
 
-        composable("fixture/{listId}/{method}") { backStackEntry ->
-            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
-            val method = backStackEntry.arguments?.getString("method") ?: ""
-            FixtureScreen(
-                listId = listId,
-                method = method,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToRanking = { id, m -> 
-                    navController.navigate("ranking/$id/$m")
-                }
-            )
-        }
-
-        composable("emre_pairing_settings/{listId}") { backStackEntry ->
-            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
-            EmrePairingSettingsScreen(
-                listId = listId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToRanking = { id, method, pairingMethod -> 
-                    navController.navigate("ranking/$id/$method?pairingMethod=${pairingMethod.name}")
-                }
-            )
-        }
 
         composable(
             "ranking/{listId}/{method}?pairingMethod={pairingMethod}",
@@ -248,9 +213,6 @@ fun RankingNavigation(
             )
         }
         
-        composable("test") {
-            TestScreen()
-        }
         
         // List view screen - only shows content, no tournament creation
         composable("list_view/{listId}") { backStackEntry ->

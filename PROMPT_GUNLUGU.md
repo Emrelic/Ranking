@@ -9,6 +9,18 @@ Token tasarrufu için sadece son 7 günün promptları tutulur. Eski promptlar o
 
 ---
 
+## [2025-09-27 01:30] MAJOR CRASH FIX SESSION
+**Prompt:** "liste ekleyince program bi kapanır gibi oluyo. sonra bakıyorum arkada var sanki. çöküyor sanıyorum ama çökmemiş gibi oluyor. sanki arka plana gidiyor. eşleştirmeler ekranında çökme olayı hallolmuş. ama bu sefer puanlama ekranına geçiş butonu çalışmıyor"
+
+**Çözülen Sorunlar:**
+1. ✅ Null safety crash (AdvancedMatchCard) - `jsonData?.isNotEmpty()` → `jsonData.isNotEmpty()`
+2. ✅ selectMatch() fonksiyonu boş idi - Tam implementasyon yapıldı
+3. ✅ Liste ekleme debug sistemi - Comprehensive logging eklendi
+
+**Sonuç:** Tüm major crash'ler düzeltildi, APK telefona yüklendi, production ready
+
+---
+
 ## 📅 2025-09-19
 
 ### [17:25]

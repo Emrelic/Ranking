@@ -106,21 +106,16 @@ fun ListEditScreen(
     
     // Load list data with debug logs
     LaunchedEffect(listId) {
-        Log.d("ListEditScreen", "🔄 LaunchedEffect started for listId: $listId")
         viewModel.loadListData(listId) { songs ->
-            Log.d("ListEditScreen", "📥 Callback received: ${songs.size} songs")
             isLoading = false
             originalSongs = songs
             if (songs.isNotEmpty()) {
-                Log.d("ListEditScreen", "✅ Songs not empty, processing...")
                 // Parse CSV data from first song to get structure
                 val firstSong = songs[0]
-                Log.d("ListEditScreen", "🎵 First song: ${firstSong.name}, csvData: ${firstSong.csvData?.take(100)}")
                 if (firstSong.csvData != null) {
                     try {
                         val csvData = JSONObject(firstSong.csvData!!)
                         headers = csvData.keys().asSequence().toList().filter { it != "_displayMode" }
-                        Log.d("ListEditScreen", "📊 Headers extracted: $headers")
                         
                         // Build table data
                         listData = songs.map { song ->
@@ -137,10 +132,8 @@ fun ListEditScreen(
                             }
                             songData
                         }
-                        Log.d("ListEditScreen", "🗂️ ListData built: ${listData.size} rows, first row: ${listData.firstOrNull()}")
                         listName = songs[0].name // Temporary, should get from list name
                     } catch (e: Exception) {
-                        Log.e("ListEditScreen", "❌ JSON parsing error: ${e.message}")
                         // Fallback to simple structure
                         headers = listOf("Name", "Artist", "Album")
                         listData = songs.map { song ->
@@ -150,10 +143,8 @@ fun ListEditScreen(
                                 "Album" to song.album
                             )
                         }
-                        Log.d("ListEditScreen", "🔄 Fallback data: ${listData.size} rows")
                     }
                 } else {
-                    Log.d("ListEditScreen", "⚠️ No CSV data, using fallback")
                     headers = listOf("Name", "Artist", "Album")
                     listData = songs.map { song ->
                         mapOf(
@@ -162,12 +153,9 @@ fun ListEditScreen(
                             "Album" to song.album
                         )
                     }
-                    Log.d("ListEditScreen", "🔄 Fallback data: ${listData.size} rows")
                 }
             } else {
-                Log.w("ListEditScreen", "⚠️ Songs list is empty")
             }
-            Log.d("ListEditScreen", "🏁 Final state: isLoading=$isLoading, headers=${headers.size}, listData=${listData.size}")
         }
     }
     
@@ -435,14 +423,11 @@ fun ListEditScreen(
                                                             draggedColumn = columnIndex
                                                             draggedOverColumn = columnIndex
                                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                            Log.d("ColumnDrag", "🎯 Column drag başladı - Column: $columnLetter")
                                                         },
                                                         onDragEnd = {
-                                                            Log.d("ColumnDrag", "🎯 Column drag bitti - From: ${if (draggedColumn != null) ('A' + draggedColumn!!).toString() else "null"}, To: ${if (draggedOverColumn != null) ('A' + draggedOverColumn!!).toString() else "null"}")
                                                             if (draggedColumn != null && draggedOverColumn != null &&
                                                                 draggedColumn != draggedOverColumn) {
                                                                 reorderColumns(draggedColumn!!, draggedOverColumn!!)
-                                                                Log.d("ColumnDrag", "✅ Sütun yeniden sıralandı")
                                                             }
                                                             draggedColumn = null
                                                             draggedOverColumn = null
@@ -457,7 +442,6 @@ fun ListEditScreen(
                                                                 .coerceIn(0, headers.size - 1)
                                                             if (targetColumn != draggedOverColumn) {
                                                                 draggedOverColumn = targetColumn
-                                                                Log.d("ColumnDrag", "📍 Column $columnLetter → Column ${('A' + targetColumn).toString()}")
                                                             }
                                                         }
                                                     )
@@ -539,14 +523,11 @@ fun ListEditScreen(
                                                         draggedRow = rowIndex
                                                         draggedOverRow = rowIndex
                                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                        Log.d("RowDrag", "🎯 Row drag başladı - Row: ${rowIndex + 1}")
                                                     },
                                                     onDragEnd = {
-                                                        Log.d("RowDrag", "🎯 Row drag bitti - From: ${if (draggedRow != null) draggedRow!! + 1 else "null"}, To: ${if (draggedOverRow != null) draggedOverRow!! + 1 else "null"}")
                                                         if (draggedRow != null && draggedOverRow != null &&
                                                             draggedRow != draggedOverRow) {
                                                             reorderRows(draggedRow!!, draggedOverRow!!)
-                                                            Log.d("RowDrag", "✅ Satır yeniden sıralandı")
                                                         }
                                                         draggedRow = null
                                                         draggedOverRow = null
@@ -559,7 +540,6 @@ fun ListEditScreen(
                                                             .coerceIn(0, listData.size - 1)
                                                         if (targetRow != draggedOverRow) {
                                                             draggedOverRow = targetRow
-                                                            Log.d("RowDrag", "📍 Row ${rowIndex + 1} → Row ${targetRow + 1}")
                                                         }
                                                     }
                                                 )

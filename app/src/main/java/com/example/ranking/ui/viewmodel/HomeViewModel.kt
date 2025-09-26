@@ -51,9 +51,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val tournaments = votingSessionDao.getAllActiveTournaments()
                 _activeTournaments.value = tournaments
-                android.util.Log.d("HomeViewModel", "Loaded ${tournaments.size} active tournaments")
             } catch (e: Exception) {
-                android.util.Log.e("HomeViewModel", "Error loading active tournaments", e)
                 _activeTournaments.value = emptyList()
             }
         }

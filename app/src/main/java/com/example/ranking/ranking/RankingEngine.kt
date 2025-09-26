@@ -701,32 +701,6 @@ object RankingEngine {
         return matches
     }
     
-    /**
-     * Yeni Gelişmiş Emre Sistemi - Swiss Style Tournament
-     * Bu fonksiyon yeni EmreSystem sınıfını kullanır (ESKİ - Yanlış algoritma)
-     */
-    fun createAdvancedEmreMatches(songs: List<Song>, state: EmreSystem.EmreState?): EmreSystem.PairingResult {
-        val currentState = state ?: EmreSystem.initializeEmreTournament(songs)
-        return EmreSystem.createNextRound(currentState)
-    }
-    
-    /**
-     * Gelişmiş Emre sistemi için sonuçları işle (ESKİ)
-     */
-    fun processAdvancedEmreResults(
-        state: EmreSystem.EmreState, 
-        completedMatches: List<Match>,
-        byeTeam: EmreSystem.EmreTeam?
-    ): EmreSystem.EmreState {
-        return EmreSystem.processRoundResults(state, completedMatches, byeTeam)
-    }
-    
-    /**
-     * Gelişmiş Emre sistemi final sonuçlarını hesapla (ESKİ)
-     */
-    fun calculateAdvancedEmreResults(state: EmreSystem.EmreState): List<RankingResult> {
-        return EmreSystem.calculateFinalResults(state)
-    }
     
     /**
      * DOĞRU Emre Usulü Sistemi - Yeniden yazılan algoritma

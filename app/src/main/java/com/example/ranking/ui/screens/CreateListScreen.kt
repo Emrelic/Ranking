@@ -45,7 +45,6 @@ fun CreateListScreen(
     val csvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        Log.d("CreateListScreen", "CSV dosyası seçildi: $uri")
         selectedFileUri = uri
         errorMessage = null
     }
@@ -348,12 +347,6 @@ fun CreateListScreen(
                                   ((selectedOption == "manual" && manualSongs.isNotBlank()) ||
                                    (selectedOption == "csv" && selectedFileUri != null))
             
-            // Debug log
-            LaunchedEffect(isButtonEnabled, listName, selectedOption, manualSongs, selectedFileUri) {
-                Log.d("CreateListScreen", "Button durumu: enabled=$isButtonEnabled, " +
-                    "isLoading=$isLoading, listName='$listName', option='$selectedOption', " +
-                    "manualSongs length=${manualSongs.length}, csvFile=${selectedFileUri?.lastPathSegment}")
-            }
             
             Button(
                 onClick = {

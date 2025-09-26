@@ -67,15 +67,12 @@ class RankingRepository(
                 csvData = csvData
             )
             songDao.updateSong(updatedSong)
-            Log.d("RankingRepository", "✅ Song updated: ID=$songId, Name='$name'")
         } else {
-            Log.e("RankingRepository", "❌ Song not found for update: ID=$songId")
         }
     }
     
     suspend fun deleteSong(songId: Long) {
         songDao.deleteSongById(songId)
-        Log.d("RankingRepository", "✅ Song deleted: ID=$songId")
     }
     
     suspend fun importSongsFromCsv(context: Context, listId: Long, uri: Uri) {
@@ -84,19 +81,13 @@ class RankingRepository(
     
     suspend fun importSongsFromCsvWithDisplayMode(context: Context, listId: Long, uri: Uri, displayMode: String = "cards") {
         try {
-            Log.d("RankingRepository", "CSV okuma başlıyor: $uri")
             val csvSongs = csvReader.readCsvFromUri(context, uri)
-            Log.d("RankingRepository", "CSV'den ${csvSongs.size} öğe okundu")
             
             if (csvSongs.isEmpty()) {
                 throw Exception("CSV dosyasında öğe bulunamadı")
             }
             
             val songs = csvSongs.map { csvSong ->
-                Log.d("RankingRepository", "🔄 Processing CSV song: ${csvSong.name}")
-                Log.d("RankingRepository", "🔄 Original CSV data: ${csvSong.csvData}")  
-                Log.d("RankingRepository", "🔄 Display mode: $displayMode")
-                Log.d("RankingRepository", "🔄 CSV data null check: ${csvSong.csvData != null}")
                 
                 // Add displayMode to csvData if it exists
                 val updatedCsvData = if (csvSong.csvData != null) {
@@ -104,19 +95,15 @@ class RankingRepository(
                         val jsonObject = org.json.JSONObject(csvSong.csvData)
                         jsonObject.put("_displayMode", displayMode)
                         val result = jsonObject.toString()
-                        Log.d("RankingRepository", "✅ Updated CSV data with display mode: $result")
                         result
                     } catch (e: Exception) {
-                        Log.e("RankingRepository", "❌ Error adding display mode: ${e.message}")
                         csvSong.csvData
                     }
                 } else if (displayMode == "table") {
                     // If no csvData but table mode requested, create minimal metadata
                     val result = "{\"_displayMode\": \"$displayMode\", \"Name\": \"${csvSong.name}\"}"
-                    Log.d("RankingRepository", "✅ Created minimal table data: $result")
                     result
                 } else {
-                    Log.d("RankingRepository", "⚠️ No CSV data and cards mode - keeping null")
                     csvSong.csvData
                 }
                 
@@ -130,13 +117,10 @@ class RankingRepository(
                 )
             }
             
-            Log.d("RankingRepository", "Öğeler veritabanına kaydediliyor...")
             songDao.insertSongs(songs)
             updateSongCount(listId)
-            Log.d("RankingRepository", "CSV import işlemi tamamlandı")
             
         } catch (e: Exception) {
-            Log.e("RankingRepository", "CSV import hatası: ${e.message}", e)
             throw e
         }
     }

@@ -17,15 +17,11 @@ fun TournamentRoutingScreen(
     viewModel: TournamentRoutingViewModel = viewModel()
 ) {
     LaunchedEffect(tournamentId) {
-        android.util.Log.d("TournamentRouting", "Loading tournament with ID: $tournamentId")
         viewModel.loadTournament(tournamentId) { tournament ->
             if (tournament != null) {
-                android.util.Log.d("TournamentRouting", "Tournament loaded: ${tournament.name}, System: ${tournament.systemType}")
                 // Navigate directly to classic RankingScreen for all system types
-                android.util.Log.d("TournamentRouting", "Navigating to ClassicRanking: listId=${tournament.songListId}, system=${tournament.systemType}")
                 onNavigateToClassicRanking(tournament.songListId, tournament.systemType)
             } else {
-                android.util.Log.e("TournamentRouting", "Failed to load tournament with ID: $tournamentId")
             }
         }
     }

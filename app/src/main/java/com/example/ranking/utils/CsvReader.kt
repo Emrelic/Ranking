@@ -25,18 +25,14 @@ class CsvReader {
         var csvHeaders: List<String>? = null
         
         try {
-            Log.d("CsvReader", "CSV dosyası açılıyor: $uri")
             
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                Log.d("CsvReader", "Input stream başarıyla açıldı")
                 
                 // Read all bytes first to detect encoding and BOM
                 val allBytes = inputStream.readBytes()
-                Log.d("CsvReader", "Dosya boyutu: ${allBytes.size} bytes")
                 
                 // Detect and remove BOM if present
                 val (cleanBytes, detectedCharset) = detectEncodingAndRemoveBOM(allBytes)
-                Log.d("CsvReader", "Tespit edilen encoding: ${detectedCharset.name()}")
                 
                 // Create reader with detected charset
                 val reader = BufferedReader(
@@ -51,7 +47,6 @@ class CsvReader {
                     while (bufferedReader.readLine().also { line = it } != null) {
                         lineNumber++
                         line?.let { currentLine ->
-                            Log.d("CsvReader", "Satır $lineNumber (raw): $currentLine")
                             
                             val normalizedLine = currentLine.trim().normalize()
                             
@@ -60,31 +55,25 @@ class CsvReader {
                                 if (currentLine.contains(",") || currentLine.contains(";") || currentLine.contains("\t")) {
                                     // First line has separators - assume it's a header
                                     csvHeaders = parseHeaderLine(normalizedLine)
-                                    Log.d("CsvReader", "✅ AUTO HEADER DETECT! Header sütunları: ${csvHeaders?.joinToString(" | ")}")
                                     isFirstLine = false
                                     return@let
                                 }
                             }
                             isFirstLine = false
                             
-                            Log.d("CsvReader", "Normalize edilmiş satır: $normalizedLine")
                             
                             val song = parseCsvLineWithHeaders(normalizedLine, csvHeaders)
                             if (song.name.isNotBlank()) {
                                 songs.add(song)
-                                Log.d("CsvReader", "Öğe eklendi: ${song.name} - ${song.artist}")
                             } else {
-                                Log.w("CsvReader", "Boş öğe adı, satır atlandı: $currentLine")
                             }
                         }
                     }
                 }
             } ?: throw Exception("Dosya açılamadı. Dosya erişim izni olmayabilir.")
             
-            Log.d("CsvReader", "Toplam ${songs.size} öğe okundu")
             
         } catch (e: Exception) {
-            Log.e("CsvReader", "CSV okuma hatası: ${e.message}", e)
             throw Exception("CSV dosyası okunamadı: ${e.message}")
         }
         
@@ -130,7 +119,6 @@ class CsvReader {
                 .normalize()
         }
         
-        Log.d("CsvReader", "Ayrıştırılan parçalar (${parts.size}): ${parts.joinToString(" | ")}")
         
         // Create JSON data from headers and values
         val csvData = if (headers != null && headers.isNotEmpty() && parts.size >= headers.size) {
@@ -147,8 +135,6 @@ class CsvReader {
             null
         }
         
-        Log.d("CsvReader", "✅ CSV data oluşturuldu - Headers: ${headers?.size ?: 0}, Parts: ${parts.size}")
-        Log.d("CsvReader", "✅ Oluşturulan CSV data: $csvData")
         
         // Use existing logic for parsing basic fields
         val baseSong = parseCsvLine(line)
@@ -173,7 +159,6 @@ class CsvReader {
             else -> ","
         }
         
-        Log.d("CsvReader", "Kullanılan ayraç: '$separator'")
         
         // Split and clean parts
         val parts = line.split(separator).map { part ->
@@ -184,7 +169,6 @@ class CsvReader {
                 .normalize()
         }
         
-        Log.d("CsvReader", "Ayrıştırılan parçalar (${parts.size}): ${parts.joinToString(" | ")}")
         
         return when {
             parts.size >= 4 -> {
@@ -251,38 +235,31 @@ class CsvReader {
     private fun detectEncodingAndRemoveBOM(bytes: ByteArray): Pair<ByteArray, Charset> {
         // Check for UTF-8 BOM (EF BB BF)
         if (bytes.size >= 3 && bytes[0] == 0xEF.toByte() && bytes[1] == 0xBB.toByte() && bytes[2] == 0xBF.toByte()) {
-            Log.d("CsvReader", "UTF-8 BOM tespit edildi, kaldırılıyor")
             return Pair(bytes.sliceArray(3 until bytes.size), StandardCharsets.UTF_8)
         }
         
         // Check for UTF-16 BE BOM (FE FF)
         if (bytes.size >= 2 && bytes[0] == 0xFE.toByte() && bytes[1] == 0xFF.toByte()) {
-            Log.d("CsvReader", "UTF-16 BE BOM tespit edildi")
             return Pair(bytes.sliceArray(2 until bytes.size), StandardCharsets.UTF_16BE)
         }
         
         // Check for UTF-16 LE BOM (FF FE)
         if (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xFE.toByte()) {
-            Log.d("CsvReader", "UTF-16 LE BOM tespit edildi")
             return Pair(bytes.sliceArray(2 until bytes.size), StandardCharsets.UTF_16LE)
         }
         
         // Try to detect Turkish characters to determine if we need Windows-1254
         val sampleText = String(bytes.take(1024).toByteArray(), StandardCharsets.UTF_8)
-        Log.d("CsvReader", "UTF-8 ile ilk 100 karakter: ${sampleText.take(100)}")
         
         // Also try with Windows-1254 for comparison
         try {
             val sampleWindows1254 = String(bytes.take(1024).toByteArray(), Charset.forName("windows-1254"))
-            Log.d("CsvReader", "Windows-1254 ile ilk 100 karakter: ${sampleWindows1254.take(100)}")
         } catch (e: Exception) {
-            Log.w("CsvReader", "Windows-1254 sample test hatası: ${e.message}")
         }
         
         // If we see Turkish characters or common Turkish words, assume it's UTF-8
         if (sampleText.contains(Regex("[çğıöşüÇĞIÖŞÜ]")) || 
             sampleText.lowercase().contains(Regex("\\b(sanatçı|şarkı|albüm|öğe)\\b"))) {
-            Log.d("CsvReader", "Türkçe karakterler tespit edildi, UTF-8 kullanılıyor")
             return Pair(bytes, StandardCharsets.UTF_8)
         }
         
@@ -290,15 +267,12 @@ class CsvReader {
         try {
             val windows1254Text = String(bytes.take(1024).toByteArray(), Charset.forName("windows-1254"))
             if (windows1254Text.contains(Regex("[çğıöşüÇĞIÖŞÜ]"))) {
-                Log.d("CsvReader", "Windows-1254 encoding tespit edildi")
                 return Pair(bytes, Charset.forName("windows-1254"))
             }
         } catch (e: Exception) {
-            Log.w("CsvReader", "Windows-1254 encoding test hatası: ${e.message}")
         }
         
         // Default to UTF-8
-        Log.d("CsvReader", "Varsayılan UTF-8 encoding kullanılıyor")
         return Pair(bytes, StandardCharsets.UTF_8)
     }
     

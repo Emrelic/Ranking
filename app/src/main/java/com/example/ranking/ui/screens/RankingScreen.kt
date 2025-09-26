@@ -55,6 +55,7 @@ fun RankingScreen(
     
     val uiState by viewModel.uiState.collectAsState()
     var showCriteriaDialog by remember { mutableStateOf(false) }
+    var showStandingsDialog by remember { mutableStateOf(false) }
     
     Box(modifier = Modifier.fillMaxSize()) {
         // Ana içerik - Dialog açıkken gizle
@@ -173,7 +174,8 @@ fun RankingScreen(
                 onMatchResultWithScore = viewModel::submitMatchResultWithScore,
                 onComplete = { onNavigateToResults(listId, method) },
                 showCriteriaDialog = showCriteriaDialog,
-                onShowCriteriaDialog = { showCriteriaDialog = it }
+                onShowCriteriaDialog = { showCriteriaDialog = it },
+                onShowStandingsDialog = { showStandingsDialog = it }
             )
             "ELIMINATION" -> EliminationContent(
                 uiState = uiState,
@@ -209,24 +211,31 @@ fun RankingScreen(
                         when (winner) {
                             "team1" -> {
                                 // İlk takım kazandı - arka sayfadaki sol butonu işle
-                                android.util.Log.d("KriterDebug", "Takım 1 kazandı - ${uiState.song1?.name}")
                             }
                             "team2" -> {
                                 // İkinci takım kazandı - arka sayfadaki sağ butonu işle
-                                android.util.Log.d("KriterDebug", "Takım 2 kazandı - ${uiState.song2?.name}")
                             }
                             "draw" -> {
                                 // Beraberlik - arka sayfadaki beraberlik butonu işle
-                                android.util.Log.d("KriterDebug", "Beraberlik")
                             }
                             "save_only" -> {
                                 // Sadece kaydet - kazanan belirlenmedi
-                                android.util.Log.d("KriterDebug", "Sadece kaydet")
                             }
                         }
                     }
                 )
             }
+        }
+        
+        // Standings Dialog with TMB buttons
+        if (showStandingsDialog) {
+            StandingsDialog(
+                uiState = uiState,
+                method = method,
+                onDismiss = { showStandingsDialog = false },
+                onMatchResult = viewModel::submitMatchResult,
+                onShowCriteriaDialog = { showCriteriaDialog = it }
+            )
         }
     }
 }
@@ -319,12 +328,88 @@ internal fun TeamCardContent(
 private fun StandingsDialog(
     uiState: RankingViewModel.RankingUiState,
     method: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onMatchResult: (Long, Long?) -> Unit = { _, _ -> },
+    onShowCriteriaDialog: (Boolean) -> Unit = { }
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Puan Durumu") },
-        text = { Text("Puan durumu burada gösterilecek") },
+        text = { 
+            Column {
+                Text("Puan durumu burada gösterilecek") 
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // TMB BUTONLARI - Bitişik Layout (3 Mavi + 3 Kırmızı)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start // Boşluk yok
+                ) {
+                    // 3 MAVİ BUTON
+                    Button(
+                        onClick = { onMatchResult(0, null) }, // Beraberlik
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("BERABERLİK", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
+                    Button(
+                        onClick = { /* VS menü */ },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("VS", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
+                    Button(
+                        onClick = { /* Skor gir */ },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("SKOR GİR", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
+                    // 3 KIRMIZI BUTON
+                    Button(
+                        onClick = { onShowCriteriaDialog(true) },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("KRİTER", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
+                    Button(
+                        onClick = { /* TAM EKRAN */ },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("TAM EKRAN", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
+                    Button(
+                        onClick = { /* MENÜ */ },
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("MENÜ", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        },
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text("Kapat")
@@ -368,10 +453,7 @@ private fun InitialRankingContent(
         
         Button(
             onClick = {
-                android.util.Log.d("InitialRankingContent", "🔥 Turnuvayı Başlat butonuna basıldı!")
-                android.util.Log.d("InitialRankingContent", "🔍 Önceki state: showMatchingsList=${uiState.showMatchingsList}")
                 viewModel.startScoring()
-                android.util.Log.d("InitialRankingContent", "🏁 startScoring() çağırıldı!")
             },
             modifier = Modifier.padding(16.dp)
         ) {
@@ -467,14 +549,18 @@ private fun MatchingsListContent(
                         AdvancedMatchCard(
                             match = match,
                             songs = uiState.allSongs,
-                            onClick = { viewModel.selectMatch(match) }
+                            onClick = { 
+                                viewModel.selectMatch(match)
+                            }
                         )
                     } else {
                         // Basit görünüm - Küçük kartlar
                         SimpleMatchCard(
                             match = match,
                             songs = uiState.allSongs,
-                            onClick = { viewModel.selectMatch(match) }
+                            onClick = { 
+                                viewModel.selectMatch(match)
+                            }
                         )
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -485,8 +571,9 @@ private fun MatchingsListContent(
                 Button(
                     onClick = {
                         // İlk maçı seç ve puanlama ekranına geç
-                        if (uiState.matchingsList.isNotEmpty()) {
-                            viewModel.selectMatch(uiState.matchingsList.first())
+                        val firstMatch = uiState.matchingsList.firstOrNull()
+                        if (firstMatch != null) {
+                            viewModel.selectMatch(firstMatch)
                         }
                     },
                     modifier = Modifier
@@ -514,13 +601,29 @@ private fun SimpleMatchCard(
     songs: List<Song>,
     onClick: () -> Unit
 ) {
-    val song1 = songs.find { it.id == match.songId1 }
-    val song2 = songs.find { it.id == match.songId2 }
+    // CRASH-SAFE song lookup
+    val song1 = try {
+        if (match.songId1 > 0 && songs.isNotEmpty()) {
+            songs.find { it.id == match.songId1 }?.takeIf { it.name.isNotBlank() }
+        } else null
+    } catch (e: Exception) {
+        null
+    }
+    
+    val song2 = try {
+        if (match.songId2 > 0 && songs.isNotEmpty()) {
+            songs.find { it.id == match.songId2 }?.takeIf { it.name.isNotBlank() }
+        } else null
+    } catch (e: Exception) {
+        null
+    }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { 
+                onClick()
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -588,7 +691,9 @@ private fun AdvancedMatchCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() },
+            .clickable { 
+                onClick()
+            },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -630,32 +735,10 @@ private fun AdvancedMatchCard(
                         )
                     }
 
-                    // Tablo verileri - CRASH-SAFE
-                    val jsonData1 = remember(song1?.csvData) {
-                        try {
-                            song1?.csvData?.let { csvData ->
-                                if (csvData.isNotBlank() && csvData != "null" && csvData.length > 2) {
-                                    android.util.Log.d("AdvancedMatchCard", "🔍 Song1 JSON parsing: $csvData")
-                                    val data = org.json.JSONObject(csvData)
-                                    val keys = data.keys().asSequence().toList().filter { it != "name" }
-                                    keys.take(5).mapNotNull { key -> 
-                                        try {
-                                            val value = data.optString(key, "")
-                                            if (value.isNotEmpty()) key to value else null
-                                        } catch (e: Exception) {
-                                            android.util.Log.e("AdvancedMatchCard", "Key parsing error: $key", e)
-                                            null
-                                        }
-                                    }
-                                } else null
-                            }
-                        } catch (e: Exception) {
-                            android.util.Log.e("AdvancedMatchCard", "JSON parsing error for song1", e)
-                            null
-                        }
-                    }
+                    // JSON PARSING DISABLED FOR CRASH PREVENTION
+                    val jsonData1: List<Pair<String, String>> = emptyList()
 
-                    if (jsonData1?.isNotEmpty() == true) {
+                    if (jsonData1.isNotEmpty()) {
                         jsonData1.forEach { (key, value) ->
                             Row(
                                 modifier = Modifier
@@ -731,32 +814,10 @@ private fun AdvancedMatchCard(
                         )
                     }
 
-                    // Tablo verileri - CRASH-SAFE
-                    val jsonData2 = remember(song2?.csvData) {
-                        try {
-                            song2?.csvData?.let { csvData ->
-                                if (csvData.isNotBlank() && csvData != "null" && csvData.length > 2) {
-                                    android.util.Log.d("AdvancedMatchCard", "🔍 Song2 JSON parsing: $csvData")
-                                    val data = org.json.JSONObject(csvData)
-                                    val keys = data.keys().asSequence().toList().filter { it != "name" }
-                                    keys.take(5).mapNotNull { key -> 
-                                        try {
-                                            val value = data.optString(key, "")
-                                            if (value.isNotEmpty()) key to value else null
-                                        } catch (e: Exception) {
-                                            android.util.Log.e("AdvancedMatchCard", "Key parsing error: $key", e)
-                                            null
-                                        }
-                                    }
-                                } else null
-                            }
-                        } catch (e: Exception) {
-                            android.util.Log.e("AdvancedMatchCard", "JSON parsing error for song2", e)
-                            null
-                        }
-                    }
+                    // JSON PARSING DISABLED FOR CRASH PREVENTION
+                    val jsonData2: List<Pair<String, String>> = emptyList()
 
-                    if (jsonData2?.isNotEmpty() == true) {
+                    if (jsonData2.isNotEmpty()) {
                         jsonData2.forEach { (key, value) ->
                             Row(
                                 modifier = Modifier
@@ -1062,15 +1123,12 @@ private fun MatchBasedContent(
     onMatchResultWithScore: (Long, Long?, Int?, Int?) -> Unit = { id, winner, _, _ -> onMatchResult(id, winner) },
     onComplete: () -> Unit,
     showCriteriaDialog: Boolean = false,
-    onShowCriteriaDialog: (Boolean) -> Unit = {}
+    onShowCriteriaDialog: (Boolean) -> Unit = {},
+    onShowStandingsDialog: (Boolean) -> Unit = {}
 ) {
-    android.util.Log.d("MatchBasedContent", "🎯 Method: $method, showInitialRanking: ${uiState.showInitialRanking}, showMatchingsList: ${uiState.showMatchingsList}, isComplete: ${uiState.isComplete}, currentMatch: ${uiState.currentMatch?.id}")
-    android.util.Log.d("MatchBasedContent", "🔍 matchingsList size: ${uiState.matchingsList.size}")
 
     // İlk sıralama tablosunu göster (EMRE_CORRECT için)
-    android.util.Log.d("MatchBasedContent", "🔍 EMRE_CORRECT check: method=$method, showInitialRanking=${uiState.showInitialRanking}")
     if (method == "EMRE_CORRECT" && uiState.showInitialRanking) {
-        android.util.Log.d("MatchBasedContent", "✅ InitialRankingContent gösteriliyor!")
         InitialRankingContent(
             uiState = uiState,
             method = method,
@@ -1081,7 +1139,6 @@ private fun MatchBasedContent(
 
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
-        android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT - Liste boyutu: ${uiState.matchingsList.size}")
         MatchingsListContent(
             uiState = uiState,
             viewModel = viewModel
@@ -1187,73 +1244,6 @@ private fun MatchBasedContent(
                 }
             }
 
-            // 4. ORTA BUTON ÇUBUĞU (Sabit - Tam ekran ortasında)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                // Sol: BERABERLIK butonu (büyük)
-                Button(
-                    onClick = {
-                        onMatchResult(match.id, null)
-                    },
-                    modifier = Modifier.weight(2f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4CAF50)
-                    ),
-                    shape = RectangleShape
-                ) {
-                    Text("BERABERLİK", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                }
-
-                // Orta: VS butonu (popup trigger)
-                Button(
-                    onClick = { showVSPopup = true },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFFC107)
-                    ),
-                    shape = RectangleShape
-                ) {
-                    Text("VS", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                }
-
-                // Sağ: İki buton (SKOR GİR + KRİTER)
-                Column(
-                    modifier = Modifier.weight(2f),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            // Skor gir dialog açılacak
-                        },
-                        modifier = Modifier.fillMaxWidth().height(24.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4CAF50)
-                        ),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(2.dp)
-                    ) {
-                        Text("SKOR GİR", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-
-                    Button(
-                        onClick = {
-                            onShowCriteriaDialog(true)
-                        },
-                        modifier = Modifier.fillMaxWidth().height(24.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF4CAF50)
-                        ),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(2.dp)
-                    ) {
-                        Text("KRİTER", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
 
             // 5. TAKIM 2 BAŞLIĞI (Sabit)
             Box(
@@ -1309,7 +1299,10 @@ private fun MatchBasedContent(
                             TextButton(onClick = { showVSPopup = false }) {
                                 Text("Fikstür")
                             }
-                            TextButton(onClick = { showVSPopup = false }) {
+                            TextButton(onClick = { 
+                                showVSPopup = false
+                                onShowStandingsDialog(true)
+                            }) {
                                 Text("Puan")
                             }
                         }

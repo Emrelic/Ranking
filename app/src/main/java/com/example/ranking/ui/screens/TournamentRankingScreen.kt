@@ -28,8 +28,6 @@ fun TournamentRankingScreen(
     viewModel: TournamentRankingViewModel = viewModel()
 ) {
     LaunchedEffect(tournamentId) {
-        android.util.Log.d("TournamentRankingScreen", "LaunchedEffect triggered for tournamentId: $tournamentId")
-        android.util.Log.d("TournamentRankingScreen", "ViewModel class: ${viewModel::class.java.simpleName}")
         viewModel.initializeTournament(tournamentId)
     }
     
@@ -48,7 +46,6 @@ fun TournamentRankingScreen(
                 if (parts.size >= 3) {
                     val listId = parts[1].toLongOrNull() ?: 0L
                     val systemType = parts[2]
-                    android.util.Log.d("TournamentRankingScreen", "Redirecting to RankingScreen: listId=$listId, systemType=$systemType")
                     onNavigateToRanking(listId, systemType)
                 }
             }

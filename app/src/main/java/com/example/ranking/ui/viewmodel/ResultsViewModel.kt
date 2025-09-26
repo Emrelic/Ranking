@@ -320,12 +320,10 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                 val archiveId = repository.saveArchive(archive)
                 
                 // Log success
-                android.util.Log.d("ResultsViewModel", "Archive saved successfully: $archiveName with ID: $archiveId")
                 _archiveStatus.value = ArchiveStatus.Success(archiveName)
                 
             } catch (e: Exception) {
                 // Handle archiving error
-                android.util.Log.e("ResultsViewModel", "Archive failed: ${e.message}", e)
                 e.printStackTrace()
                 _archiveStatus.value = ArchiveStatus.Error("Arşivleme hatası: ${e.message}")
             }

@@ -82,16 +82,25 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private val _uiState = MutableStateFlow(RankingUiState())
     val uiState: StateFlow<RankingUiState> = _uiState.asStateFlow()
     
+    @Volatile
     private var songs: List<Song> = emptyList()
     private var currentMethod: String = ""
     private var currentListId: Long = 0L
+    
+    // Thread-safe song access
+    private fun getSafeSongs(): List<Song> {
+        return try {
+            songs.takeIf { it.isNotEmpty() } ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
     private var directScores: MutableMap<Long, Double> = mutableMapOf()
     private var currentSongIndex: Int = 0
     private var currentVotingSession: VotingSession? = null
     private var currentPairingMethod: com.example.ranking.data.EmrePairingMethod = com.example.ranking.data.EmrePairingMethod.SEQUENTIAL
     
     fun initializeRanking(listId: Long, method: String, pairingMethodName: String = "SEQUENTIAL") {
-        android.util.Log.d("RankingViewModel", "initializeRanking called - ListId: $listId, Method: $method, PairingMethod: $pairingMethodName")
         currentListId = listId
         currentMethod = method
         currentPairingMethod = try {
@@ -111,12 +120,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     repository.getLeagueSettings(listId, method)
                 } else null
                 
-                android.util.Log.d("RankingViewModel", "Getting songs for listId: $listId")
                 repository.getSongsByListId(listId).collect { songList ->
-                    android.util.Log.d("RankingViewModel", "Songs received: ${songList.size}")
                     songs = songList
                     if (songs.isNotEmpty()) {
-                        android.util.Log.d("RankingViewModel", "Songs not empty, proceeding with initialization")
                         // Load completed scores if resuming a session
                         val completedScores = if (activeSession != null) {
                             val scores = votingScoreDao.getScoresForSessionSync(activeSession.id)
@@ -136,43 +142,33 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         
                         if (activeSession != null) {
                             // Resume existing session
-                            android.util.Log.d("RankingViewModel", "🔄 RESUME SESSION çağırılıyor - Session ID: ${activeSession.id}")
                             resumeSession(activeSession)
                         } else {
                             // Start new session
-                            android.util.Log.d("RankingViewModel", "🎯 Method seçimi: '$method'")
                             when (method) {
                                 "DIRECT_SCORING" -> {
-                                    android.util.Log.d("RankingViewModel", "✅ DIRECT_SCORING çağırılıyor")
                                     initializeDirectScoring()
                                 }
                                 "LEAGUE" -> {
-                                    android.util.Log.d("RankingViewModel", "✅ LEAGUE çağırılıyor")
                                     initializeLeague()
                                 }
                                 "ELIMINATION" -> {
-                                    android.util.Log.d("RankingViewModel", "✅ ELIMINATION çağırılıyor")
                                     initializeElimination()
                                 }
                                 "FULL_ELIMINATION" -> {
-                                    android.util.Log.d("RankingViewModel", "✅ FULL_ELIMINATION çağırılıyor")
                                     initializeFullElimination()
                                 }
                                 "SWISS" -> {
-                                    android.util.Log.d("RankingViewModel", "✅ SWISS çağırılıyor")
                                     initializeSwiss()
                                 }
                                 "EMRE_CORRECT" -> {
-                                    android.util.Log.d("RankingViewModel", "✅ EMRE_CORRECT çağırılıyor")
                                     initializeEmre()
                                 }
                                 else -> {
-                                    android.util.Log.e("RankingViewModel", "❌ Bilinmeyen method: '$method'")
                                 }
                             }
                         }
                     } else {
-                        android.util.Log.w("RankingViewModel", "Songs list is empty!")
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             error = "Şarkı listesi boş!"
@@ -204,13 +200,22 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             return
         }
         
-        val currentSong = songs[currentSongIndex]
+        val safeSongs = getSafeSongs()
+        if (safeSongs.isEmpty() || currentSongIndex >= safeSongs.size) {
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = "Takım listesi erişilemiyor"
+            )
+            return
+        }
+        
+        val currentSong = safeSongs[currentSongIndex]
         _uiState.value = _uiState.value.copy(
             isLoading = false,
             currentSong = currentSong,
             currentIndex = currentSongIndex,
-            totalCount = songs.size,
-            progress = currentSongIndex.toFloat() / songs.size
+            totalCount = safeSongs.size,
+            progress = currentSongIndex.toFloat() / safeSongs.size
         )
     }
     
@@ -277,34 +282,36 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private fun initializeEmre() {
         viewModelScope.launch {
             try {
-                android.util.Log.d("RankingViewModel", "initializeEmre başlatıldı - ListId: $currentListId, Method: $currentMethod")
+                // Critical safety check first
+                val safeSongs = getSafeSongs()
+                if (safeSongs.isEmpty()) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Takım listesi henüz yüklenmedi. Lütfen bekleyin."
+                    )
+                    return@launch
+                }
                 
                 repository.clearMatches(currentListId, currentMethod)
-                android.util.Log.d("RankingViewModel", "Eski maçlar temizlendi")
                 
                 // Session oluştur
                 createOrUpdateSession()
-                android.util.Log.d("RankingViewModel", "Session oluşturuldu")
                 
                 // Doğru Emre usulü sistem başlatma
-                emreState = EmreSystemCorrect.initializeEmreTournament(songs)
-                android.util.Log.d("RankingViewModel", "Emre tournament initialized, songs count: ${songs.size}")
-                android.util.Log.d("RankingViewModel", "EmreState: isComplete=${emreState?.isComplete}, currentRound=${emreState?.currentRound}, teams=${emreState?.teams?.size}")
+                emreState = EmreSystemCorrect.initializeEmreTournament(safeSongs)
                 
                 // İLK SIRALAMA TABLOSUNU GÖSTER - Henüz eşleştirme yapmayacağız
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     showInitialRanking = true,
                     emreState = emreState,
-                    allSongs = songs,
+                    allSongs = safeSongs,
                     currentMatch = null
                 )
-                android.util.Log.d("RankingViewModel", "İlk sıralama tablosu gösteriliyor")
                 return@launch // Burada dur, kullanıcı butona basınca devam et
                 
                 
             } catch (e: Exception) {
-                android.util.Log.e("RankingViewModel", "initializeEmre error: ${e.message}", e)
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     error = "Başlatma hatası: ${e.message}"
@@ -332,59 +339,55 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     fun startScoring() {
-        android.util.Log.d("RankingViewModel", "🎯 startScoring() ÇAĞRILDI!")
-        android.util.Log.d("RankingViewModel", "🔍 currentMethod: '$currentMethod'")
         viewModelScope.launch {
             // EMRE_CORRECT sistemi için logic
-            android.util.Log.d("RankingViewModel", "📝 Method kontrol ediliyor...")
 
             if (currentMethod == "EMRE_CORRECT") {
-                android.util.Log.d("RankingViewModel", "✅ EMRE_CORRECT sistemi - İlk tur eşleştirmelerini oluşturuyorum...")
-                android.util.Log.d("RankingViewModel", "🔍 emreState null mu: ${emreState == null}")
-                if (emreState != null) {
-                    android.util.Log.d("RankingViewModel", "🔍 emreState teams: ${emreState!!.teams.size}")
-                }
 
                 // EMRE_CORRECT için önce eşleştirmeler listesini oluştur ve göster
                 createNextEmreRound(1)
             } else {
-                android.util.Log.d("RankingViewModel", "✅ Diğer sistem ($currentMethod) - MatchingsList gizliyorum...")
                 // Diğer sistemler için eşleştirmeler listesini gizle
                 _uiState.value = _uiState.value.copy(showMatchingsList = false)
                 loadNextMatch()
             }
 
-            android.util.Log.d("RankingViewModel", "🏁 startScoring() tamamlandı!")
         }
     }
     
     fun selectMatch(match: Match) {
-        android.util.Log.d("RankingViewModel", "🎯 Maç seçildi: ${match.id} - Song1: ${match.songId1}, Song2: ${match.songId2}")
+        android.util.Log.d("RANKING_DEBUG", "selectMatch() çağırıldı - Match ID: ${match.id}")
+        
         viewModelScope.launch {
-            val song1 = songs.find { it.id == match.songId1 }
-            val song2 = songs.find { it.id == match.songId2 }
-            
-            _uiState.value = _uiState.value.copy(
-                showMatchingsList = false,
-                currentMatch = match,
-                song1 = song1,
-                song2 = song2
-            )
+            try {
+                // Seçilen maçı current match olarak ayarla
+                _uiState.value = _uiState.value.copy(
+                    currentMatch = match,
+                    showMatchingsList = false, // Eşleştirmeler listesini gizle
+                    showInitialRanking = false
+                )
+                
+                // Takım bilgilerini yükle
+                val song1 = songs.find { it.id == match.songId1 }
+                val song2 = songs.find { it.id == match.songId2 }
+                
+                _uiState.value = _uiState.value.copy(
+                    song1 = song1,
+                    song2 = song2
+                )
+                
+                android.util.Log.d("RANKING_DEBUG", "selectMatch() tamamlandı - Takım 1: ${song1?.name}, Takım 2: ${song2?.name}")
+                
+            } catch (e: Exception) {
+                android.util.Log.e("RANKING_DEBUG", "selectMatch() hatası: ${e.message}", e)
+            }
         }
     }
     
     private suspend fun loadNextMatch() {
-        android.util.Log.d("RankingViewModel", "🔍 loadNextMatch BAŞLADI!")
-        android.util.Log.d("RankingViewModel", "🔍 currentListId: $currentListId, currentMethod: $currentMethod")
         val nextMatch = repository.getNextUncompletedMatch(currentListId, currentMethod)
         val (completed, total) = repository.getMatchProgress(currentListId, currentMethod)
-        android.util.Log.d("RankingViewModel", "🔍 NextMatch: ${nextMatch != null}, Completed: $completed, Total: $total")
         
-        if (nextMatch != null) {
-            android.util.Log.d("RankingViewModel", "🔍 NextMatch found: ID=${nextMatch.id}, Song1=${nextMatch.songId1}, Song2=${nextMatch.songId2}, Round=${nextMatch.round}")
-        } else {
-            android.util.Log.w("RankingViewModel", "🔍 NextMatch is NULL!")
-        }
         
         if (nextMatch == null) {
             // Check if we need more rounds (for Swiss, Emre, or Elimination)
@@ -426,9 +429,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             return
         }
         
-        val song1 = songs.find { it.id == nextMatch.songId1 }
-        val song2 = songs.find { it.id == nextMatch.songId2 }
-        android.util.Log.d("RankingViewModel", "🔍 Song1: ${song1?.name ?: "NULL"}, Song2: ${song2?.name ?: "NULL"}")
+        val safeSongs = getSafeSongs()
+        val song1 = safeSongs.find { it.id == nextMatch.songId1 }
+        val song2 = safeSongs.find { it.id == nextMatch.songId2 }
         
         // Save current match state for Swiss system (real-time persistence)
         if (currentMethod == "SWISS") {
@@ -442,8 +445,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 
                 // Save complete fixture state
                 val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
-                val swissStandings = RankingEngine.createSwissStandingsFromMatches(songs, allMatches.filter { it.isCompleted })
-                val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
+                val swissStandings = RankingEngine.createSwissStandingsFromMatches(safeSongs, allMatches.filter { it.isCompleted })
+                val maxRounds = RankingEngine.getSwissRoundCount(safeSongs.size)
                 
                 repository.saveCompleteFixture(
                     sessionId = session.id,
@@ -455,7 +458,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         
-        android.util.Log.d("RankingViewModel", "🔍 UI State güncellemesi yapılacak - Match ID: ${nextMatch.id}")
         _uiState.value = _uiState.value.copy(
             isLoading = false,
             currentMatch = nextMatch,
@@ -468,7 +470,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
             showInitialRanking = false  // İlk sıralama tablosunu da gizle
         )
-        android.util.Log.d("RankingViewModel", "🔍 UI State güncellendi! currentMatch null mu: ${_uiState.value.currentMatch == null}")
     }
     
     private suspend fun createNextSwissRound(round: Int) {
@@ -514,53 +515,45 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
      * İlk eşleştirmeleri yap - Kullanıcı butona bastığında çağrılır
      */
     fun createFirstRoundMatches() {
-        android.util.Log.d("RankingViewModel", "🔥 createFirstRoundMatches ÇAĞRILDI!")
+        android.util.Log.d("CRASH_DEBUG", "createFirstRoundMatches() BAŞLADI")
         viewModelScope.launch {
             try {
-                android.util.Log.d("RankingViewModel", "📝 EmreState kontrol ediliyor...")
+                android.util.Log.d("CRASH_DEBUG", "createFirstRoundMatches() viewModelScope içinde")
+                // Critical safety checks
+                val safeSongs = getSafeSongs()
+                if (safeSongs.isEmpty()) {
+                    _uiState.value = _uiState.value.copy(error = "Takım listesi henüz yüklenmedi")
+                    return@launch
+                }
+                
                 val currentState = emreState
                 if (currentState == null) {
-                    android.util.Log.e("RankingViewModel", "❌ EmreState NULL!")
                     _uiState.value = _uiState.value.copy(error = "EmreState bulunamadı")
                     return@launch
                 }
                 
-                android.util.Log.d("RankingViewModel", "✅ EmreState mevcut - currentRound: ${currentState.currentRound}")
-                android.util.Log.d("RankingViewModel", "✅ Songs count: ${songs.size}")
-                android.util.Log.d("RankingViewModel", "✅ CurrentPairingMethod: $currentPairingMethod")
                 
                 // İlk tur eşleştirmesini yap - YENİ HİBRİT SİSTEM kullan
-                android.util.Log.d("RankingViewModel", "🚀 YENİ HİBRİT SİSTEM ile eşleştirme yapılıyor...")
                 val pairingResult = EmreSystemCorrect.createHybridPairingSystem(currentState)
-                android.util.Log.d("RankingViewModel", "🎯 EmreSystemCorrect sonuç: ${pairingResult.matches.size} maç")
                 
-                pairingResult.matches.forEachIndexed { index, match ->
-                    android.util.Log.d("RankingViewModel", "Maç $index: ${match.songId1} vs ${match.songId2}")
-                }
                 
-                android.util.Log.d("RankingViewModel", "🔍 PairingResult - matches: ${pairingResult.matches.size}, canContinue: ${pairingResult.canContinue}")
                 
                 if (pairingResult.matches.isNotEmpty()) {
-                    android.util.Log.d("RankingViewModel", "💾 ${pairingResult.matches.size} maç veritabanına kaydediliyor...")
                     repository.createMatches(pairingResult.matches)
-                    android.util.Log.d("RankingViewModel", "✅ Maçlar kaydedildi!")
                     
                     // Eşleştirmeler listesini göster
-                    android.util.Log.d("RankingViewModel", "📋 Eşleştirmeler listesi gösteriliyor...")
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,
                         showMatchingsList = true,
                         matchingsList = pairingResult.matches.sortedBy { it.matchNumber }
                     )
                 } else {
-                    android.util.Log.w("RankingViewModel", "❌ Hiç maç oluşturulamadı!")
                     _uiState.value = _uiState.value.copy(
                         error = "Eşleştirme oluşturulamadı"
                     )
                 }
                 
             } catch (e: Exception) {
-                android.util.Log.e("RankingViewModel", "💥 createFirstRoundMatches HATA: ${e.message}", e)
                 _uiState.value = _uiState.value.copy(
                     error = "Eşleştirme hatası: ${e.message}"
                 )
@@ -569,13 +562,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     }
     
     private suspend fun createNextEmreRound(round: Int) {
-        android.util.Log.d("RankingViewModel", "🎯 createNextEmreRound BAŞLADI - round: $round")
         try {
             val currentState = emreState ?: run {
-                android.util.Log.e("RankingViewModel", "❌ emreState NULL! return ediliyor")
                 return
             }
-            android.util.Log.d("RankingViewModel", "✅ emreState mevcut, devam ediliyor...")
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             
             // Tamamlanmış maçları işle ve yeni state oluştur
@@ -602,10 +592,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 repository.createMatches(pairingResult.matches)
                 
                 // Her turda eşleştirmeler listesini göster
-                android.util.Log.d("RankingViewModel", "📋 ${round}. tur eşleştirmeler listesi gösteriliyor...")
-                android.util.Log.d("RankingViewModel", "🔧 State güncelleniyor: showInitialRanking=false, showMatchingsList=true")
-                android.util.Log.d("RankingViewModel", "📋 Matches count: ${pairingResult.matches.size}")
-                android.util.Log.d("RankingViewModel", "🔧 currentMatch şu anda: ${_uiState.value.currentMatch?.id}")
                 
                 _uiState.value = _uiState.value.copy(
                     showInitialRanking = false,
@@ -616,14 +602,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     currentRound = round
                 )
                 
-                android.util.Log.d("RankingViewModel", "✅ State güncellemesi tamamlandı!")
-                android.util.Log.d("RankingViewModel", "🔧 YENİ STATE: showInitialRanking=${_uiState.value.showInitialRanking}, showMatchingsList=${_uiState.value.showMatchingsList}")
-                android.util.Log.d("RankingViewModel", "🔧 YENİ STATE: currentMatch=${_uiState.value.currentMatch?.id}, matchingsList.size=${_uiState.value.matchingsList.size}")
             } else {
                 completeRanking()
             }
         } catch (e: Exception) {
-            android.util.Log.e("RankingViewModel", "❌ createNextEmreRound ERROR: ${e.message}", e)
             _uiState.value = _uiState.value.copy(
                 error = "Emre round oluşturma hatası: ${e.message}"
             )
@@ -1270,7 +1252,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         )
                     } else {
                         // Tüm maçlar tamamlanmış ama turnuva bitmemiş - ilk sıralama tablosunu göster
-                        android.util.Log.d("RankingViewModel", "🔄 EMRE_CORRECT Resume: Tüm maçlar tamamlanmış, İlk sıralama tablosu gösteriliyor")
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
                             showInitialRanking = true,
@@ -1544,11 +1525,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 it.isCompleted && it.round == completedMatch.round 
             }.sortedBy { it.matchNumber }
             
-            // Debug: Sıralama kontrolü
-            android.util.Log.d("RankingViewModel", "🔍 SIRALAMA DEBUG:")
-            currentRoundMatches.forEachIndexed { index, match ->
-                android.util.Log.d("RankingViewModel", "Match ${index + 1}: matchNumber=${match.matchNumber}, id=${match.id}")
-            }
             
             // Tur tamamlandı mı kontrol et  
             // ⚠️ KRİTİK: Expected matches sayısı takım sayısına göre sabittir
@@ -1558,7 +1534,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 (songs.size - 1) / 2  // Tek takım = 1 bye + eşleştirmeler
             }
             
-            android.util.Log.d("RankingViewModel", "🔍 Tur kontrolü: ${currentRoundMatches.size}/${expectedMatchesInRound} maç tamamlandı")
             
             if (currentRoundMatches.size >= expectedMatchesInRound) {
                 // Tur tamamlandı, sonuçları işle
@@ -1566,7 +1541,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 emreState = RankingEngine.processCorrectEmreResults(currentState, currentRoundMatches, byeTeam)
                 
                 // Tamamlanan turu fikstürde göster
-                android.util.Log.d("RankingViewModel", "📋 ${completedMatch.round}. tur maçları fikstürde gösteriliyor...")
                 _uiState.value = _uiState.value.copy(
                     showInitialRanking = false,
                     showMatchingsList = true,
@@ -1579,7 +1553,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 
                 if (!pairingResult.canContinue) {
                     // Turnuva tamamlandı - tamamlanan tur maçları zaten gösterildi
-                    android.util.Log.d("RankingViewModel", "🏁 Turnuva tamamlandı - Son tur maçları fikstürde görüntülendi")
                     completeRanking()
                     return
                 }
@@ -1589,7 +1562,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     
                     // Sonraki tur için eşleştirmeler listesini göster
                     val nextRoundNumber = emreState?.currentRound
-                    android.util.Log.d("RankingViewModel", "📋 ${nextRoundNumber}. tur eşleştirmeler listesi gösteriliyor...")
                     _uiState.value = _uiState.value.copy(
                         showInitialRanking = false,
                         showMatchingsList = true,
@@ -1614,7 +1586,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             try {
                 val currentState = _uiState.value
                 if (currentState.emreState == null) {
-                    android.util.Log.w("RankingViewModel", "EmreState is null, cannot generate test report")
                     return@launch
                 }
                 
@@ -1658,7 +1629,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 )
                 
             } catch (e: Exception) {
-                android.util.Log.e("RankingViewModel", "Test raporu oluşturma hatası: ${e.message}", e)
                 _uiState.value = _uiState.value.copy(
                     showTestReport = true,
                     testReportData = "Rapor oluşturulurken hata oluştu: ${e.message}",
@@ -1679,29 +1649,23 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     suspend fun getCriteriaForTournament(tournamentId: Long): List<String> {
         return withContext(Dispatchers.IO) {
             try {
-                android.util.Log.d("RankingViewModel", "🎯 getCriteriaForTournament called with tournamentId: $tournamentId")
                 // Tournament'tan criterionListId'yi al
                 val tournament = database.tournamentDao().getTournamentById(tournamentId)
-                android.util.Log.d("RankingViewModel", "🎯 Tournament found: ${tournament?.name}, criterionListId: ${tournament?.criterionListId}")
 
                 if (tournament?.criterionListId != null) {
                     // CriterionList'ten criteria JSON'unu al
                     val criterionList = database.criterionListDao().getCriterionListById(tournament.criterionListId)
-                    android.util.Log.d("RankingViewModel", "🎯 CriterionList found: ${criterionList?.name}, criteria: ${criterionList?.criteria}")
 
                     if (criterionList != null) {
                         // JSON'u parse et ve liste olarak döndür
                         val gson = Gson()
                         val criteriaArray = gson.fromJson(criterionList.criteria, Array<String>::class.java)
                         val result = criteriaArray.toList()
-                        android.util.Log.d("RankingViewModel", "🎯 Parsed criteria: $result")
                         return@withContext result
                     }
                 }
-                android.util.Log.d("RankingViewModel", "🎯 No criteria found, returning empty list")
                 emptyList()
             } catch (e: Exception) {
-                android.util.Log.e("RankingViewModel", "Criteria alma hatası: ${e.message}", e)
                 emptyList()
             }
         }
@@ -1720,7 +1684,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 null
             } catch (e: Exception) {
-                android.util.Log.e("RankingViewModel", "Criteria settings alma hatası: ${e.message}", e)
                 null
             }
         }
