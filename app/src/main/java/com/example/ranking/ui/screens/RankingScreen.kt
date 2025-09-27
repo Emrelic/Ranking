@@ -836,23 +836,299 @@ private fun CriteriaEvaluationDialog(
     song2: Song?,
     tournamentId: Long,
     onDismiss: () -> Unit,
-    onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit
+    onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit,
+    viewModel: RankingViewModel = viewModel()
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Kriter Değerlendirmesi") },
-        text = { Text("Kriter değerlendirmesi burada yapılacak") },
-        confirmButton = {
-            TextButton(onClick = { onSave(emptyMap(), "save_only") }) {
-                Text("Kaydet")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("İptal")
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier.fillMaxSize(), // TAM EKRAN
+            shape = RoundedCornerShape(0.dp), // KÖŞE YUVARLAĞI YOK
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                // Başlık
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Kriter Değerlendirmesi",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    TextButton(onClick = onDismiss) {
+                        Text("Kapat")
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Takım isimleri
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                MaterialTheme.colorScheme.primaryContainer,
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = song1?.name ?: "Takım 1",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                MaterialTheme.colorScheme.secondaryContainer,
+                                RoundedCornerShape(8.dp)
+                            )
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = song2?.name ?: "Takım 2",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Gerçek kriterler - Tournament'taki criterionListId'den alınıyor
+                val criteriaScores = remember { mutableStateMapOf<String, Pair<Double?, Double?>>() }
+                var criteria by remember { mutableStateOf<List<String>>(emptyList()) }
+
+                // Turnuva ID'sinden criteria'ları ve settings'leri al
+                var criteriaSettings by remember { mutableStateOf<Map<String, Any>?>(null) }
+                LaunchedEffect(tournamentId) {
+                    criteria = viewModel.getCriteriaForTournament(tournamentId)
+                    criteriaSettings = viewModel.getCriteriaSettingsForTournament(tournamentId)
+                }
+
+                // Eğer criteria bulunamazsa demo data kullan
+                val finalCriteria = if (criteria.isNotEmpty()) criteria else listOf(
+                    "Teknik Yetenek",
+                    "Yaratıcılık",
+                    "Performans",
+                    "Orijinallik",
+                    "Sahne Hâkimiyeti"
+                )
+
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(finalCriteria) { criterion ->
+                        CriterionEvaluationRow(
+                            criterionName = criterion,
+                            team1Name = song1?.name ?: "Takım 1",
+                            team2Name = song2?.name ?: "Takım 2",
+                            criteriaSettings = criteriaSettings,
+                            scores = criteriaScores[criterion],
+                            onScoresChange = { newScores ->
+                                criteriaScores[criterion] = newScores
+                            }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Alt butonlar
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text("İptal")
+                    }
+
+                    Button(
+                        onClick = { onSave(criteriaScores.toMap(), "save_only") },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(4.dp)
+                    ) {
+                        Text("Kaydet")
+                    }
+
+                    Button(
+                        onClick = {
+                            // Kazanan belirleme logiki
+                            val team1Total = criteriaScores.values.sumOf { it.first ?: 0.0 }
+                            val team2Total = criteriaScores.values.sumOf { it.second ?: 0.0 }
+                            val winner = when {
+                                team1Total > team2Total -> "team1"
+                                team2Total > team1Total -> "team2"
+                                else -> "draw"
+                            }
+                            onSave(criteriaScores.toMap(), winner)
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Text("Kazanan Belirle")
+                    }
+                }
             }
         }
-    )
+    }
+}
+
+@Composable
+private fun CriterionEvaluationRow(
+    criterionName: String,
+    team1Name: String,
+    team2Name: String,
+    criteriaSettings: Map<String, Any>?,
+    scores: Pair<Double?, Double?>?,
+    onScoresChange: (Pair<Double?, Double?>) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(4.dp),
+        border = BorderStroke(
+            width = if (scores?.first != null || scores?.second != null) 2.dp else 1.dp,
+            color = if (scores?.first != null || scores?.second != null)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.outline
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = criterionName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Puanlama sistemi (demo olarak dropdown kullanıyoruz)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Takım 1 skoru
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = team1Name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF1976D2),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ScoreDropdown(
+                        score = scores?.first,
+                        onScoreChange = { newScore ->
+                            onScoresChange(newScore to (scores?.second))
+                        }
+                    )
+                }
+
+                // Takım 2 skoru
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = team2Name,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF388E3C),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ScoreDropdown(
+                        score = scores?.second,
+                        onScoreChange = { newScore ->
+                            onScoresChange((scores?.first) to newScore)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScoreDropdown(
+    score: Double?,
+    onScoreChange: (Double?) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val scoreOptions = (1..10).map { it.toDouble() } + listOf(null)
+
+    Box {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier.width(80.dp),
+            shape = RoundedCornerShape(4.dp),
+            contentPadding = PaddingValues(4.dp)
+        ) {
+            Text(
+                text = score?.toInt()?.toString() ?: "—",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            scoreOptions.forEach { option ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = option?.toInt()?.toString() ?: "Seçim Yap",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    onClick = {
+                        onScoreChange(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -1272,21 +1548,59 @@ private fun MatchBasedContent(
                 }
             }
 
-            // 5. SABİT: BERABERLİK BUTONU
-            Button(
-                onClick = {
-                    onMatchResult(match.id, null) // null means draw
-                },
+            // 5. SABİT: 3 BUTON SATIRI (BERABERLİK + SKOR İŞLE + KRİTER)
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "BERABERLİK",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
+                // Beraberlik butonu
+                Button(
+                    onClick = {
+                        onMatchResult(match.id, null) // null means draw
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                ) {
+                    Text(
+                        text = "BERABERLİK",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                // Skor İşle butonu
+                Button(
+                    onClick = {
+                        // TODO: Skor işle dialog'unu aç
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
+                ) {
+                    Text(
+                        text = "SKOR İŞLE",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                // Kriter Değerlendirmesi butonu
+                Button(
+                    onClick = {
+                        onShowCriteriaDialog(true)
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+                ) {
+                    Text(
+                        text = "KRİTER",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
 
             // 6. SABİT: İKİNCİ TAKIM ETİKETİ
