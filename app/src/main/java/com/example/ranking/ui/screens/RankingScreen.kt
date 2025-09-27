@@ -66,8 +66,8 @@ fun RankingScreen(
                     .padding(16.dp)
             ) {
         TopAppBar(
-            title = { 
-                Text("Ranking")
+            title = {
+                Text(getMethodTitle(method))
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
@@ -1083,6 +1083,7 @@ private fun MatchBasedContent(
     onShowCriteriaDialog: (Boolean) -> Unit = {},
     onShowStandingsDialog: (Boolean) -> Unit = {}
 ) {
+    android.util.Log.d("MatchBasedContent", "🎯 Method: $method, showInitialRanking: ${uiState.showInitialRanking}, showMatchingsList: ${uiState.showMatchingsList}, isComplete: ${uiState.isComplete}, currentMatch: ${uiState.currentMatch?.id}")
 
     // İlk sıralama tablosunu göster (EMRE_CORRECT için)
     if (method == "EMRE_CORRECT" && uiState.showInitialRanking) {
@@ -1096,17 +1097,12 @@ private fun MatchBasedContent(
 
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
+        android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT")
         MatchingsListContent(
             uiState = uiState,
             viewModel = viewModel
         )
         return
-    }
-    
-    // EMRE_CORRECT için: currentMatch varsa puanlama ekranını göster
-    if (method == "EMRE_CORRECT" && uiState.currentMatch != null) {
-        // Normal puanlama ekranına geç - aşağıdaki koda devam et
-        android.util.Log.d("RANKING_DEBUG", "EMRE_CORRECT puanlama ekranı gösteriliyor - currentMatch: ${uiState.currentMatch?.id}")
     }
 
     if (uiState.isComplete) {
@@ -1129,30 +1125,23 @@ private fun MatchBasedContent(
     }
 
     uiState.currentMatch?.let { match ->
-        android.util.Log.d("RANKING_DEBUG", "Puanlama ekranı render başladı - Match: ${match.id}")
         var score1Text by remember { mutableStateOf("") }
         var score2Text by remember { mutableStateOf("") }
         val useScores = uiState.leagueSettings?.useScores ?: false
-        var showVSPopup by remember { mutableStateOf(false) }
-        android.util.Log.d("RANKING_DEBUG", "Puanlama ekranı state hazırlandı")
 
-        // 6 KATMANLI SABİT LAYOUT SİSTEMİ
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 1. TUR İLERLEME ÇUBUĞU (En üst, minimal padding)
-            android.util.Log.d("RANKING_DEBUG", "Column layout başladı")
+            // 1. ÜST BÖLÜM: Sıkıştırılmış ilerleme ve tur bilgisi
             Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             ) {
-                android.util.Log.d("RANKING_DEBUG", "Progress bar render - progress: ${uiState.progress}")
                 LinearProgressIndicator(
                     progress = { uiState.progress },
                     modifier = Modifier.fillMaxWidth()
                 )
-                android.util.Log.d("RANKING_DEBUG", "Progress bar tamamlandı")
 
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -1173,102 +1162,318 @@ private fun MatchBasedContent(
                 }
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // 2. TAKIM 1 BAŞLIĞI (Sabit)
-            Box(
+            // 3. ANA İÇERİK: Genişletilmiş takım kartları
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1976D2))
-                    .padding(12.dp),
-                contentAlignment = Alignment.Center
+                    .weight(1f)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = uiState.song1?.name?.uppercase() ?: "TAKIM 1",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    text = if (useScores) "Maç Skoru Girin" else "Hangisi daha iyi?",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
                 )
-            }
 
-            // 3. TAKIM 1 SCROLL PENCERESİ
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp) // Fixed height instead of weight
-                    .background(Color(0xFFE3F2FD))
-                    .padding(8.dp)
-            ) {
-                val song1 = uiState.song1 ?: Song(id = 0, name = "Takım 1", listId = 0)
-                android.util.Log.d("RANKING_DEBUG", "Song1 render - name: ${song1.name}")
-                TeamCardContent(
-                    song = song1,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // TAKIM KARTLARI: 3x büyütülmüş, scrollable container
+                if (useScores) {
+                    // Score input mode
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)  // Ana alanda tüm boş alanı kapla
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
+                            uiState.song1?.let { song1 ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        // BÜYÜK TABLO ALANI: 3x genişlik
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .fillMaxHeight()
+                                        ) {
+                                            TeamCardContent(
+                                                song = song1,
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(8.dp)
+                                            )
+                                        }
 
-            // 5. TAKIM 2 BAŞLIĞI (Sabit)
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF1976D2))
-                    .padding(12.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = uiState.song2?.name?.uppercase() ?: "TAKIM 2",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-
-            // 6. TAKIM 2 SCROLL PENCERESİ
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp) // Fixed height instead of weight
-                    .background(Color(0xFFE3F2FD))
-                    .padding(8.dp)
-            ) {
-                val song2 = uiState.song2 ?: Song(id = 0, name = "Takım 2", listId = 0)
-                android.util.Log.d("RANKING_DEBUG", "Song2 render - name: ${song2.name}")
-                TeamCardContent(
-                    song = song2,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            // VS POPUP DIALOG
-            if (showVSPopup) {
-                AlertDialog(
-                    onDismissRequest = { showVSPopup = false },
-                    title = { Text("Menü") },
-                    text = {
-                        Column {
-                            TextButton(onClick = { showVSPopup = false }) {
-                                Text("Durakla")
-                            }
-                            TextButton(onClick = { showVSPopup = false }) {
-                                Text("Sıfırla")
-                            }
-                            TextButton(onClick = { showVSPopup = false }) {
-                                Text("Fikstür")
-                            }
-                            TextButton(onClick = { 
-                                showVSPopup = false
-                                onShowStandingsDialog(true)
-                            }) {
-                                Text("Puan")
+                                        OutlinedTextField(
+                                            value = score1Text,
+                                            onValueChange = {
+                                                if (it.all { char -> char.isDigit() }) {
+                                                    score1Text = it
+                                                }
+                                            },
+                                            label = { Text("Skor") },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            modifier = Modifier.width(80.dp),
+                                            singleLine = true
+                                        )
+                                    }
+                                }
                             }
                         }
-                    },
-                    confirmButton = {
-                        TextButton(onClick = { showVSPopup = false }) {
-                            Text("Kapat")
+
+                        item {
+                            // Vertical VS text (V above S)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "V",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "S",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        item {
+                            uiState.song2?.let { song2 ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        // BÜYÜK TABLO ALANI: 3x genişlik
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .fillMaxHeight()
+                                        ) {
+                                            TeamCardContent(
+                                                song = song2,
+                                                modifier = Modifier
+                                                    .fillMaxSize()
+                                                    .padding(8.dp)
+                                            )
+                                        }
+
+                                        OutlinedTextField(
+                                            value = score2Text,
+                                            onValueChange = {
+                                                if (it.all { char -> char.isDigit() }) {
+                                                    score2Text = it
+                                                }
+                                            },
+                                            label = { Text("Skor") },
+                                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                            modifier = Modifier.width(80.dp),
+                                            singleLine = true
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        item {
+                            Button(
+                                onClick = {
+                                    val score1 = score1Text.toIntOrNull()
+                                    val score2 = score2Text.toIntOrNull()
+
+                                    if (score1 != null && score2 != null) {
+                                        val winner = when {
+                                            score1 > score2 -> uiState.song1?.id
+                                            score2 > score1 -> uiState.song2?.id
+                                            else -> null // Draw
+                                        }
+                                        onMatchResultWithScore(match.id, winner, score1, score2)
+                                        score1Text = ""
+                                        score2Text = ""
+                                    }
+                                },
+                                enabled = score1Text.toIntOrNull() != null && score2Text.toIntOrNull() != null,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Skoru Kaydet")
+                            }
                         }
                     }
-                )
+                } else {
+                    // Traditional winner selection mode - scrollable
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)  // Ana alanda tüm boş alanı kapla
+                            .fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        item {
+                            uiState.song1?.let { song1 ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
+                                        .clickable {
+                                            onMatchResult(match.id, song1.id)
+                                        },
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
+                                    ) {
+                                        // Header - Takım adı
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFF2196F3))
+                                                .padding(12.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = song1.name.uppercase(),
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        // BÜYÜK TABLO ALANI: 3x genişlik
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .fillMaxWidth()
+                                        ) {
+                                            TeamCardContent(
+                                                song = song1,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        item {
+                            // Vertical VS text (V above S)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "V",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "S",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        item {
+                            uiState.song2?.let { song2 ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(420.dp) // 3x büyütülmüş yükseklik (140dp * 3)
+                                        .clickable {
+                                            onMatchResult(match.id, song2.id)
+                                        },
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(16.dp)
+                                    ) {
+                                        // Header - Takım adı
+                                        Box(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFF2196F3))
+                                                .padding(12.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = song2.name.uppercase(),
+                                                style = MaterialTheme.typography.titleMedium,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        // BÜYÜK TABLO ALANI: 3x genişlik
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .fillMaxWidth()
+                                        ) {
+                                            TeamCardContent(
+                                                song = song2,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        item {
+                            // Draw button
+                            Button(
+                                onClick = {
+                                    onMatchResult(match.id, null) // null means draw
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                            ) {
+                                Text(
+                                    text = "BERABERLİK",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
     }
