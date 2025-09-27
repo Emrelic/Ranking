@@ -65,7 +65,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb logcat -s "EmreSystemCorrect"
 ```
 
-## Son Durum (2025-09-27)
+## Son Durum (2025-09-27) - STABİL VERSİYON MİLESTONE
 - 🎯 **Geliştirilmiş İsviçre Sistemi tamamen çalışır durumda**
 - 🎯 **Alternating match numbering sistemi implementasyonu tamamlandı**
 - 🎯 **UI ordering ve voting sequence sorunları çözüldü**
@@ -78,6 +78,8 @@ adb logcat -s "EmreSystemCorrect"
 - ✅ **LazyColumn Infinite Height Constraint Fix TAMAMLANDI (2025-09-27)**
 - ✅ **Eşleştirmeler Listesi Render Sorunu Çözüldü (2025-09-27)**
 - ✅ **Puanlama Ekranı Restore Tamamlandı - Stable Commit'ten Winner Selection Butonları Geri Getirildi (2025-09-27)**
+- ✅ **3 Butonlu Puanlama Interface Tamamlandı - Beraberlik + Skor İşle + Kriter (2025-09-27)**
+- ✅ **Gelişmiş Kriter Dialog Restore Edildi - Switch Toggle + Comparative/Separate Scoring (2025-09-27)**
 
 ### ✅ TAMAMLANAN PUANLAMA EKRANI RESTORE (2025-09-27)
 
@@ -148,16 +150,26 @@ app/src/main/java/com/example/ranking/ui/screens/RankingScreen.kt
 - **Crash prevention**: Infinite height constraint hatası çözüldü
 - **Performance**: Lazy rendering ile optimize edildi
 
-## 🎯 SİSTEM DURUMU:
-- **Swiss system algoritması**: Stable ve test edilmiş
-- **Database structure**: Tam entegre ve optimize
-- **Kriter sistemi**: %100 tamamlandı ve APK deploy edildi
-- **3x Büyük Tablo Layout**: %100 tamamlandı ve APK deploy edildi
-- **Tablo editing sistemi**: Tam çalışır durumda
-- **TMB Butonları**: Skorboard ekranında bitişik layout ile %100 tamamlandı
+### ✅ STABİL VERSİYON MİLESTONE - PRODUCTION READY (2025-09-27)
+
+#### 🎯 ÇÖKMEYEN SİSTEM DURUMU:
+- **Swiss system algoritması**: Stable ve crash-proof test edilmiş
+- **Database structure**: v9 tam entegre ve optimize
+- **Kriter sistemi**: Gelişmiş dialog restore edildi, %100 çalışır
+- **3x Büyük Tablo Layout**: Scroll pencereli sistem perfect
+- **Puanlama Interface**: 3 butonlu tasarım (Beraberlik + Skor İşle + Kriter)
+- **TMB Butonları**: Skorboard ekranında bitişik layout
 - **Crash Prevention**: Ultra-defensive coding ile %100 crash-proof
-- **Puanlama Ekranı**: Stable commit'ten restore edildi, winner selection çalışır
-- **Production Status**: Tamamen kararlı, stable çalışan son versiyon (çökme problemi halloldu)
+- **LazyColumn Fix**: Infinite height constraint çözüldü
+- **Production Status**: STABİL CHECKPOINT - Çökmeyen + Kriter Karar Verilmiş
+
+#### 🚀 FİNAL MİLESTONE ÖZELLİKLERİ:
+- **Scroll Pencereli Puanlama**: 7 katmanlı layout, sağa/sola/yukarı/aşağı scroll
+- **Gelişmiş Kriter Dialog**: Switch toggle + comparative/separate scoring
+- **3 Butonlu Interface**: Beraberlik + Skor İşle + Kriter (eşit genişlik)
+- **Visual Feedback**: Aktif/pasif kriter border + takım renk kodlaması
+- **Database Integration**: Tournament settings + criteria real-time loading
+- **Memory Optimization**: Lazy rendering + defensive state management
 
 ---
 
