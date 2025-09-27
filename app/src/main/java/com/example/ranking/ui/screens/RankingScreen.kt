@@ -277,9 +277,9 @@ internal fun TeamCardContent(
     }
 
     if (jsonData != null) {
-        // CSV data display
+        // CSV data display - restore original LazyColumn with proper constraint handling
         LazyColumn(
-            modifier = modifier,
+            modifier = modifier.heightIn(max = 300.dp), // Add max height to prevent infinite constraint
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(jsonData) { (key, value) ->
@@ -469,6 +469,10 @@ private fun MatchingsListContent(
 ) {
     var isAdvancedView by remember { mutableStateOf(false) } // Basit görünüm varsayılan
 
+    // Debug logging
+    android.util.Log.d("RANKING_DEBUG", "MatchingsListContent render - matchingsList.size: ${uiState.matchingsList.size}")
+    android.util.Log.d("RANKING_DEBUG", "MatchingsList içeriği: ${uiState.matchingsList.map { "${it.id}:${it.matchNumber}" }}")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -537,20 +541,26 @@ private fun MatchingsListContent(
                 modifier = Modifier.padding(16.dp)
             )
         } else {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
+                    .height(400.dp), // Fixed height to prevent constraint issues
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                uiState.matchingsList.forEach { match ->
+                items(uiState.matchingsList) { match ->
+                    android.util.Log.d("RANKING_DEBUG", "Rendering match card: ${match.id}:${match.matchNumber}")
                     if (isAdvancedView) {
                         // Gelişmiş görünüm - Büyük tablo kartları
                         AdvancedMatchCard(
                             match = match,
                             songs = uiState.allSongs,
                             onClick = { 
-                                viewModel.selectMatch(match)
+                                try {
+                                    android.util.Log.d("RANKING_DEBUG", "AdvancedMatchCard onClick - Match: ${match.id}")
+                                    viewModel.selectMatch(match)
+                                } catch (e: Exception) {
+                                    android.util.Log.e("RANKING_DEBUG", "AdvancedMatchCard onClick CRASH: ${e.message}", e)
+                                }
                             }
                         )
                     } else {
@@ -559,37 +569,48 @@ private fun MatchingsListContent(
                             match = match,
                             songs = uiState.allSongs,
                             onClick = { 
-                                viewModel.selectMatch(match)
+                                try {
+                                    android.util.Log.d("RANKING_DEBUG", "SimpleMatchCard onClick - Match: ${match.id}")
+                                    viewModel.selectMatch(match)
+                                } catch (e: Exception) {
+                                    android.util.Log.e("RANKING_DEBUG", "SimpleMatchCard onClick CRASH: ${e.message}", e)
+                                }
                             }
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
-
-                // Puanlama Ekranına Geç butonu
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
+            }
+            
+            // Puanlama Ekranına Geç butonu - LazyColumn dışında
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    try {
+                        android.util.Log.d("RANKING_DEBUG", "Puanlama Ekranına Geç butonu tıklandı")
                         // İlk maçı seç ve puanlama ekranına geç
                         val firstMatch = uiState.matchingsList.firstOrNull()
                         if (firstMatch != null) {
+                            android.util.Log.d("RANKING_DEBUG", "İlk maç seçiliyor: ${firstMatch.id}")
                             viewModel.selectMatch(firstMatch)
+                        } else {
+                            android.util.Log.e("RANKING_DEBUG", "Hiçbir maç bulunamadı!")
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(
-                        text = "▶ Puanlama Ekranına Geç",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+                    } catch (e: Exception) {
+                        android.util.Log.e("RANKING_DEBUG", "Puanlama butonu CRASH: ${e.message}", e)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text(
+                    text = "▶ Puanlama Ekranına Geç",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -601,29 +622,13 @@ private fun SimpleMatchCard(
     songs: List<Song>,
     onClick: () -> Unit
 ) {
-    // CRASH-SAFE song lookup
-    val song1 = try {
-        if (match.songId1 > 0 && songs.isNotEmpty()) {
-            songs.find { it.id == match.songId1 }?.takeIf { it.name.isNotBlank() }
-        } else null
-    } catch (e: Exception) {
-        null
-    }
-    
-    val song2 = try {
-        if (match.songId2 > 0 && songs.isNotEmpty()) {
-            songs.find { it.id == match.songId2 }?.takeIf { it.name.isNotBlank() }
-        } else null
-    } catch (e: Exception) {
-        null
-    }
+    val song1 = songs.find { it.id == match.songId1 }
+    val song2 = songs.find { it.id == match.songId2 }
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { 
-                onClick()
-            },
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -691,9 +696,7 @@ private fun AdvancedMatchCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { 
-                onClick()
-            },
+            .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -735,39 +738,16 @@ private fun AdvancedMatchCard(
                         )
                     }
 
-                    // JSON PARSING DISABLED FOR CRASH PREVENTION
-                    val jsonData1: List<Pair<String, String>> = emptyList()
-
-                    if (jsonData1.isNotEmpty()) {
-                        jsonData1.forEach { (key, value) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFFE3F2FD))
-                                    .border(0.5.dp, Color(0xFF2196F3))
-                                    .padding(vertical = 4.dp, horizontal = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = key.take(20), // Limit text length
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF0D47A1),
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = value.take(30), // Limit text length
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF1976D2),
-                                    modifier = Modifier.weight(1f),
-                                    textAlign = TextAlign.End
-                                )
-                            }
-                        }
+                    // Restored original team card content
+                    if (song1 != null) {
+                        TeamCardContent(
+                            song = song1,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     } else {
                         // Safe fallback
                         Text(
-                            text = song1?.name ?: "Takım 1",
+                            text = "Takım 1",
                             modifier = Modifier.padding(8.dp),
                             color = Color(0xFF1976D2)
                         )
@@ -814,39 +794,16 @@ private fun AdvancedMatchCard(
                         )
                     }
 
-                    // JSON PARSING DISABLED FOR CRASH PREVENTION
-                    val jsonData2: List<Pair<String, String>> = emptyList()
-
-                    if (jsonData2.isNotEmpty()) {
-                        jsonData2.forEach { (key, value) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFFE3F2FD))
-                                    .border(0.5.dp, Color(0xFF2196F3))
-                                    .padding(vertical = 4.dp, horizontal = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = key.take(20), // Limit text length
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF0D47A1),
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Text(
-                                    text = value.take(30), // Limit text length
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF1976D2),
-                                    modifier = Modifier.weight(1f),
-                                    textAlign = TextAlign.End
-                                )
-                            }
-                        }
+                    // Restored original team card content
+                    if (song2 != null) {
+                        TeamCardContent(
+                            song = song2,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     } else {
                         // Safe fallback
                         Text(
-                            text = song2?.name ?: "Takım 2",
+                            text = "Takım 2",
                             modifier = Modifier.padding(8.dp),
                             color = Color(0xFF1976D2)
                         )
@@ -1145,6 +1102,12 @@ private fun MatchBasedContent(
         )
         return
     }
+    
+    // EMRE_CORRECT için: currentMatch varsa puanlama ekranını göster
+    if (method == "EMRE_CORRECT" && uiState.currentMatch != null) {
+        // Normal puanlama ekranına geç - aşağıdaki koda devam et
+        android.util.Log.d("RANKING_DEBUG", "EMRE_CORRECT puanlama ekranı gösteriliyor - currentMatch: ${uiState.currentMatch?.id}")
+    }
 
     if (uiState.isComplete) {
         Column(
@@ -1166,23 +1129,28 @@ private fun MatchBasedContent(
     }
 
     uiState.currentMatch?.let { match ->
+        android.util.Log.d("RANKING_DEBUG", "Puanlama ekranı render başladı - Match: ${match.id}")
         var score1Text by remember { mutableStateOf("") }
         var score2Text by remember { mutableStateOf("") }
         val useScores = uiState.leagueSettings?.useScores ?: false
         var showVSPopup by remember { mutableStateOf(false) }
+        android.util.Log.d("RANKING_DEBUG", "Puanlama ekranı state hazırlandı")
 
         // 6 KATMANLI SABİT LAYOUT SİSTEMİ
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
             // 1. TUR İLERLEME ÇUBUĞU (En üst, minimal padding)
+            android.util.Log.d("RANKING_DEBUG", "Column layout başladı")
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
             ) {
+                android.util.Log.d("RANKING_DEBUG", "Progress bar render - progress: ${uiState.progress}")
                 LinearProgressIndicator(
                     progress = { uiState.progress },
                     modifier = Modifier.fillMaxWidth()
                 )
+                android.util.Log.d("RANKING_DEBUG", "Progress bar tamamlandı")
 
                 Spacer(modifier = Modifier.height(2.dp))
 
@@ -1226,22 +1194,16 @@ private fun MatchBasedContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .height(200.dp) // Fixed height instead of weight
                     .background(Color(0xFFE3F2FD))
                     .padding(8.dp)
             ) {
-                uiState.song1?.let { song1 ->
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        item {
-                            TeamCardContent(
-                                song = song1,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                }
+                val song1 = uiState.song1 ?: Song(id = 0, name = "Takım 1", listId = 0)
+                android.util.Log.d("RANKING_DEBUG", "Song1 render - name: ${song1.name}")
+                TeamCardContent(
+                    song = song1,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
 
@@ -1261,26 +1223,20 @@ private fun MatchBasedContent(
                 )
             }
 
-            // 6. TAKIM 2 SCROLL PENCERESİ (Ekran dibine kadar)
+            // 6. TAKIM 2 SCROLL PENCERESİ
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .height(200.dp) // Fixed height instead of weight
                     .background(Color(0xFFE3F2FD))
                     .padding(8.dp)
             ) {
-                uiState.song2?.let { song2 ->
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        item {
-                            TeamCardContent(
-                                song = song2,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                }
+                val song2 = uiState.song2 ?: Song(id = 0, name = "Takım 2", listId = 0)
+                android.util.Log.d("RANKING_DEBUG", "Song2 render - name: ${song2.name}")
+                TeamCardContent(
+                    song = song2,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             // VS POPUP DIALOG

@@ -360,20 +360,17 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         
         viewModelScope.launch {
             try {
-                // Seçilen maçı current match olarak ayarla
-                _uiState.value = _uiState.value.copy(
-                    currentMatch = match,
-                    showMatchingsList = false, // Eşleştirmeler listesini gizle
-                    showInitialRanking = false
-                )
-                
                 // Takım bilgilerini yükle
                 val song1 = songs.find { it.id == match.songId1 }
                 val song2 = songs.find { it.id == match.songId2 }
                 
+                // Seçilen maçı current match olarak ayarla - showMatchingsList'i FALSE YAPMA!
                 _uiState.value = _uiState.value.copy(
+                    currentMatch = match,
                     song1 = song1,
-                    song2 = song2
+                    song2 = song2,
+                    showInitialRanking = false
+                    // showMatchingsList = false, // BUNU KALDIRDIM! 
                 )
                 
                 android.util.Log.d("RANKING_DEBUG", "selectMatch() tamamlandı - Takım 1: ${song1?.name}, Takım 2: ${song2?.name}")
