@@ -943,10 +943,10 @@ private fun CriteriaEvaluationDialog(
                             criterionName = criterion,
                             team1Name = song1?.name ?: "Takım 1",
                             team2Name = song2?.name ?: "Takım 2",
+                            currentScores = criteriaScores[criterion] ?: Pair(null, null),
                             criteriaSettings = criteriaSettings,
-                            scores = criteriaScores[criterion],
-                            onScoresChange = { newScores ->
-                                criteriaScores[criterion] = newScores
+                            onScoresChanged = { team1Score, team2Score ->
+                                criteriaScores[criterion] = Pair(team1Score, team2Score)
                             }
                         )
                     }
@@ -954,44 +954,41 @@ private fun CriteriaEvaluationDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Alt butonlar
+                // Alt butonlar - ESKİ DİKDÖRTGEN TASARIM
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedButton(
+                    Button(
                         onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(4.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp), // Daha küçük yükseklik
+                        shape = RoundedCornerShape(4.dp), // Dikdörtgen
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.outline
+                        )
                     ) {
-                        Text("İptal")
+                        Text(
+                            "İptal",
+                            fontSize = 12.sp // Küçük punto
+                        )
                     }
 
                     Button(
                         onClick = { onSave(criteriaScores.toMap(), "save_only") },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(4.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp), // Daha küçük yükseklik
+                        shape = RoundedCornerShape(4.dp), // Dikdörtgen
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
                     ) {
-                        Text("Kaydet")
-                    }
-
-                    Button(
-                        onClick = {
-                            // Kazanan belirleme logiki
-                            val team1Total = criteriaScores.values.sumOf { it.first ?: 0.0 }
-                            val team2Total = criteriaScores.values.sumOf { it.second ?: 0.0 }
-                            val winner = when {
-                                team1Total > team2Total -> "team1"
-                                team2Total > team1Total -> "team2"
-                                else -> "draw"
-                            }
-                            onSave(criteriaScores.toMap(), winner)
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(4.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text("Kazanan Belirle")
+                        Text(
+                            "Kaydet",
+                            fontSize = 12.sp // Küçük punto
+                        )
                     }
                 }
             }
@@ -1004,83 +1001,70 @@ private fun CriterionEvaluationRow(
     criterionName: String,
     team1Name: String,
     team2Name: String,
+    currentScores: Pair<Double?, Double?>,
     criteriaSettings: Map<String, Any>?,
-    scores: Pair<Double?, Double?>?,
-    onScoresChange: (Pair<Double?, Double?>) -> Unit
+    onScoresChanged: (Double?, Double?) -> Unit
 ) {
+    var isActive by remember { mutableStateOf(true) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        border = BorderStroke(
-            width = if (scores?.first != null || scores?.second != null) 2.dp else 1.dp,
-            color = if (scores?.first != null || scores?.second != null)
-                MaterialTheme.colorScheme.primary
-            else
-                MaterialTheme.colorScheme.outline
+        border = if (isActive) BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                else BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isActive) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f)
+                            else MaterialTheme.colorScheme.surface
         )
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
-                text = criterionName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Puanlama sistemi (demo olarak dropdown kullanıyoruz)
+            // Kriter başlığı ve aktif/pasif toggle
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Takım 1 skoru
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = team1Name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF1976D2),
-                        textAlign = TextAlign.Center
-                    )
+                Text(
+                    text = criterionName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                Switch(
+                    checked = isActive,
+                    onCheckedChange = { isActive = it }
+                )
+            }
 
-                    ScoreDropdown(
-                        score = scores?.first,
-                        onScoreChange = { newScore ->
-                            onScoresChange(newScore to (scores?.second))
-                        }
-                    )
-                }
+            if (isActive) {
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Takım 2 skoru
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = team2Name,
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium,
-                        color = Color(0xFF388E3C),
-                        textAlign = TextAlign.Center
-                    )
+                // Puanlama sistemi belirleme - settings'e göre
+                val scoringType = criteriaSettings?.get("scoringType") as? String ?: "separate"
+                val scoreScale = (criteriaSettings?.get("scoreScale") as? Number)?.toInt() ?: 10
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    ScoreDropdown(
-                        score = scores?.second,
-                        onScoreChange = { newScore ->
-                            onScoresChange((scores?.first) to newScore)
-                        }
-                    )
+                when (scoringType) {
+                    "comparative" -> {
+                        // Kıyaslamalı puanlama - Slider ile
+                        ComparativeScoring(
+                            team1Name = team1Name,
+                            team2Name = team2Name,
+                            scoreScale = scoreScale,
+                            currentScores = currentScores,
+                            onScoresChanged = onScoresChanged
+                        )
+                    }
+                    else -> {
+                        // Ayrı ayrı puanlama - Dropdown ile (varsayılan)
+                        SeparateScoring(
+                            team1Name = team1Name,
+                            team2Name = team2Name,
+                            scoreScale = scoreScale,
+                            currentScores = currentScores,
+                            onScoresChanged = onScoresChanged
+                        )
+                    }
                 }
             }
         }
@@ -1088,23 +1072,154 @@ private fun CriterionEvaluationRow(
 }
 
 @Composable
+private fun SeparateScoring(
+    team1Name: String,
+    team2Name: String,
+    scoreScale: Int,
+    currentScores: Pair<Double?, Double?>,
+    onScoresChanged: (Double?, Double?) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // Takım 1 puanlama
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = team1Name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF1976D2), // Mavi
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ScoreDropdown(
+                score = currentScores.first,
+                scoreScale = scoreScale,
+                onScoreChange = { newScore ->
+                    onScoresChanged(newScore, currentScores.second)
+                }
+            )
+        }
+
+        // Takım 2 puanlama
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = team2Name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF388E3C), // Yeşil
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ScoreDropdown(
+                score = currentScores.second,
+                scoreScale = scoreScale,
+                onScoreChange = { newScore ->
+                    onScoresChanged(currentScores.first, newScore)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ComparativeScoring(
+    team1Name: String,
+    team2Name: String,
+    scoreScale: Int,
+    currentScores: Pair<Double?, Double?>,
+    onScoresChanged: (Double?, Double?) -> Unit
+) {
+    var sliderValue by remember { mutableFloatStateOf(scoreScale / 2f) }
+
+    Column {
+        // Takım isimleri
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = team1Name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF1976D2) // Mavi
+            )
+            Text(
+                text = team2Name,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF388E3C) // Yeşil
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Slider
+        Slider(
+            value = sliderValue,
+            onValueChange = {
+                sliderValue = it
+                val team1Score = scoreScale - it.toDouble()
+                val team2Score = it.toDouble()
+                onScoresChanged(team1Score, team2Score)
+            },
+            valueRange = 0f..scoreScale.toFloat(),
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        // Skorlar
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "${(scoreScale - sliderValue).toInt()}",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1976D2)
+            )
+            Text(
+                text = "${sliderValue.toInt()}",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF388E3C)
+            )
+        }
+    }
+}
+
+@Composable
 private fun ScoreDropdown(
     score: Double?,
+    scoreScale: Int = 10,
     onScoreChange: (Double?) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val scoreOptions = (1..10).map { it.toDouble() } + listOf(null)
+    val scoreOptions = (1..scoreScale).map { it.toDouble() } + listOf(null)
 
     Box {
-        OutlinedButton(
+        Button(
             onClick = { expanded = true },
-            modifier = Modifier.width(80.dp),
-            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier
+                .width(80.dp)
+                .height(40.dp), // Dikdörtgen buton
+            shape = RoundedCornerShape(4.dp), // Minimal corner radius
             contentPadding = PaddingValues(4.dp)
         ) {
             Text(
                 text = score?.toInt()?.toString() ?: "—",
-                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 12.sp, // Küçük punto
                 fontWeight = FontWeight.Bold
             )
         }
@@ -1118,7 +1233,7 @@ private fun ScoreDropdown(
                     text = {
                         Text(
                             text = option?.toInt()?.toString() ?: "Seçim Yap",
-                            style = MaterialTheme.typography.bodyMedium
+                            fontSize = 12.sp
                         )
                     },
                     onClick = {
