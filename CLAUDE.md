@@ -242,12 +242,14 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **"*p"** = Bu prompt'u günlüğe ekle
 - **"*tmm"** = Bu özellik tamam, commit + push yap
 - **"*cmt"** = Commit yap
+- **"*cp"** = Commit + push yap (hızlı)
 - **"*ab"** = APK build et
 - **"*bty"** = Build et telefona yükle
 - **"*ty"** = Telefona yükle (APK install)
 - **"*yty"** = Ya telefona yüklenmemiş ya da yapılamamış - kullanıcı feedback komut
 - **"*nto"** = Not defterlerini oku
 - **"*mo"** = md uzantılı not defterlerini oku
+- **"*ncp"** = Not defterlerini oku, commit + push yap
 
 ## 🔄 BERABER ÇALIŞMA PROTOKOLÜ (*cpe - ÇALıŞMA PROTOKOLÜ EKLENDİ)
 1. **🔧 OTOMATİK BUILD & DEPLOY:** Her kod değişikliği sonrası ZORUNLU YAPILACAKLAR:
