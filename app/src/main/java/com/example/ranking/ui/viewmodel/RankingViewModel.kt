@@ -3,6 +3,7 @@ package com.example.ranking.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.example.ranking.data.*
 import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
@@ -737,6 +738,31 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 
                 loadNextMatch()
+            }
+        }
+    }
+    
+    fun submitDrawResult(matchId: Long, team1Score: Int, team2Score: Int) {
+        viewModelScope.launch {
+            val currentState = _uiState.value
+            currentState.currentMatch?.let { match ->
+                Log.d("RankingViewModel", "🎯 Skor girişi: Takım1=$team1Score, Takım2=$team2Score")
+                
+                val updatedMatch = match.copy(
+                    winnerId = null, // Beraberlik için null
+                    isCompleted = true,
+                    score1 = team1Score,
+                    score2 = team2Score
+                )
+                
+                try {
+                    repository.updateMatch(updatedMatch)
+                    Log.d("RankingViewModel", "✅ Skor güncellendi: ${match.songId1} vs ${match.songId2}")
+                    
+                    loadNextMatch()
+                } catch (e: Exception) {
+                    Log.e("RankingViewModel", "Error updating score result", e)
+                }
             }
         }
     }

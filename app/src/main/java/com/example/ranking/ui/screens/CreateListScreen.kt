@@ -40,7 +40,6 @@ fun CreateListScreen(
     // CSV parsing settings
     var csvDelimiter by remember { mutableStateOf(",") }
     var showCsvSettings by remember { mutableStateOf(false) }
-    var displayMode by remember { mutableStateOf("cards") } // "cards" or "table"
     
     val csvLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -194,28 +193,6 @@ fun CreateListScreen(
                                     
                                     Spacer(modifier = Modifier.height(16.dp))
                                     
-                                    Text(
-                                        text = "Görüntüleme Modu",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        FilterChip(
-                                            onClick = { displayMode = "cards" },
-                                            label = { Text("Takım Kartları") },
-                                            selected = displayMode == "cards"
-                                        )
-                                        FilterChip(
-                                            onClick = { displayMode = "table" },
-                                            label = { Text("Tablo Formatı") },
-                                            selected = displayMode == "table"
-                                        )
-                                    }
                                     
                                     Spacer(modifier = Modifier.height(8.dp))
                                     
@@ -263,35 +240,6 @@ fun CreateListScreen(
                         
                         Spacer(modifier = Modifier.height(16.dp))
                         
-                        // Display Mode seçimi
-                        if (showCsvSettings) {
-                            Column {
-                                Text(
-                                    text = "Görüntüleme Modu",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Medium
-                                )
-                                
-                                Spacer(modifier = Modifier.height(8.dp))
-                                
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    FilterChip(
-                                        onClick = { displayMode = "cards" },
-                                        label = { Text("Takım Kartları") },
-                                        selected = displayMode == "cards"
-                                    )
-                                    FilterChip(
-                                        onClick = { displayMode = "table" },
-                                        label = { Text("Tablo Formatı") },
-                                        selected = displayMode == "table"
-                                    )
-                                }
-                                
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
-                        }
                         
                         Row(
                             verticalAlignment = Alignment.CenterVertically
@@ -360,7 +308,7 @@ fun CreateListScreen(
                         manualSongs = manualSongs,
                         csvUri = selectedFileUri,
                         csvDelimiter = csvDelimiter,
-                        displayMode = displayMode,
+                        displayMode = "cards",
                         onSuccess = { listId ->
                             isLoading = false
                             onListCreated(listId)

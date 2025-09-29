@@ -23,7 +23,8 @@ fun RankingNavigation(
                 onNavigateToCriteria = { navController.navigate("criteria") },
                 onNavigateToActiveTournaments = { navController.navigate("active_tournaments") },
                 onNavigateToArchive = { navController.navigate("archive") },
-                onNavigateToNewTournament = { navController.navigate("new_tournament_direct") }
+                onNavigateToNewTournament = { navController.navigate("new_tournament_direct") },
+                onNavigateToAbout = { navController.navigate("about") }
             )
         }
         
@@ -204,6 +205,12 @@ fun RankingNavigation(
                 onNavigateToFixture = { id, m ->
                     navController.navigate("fixture/$id/$m")
                 }
+            )
+        }
+        
+        composable("about") {
+            AboutScreen(
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         

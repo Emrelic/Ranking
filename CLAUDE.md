@@ -1,3 +1,42 @@
+# Ranking Pro - Gelişmiş Sıralama ve Değerlendirme Sistemi
+
+## Uygulama Hakkında
+
+### Ranking Sistemi Nedir?
+Liste şeklinde içeri atılmış veya teker teker girilmiş çeşitli öğeleri sıralamak, puanlamak, birbiri arasında kıyaslamak veya turnuva şeklinde eşleşmelerini ve karşılaşmalarını sağlamak, puan durumlarını, eşleştirmelerini yönetmek, kriterlere göre değerlendirilmesini sağlamak üzere oluşturulmuş bir sistemdir.
+
+### Kullanım Amaçları ve Fonksiyonları
+1. **Sportif Karşılaşma Meselesi** - Turnuva ve lig yönetimi
+2. **Sübjektif Değerlendirme** - Kişisel tercih sıralamaları
+3. **Kriter Değerlendirmesi** - Çok kriterli karar verme
+4. **Farkındalık** - Öz farkındalık geliştirme
+5. **Eğitim** - Eğitim amaçlı sıralama ve karşılaştırma
+6. **Hafıza Tazeleme** - Bilgi pekiştirme
+7. **Matematiksel Sıralama** - Sayısal veri analizi
+8. **Dikkat ve Odaklanma Egzersizi** - Konsantrasyon geliştirme
+9. **Eğlence** - Eğlenceli aktiviteler
+
+### Kullanım Örnekleri
+1. **Sportif Amaçlar**: 18 takımdan oluşan bir grup takımı birbiri ile turnuva usulü eşleşmesini sağlayarak karşılaşmalarını, maç sonuçlarını sisteme işlemek, onları saklamak ve puan durumlarını oluşturmak.
+
+2. **Müzik Sıralaması**: Bir şarkıcının 80 tane şarkısını birbiri ile kıyaslayıp en iyiden en kötüye doğru sıralanmasını sağlayacak sübjektif bir kıyaslama ve puanlama süreci.
+
+3. **Tarihsel Analiz**: 36 tane padişahın belirli kriterler eşliğinde birbirleri ile kıyaslanması ve puanlanması.
+
+4. **Matematiksel Test**: 765 tane rastgele sayıyı sıralamak gibi matematiksel işlemler (eşleştirme puanlama usullerinin tutarlılığını ölçmek için test işlemi).
+
+5. **Eğitim Amaçlı**: Dünya ülkelerini gelir durumlarına, ekonomi büyüklüklerine, yüzölçümlerine, nüfuslarına vesaire göre sıralama.
+
+6. **Estetik Değerlendirme**: 28 tane kadın artisti güzellik sıralamasına sokma.
+
+7. **Spor Analizi**: Bir futbol klübünün son 10 senede gelen geçen futbolcularının kişi tarafından ne kadar sevildiğine dair kıyaslama.
+
+8. **Finansal Analiz**: BIST 100 endeksindeki hisse senetlerini çeşitli verilerini birbiri ile kıyaslayıp ilgi alanlarını tespit etme.
+
+9. **Ticari Karar Verme**: Bir ticari işletmede satışa konu olan ürünlerin tüccar tarafından ne ölçüde sevildiğini veya önemsendiğini kriter listesindeki kriterlere göre değerlendirerek öz farkındalık sağlama.
+
+---
+
 # Geliştirilmiş İsviçre Sistemi (Emre Usulü) - DOĞRU Algoritma
 
 ## Sistem Özeti
@@ -206,11 +245,18 @@ powershell -c "[Console]::Beep(800,300); [Console]::Beep(800,300); [Console]::Be
 - **"*ab"** = APK build et
 - **"*bty"** = Build et telefona yükle
 - **"*ty"** = Telefona yükle (APK install)
+- **"*yty"** = Ya telefona yüklenmemiş ya da yapılamamış - kullanıcı feedback komut
 - **"*nto"** = Not defterlerini oku
 - **"*mo"** = md uzantılı not defterlerini oku
 
-## 🔄 BERABER ÇALIŞMA PROTOKOLÜ
-1. **🔧 Otomatik Build & Deploy:** Her yenilik → APK build → telefona yükleme
+## 🔄 BERABER ÇALIŞMA PROTOKOLÜ (*cpe - ÇALıŞMA PROTOKOLÜ EKLENDİ)
+1. **🔧 OTOMATİK BUILD & DEPLOY:** Her kod değişikliği sonrası ZORUNLU YAPILACAKLAR:
+   - `./gradlew clean assembleDebug` ile build et
+   - `adb install -r app-debug.apk` ile telefona yükle  
+   - **BUILD TARİH VE SAATİNİ PROGRAM SİMGESİNE YAZ**
+   - 3x beep sesi çıkar
+   - Kullanıcıya sadece sonucu bildir
+   - **ARTIK "*bty" DENİLMESİNE GEREK YOK!**
 2. **💾 Hızlı Commit Protokolü:** "tmm" diyince → anında commit + push
 3. **🎨 Görsel Protokol İsteği:** Kullanıcı mesajları turuncu/farklı renkte görünmeli
 

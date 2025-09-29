@@ -2,16 +2,25 @@ package com.example.ranking.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -330,76 +339,297 @@ private fun CriteriaEvaluationDialog(
     onSaveScores: (Map<String, Pair<Double?, Double?>>) -> Unit,
     onMatchResult: (Int) -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.9f),
-            shape = RoundedCornerShape(16.dp)
+    var showCriteriaEvaluation by remember { mutableStateOf(false) } // Varsayılan false
+    
+    // Tam ekran dialog - kenarlar ekran sınırlarına bitişik
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false
+        )
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surface
         ) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
-                Text(
-                    text = "Kriter Değerlendirmesi",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Criteria scoring will be implemented here
-                Text(
-                    text = "Kriter skorlaması burada olacak",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                // Action buttons
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
+                // 1. SABİT BAŞLIK - Kriter Değerlendirmesi + Kapat Çarpısı
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(16.dp)
                 ) {
-                    TextButton(onClick = onDismiss) {
-                        Text("İptal")
+                    Text(
+                        text = "Kriter Değerlendirmesi",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                    
+                    // Ufak çarpı butonu sağ üst köşe
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(24.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Kapat",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+                
+                // 2. SABİT TAKIM ETİKETLERİ - Yatay bant ekranın yarısı renk
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                ) {
+                    // Sol yarı - Takım A
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFF1976D2)), // Mavi
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "TAKIM A",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                     
-                    Button(onClick = { onSaveScores(emptyMap()) }) {
-                        Text("Kaydet")
+                    // Sağ yarı - Takım B  
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(Color(0xFFE57373)), // Kırmızı
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "TAKIM B",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+                
+                // 3. CHECKBOX KONTROL ALANI
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = showCriteriaEvaluation,
+                        onCheckedChange = { showCriteriaEvaluation = it }
+                    )
+                    
+                    Spacer(modifier = Modifier.width(8.dp))
+                    
+                    Text(
+                        text = "Kriter değerlendirme çerçevelerini göster",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                
+                // 4. SCROLL EDİLEBİLİR ORTA BÖLÜM
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (showCriteriaEvaluation) {
+                        items(5) { index ->
+                            CriterionRow(
+                                criterionName = "Kriter ${index + 1}",
+                                team1Score = null,
+                                team2Score = null,
+                                onTeam1ScoreChange = { },
+                                onTeam2ScoreChange = { }
+                            )
+                        }
+                    } else {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Kriter değerlendirme çerçevelerini görmek için yukarıdaki kutucuğu işaretleyin",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // 5. SABİT TOPLAM PUAN KUTUCUKLARI
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Takım A Toplam",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "0.0",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1976D2)
+                            )
+                        }
+                        
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = "Takım B Toplam",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "0.0",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFE57373)
+                            )
+                        }
                     }
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
                 
+                // 6. SABİT İPTAL VE KAYDET BUTONLARI - En altta
                 Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Button(
-                        onClick = { onMatchResult(1) },
+                    OutlinedButton(
+                        onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Takım A Galip")
+                        Text("İptal")
                     }
                     
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
                     Button(
-                        onClick = { onMatchResult(0) },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.secondary
-                        )
-                    ) {
-                        Text("Berabere")
-                    }
-                    
-                    Spacer(modifier = Modifier.width(8.dp))
-                    
-                    Button(
-                        onClick = { onMatchResult(2) },
+                        onClick = {
+                            onSaveScores(emptyMap())
+                            onDismiss()
+                        },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Takım B Galip")
+                        Text("Kaydet")
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CriterionRow(
+    criterionName: String,
+    team1Score: Double?,
+    team2Score: Double?,
+    onTeam1ScoreChange: (Double?) -> Unit,
+    onTeam2ScoreChange: (Double?) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = criterionName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Takım A skoru
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Takım A",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    var team1Text by remember { mutableStateOf(team1Score?.toString() ?: "") }
+                    
+                    OutlinedTextField(
+                        value = team1Text,
+                        onValueChange = { 
+                            team1Text = it
+                            onTeam1ScoreChange(it.toDoubleOrNull())
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Puan") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    )
+                }
+                
+                // Takım B skoru
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Takım B",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    
+                    var team2Text by remember { mutableStateOf(team2Score?.toString() ?: "") }
+                    
+                    OutlinedTextField(
+                        value = team2Text,
+                        onValueChange = { 
+                            team2Text = it
+                            onTeam2ScoreChange(it.toDoubleOrNull())
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Puan") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    )
                 }
             }
         }

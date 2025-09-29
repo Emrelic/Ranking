@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -52,20 +53,20 @@ fun NewTournamentScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Generate tournament name automatically
-    LaunchedEffect(selectedSongList, selectedSystemType, selectedCriterionList) {
+    // Auto-generate tournament name when song list or system type changes
+    LaunchedEffect(selectedSongList, selectedSystemType, useCriteria, selectedCriterionList) {
         if (selectedSongList != null) {
             val systemName = when (selectedSystemType) {
-                "DIRECT_SCORING" -> "Direkt Puanlama"
-                "LEAGUE" -> "Lig"
-                "ELIMINATION" -> "Ön Eleme"
-                "FULL_ELIMINATION" -> "Tam Eleme"
-                "SWISS" -> "İsviçre"
-                "EMRE_CORRECT" -> "Geliştirilmiş İsviçre"
-                else -> selectedSystemType
+                "LEAGUE" -> "lig"
+                "SWISS" -> "isviçre"
+                "EMRE_CORRECT" -> "geliştirilmiş isviçre" 
+                "SINGLE_ELIMINATION" -> "eleme"
+                else -> "turnuva"
             }
-            val date = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
+            
+            val date = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
                 .format(java.util.Date())
+            
             val criteriaText = if (useCriteria && selectedCriterionList != null) {
                 val criteria = try {
                     Gson().fromJson<List<String>>(
@@ -80,24 +81,132 @@ fun NewTournamentScreen(
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        TopAppBar(
-            title = { Text("Yeni Turnuva") },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
-                }
-            },
-            actions = {
-                if (currentStep > 1) {
-                    TextButton(onClick = { currentStep-- }) {
-                        Text("Geri")
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            // SABİT TOP BAR
+            TopAppBar(
+                title = { Text("Yeni Turnuva") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
                     }
                 }
+            )
+            
+            // SCROLL YAPILABIL ORTA ALAN
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f) // Mevcut alanın tamamını kullan, bottom butonlara yer bırak
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()) // SCROLL ÖZELLİĞİ
+                        .padding(16.dp)
+                ) {
+                    // Progress indicator
+                    LinearProgressIndicator(
+                        progress = currentStep / 5f,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    // Error message
+                    if (errorMessage != null) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                        ) {
+                            Text(
+                                text = errorMessage!!,
+                                modifier = Modifier.padding(16.dp),
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
+
+                    when (currentStep) {
+                        1 -> SongListSelectionStep(
+                            songLists = songLists,
+                            selectedSongList = selectedSongList,
+                            onSongListSelected = { selectedSongList = it }
+                        )
+                        2 -> TournamentNameStep(
+                            tournamentName = tournamentName,
+                            onNameChanged = { tournamentName = it }
+                        )
+                        3 -> SystemTypeSelectionStep(
+                            selectedSystemType = selectedSystemType,
+                            onSystemTypeSelected = { selectedSystemType = it }
+                        )
+                        4 -> CriteriaSelectionStep(
+                            criterionLists = criterionLists,
+                            useCriteria = useCriteria,
+                            selectedCriterionList = selectedCriterionList,
+                            onUseCriteriaChanged = { useCriteria = it },
+                            onCriterionListSelected = { selectedCriterionList = it }
+                        )
+                        5 -> CriteriaSettingsStep(
+                            enabled = useCriteria,
+                            scoringType = scoringType,
+                            scoreScale = scoreScale,
+                            drawThresholdMin = drawThresholdMin,
+                            drawThresholdMax = drawThresholdMax,
+                            autoWinnerFromCriteria = autoWinnerFromCriteria,
+                            autoOpenCriteriaPanel = autoOpenCriteriaPanel,
+                            mandatoryCriteria = mandatoryCriteria,
+                            onScoringTypeChanged = { scoringType = it },
+                            onScoreScaleChanged = { scoreScale = it },
+                            onDrawThresholdMinChanged = { drawThresholdMin = it },
+                            onDrawThresholdMaxChanged = { drawThresholdMax = it },
+                            onAutoWinnerFromCriteriaChanged = { autoWinnerFromCriteria = it },
+                            onAutoOpenCriteriaPanelChanged = { autoOpenCriteriaPanel = it },
+                            onMandatoryCriteriaChanged = { mandatoryCriteria = it }
+                        )
+                    }
+                    
+                    // BOTTOM PADDİNG - BUTONLAR İÇİN ALAN BIRAK
+                    Spacer(modifier = Modifier.height(100.dp))
+                }
+            }
+        }
+
+        // SABİT BOTTOM NAVİGASYON BUTONLARI
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // GERİ BUTONU - SOL ALT KÖŞE
+                if (currentStep > 1) {
+                    Button(
+                        onClick = { currentStep-- },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri", modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Geri")
+                    }
+                } else {
+                    Spacer(modifier = Modifier.width(80.dp)) // PLACEHOLDER
+                }
+                
+                // İLERİ/BAŞLAT BUTONU - SAĞ ALT KÖŞE
                 if (currentStep < 5) {
-                    TextButton(
+                    Button(
                         onClick = { currentStep++ },
                         enabled = when (currentStep) {
                             1 -> selectedSongList != null
@@ -105,12 +214,15 @@ fun NewTournamentScreen(
                             3 -> true
                             4 -> !useCriteria || selectedCriterionList != null
                             else -> false
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text("İleri")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Icon(Icons.Default.ArrowForward, contentDescription = "İleri", modifier = Modifier.size(18.dp))
                     }
                 } else {
-                    TextButton(
+                    Button(
                         onClick = {
                             if (selectedSongList != null) {
                                 isLoading = true
@@ -140,79 +252,21 @@ fun NewTournamentScreen(
                                 )
                             }
                         },
-                        enabled = !isLoading && selectedSongList != null && tournamentName.isNotBlank()
+                        enabled = !isLoading,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.onPrimary)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Oluşturuluyor...")
                         } else {
-                            Text("Turnuva Başlat")
+                            Text("Başlat")
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Icon(Icons.Default.Check, contentDescription = "Başlat", modifier = Modifier.size(18.dp))
                         }
                     }
                 }
             }
-        )
-
-        // Progress indicator
-        LinearProgressIndicator(
-            progress = currentStep / 5f,
-            modifier = Modifier.fillMaxWidth()
-        )
-        
-        // Error message
-        if (errorMessage != null) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
-            ) {
-                Text(
-                    text = errorMessage!!,
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
-            }
-        }
-
-        // Step content
-        when (currentStep) {
-            1 -> SongListSelectionStep(
-                songLists = songLists,
-                selectedSongList = selectedSongList,
-                onSongListSelected = { selectedSongList = it }
-            )
-            2 -> TournamentNameStep(
-                tournamentName = tournamentName,
-                onNameChanged = { tournamentName = it }
-            )
-            3 -> SystemTypeSelectionStep(
-                selectedSystemType = selectedSystemType,
-                onSystemTypeSelected = { selectedSystemType = it }
-            )
-            4 -> CriteriaSelectionStep(
-                criterionLists = criterionLists,
-                useCriteria = useCriteria,
-                selectedCriterionList = selectedCriterionList,
-                onUseCriteriaChanged = { useCriteria = it },
-                onCriterionListSelected = { selectedCriterionList = it }
-            )
-            5 -> CriteriaSettingsStep(
-                enabled = useCriteria,
-                scoringType = scoringType,
-                scoreScale = scoreScale,
-                drawThresholdMin = drawThresholdMin,
-                drawThresholdMax = drawThresholdMax,
-                autoWinnerFromCriteria = autoWinnerFromCriteria,
-                autoOpenCriteriaPanel = autoOpenCriteriaPanel,
-                mandatoryCriteria = mandatoryCriteria,
-                onScoringTypeChanged = { scoringType = it },
-                onScoreScaleChanged = { scoreScale = it },
-                onDrawThresholdMinChanged = { drawThresholdMin = it },
-                onDrawThresholdMaxChanged = { drawThresholdMax = it },
-                onAutoWinnerFromCriteriaChanged = { autoWinnerFromCriteria = it },
-                onAutoOpenCriteriaPanelChanged = { autoOpenCriteriaPanel = it },
-                onMandatoryCriteriaChanged = { mandatoryCriteria = it }
-            )
         }
     }
 }
@@ -223,65 +277,42 @@ private fun SongListSelectionStep(
     selectedSongList: com.example.ranking.data.SongList?,
     onSongListSelected: (com.example.ranking.data.SongList) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Column {
         Text(
-            text = "1. Liste Seçin",
+            text = "Liste Seçin",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
-        Text(
-            text = "Turnuvaya katılacak öğelerin bulunduğu listeyi seçin",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (songLists.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Henüz liste oluşturulmamış",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn {
-                items(songLists) { songList ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp)
-                            .selectable(
-                                selected = selectedSongList?.id == songList.id,
-                                onClick = { onSongListSelected(songList) }
-                            ),
-                        colors = if (selectedSongList?.id == songList.id) {
-                            CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                        } else {
-                            CardDefaults.cardColors()
-                        }
+        
+        LazyColumn(
+            modifier = Modifier.heightIn(max = 400.dp), // MAX HEIGHT - SCROLL İÇİN
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(songLists) { songList ->
+                Card(
+                    onClick = { onSongListSelected(songList) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (selectedSongList == songList) 
+                            MaterialTheme.colorScheme.primaryContainer 
+                        else 
+                            MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
                     ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                text = songList.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "${songList.songCount} öğe",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Text(
+                            text = songList.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "${songList.songCount} öğe",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -294,32 +325,20 @@ private fun TournamentNameStep(
     tournamentName: String,
     onNameChanged: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column {
         Text(
-            text = "2. Turnuva Adı",
+            text = "Turnuva Adı",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
-        Text(
-            text = "Turnuvanızın adını düzenleyebilir veya otomatik oluşturulan adı kullanabilirsiniz",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        
         OutlinedTextField(
             value = tournamentName,
             onValueChange = onNameChanged,
-            label = { Text("Turnuva Adı") },
+            label = { Text("Turnuva adı girin") },
             modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            maxLines = 3
+            singleLine = true
         )
     }
 }
@@ -329,62 +348,50 @@ private fun SystemTypeSelectionStep(
     selectedSystemType: String,
     onSystemTypeSelected: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
+    val systemTypes = listOf(
+        "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
+        "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
+        "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
+        "SINGLE_ELIMINATION" to "Eleme Sistemi - Tek maç eleme"
+    )
+    
+    Column {
         Text(
-            text = "3. Turnuva Sistemi",
+            text = "Turnuva Sistemi",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
-        Text(
-            text = "Turnuvanızda kullanılacak eşleştirme sistemini seçin",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        val systems = listOf(
-            "DIRECT_SCORING" to Pair("Direkt Puanlama", "Her öğeye 0-100 arası puan verin"),
-            "LEAGUE" to Pair("Lig Sistemi", "Öğeler birbiri ile eşleşir, kazanan 2 puan alır"),
-            "ELIMINATION" to Pair("Ön Eleme + Gruplu Eleme", "Önce gruplar, sonra elemeli turnuva"),
-            "FULL_ELIMINATION" to Pair("Tam Eleme Sistemi", "Tamamı elemeli turnuva sistemi"),
-            "SWISS" to Pair("İsviçre Sistemi", "Eşit puanlı rakiplerle eşleşme sistemi"),
-            "EMRE_CORRECT" to Pair("Geliştirilmiş İsviçre Sistemi", "Puan bazlı eşleştirme ile adil sıralama - İlk tur eşleştirme seçeneği")
-        )
-
-        systems.forEach { (value, info) ->
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp)
-                    .selectable(
-                        selected = selectedSystemType == value,
-                        onClick = { onSystemTypeSelected(value) }
-                    ),
-                colors = if (selectedSystemType == value) {
-                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                } else {
-                    CardDefaults.cardColors()
-                }
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
+        
+        LazyColumn(
+            modifier = Modifier.heightIn(max = 400.dp), // MAX HEIGHT - SCROLL İÇİN
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(systemTypes) { (type, description) ->
+                Card(
+                    onClick = { onSystemTypeSelected(type) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (selectedSystemType == type) 
+                            MaterialTheme.colorScheme.primaryContainer 
+                        else 
+                            MaterialTheme.colorScheme.surface
+                    )
                 ) {
-                    Text(
-                        text = info.first,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = info.second,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = description.split(" - ")[0],
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = description.split(" - ")[1],
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }
@@ -399,102 +406,74 @@ private fun CriteriaSelectionStep(
     onUseCriteriaChanged: (Boolean) -> Unit,
     onCriterionListSelected: (com.example.ranking.data.CriterionList) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Column {
         Text(
-            text = "4. Kriter Sistemi (Opsiyonel)",
+            text = "Kriter Sistemi",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
-        Text(
-            text = "Değerlendirme kriterleri kullanmak isterseniz bir kriter listesi seçin",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically
+        
+        Card(
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Switch(
-                checked = useCriteria,
-                onCheckedChange = onUseCriteriaChanged
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Kriter sistemi kullan")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Switch(
+                    checked = useCriteria,
+                    onCheckedChange = onUseCriteriaChanged
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = "Kriter sistemi kullan",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
         }
-
+        
         AnimatedVisibility(visible = useCriteria) {
             Column {
                 Spacer(modifier = Modifier.height(16.dp))
-
-                if (criterionLists.isEmpty()) {
-                    Card {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Henüz kriter listesi oluşturulmamış",
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 300.dp), // MAX HEIGHT - SCROLL İÇİN
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(criterionLists) { criterionList ->
+                        Card(
+                            onClick = { onCriterionListSelected(criterionList) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (selectedCriterionList == criterionList) 
+                                    MaterialTheme.colorScheme.primaryContainer 
+                                else 
+                                    MaterialTheme.colorScheme.surface
                             )
-                        }
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.height(300.dp)
-                    ) {
-                        items(criterionLists) { criterionList ->
-                            val criteria = try {
-                                Gson().fromJson<List<String>>(
-                                    criterionList.criteria,
-                                    object : TypeToken<List<String>>() {}.type
-                                ) ?: emptyList()
-                            } catch (e: Exception) {
-                                emptyList<String>()
-                            }
-
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .selectable(
-                                        selected = selectedCriterionList?.id == criterionList.id,
-                                        onClick = { onCriterionListSelected(criterionList) }
-                                    ),
-                                colors = if (selectedCriterionList?.id == criterionList.id) {
-                                    CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                                } else {
-                                    CardDefaults.cardColors()
-                                }
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp)
                             ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text(
-                                        text = criterionList.name,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "${criteria.size} kriter",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                    if (criteria.isNotEmpty()) {
-                                        Text(
-                                            text = criteria.take(3).joinToString(", ") + if (criteria.size > 3) "..." else "",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
+                                Text(
+                                    text = criterionList.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                val criteria = try {
+                                    Gson().fromJson<List<String>>(
+                                        criterionList.criteria,
+                                        object : TypeToken<List<String>>() {}.type
+                                    ) ?: emptyList()
+                                } catch (e: Exception) { emptyList() }
+                                
+                                Text(
+                                    text = "${criteria.size} kriter",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -522,345 +501,177 @@ private fun CriteriaSettingsStep(
     onAutoOpenCriteriaPanelChanged: (Boolean) -> Unit,
     onMandatoryCriteriaChanged: (Boolean) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
+    Column {
         Text(
-            text = "5. Kriter Ayarları",
+            text = "Kriter Ayarları",
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
-        Text(
-            text = if (enabled) "Kriter sisteminin detaylı ayarlarını yapın" else "Kriter sistemi kullanılmıyor",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        
         if (!enabled) {
-            Card {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Text(
+                    text = "Kriter sistemi devre dışı",
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            return
+        }
+        
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Scoring Type
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Kriter sistemi devre dışı",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "Puanlama Türü",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Column {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = scoringType == "comparative",
+                                    onClick = { onScoringTypeChanged("comparative") }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = scoringType == "comparative",
+                                onClick = { onScoringTypeChanged("comparative") }
+                            )
+                            Text("Kıyaslamalı (10 puanı böl)")
+                        }
+                        
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(
+                                    selected = scoringType == "separate",
+                                    onClick = { onScoringTypeChanged("separate") }
+                                ),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = scoringType == "separate",
+                                onClick = { onScoringTypeChanged("separate") }
+                            )
+                            Text("Ayrı ayrı (her takıma puan)")
+                        }
+                    }
+                }
+            }
+            
+            // Score Scale
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Puan Skalası: $scoreScale",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Slider(
+                        value = scoreScale.toFloat(),
+                        onValueChange = { onScoreScaleChanged(it.toInt()) },
+                        valueRange = 5f..20f,
+                        steps = 14
                     )
                 }
             }
-        } else {
-            // Scoring Type
-            Text(
-                text = "Puanlama Sistemi",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
             
-            Row {
-                FilterChip(
-                    onClick = { onScoringTypeChanged("separate") },
-                    label = { Text("Ayrı Ayrı") },
-                    selected = scoringType == "separate",
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                FilterChip(
-                    onClick = { onScoringTypeChanged("comparative") },
-                    label = { Text("Kıyaslamalı") },
-                    selected = scoringType == "comparative"
-                )
-            }
-            
-            // Scoring type explanations
-            if (scoringType == "separate") {
-                Text(
-                    text = "Her takıma aşağıda belirlenecek puan üzerinden bir puan verilir. Mesela 10 üzerinden bir takım 5, diğer takım 9 alabilir.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            } else {
-                Text(
-                    text = "Aşağıda tayin edilecek puan iki takım arasında bölüştürülür. Örnek: 10 seçilirse 7-3 veya 9-1 şeklinde.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Score Scale
-            Text(
-                text = "Puan Skalası",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Preset scale options
-            val presetScales = listOf(1, 2, 3, 4, 5, 6, 7, 10, 20, 100)
-            var customScale by remember { mutableStateOf("") }
-            var useCustomScale by remember { mutableStateOf(false) }
-
-            // Update useCustomScale based on current scoreScale
-            LaunchedEffect(scoreScale) {
-                useCustomScale = scoreScale !in presetScales
-                if (useCustomScale) {
-                    customScale = scoreScale.toString()
-                }
-            }
-
-            // Preset buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                presetScales.chunked(5).forEach { chunk ->
-                    Column {
-                        chunk.forEach { scale ->
-                            FilterChip(
-                                onClick = {
-                                    onScoreScaleChanged(scale)
-                                    useCustomScale = false
-                                },
-                                label = { Text(scale.toString()) },
-                                selected = scoreScale == scale && !useCustomScale,
-                                modifier = Modifier.padding(bottom = 4.dp)
+            // Draw Threshold
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Beraberlik Eşiği: %$drawThresholdMin - %$drawThresholdMax",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    
+                    Row {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Min %")
+                            Slider(
+                                value = drawThresholdMin.toFloat(),
+                                onValueChange = { onDrawThresholdMinChanged(it.toInt()) },
+                                valueRange = 45f..55f
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Max %")
+                            Slider(
+                                value = drawThresholdMax.toFloat(),
+                                onValueChange = { onDrawThresholdMaxChanged(it.toInt()) },
+                                valueRange = 45f..55f
                             )
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Custom scale input
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                FilterChip(
-                    onClick = {
-                        useCustomScale = !useCustomScale
-                        if (useCustomScale && customScale.isBlank()) {
-                            customScale = scoreScale.toString()
-                        } else if (!useCustomScale) {
-                            // Select closest preset
-                            val closest = presetScales.minByOrNull { kotlin.math.abs(it - scoreScale) } ?: 10
-                            onScoreScaleChanged(closest)
-                        }
-                    },
-                    label = { Text("Başka") },
-                    selected = useCustomScale,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-
-                if (useCustomScale) {
-                    OutlinedTextField(
-                        value = customScale,
-                        onValueChange = { newValue ->
-                            customScale = newValue
-                            val intValue = newValue.toIntOrNull()
-                            if (intValue != null && intValue in 1..999) {
-                                onScoreScaleChanged(intValue)
-                            }
-                        },
-                        label = { Text("Özel Skala") },
-                        modifier = Modifier.width(120.dp),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number
-                        )
+            
+            // Boolean Settings
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Ek Ayarlar",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            }
-
-            Text(
-                text = "Seçilen: $scoreScale",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Draw Threshold
-            Text(
-                text = "Beraberlik Aralığı",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Bir takımın galip gelebilmesi için yüzdesel olarak alması gereken minimum puan. Eğer bu ayar %60 seçilirse takımlardan birisi %60 puan ağırlığı almadıkça berabere olarak değerlendirilecektir. Bu husus ancak 'Galibi kriter puanına göre belirle' kutucuğu işaretlenmiş olursa geçerli olacaktır.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Column {
-                // Main slider for position (where the center of the range is)
-                Text(
-                    text = "Merkez Pozisyon: %${(drawThresholdMin + drawThresholdMax) / 2}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Slider(
-                    value = ((drawThresholdMin + drawThresholdMax) / 2).toFloat(),
-                    onValueChange = { centerValue ->
-                        val center = centerValue.toInt()
-                        val halfRange = (drawThresholdMax - drawThresholdMin) / 2
-                        val newMin = (center - halfRange).coerceIn(0, 100 - halfRange * 2)
-                        val newMax = (center + halfRange).coerceIn(halfRange * 2, 100)
-                        onDrawThresholdMinChanged(newMin)
-                        onDrawThresholdMaxChanged(newMax)
-                    },
-                    valueRange = 0f..100f,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Range width slider
-                Text(
-                    text = "Aralık Genişliği: ${drawThresholdMax - drawThresholdMin} puan",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Slider(
-                    value = (drawThresholdMax - drawThresholdMin).toFloat(),
-                    onValueChange = { rangeWidth ->
-                        val range = rangeWidth.toInt()
-                        val center = (drawThresholdMin + drawThresholdMax) / 2
-                        val halfRange = range / 2
-                        val newMin = (center - halfRange).coerceIn(0, 100 - range)
-                        val newMax = (center + halfRange).coerceIn(range, 100)
-                        onDrawThresholdMinChanged(newMin)
-                        onDrawThresholdMaxChanged(newMax)
-                    },
-                    valueRange = 0f..50f, // Maximum 50 point range
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // Visual representation
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(12.dp)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Örnek Sonuçlar:",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
+                        Switch(
+                            checked = autoWinnerFromCriteria,
+                            onCheckedChange = onAutoWinnerFromCriteriaChanged
                         )
-                        Text(
-                            text = "• ${drawThresholdMin - 1}%-${drawThresholdMax + 1}% → İlk takım galip",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "• $drawThresholdMin%-$drawThresholdMax% → Beraberlik",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                        Text(
-                            text = "• ${drawThresholdMax + 1}%-${drawThresholdMin - 1}% → İkinci takım galip",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Kriterlerden otomatik kazanan belirle")
                     }
-                }
-
-                // Quick presets
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val presets = listOf(
-                        "50-50" to Pair(50, 50),
-                        "45-55" to Pair(45, 55),
-                        "40-60" to Pair(40, 60),
-                        "30-70" to Pair(30, 70)
-                    )
-
-                    presets.forEach { (label, range) ->
-                        FilterChip(
-                            onClick = {
-                                onDrawThresholdMinChanged(range.first)
-                                onDrawThresholdMaxChanged(range.second)
-                            },
-                            label = { Text(label, style = MaterialTheme.typography.bodySmall) },
-                            selected = drawThresholdMin == range.first && drawThresholdMax == range.second
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            checked = autoOpenCriteriaPanel,
+                            onCheckedChange = onAutoOpenCriteriaPanelChanged
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Kriter panelini otomatik aç")
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            checked = mandatoryCriteria,
+                            onCheckedChange = onMandatoryCriteriaChanged
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Kriter değerlendirmesi zorunlu")
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Options
-            SettingsSwitch(
-                title = "Galibi kriter puanına göre belirle",
-                description = "İşaretlenir ise her karşılaşmada kriter puanlama ekranı açılacak ve burada gerçekleşen sonuca göre bir takım kazanacak veya berabere kalacaktır. Öbür türlü kriter oylaması sadece kullanıcının nazarına sunulacak ve son karar kullanıcıya bırakılacaktır.",
-                checked = autoWinnerFromCriteria,
-                onCheckedChange = onAutoWinnerFromCriteriaChanged
-            )
-
-            SettingsSwitch(
-                title = "Kriter paneli otomatik açılsın",
-                description = "Her maçta kriter paneli otomatik açılır",
-                checked = autoOpenCriteriaPanel,
-                onCheckedChange = onAutoOpenCriteriaPanelChanged
-            )
-
-            SettingsSwitch(
-                title = "Kriter oylaması mecburi tutulsun",
-                description = "İşaretlenir ise kriterleri doldurmak mecburi tutulacaktır. Öbür türlü kullanıcının insiyatifinde olacak ve kullanıcı isterse kriter ekranını açacaktır.",
-                checked = mandatoryCriteria,
-                onCheckedChange = onMandatoryCriteriaChanged
-            )
         }
-    }
-}
-
-@Composable
-private fun SettingsSwitch(
-    title: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
     }
 }

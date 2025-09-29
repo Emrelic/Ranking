@@ -2452,11 +2452,11 @@ object EmreSystemCorrect {
         wasFromTop: Boolean,
         totalMatches: Int = 18 // 🆕 Toplam maç sayısı (36 takım ÷ 2 = 18)
     ) {
-        // 🆕 ALTERNATING MATCH NUMBERING SYSTEM - TEMİZ VE BASIT
+        // 🆕 ALTERNATING MATCH NUMBERING SYSTEM - DÜZELTME
         if (wasFromTop) {
-            // TOP KEAT → 1, 2, 3, 4, 5... sıralı numara
-            val topCount = AEG.count { it.matchNumber <= totalMatches / 2 && it.matchNumber > 0 }
-            match.matchNumber = topCount + 1
+            // TOP KEAT → 1, 2, 3, 4, 5... sıralı numara (1'den başla)
+            val existingTopNumbers = AEG.map { it.matchNumber }.filter { it in 1..(totalMatches / 2) }.sorted()
+            match.matchNumber = if (existingTopNumbers.isEmpty()) 1 else existingTopNumbers.last() + 1
             
             // Üstten gelen eşleştirme - başa yakın ekle
             val insertIndex = AEG.indexOfFirst { 
@@ -2465,9 +2465,9 @@ object EmreSystemCorrect {
             }
             if (insertIndex == -1) AEG.add(match) else AEG.add(insertIndex, match)
         } else {
-            // BOTTOM KEAT → 18, 17, 16, 15, 14... azalan numara  
-            val bottomCount = AEG.count { it.matchNumber > totalMatches / 2 }
-            match.matchNumber = totalMatches - bottomCount
+            // BOTTOM KEAT → 18, 17, 16, 15, 14... azalan numara (totalMatches'den başla)
+            val existingBottomNumbers = AEG.map { it.matchNumber }.filter { it > (totalMatches / 2) }.sorted()
+            match.matchNumber = if (existingBottomNumbers.isEmpty()) totalMatches else existingBottomNumbers.first() - 1
             
             // Alttan gelen eşleştirme - sona yakın ekle  
             AEG.add(match)

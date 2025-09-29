@@ -23,6 +23,7 @@ fun MainMenuScreen(
     onNavigateToActiveTournaments: () -> Unit,
     onNavigateToArchive: () -> Unit,
     onNavigateToNewTournament: () -> Unit,
+    onNavigateToAbout: () -> Unit,
     viewModel: MainMenuViewModel = viewModel()
 ) {
     val activeTournamentsCount by viewModel.activeTournamentsCount.collectAsState()
@@ -124,8 +125,13 @@ fun MainMenuScreen(
                     modifier = Modifier.weight(1f)
                 )
                 
-                // Empty space to maintain balance
-                Spacer(modifier = Modifier.weight(1f))
+                MenuCard(
+                    title = "Hakkında",
+                    description = "Uygulama bilgileri",
+                    icon = Icons.Default.Info,
+                    onClick = onNavigateToAbout,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
         
