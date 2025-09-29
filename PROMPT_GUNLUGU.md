@@ -9,146 +9,17 @@ Token tasarrufu için sadece son 7 günün promptları tutulur. Eski promptlar o
 
 ---
 
-## [2025-09-27 01:30] MAJOR CRASH FIX SESSION
-**Prompt:** "liste ekleyince program bi kapanır gibi oluyo. sonra bakıyorum arkada var sanki. çöküyor sanıyorum ama çökmemiş gibi oluyor. sanki arka plana gidiyor. eşleştirmeler ekranında çökme olayı hallolmuş. ama bu sefer puanlama ekranına geçiş butonu çalışmıyor"
+## [2025-09-29] SON 2 GÜN KAYITLARI
+
+### [2025-09-27 01:30] MAJOR CRASH FIX SESSION
+**Prompt:** "liste ekleyince program bi kapanır gibi oluyo. eşleştirmeler ekranında çökme olayı hallolmuş. ama bu sefer puanlama ekranına geçiş butonu çalışmıyor"
 
 **Çözülen Sorunlar:**
-1. ✅ Null safety crash (AdvancedMatchCard) - `jsonData?.isNotEmpty()` → `jsonData.isNotEmpty()`
-2. ✅ selectMatch() fonksiyonu boş idi - Tam implementasyon yapıldı
-3. ✅ Liste ekleme debug sistemi - Comprehensive logging eklendi
+1. ✅ Null safety crash (AdvancedMatchCard) - güvenlik düzeltmesi
+2. ✅ selectMatch() fonksiyonu - Tam implementasyon yapıldı
+3. ✅ Liste ekleme debug sistemi - logging eklendi
 
-**Sonuç:** Tüm major crash'ler düzeltildi, APK telefona yüklendi, production ready
-
----
-
-## 📅 2025-09-19
-
-### [17:25]
-```
-tabloda varsayılan olarak sıra numarası olsun. bir satırı yer değiştirmek isteyeceğimiz zaman bu satır numarasından tutarak aşağı yukarı götürebilelim.
-ayrıca tabloda varsayılan olarak A B C D vesaire sutunları da olsun. bir sütunun yerini değiştirmek istediğimiz zaman A B C sutun numaralarından tutarak sağa sola kaydırabilelim.
-tabloda diğer kaydırma ve sürüklemeler scroll özelliğini çalıştırsın ve sağdaki soldaki verileri ekrana getirebilmemizi sağlasın.
-satır numarası ve sütun numarası meselesi bu yapıda satır ekleme silme ve yer değiştirme işlerini yapmak için kullanılsın.
-
-*tk = bu kod tekmil ver demek. emir tekrarı. yani benim söylediğim bir promtp ve isteği ne kadar anladığını bana açıklamanı istediğim zaman bu kodu yazacağım. bunu çalışma protokolüne ekle
-
-*p
-```
-
-### [16:55]
-```
-*ncp
-```
-**Açıklama:** Not defterlerini doldur, commit + push yap
-
-### [18:08]
-```
-tamam şimdi bu tasarımları uygulayalım gerçek sayfaya sonra *bty yapıp test edelim. biliyorsun kriter sayfa ayar sayfasındaki ayrı ayrı veya kıyaslamalı puan seçeneğine göre bu tasarımlar farklılaşıyor.
-```
-
-### [18:05]
-```
-✅ TAMAMLANDI! İstediğin değişiklikler uygulandı:
-
-🎨 KRİTER ÇERÇEVELERİ:
-- Beyaz arkaplan kaldırıldı, sadece yarı yarıya mavi-yeşil kaldı
-- Sol yarı açık mavi (#E3F2FD), sağ yarı açık yeşil (#F1F8E9)
-- Tüm interactive elementler korundu (dropdown, slider, checkbox)
-
-🖼️ TOPLAM KUTUCUKLARI:
-- Siyah çerçeve eklendi (@drawable/black_border)
-- 8dp margin ile diğer çerçevelerle hizalandı
-- Her iki versiyonda da uygulandı
-
-Her şey mükemmel! 🎯
-```
-
-### [18:02]
-```
-kriter çrçevelerinin içinde sadece mavi ve yeşil renkler olsun üçüncü bir arka plan rengi olmasın.
-toplam butonlarının da siyah çerçeve ile çerçeveleyelim ve en sağ ve en sol kısımda diğer çerçeve ve butonlarla hizalayalım
-```
-
-### [17:58]
-```
-/////takım 1 galip takım 2 galip butonlarını üstteki takım başlıkları ve çerçevenin yarısını kapsayan
-  renklerle uyumlu yapalım.
-  ayrıca bunların etrafınıda çerçeve yapalım ve orta çerçeve atkım başlıkları ve toplam bölümlerinin
-   en sağ ve en sol kısımları aynı hizada simetrik bir şekilde edvam etsin. alttaki butonların en
-  sağ ve en sol bölümlerinide hizalayalım *p
-
-  en önemlisi ise çerçevelerin iç kısımları da yarı yarıya açık mavi ve yeşil reklerin devamını
-  göstermeli. en tepeden en aşağıya kadar olan bölümde açık mavi ve açık yeşil renkler dikdörtgensel
-   bir şekilde sayfanın yarısını yarı yarı a bölmeli. her iki versiyon içinde geçerli zaten dediğim
-  igbi iki versiyonun tek farkları birinde kaydırmalı çubukl var diğerinde dropdownlar geri kalan
-  herşey aynı *p//////
-
-bu mesajdan sonra ne yaptı isen geri al.
-ortalığı fena bozmuşsun.
-ben sadece mevi  yeşil renkler çerçevenin içinde de sürsün itstedim yani kriter çerçevelerinin içindede yarı yarıya renkler olmalı. ama şu anda hiçbirşey kalmamış ortada çerçevelerden butonlardan dropdown kayan buton vesaire hepsi gitmiş gibi görünüyor.
-çerçevenin arka planı sadece renk değişecek idi.
-
-galibiyet butonlarını üstteki tkıam başlıkları ile aynı renk yapma işi istemiştim ama aşağıdaki iptal kaydr butonları filanda görünmüyor
-```
-
-### [17:50]
-```
-takım 1 galip takım 2 galip butonlarını üstteki takım başlıkları ve çerçevenin yarısını kapsayan renklerle uyumlu yapalım.
-ayrıca bunların etrafınıda çerçeve yapalım ve orta çerçeve atkım başlıkları ve toplam bölümlerinin en sağ ve en sol kısımları aynı hizada simetrik bir şekilde edvam etsin. alttaki butonların en sağ ve en sol bölümlerinide hizalayalım *p
-
-en önemlisi ise çerçevelerin iç kısımları da yarı yarıya açık mavi ve yeşil reklerin devamını göstermeli. en tepeden en aşağıya kadar olan bölümde açık mavi ve açık yeşil renkler dikdörtgensel bir şekilde sayfanın yarısını yarı yarı a bölmeli. her iki versiyon içinde geçerli zaten dediğim igbi iki versiyonun tek farkları birinde kaydırmalı çubukl var diğerinde dropdownlar geri kalan herşey aynı *p
-```
-
-### [17:45]
-```
-Layout düzeltmeleri tamamlandı! Her iki versiyonda da:
-- Toplam puan kutucukları büyük scroll çerçevesinin altına taşındı
-- Takım başlıkları, orta çerçeve ve toplam bölümleri simetrik hizalandı
-- Buton boyutları ve marginleri standartlaştırıldı (40dp height, küçük marginler)
-- A versiyonu: Kayan puanlama çubuğu ile overlay puan sistemi
-- B versiyonu: Dropdown puanlama sistemi
-- Her iki versiyonda layout sırası: Başlık → Takım Başlıkları → Scroll Area → Toplam → Galibiyet → Kaydet/İptal
-```
-
-### [17:40]
-```
-toplam sayıları ortadaki büyük çerçevemizin altında olsun demiştim ayrıca takım başlıkları orta çerçeve ile toplam bölümlerini güzelce bizribine hizala ve simetrik olsun.
-aynı şeyler hem a hem b  versiyonu için geçerli.
-bu ik versiyonun tek farkı zaten birinde kayan  puanlama çubuğu var diğerinde dropdown puanlama var. gerisi hep aynı
-```
-
-### [17:35]
-```
-GÜZEL
-TOPLAM SATIRI AŞAĞIDAKİ BERABERE TAKIM1 GALİP TAKIM 2 GALİP BUTONLARININ ÜSTÜNDE YER ALMALI İKİ VERSİYON İÇİNDE BUNU YAPALIM . AYRICA KAYDET VE İPTAL BUTONLARINI AŞAĞIYA DOĞRU İLERLETEBİLDİĞİN KADAR İLERLER BOŞLUKSUZ DİBE YAPIŞSINLAR. AYRICA ÇOK BÜYÜK YAPMANA GEREK YOK
-BERABERE VE GALİBİYET BUTONALRINIDA AZ BİR BOŞLUK BIRAKARAK AŞAĞIYA DOĞRU İTTİR. MÜMKÜN MERTEBE ORTADAKİ ÇERÇEVEMİZE FZLA ALAN KALSIN HER İKİ VERSİYON İÇİNDE SÖYLÜYORUM BUNU.
-TAKIM 1 VE TAKIM 2 BAŞLIKLARINIDA TEPEYE DOĞRU İTTİREBİLDİĞİN KADAR İTTİR KRİTER DEĞERLENDİRME SAYFASI YAZISI İLE ARASINDA ÇOK AZ BİR BOŞLUK OLSUN.
-KRİTER METNİNİ YAZACAK UZUN BİR ALAN OLSUN VE YAZI OKUNABİLSİN RAHATÇA.
-BUNUN ALTINDAKİ KAYAN BUTON İLE PUANLAMA MESELESİNİN ORADAKİ PUAN BÖLGESİNİDE BİRAZ KÜÇÜLTEBİLİRİZ.
-ACABA PUAN ÇUBUĞU KAYAN ÇUBUK İLE BU 5-5 PUANLAMANIN YAZILDIĞI ALAN ÜSTÜSTE OLSA NASIL OLUR BÖYLE BAKALIM. BİRAZ YAZIYI KAPATMAYACAK TRANSPARANLIKDA OPAKLIKDA YAPABİLİRİZ.
-
-A VERSİYONUNDA PUAN KUTUCUKLARININ ÜSERİNDE TAKIM 1 TAKIM 2 PUANI TEXTLERİNE GEREK YOK ONLARI KALDIRALIM. TAKIM 1 VE TAKIM 2 BAŞLIKLARI İLE ORTA ÇERÇEVE VE EN SONUNDA TOPLAM PUAN BÖLÜMLERİ BİRBİRİNİ TAKİP EDEN VE SÜREN BİR ŞEKİLDE AÇIK MAVİ VE AÇIK YEŞİL RENKLERİ GÖSTERECEK VE ALGI OLARAK BU BÖLGELERİN BAŞLIKLARIN PUANLARIN VE TOPLAMLARIN HER BİRİNİN O BAŞLIKDAKİ TAKIMA AİT OLDUĞU ALGISI BU ŞEKİLDE VERİLECEK.
-```
-
-### [17:15]
-```
-ŞİMDİ SCROLL ÖZELLİĞİ OLAN BU PENCERENİN İÇİNE KRİTERLER LİSTESİNDEN GELEN KRİTERLER TEK TEK YAZILMALI. AMA HER KRİTER BİR ÇERÇEVE HALİNDE YAZILSIN BU ÇERÇEVENİN SAĞ  ÜST KÖŞESİNDE BİR CHECK BOX OLSUN BU CHECK BOX EĞER İŞARETLİ İSE BU ÇERÇEVEMİZ AKTİF BİR ŞEKİLDE OYLAMAYA HAZIR BİR ŞEKİLDE GENİŞLETİLMİŞ DURACAK. CHECKBOX KONTROLÜNÜN SOL TARAFINDA DA KRİTERİN NE OLDUĞU YAZACAK. EĞRE KRİTERLER AYARLARINDA KIYASLAMALI PUANLAMA İŞARETLENMİŞ İSE BİR KAYAN BUTON OLACAK VE KRİTERLER AYARLARINDA BELİRLENMİŞ OLAN MESELA 10 PUANI BÖLÜŞTÜREN BİR KAYAN ÇUBUK OLACAK PUANI BÖLÜŞTÜREBİLMEK İÇİN.MESELA 5-5 1-9 7-3 ŞEKLİNDE TOPLAMI 10 PUAN YADA KAÇ PUAN AYARI YAPILDI İSE O KADAR PUANI BÖLÜŞTÜREN BİR KAYAN BUTON OLMALI. EĞER CHECK BOX İŞARETLENİR İSE BU KAYAN BUTON 5-5 PUAN YADA 2-2 HANGİ PUAN İSE ONU EŞİT BÖLÜŞTÜREN BİR YAPIDA AÇILMALI. EĞER CHECK BOX KAPATILIR İSE TÜM ÇERÇEVE PASİF HALE GEÇMELİ. VE KAPATMALI GÖZ KAPANIR GİBİ. 27 TANE KRİTER VARSA 27 TANE CHECKBOX LU ÇERÇEVE OLACAK.
-
-ŞİMDİ BU TASARIMIN BİRDE B VERSİYONU OLACAK. ONDADA KIYASLAMALI DEĞİL AYRI AYRI İŞARETLENMİŞ İSE KRİTERLER AYAR SAYFASINDA O ZAMAN BİR HER TAKIM BÖLGESİNDE BİRER DROPDOWN OLACAK VE BU DROPDOWN KAÇ ÜZERİNDEN PUANLAMA YAPILIYORSA MESELA 10 YADA 3 FARKETMEZ O PUAN ARALIĞINI DROPDOWN OLARAK DÖKECEK VE KULLANCI HANGİ PUANI VERECEK İSE ONU İŞARETLEYECEK.
-
-KAYDET VE İPTAL BUTONLARININ ÜZERİNDE ÜÇ TANE BUTON KOYALIM.
-BU BUTONALRDA SABİT OLACAK.
-DİKDÖRTGENSEL BİR YAPIDA OLSUN
-TAKIM 1 GALİB BERABERE VE TAKIM 2 GALİB ŞEKLİNDE.
-BU BUTONLARIN BİR ÜSTÜNDE DE TOPLAM PUAN KUTUCUKLARI OLSUN VE BU KUTUCUKLARDA SABİT OLSUN. BU SABİT 3 SIRA BUTONDAN SONRA SCROLL İLE AŞAĞI YUKARI İÇİNDEKİ BÖLGENİN HAREKET EDEBİLDİĞİ TEXT ÇERÇEVESİ VE ONUN İÇİNDE 20 KRİTERİN TEK TER ÇERÇEVE İÇİNE ALINMIŞ ŞEKİLDE LİSTELENDİĞİ YAPI OLACAK
-
-BU İKİ TASARIM VERSİYONUNU DA YAPALIM İİSİNİDE BANA GÖSTER
-```
-
-### [16:35]
-```
-*p kodunu çalışma protokolüne yaz sonra okuyunca bunu uygulaman için
-```
+**Sonuç:** Major crash'ler düzeltildi, APK production ready
 
 ### [23:15] (2025-09-23)
 ```
