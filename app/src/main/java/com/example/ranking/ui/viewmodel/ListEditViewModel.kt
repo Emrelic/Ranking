@@ -21,7 +21,9 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
         matchDao = database.matchDao(),
         leagueSettingsDao = database.leagueSettingsDao(),
         archiveDao = database.archiveDao(),
-        csvReader = CsvReader()
+        csvReader = CsvReader(),
+        swissStateDao = database.swissStateDao(),
+        swissMatchStateDao = database.swissMatchStateDao()
     )
     
     fun loadListData(listId: Long, onResult: (List<Song>) -> Unit) {

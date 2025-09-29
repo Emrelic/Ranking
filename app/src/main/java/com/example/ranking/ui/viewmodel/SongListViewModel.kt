@@ -23,7 +23,9 @@ class SongListViewModel(application: Application) : AndroidViewModel(application
         matchDao = database.matchDao(),
         leagueSettingsDao = database.leagueSettingsDao(),
         archiveDao = database.archiveDao(),
-        csvReader = CsvReader()
+        csvReader = CsvReader(),
+        swissStateDao = database.swissStateDao(),
+        swissMatchStateDao = database.swissMatchStateDao()
     )
     
     private val _songs = MutableStateFlow<List<Song>>(emptyList())

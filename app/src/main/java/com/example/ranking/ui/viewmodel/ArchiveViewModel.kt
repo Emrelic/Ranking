@@ -23,7 +23,9 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
         matchDao = database.matchDao(),
         leagueSettingsDao = database.leagueSettingsDao(),
         archiveDao = database.archiveDao(),
-        csvReader = CsvReader()
+        csvReader = CsvReader(),
+        swissStateDao = database.swissStateDao(),
+        swissMatchStateDao = database.swissMatchStateDao()
     )
     
     data class ArchiveUiState(

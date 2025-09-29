@@ -317,6 +317,7 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(

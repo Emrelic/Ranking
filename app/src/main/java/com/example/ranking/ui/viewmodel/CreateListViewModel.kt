@@ -23,7 +23,7 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
         archiveDao = database.archiveDao(),
         csvReader = CsvReader(),
         swissStateDao = database.swissStateDao(),
-        swissMatchStateDao = database.swissMatchStateDao()
+        swissMatchStateDao = database.swissMatchStateDao(),
     )
     
     fun createList(
