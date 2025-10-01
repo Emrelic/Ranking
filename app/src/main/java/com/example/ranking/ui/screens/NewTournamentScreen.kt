@@ -381,16 +381,19 @@ private fun SystemTypeSelectionStep(
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
+                        val parts = description.split(" - ")
                         Text(
-                            text = description.split(" - ")[0],
+                            text = parts[0],
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = description.split(" - ")[1],
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        if (parts.size > 1) {
+                            Text(
+                                text = parts[1],
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -524,7 +527,6 @@ private fun CriteriaSettingsStep(
         }
         
         Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Scoring Type
