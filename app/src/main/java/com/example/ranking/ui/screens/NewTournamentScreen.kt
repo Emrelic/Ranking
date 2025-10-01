@@ -69,10 +69,12 @@ fun NewTournamentScreen(
             
             val criteriaText = if (useCriteria && selectedCriterionList != null) {
                 val criteria = try {
-                    Gson().fromJson<List<String>>(
-                        selectedCriterionList!!.criteria,
-                        object : TypeToken<List<String>>() {}.type
-                    ) ?: emptyList()
+                    selectedCriterionList?.criteria?.let { criteriaJson ->
+                        Gson().fromJson<List<String>>(
+                            criteriaJson,
+                            object : TypeToken<List<String>>() {}.type
+                        ) ?: emptyList()
+                    } ?: emptyList()
                 } catch (e: Exception) { emptyList() }
                 ". ${criteria.size} kriter listeli"
             } else ""
@@ -94,31 +96,25 @@ fun NewTournamentScreen(
             )
             
             // SCROLL YAPILABIL ORTA ALAN
-            Box(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // Mevcut alanın tamamını kullan, bottom butonlara yer bırak
+                    .weight(1f)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState()) // SCROLL ÖZELLİĞİ
-                        .padding(16.dp)
-                ) {
+                item {
                     // Progress indicator
                     LinearProgressIndicator(
                         progress = currentStep / 5f,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Error message
-                    if (errorMessage != null) {
+                }
+                
+                if (errorMessage != null) {
+                    item {
                         Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 16.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
                         ) {
                             Text(
@@ -128,7 +124,9 @@ fun NewTournamentScreen(
                             )
                         }
                     }
+                }
 
+                item {
                     when (currentStep) {
                         1 -> SongListSelectionStep(
                             songLists = songLists,
@@ -168,7 +166,9 @@ fun NewTournamentScreen(
                             onMandatoryCriteriaChanged = { mandatoryCriteria = it }
                         )
                     }
-                    
+                }
+                
+                item {
                     // BOTTOM PADDİNG - BUTONLAR İÇİN ALAN BIRAK
                     Spacer(modifier = Modifier.height(100.dp))
                 }
@@ -285,11 +285,10 @@ private fun SongListSelectionStep(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        LazyColumn(
-            modifier = Modifier.heightIn(max = 400.dp), // MAX HEIGHT - SCROLL İÇİN
+        Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(songLists) { songList ->
+            songLists.forEach { songList ->
                 Card(
                     onClick = { onSongListSelected(songList) },
                     modifier = Modifier.fillMaxWidth(),
@@ -351,7 +350,7 @@ private fun SystemTypeSelectionStep(
     val systemTypes = listOf(
         "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
         "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
-        "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
+        "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi - En doğru algoritma (Önerilen)",
         "SINGLE_ELIMINATION" to "Eleme Sistemi - Tek maç eleme"
     )
     
@@ -363,11 +362,10 @@ private fun SystemTypeSelectionStep(
             modifier = Modifier.padding(bottom = 16.dp)
         )
         
-        LazyColumn(
-            modifier = Modifier.heightIn(max = 400.dp), // MAX HEIGHT - SCROLL İÇİN
+        Column(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(systemTypes) { (type, description) ->
+            systemTypes.forEach { (type, description) ->
                 Card(
                     onClick = { onSystemTypeSelected(type) },
                     modifier = Modifier.fillMaxWidth(),
@@ -381,16 +379,19 @@ private fun SystemTypeSelectionStep(
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
+                        val parts = description.split(" - ")
                         Text(
-                            text = description.split(" - ")[0],
+                            text = parts.getOrElse(0) { description },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Text(
-                            text = description.split(" - ")[1],
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        parts.getOrNull(1)?.let { subtitle ->
+                            Text(
+                                text = subtitle,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }
@@ -439,11 +440,10 @@ private fun CriteriaSelectionStep(
             Column {
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                LazyColumn(
-                    modifier = Modifier.heightIn(max = 300.dp), // MAX HEIGHT - SCROLL İÇİN
+                Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(criterionLists) { criterionList ->
+                    criterionLists.filterNotNull().forEach { criterionList ->
                         Card(
                             onClick = { onCriterionListSelected(criterionList) },
                             modifier = Modifier.fillMaxWidth(),
@@ -458,15 +458,17 @@ private fun CriteriaSelectionStep(
                                 modifier = Modifier.padding(16.dp)
                             ) {
                                 Text(
-                                    text = criterionList.name,
+                                    text = criterionList?.name ?: "Bilinmeyen Kriter",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                                 val criteria = try {
-                                    Gson().fromJson<List<String>>(
-                                        criterionList.criteria,
-                                        object : TypeToken<List<String>>() {}.type
-                                    ) ?: emptyList()
+                                    criterionList?.criteria?.let { criteriaJson ->
+                                        Gson().fromJson<List<String>>(
+                                            criteriaJson,
+                                            object : TypeToken<List<String>>() {}.type
+                                        ) ?: emptyList()
+                                    } ?: emptyList()
                                 } catch (e: Exception) { emptyList() }
                                 
                                 Text(
@@ -524,7 +526,6 @@ private fun CriteriaSettingsStep(
         }
         
         Column(
-            modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Scoring Type
