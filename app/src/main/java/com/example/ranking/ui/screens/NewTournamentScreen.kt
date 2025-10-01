@@ -57,10 +57,13 @@ fun NewTournamentScreen(
     LaunchedEffect(selectedSongList, selectedSystemType, useCriteria, selectedCriterionList) {
         if (selectedSongList != null) {
             val systemName = when (selectedSystemType) {
+                "DIRECT_SCORING" -> "direkt puanlama"
                 "LEAGUE" -> "lig"
                 "SWISS" -> "isviçre"
                 "EMRE_CORRECT" -> "geliştirilmiş isviçre" 
-                "SINGLE_ELIMINATION" -> "eleme"
+                "ELIMINATION" -> "eleme"
+                "FULL_ELIMINATION" -> "gruplu eleme"
+                "SINGLE_ELIMINATION" -> "tam eleme"
                 else -> "turnuva"
             }
             
@@ -349,10 +352,13 @@ private fun SystemTypeSelectionStep(
     onSystemTypeSelected: (String) -> Unit
 ) {
     val systemTypes = listOf(
+        "DIRECT_SCORING" to "Direkt Puanlama - 0-100 arası puan verme",
         "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
-        "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
+        "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme", 
         "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
-        "SINGLE_ELIMINATION" to "Eleme Sistemi - Tek maç eleme"
+        "ELIMINATION" to "Eleme Usulü - Çift eleme sistemi",
+        "FULL_ELIMINATION" to "Gruplu Eleme Usulü - Grup eleme",
+        "SINGLE_ELIMINATION" to "Tam Eleme Usulü - Tek maç eleme"
     )
     
     Column {

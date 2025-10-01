@@ -975,15 +975,14 @@ private fun CriteriaEvaluationDialog(
         properties = DialogProperties(
             dismissOnBackPress = true,
             dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false // SİSTEM BUTONLARINI GİZLE - FULL IMMERSIVE
         )
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 80.dp) // 80DP AŞAĞI DOĞRU GENİŞLETME
-                .padding(horizontal = 0.dp), // HORIZONTAL MAKSİMUM GENIŞLIK
-            shape = RoundedCornerShape(0.dp),
+                .fillMaxSize(), // TÜM PADDİNG KALDIRILDI - TAM EKRAN GENİŞLETME
+            shape = RectangleShape, // KÖŞE YUVARLAKLARI KALDIRILDI - MAKSİMUM ALAN
             color = MaterialTheme.colorScheme.background
         ) {
             // ARKAPLAN: Yarı yarıya renk sistemi
@@ -1022,15 +1021,13 @@ private fun CriteriaEvaluationDialog(
                 }
                 
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 0.dp) // HORIZONTAL PADDİNG KALDIRILDI - EKRAN SINIRLARINI KULLAN
+                    modifier = Modifier.fillMaxSize() // TÜM PADDİNG KALDIRILDI - MAKSİMUM HORİZONTAL ALAN
                 ) {
-                    // BAŞLIK
+                    // BAŞLIK - DAHA DA YUKARI GENİŞLETİLDİ
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 16.dp), // SADECE VERTİKAL PADDING
+                            .padding(vertical = 4.dp, horizontal = 0.dp), // HORİZONTAL PADDİNG TAMAMEN KALDIRILDI
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -1142,8 +1139,8 @@ private fun CriteriaEvaluationDialog(
                     ) {
                         Column(
                             modifier = Modifier
-                                .padding(12.dp)
-                                .padding(bottom = 24.dp) // Extra padding for navigation bar area
+                                .padding(8.dp) // PADDING AZALTILDI - MAKSİMUM ALAN
+                                .padding(bottom = 48.dp) // SİSTEM NAVİGATİON BAR ALANI İÇİN ARTTIRILDI
                         ) {
                             // TOPLAM KUTUCUKLARI - Güzel tasarımla
                             Row(
@@ -1251,22 +1248,20 @@ private fun CriteriaEvaluationDialog(
                             
                             Spacer(modifier = Modifier.height(8.dp))
                             
-                            // İPTAL/KAYDET BUTONLARI
+                            // İPTAL/KAYDET BUTONLARI - TAM GENİŞLİK KULLANIMI
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 0.dp), // HORIZONTAL PADDİNG KALDIRILDI
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                modifier = Modifier.fillMaxWidth(), // TÜM PADDİNG KALDIRILDI
+                                horizontalArrangement = Arrangement.spacedBy(2.dp) // MİNİMAL BOŞLUK
                             ) {
                                 OutlinedButton(
                                     onClick = onDismiss,
-                                    modifier = Modifier.weight(1f).padding(end = 2.dp) // PADDİNG AZALTILDI
+                                    modifier = Modifier.weight(1f) // PADDİNG TAMAMEN KALDIRILDI
                                 ) {
                                     Text("İptal")
                                 }
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "save_only") },
-                                    modifier = Modifier.weight(1f).padding(start = 2.dp) // PADDİNG AZALTILDI
+                                    modifier = Modifier.weight(1f) // PADDİNG TAMAMEN KALDIRILDI
                                 ) {
                                     Text("Kaydet")
                                 }
