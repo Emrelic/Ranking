@@ -351,7 +351,7 @@ private fun SystemTypeSelectionStep(
     val systemTypes = listOf(
         "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
         "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
-        "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
+        "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi - En doğru algoritma (Önerilen)",
         "SINGLE_ELIMINATION" to "Eleme Sistemi - Tek maç eleme"
     )
     
@@ -383,13 +383,13 @@ private fun SystemTypeSelectionStep(
                     ) {
                         val parts = description.split(" - ")
                         Text(
-                            text = parts[0],
+                            text = parts.getOrElse(0) { description },
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        if (parts.size > 1) {
+                        parts.getOrNull(1)?.let { subtitle ->
                             Text(
-                                text = parts[1],
+                                text = subtitle,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
