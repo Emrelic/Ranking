@@ -498,7 +498,8 @@ private fun InitialRankingContent(
 @Composable
 private fun MatchingsListContent(
     uiState: RankingViewModel.RankingUiState,
-    viewModel: RankingViewModel
+    viewModel: RankingViewModel,
+    method: String = "EMRE_CORRECT" // Method parametresi eklendi
 ) {
     var isAdvancedView by remember { mutableStateOf(true) } // Büyük kartlar varsayılan
 
@@ -587,7 +588,9 @@ private fun MatchingsListContent(
                         AdvancedMatchCard(
                             match = match,
                             songs = uiState.allSongs,
-                            onClick = { 
+                            method = method,
+                            emreState = uiState.emreState,
+                            onClick = {
                                 // Kart tıklama artık puanlama ekranına geçmiyor
                                 android.util.Log.d("RANKING_DEBUG", "AdvancedMatchCard clicked but no action")
                             }
@@ -780,6 +783,8 @@ private fun SimpleMatchCard(
 private fun AdvancedMatchCard(
     match: Match,
     songs: List<Song>,
+    method: String = "EMRE_CORRECT",
+    emreState: com.example.ranking.ranking.EmreSystemCorrect.EmreState? = null,
     onClick: () -> Unit
 ) {
     val song1 = songs.find { it.id == match.songId1 }
@@ -812,55 +817,91 @@ private fun AdvancedMatchCard(
                 horizontalArrangement = Arrangement.spacedBy(6.dp), // Minimal boşluk
                 verticalAlignment = Alignment.Top // Kartları üstten hizala
             ) {
-                // Sol takım kartı - AFGANİSTAN formatı
-                Card(
-                    modifier = Modifier.weight(1f),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC)), // Açık mavi
-                    border = BorderStroke(2.dp, Color(0xFF0277BD)), // Koyu mavi border
-                    shape = RoundedCornerShape(0.dp) // Keskin köşeler
+                // Sol takım kartı - AFGANİSTAN formatı (Box ile wrap - puan rozeti için)
+                Box(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Column {
-                        // Koyu mavi başlık
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF0277BD))
-                                .padding(vertical = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = song1?.name?.uppercase() ?: "AFGANİSTAN",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                        
-                        // Tablo verileri - Resimdeki format
-                        if (song1 != null && song1.csvData != null) {
-                            val csvMap = parseJsonToMap(song1.csvData!!)
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                if (csvMap.isNotEmpty()) {
-                                    csvMap.forEach { (key, value) ->
-                                        TableRow(
-                                            label = key,
-                                            value = value
-                                        )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        ),
+                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Column {
+                            // Başlık - Ana tema ile uyumlu
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                    .padding(vertical = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = song1?.name?.uppercase() ?: "AFGANİSTAN",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            // Tablo verileri - Resimdeki format
+                            if (song1 != null && song1.csvData != null) {
+                                val csvMap = parseJsonToMap(song1.csvData!!)
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    if (csvMap.isNotEmpty()) {
+                                        csvMap.forEach { (key, value) ->
+                                            TableRow(
+                                                label = key,
+                                                value = value
+                                            )
+                                        }
+                                    } else {
+                                        TableRow("Name", song1.name)
+                                        TableRow("Artist", song1.artist)
                                     }
-                                } else {
-                                    TableRow("Name", song1.name)
-                                    TableRow("Artist", song1.artist)
+                                }
+                            } else {
+                                // Placeholder data resimdeki gibi
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    TableRow("Kıta", "Asya")
+                                    TableRow("Nüfus (Milyon)", "438")
+                                    TableRow("Yüzölçümü (km²)", "652230")
+                                    TableRow("GSYİH (Milyar USD)", "18")
+                                    TableRow("Kişi Başına GSYİH (USD)", "411")
                                 }
                             }
-                        } else {
-                            // Placeholder data resimdeki gibi
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                TableRow("Kıta", "Asya")
-                                TableRow("Nüfus (Milyon)", "438")
-                                TableRow("Yüzölçümü (km²)", "652230")
-                                TableRow("GSYİH (Milyar USD)", "18")
-                                TableRow("Kişi Başına GSYİH (USD)", "411")
+                        }
+                    }
+
+                    // PUAN ROZETİ - SAĞ ALT KÖŞE (TÜM USULLER)
+                    if (song1 != null) {
+                        val currentPoints = when (method) {
+                            "EMRE_CORRECT" -> emreState?.teams?.find { it.song.id == song1.id }?.points ?: 0.0
+                            else -> 0.0 // Diğer usuller için de genişletilebilir
+                        }
+
+                        if (currentPoints > 0.0 || method == "EMRE_CORRECT") {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .offset(x = 8.dp, y = 8.dp)  // Offset - merkezini köşeye yerleştir
+                                    .size(32.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.primary,
+                                        CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}" else "${currentPoints}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
                             }
                         }
                     }
@@ -887,55 +928,91 @@ private fun AdvancedMatchCard(
                     )
                 }
 
-                // Sağ takım kartı - ARNAVUTLUK formatı  
-                Card(
-                    modifier = Modifier.weight(1f),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFB3E5FC)), // Açık mavi
-                    border = BorderStroke(2.dp, Color(0xFF0277BD)), // Koyu mavi border
-                    shape = RoundedCornerShape(0.dp) // Keskin köşeler
+                // Sağ takım kartı - ARNAVUTLUK formatı (Box ile wrap - puan rozeti için)
+                Box(
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Column {
-                        // Koyu mavi başlık
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color(0xFF0277BD))
-                                .padding(vertical = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = song2?.name?.uppercase() ?: "ARNAVUTLUK",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                        
-                        // Tablo verileri - Resimdeki format
-                        if (song2 != null && song2.csvData != null) {
-                            val csvMap = parseJsonToMap(song2.csvData!!)
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                if (csvMap.isNotEmpty()) {
-                                    csvMap.forEach { (key, value) ->
-                                        TableRow(
-                                            label = key,
-                                            value = value
-                                        )
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                        ),
+                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                        shape = RoundedCornerShape(8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Column {
+                            // Başlık - Ana tema ile uyumlu
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                    .padding(vertical = 12.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = song2?.name?.uppercase() ?: "ARNAVUTLUK",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            // Tablo verileri - Resimdeki format
+                            if (song2 != null && song2.csvData != null) {
+                                val csvMap = parseJsonToMap(song2.csvData!!)
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    if (csvMap.isNotEmpty()) {
+                                        csvMap.forEach { (key, value) ->
+                                            TableRow(
+                                                label = key,
+                                                value = value
+                                            )
+                                        }
+                                    } else {
+                                        TableRow("Name", song2.name)
+                                        TableRow("Artist", song2.artist)
                                     }
-                                } else {
-                                    TableRow("Name", song2.name)
-                                    TableRow("Artist", song2.artist)
+                                }
+                            } else {
+                                // Placeholder data resimdeki gibi
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    TableRow("Kıta", "Avrupa")
+                                    TableRow("Nüfus (Milyon)", "28")
+                                    TableRow("Yüzölçümü (km²)", "28748")
+                                    TableRow("GSYİH (Milyar USD)", "28")
+                                    TableRow("Kişi Başına GSYİH (USD)", "10000")
                                 }
                             }
-                        } else {
-                            // Placeholder data resimdeki gibi
-                            Column(modifier = Modifier.padding(8.dp)) {
-                                TableRow("Kıta", "Avrupa")
-                                TableRow("Nüfus (Milyon)", "28")
-                                TableRow("Yüzölçümü (km²)", "28748")
-                                TableRow("GSYİH (Milyar USD)", "28")
-                                TableRow("Kişi Başına GSYİH (USD)", "10000")
+                        }
+                    }
+
+                    // PUAN ROZETİ - SAĞ ALT KÖŞE (TÜM USULLER)
+                    if (song2 != null) {
+                        val currentPoints = when (method) {
+                            "EMRE_CORRECT" -> emreState?.teams?.find { it.song.id == song2.id }?.points ?: 0.0
+                            else -> 0.0 // Diğer usuller için de genişletilebilir
+                        }
+
+                        if (currentPoints > 0.0 || method == "EMRE_CORRECT") {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .offset(x = 8.dp, y = 8.dp)  // Offset - merkezini köşeye yerleştir
+                                    .size(32.dp)
+                                    .background(
+                                        MaterialTheme.colorScheme.primary,
+                                        CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}" else "${currentPoints}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
                             }
                         }
                     }
@@ -1790,7 +1867,8 @@ private fun MatchBasedContent(
         android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT")
         MatchingsListContent(
             uiState = uiState,
-            viewModel = viewModel
+            viewModel = viewModel,
+            method = method
         )
         return
     }
@@ -1876,25 +1954,25 @@ private fun MatchBasedContent(
                 )
             }
 
-            // 3. SABİT: İLK TAKIM ETİKETİ - ANA SAYFA TEMASIYLA UYUMLU
+            // 3. SABİT: İLK TAKIM ETİKETİ - ANA TEMA İLE UYUMLU
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(12.dp), // ANA SAYFA KÖŞE YUVARLAKLIGI
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), // ANA SAYFA ELEVATION
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1976D2) // MAVİ TAKIM RENGİ KORUNDU
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             ) {
                 Text(
                     text = uiState.song1?.name?.uppercase() ?: "TAKIM 1",
-                    style = MaterialTheme.typography.titleMedium, // ANA SAYFA FONT STİLİ
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp), // ANA SAYFA PADDİNG
+                        .padding(16.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -1904,8 +1982,8 @@ private fun MatchBasedContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f) // Available space'in yarısını al
-                    .background(Color(0xFFE3F2FD))
-                    .border(1.dp, Color.Gray)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                     .clickable {
                         if (!useScores) {
                             uiState.song1?.id?.let { songId ->
@@ -1915,6 +1993,38 @@ private fun MatchBasedContent(
                     }
             ) {
                 uiState.song1?.let { song1 ->
+                    // PUAN ROZETİ - SAĞ ALT KÖŞE (TÜM USULLER)
+                    val currentPoints = when (method) {
+                        "EMRE_CORRECT" -> {
+                            if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                uiState.emreState.teams.find { it.song.id == song1.id }?.points ?: 0.0
+                            } else {
+                                0.0
+                            }
+                        }
+                        else -> 0.0 // Diğer usuller için genişletilebilir
+                    }
+
+                    if (currentPoints > 0.0 || method == "EMRE_CORRECT") {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = 8.dp, y = 8.dp)  // Offset - merkezini köşeye yerleştir
+                                .size(32.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}" else "${currentPoints}",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
                     // CSV data'yı önceden hesapla
                     val csvData = song1.csvData
                     val jsonData = remember(csvData) {
@@ -1947,13 +2057,13 @@ private fun MatchBasedContent(
                                         text = key,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0D47A1),
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.weight(1f)
                                     )
                                     Text(
                                         text = value,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFF1976D2),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.weight(1f),
                                         textAlign = TextAlign.End
                                     )
@@ -1965,7 +2075,8 @@ private fun MatchBasedContent(
                                     Text(
                                         text = song1.name,
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     song1.artist?.let { artist ->
                                         Text(
@@ -1981,90 +2092,96 @@ private fun MatchBasedContent(
                 }
             }
 
-            // 5. SABİT: 3 BUTON SATIRI (BERABERLİK + SKOR İŞLE + KRİTER) - SİMETRİK TASARIM
+            // 5. SABİT: 3 BUTON SATIRI - ANA TEMA İLE UYUMLU
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 12.dp), // PADDING OPTIMIZE EDİLDİ
-                horizontalArrangement = Arrangement.spacedBy(6.dp) // BUTONLAR ARASI BOŞLUK OPTİMİZE
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Beraberlik butonu - SİMETRİK TASARIM
+                // Beraberlik butonu
                 Button(
                     onClick = {
                         onMatchResult(match.id, null) // null means draw
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp), // SABİT YÜKSEKLİK - SİMETRİ
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)), // YEŞİL TEMA
-                    shape = RoundedCornerShape(12.dp) // YUVARLAK KÖŞELER
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "BERABERLİK",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 }
 
-                // Skor İşle butonu - SİMETRİK TASARIM
+                // Skor İşle butonu
                 Button(
                     onClick = {
                         onShowScoreDialog(true)
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp), // SABİT YÜKSEKLİK - SİMETRİ
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)), // MAVİ TEMA
-                    shape = RoundedCornerShape(12.dp) // YUVARLAK KÖŞELER
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "SKOR İŞLE",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
 
-                // Kriter Değerlendirmesi butonu - SİMETRİK TASARIM
+                // Kriter Değerlendirmesi butonu
                 Button(
                     onClick = {
                         onShowCriteriaDialog(true)
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp), // SABİT YÜKSEKLİK - SİMETRİ
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)), // TURUNCU TEMA
-                    shape = RoundedCornerShape(12.dp) // YUVARLAK KÖŞELER
+                        .height(48.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "KRİTER",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
             }
 
-            // 6. SABİT: İKİNCİ TAKIM ETİKETİ - ANA SAYFA TEMASIYLA UYUMLU
+            // 6. SABİT: İKİNCİ TAKIM ETİKETİ - ANA TEMA İLE UYUMLU
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(12.dp), // ANA SAYFA KÖŞE YUVARLAKLIGI
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), // ANA SAYFA ELEVATION
+                shape = RoundedCornerShape(12.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF7B1FA2) // MOR TAKIM RENGİ (Takım 2)
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
             ) {
                 Text(
                     text = uiState.song2?.name?.uppercase() ?: "TAKIM 2",
-                    style = MaterialTheme.typography.titleMedium, // ANA SAYFA FONT STİLİ
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp), // ANA SAYFA PADDİNG
+                        .padding(16.dp),
                     textAlign = TextAlign.Center
                 )
             }
@@ -2074,8 +2191,8 @@ private fun MatchBasedContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f) // Available space'in yarısını al
-                    .background(Color(0xFFE3F2FD))
-                    .border(1.dp, Color.Gray)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
+                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                     .clickable {
                         if (!useScores) {
                             uiState.song2?.id?.let { songId ->
@@ -2085,6 +2202,38 @@ private fun MatchBasedContent(
                     }
             ) {
                 uiState.song2?.let { song2 ->
+                    // PUAN ROZETİ - SAĞ ALT KÖŞE (TÜM USULLER)
+                    val currentPoints = when (method) {
+                        "EMRE_CORRECT" -> {
+                            if (uiState.emreState?.teams?.isNotEmpty() == true) {
+                                uiState.emreState.teams.find { it.song.id == song2.id }?.points ?: 0.0
+                            } else {
+                                0.0
+                            }
+                        }
+                        else -> 0.0 // Diğer usuller için genişletilebilir
+                    }
+
+                    if (currentPoints > 0.0 || method == "EMRE_CORRECT") {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = 8.dp, y = 8.dp)  // Offset - merkezini köşeye yerleştir
+                                .size(32.dp)
+                                .background(
+                                    MaterialTheme.colorScheme.primary,
+                                    CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (currentPoints % 1.0 == 0.0) "${currentPoints.toInt()}" else "${currentPoints}",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
                     // CSV data'yı önceden hesapla
                     val csvData = song2.csvData
                     val jsonData = remember(csvData) {
@@ -2117,13 +2266,13 @@ private fun MatchBasedContent(
                                         text = key,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0D47A1),
+                                        color = MaterialTheme.colorScheme.onSurface,
                                         modifier = Modifier.weight(1f)
                                     )
                                     Text(
                                         text = value,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFF1976D2),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.weight(1f),
                                         textAlign = TextAlign.End
                                     )
@@ -2135,7 +2284,8 @@ private fun MatchBasedContent(
                                     Text(
                                         text = song2.name,
                                         style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     song2.artist?.let { artist ->
                                         Text(
