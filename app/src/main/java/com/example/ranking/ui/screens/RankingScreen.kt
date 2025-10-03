@@ -37,6 +37,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.data.Song
 import com.example.ranking.data.Match
@@ -907,24 +911,16 @@ private fun AdvancedMatchCard(
                     }
                 }
 
-                // VS yazısı kartlar arasında - V üstte S altta
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                // VS yazısı kartlar arasında - Horizontal ortada
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 ) {
                     Text(
-                        text = "V",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        lineHeight = 14.sp
-                    )
-                    Text(
-                        text = "S",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        lineHeight = 14.sp
+                        text = "VS",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
 
@@ -1047,37 +1043,59 @@ private fun CriteriaEvaluationDialog(
     onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit,
     viewModel: RankingViewModel = viewModel()
 ) {
+    // Sistem barlarını gizle (immersive mode)
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as? android.app.Activity)?.window
+        window?.let {
+            val insetsController = WindowCompat.getInsetsController(it, view)
+            insetsController.apply {
+                hide(WindowInsetsCompat.Type.systemBars())
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+    }
+
+    // Dialog kapandığında sistem barlarını geri göster
+    DisposableEffect(Unit) {
+        onDispose {
+            val window = (view.context as? android.app.Activity)?.window
+            window?.let {
+                val insetsController = WindowCompat.getInsetsController(it, view)
+                insetsController.show(WindowInsetsCompat.Type.systemBars())
+            }
+        }
+    }
+
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
             dismissOnBackPress = true,
             dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
+            usePlatformDefaultWidth = false,
+            decorFitsSystemWindows = false // Sistem barlarını kaplama modunu aktif et
         )
     ) {
         Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 80.dp) // 80DP AŞAĞI DOĞRU GENİŞLETME
-                .padding(horizontal = 0.dp), // HORIZONTAL MAKSİMUM GENIŞLIK
+            modifier = Modifier.fillMaxSize(), // TAM EKRAN - Sistem barları dahil, horizontal/vertical padding YOK
             shape = RoundedCornerShape(0.dp),
             color = MaterialTheme.colorScheme.background
         ) {
-            // ARKAPLAN: Yarı yarıya renk sistemi
+            // ARKAPLAN: Ana tema ile uyumlu yarı yarıya renk sistemi
             Row(modifier = Modifier.fillMaxSize()) {
-                // SOL YARIM - Takım 1 rengi (açık mavi)
+                // SOL YARIM - Takım 1 rengi
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .background(Color(0xFFE3F2FD))
+                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f))
                 )
-                // SAĞ YARIM - Takım 2 rengi (açık mor)
+                // SAĞ YARIM - Takım 2 rengi
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .background(Color(0xFFF3E5F5))
+                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.1f))
                 )
             }
             
@@ -1103,52 +1121,52 @@ private fun CriteriaEvaluationDialog(
                         .fillMaxSize()
                         .padding(horizontal = 0.dp) // HORIZONTAL PADDİNG KALDIRILDI - EKRAN SINIRLARINI KULLAN
                 ) {
-                    // BAŞLIK
+                    // BAŞLIK - Kompakt hale getirildi
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 16.dp), // SADECE VERTİKAL PADDING
+                            .padding(vertical = 4.dp, horizontal = 16.dp), // Padding azaltıldı
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "Kriter Değerlendirmesi",
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.titleLarge, // Daha küçük font
                             fontWeight = FontWeight.Bold
                         )
                     }
                     
-                    // TAKIM ETİKETLERİ - Yarı yarıya bölünmüş
+                    // TAKIM ETİKETLERİ - Kompakt hale getirildi
                     Row(modifier = Modifier.fillMaxWidth()) {
                         // SOL TAKIM ETİKETİ
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .background(Color(0xFF1976D2))
-                                .padding(vertical = 16.dp),
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(vertical = 8.dp), // Padding azaltıldı
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = song1?.name?.uppercase() ?: "TAKIM 1",
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium, // Daha küçük font
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 textAlign = TextAlign.Center
                             )
                         }
-                        
+
                         // SAĞ TAKIM ETİKETİ
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .background(Color(0xFF7B1FA2))
-                                .padding(vertical = 16.dp),
+                                .background(MaterialTheme.colorScheme.secondaryContainer)
+                                .padding(vertical = 8.dp), // Padding azaltıldı
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
                                 text = song2?.name?.uppercase() ?: "TAKIM 2",
-                                style = MaterialTheme.typography.titleLarge,
+                                style = MaterialTheme.typography.titleMedium, // Daha küçük font
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -1211,16 +1229,19 @@ private fun CriteriaEvaluationDialog(
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .windowInsetsPadding(WindowInsets.navigationBars),
+                            .border(
+                                3.dp,
+                                MaterialTheme.colorScheme.primary,
+                                RoundedCornerShape(16.dp)
+                            ),
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
+                        ),
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .padding(bottom = 24.dp) // Extra padding for navigation bar area
+                            modifier = Modifier.padding(8.dp) // Padding azaltıldı
                         ) {
                             // TOPLAM KUTUCUKLARI - Güzel tasarımla
                             Row(
@@ -1229,33 +1250,33 @@ private fun CriteriaEvaluationDialog(
                             ) {
                                 Card(
                                     colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFF1976D2).copy(alpha = 0.1f)
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                                     ),
-                                    modifier = Modifier.weight(1f).padding(end = 0.dp) // PADDİNG AZALTILDI
+                                    modifier = Modifier.weight(1f).padding(end = 0.dp)
                                 ) {
                                     Text(
                                         text = "Toplam ${team1Total.toInt()}",
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1976D2),
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(12.dp)
                                     )
                                 }
-                                
+
                                 Card(
                                     colors = CardDefaults.cardColors(
-                                        containerColor = Color(0xFF7B1FA2).copy(alpha = 0.1f)
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
                                     ),
-                                    modifier = Modifier.weight(1f).padding(start = 0.dp) // PADDİNG AZALTILDI
+                                    modifier = Modifier.weight(1f).padding(start = 0.dp)
                                 ) {
                                     Text(
                                         text = "Toplam ${team2Total.toInt()}",
                                         style = MaterialTheme.typography.titleLarge,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF7B1FA2),
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -1264,64 +1285,72 @@ private fun CriteriaEvaluationDialog(
                                 }
                             }
                             
-                            Spacer(modifier = Modifier.height(12.dp))
-                            
-                            // GALİB/BERABERE BUTONLARI - SİMETRİK VE EŞİT BOYUT
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // GALİB/BERABERE BUTONLARI - TAM YAY VE BİTİŞİK
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                horizontalArrangement = Arrangement.Start
                             ) {
+                                // Takım 1 Galib - Sol köşe yuvarlak
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "team1_wins") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF1976D2)
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(48.dp)
+                                        .fillMaxHeight(),
+                                    shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
                                 ) {
                                     Text(
                                         text = "${song1?.name ?: "Takım 1"}\nGalib",
                                         fontSize = 11.sp,
                                         textAlign = TextAlign.Center,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer
                                     )
                                 }
-                                
+
+                                // Berabere - Ortada köşesiz
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "draw") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF757575)
+                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(48.dp)
+                                        .fillMaxHeight(),
+                                    shape = RectangleShape
                                 ) {
                                     Text(
                                         text = "Berabere",
                                         fontSize = 11.sp,
                                         textAlign = TextAlign.Center,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer
                                     )
                                 }
-                                
+
+                                // Takım 2 Galib - Sağ köşe yuvarlak
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "team2_wins") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF7B1FA2)
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .height(48.dp)
+                                        .fillMaxHeight(),
+                                    shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
                                 ) {
                                     Text(
                                         text = "${song2?.name ?: "Takım 2"}\nGalib",
                                         fontSize = 11.sp,
                                         textAlign = TextAlign.Center,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
                             }
@@ -1373,32 +1402,32 @@ private fun CriterionBox(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp, horizontal = 0.dp), // HORIZONTAL PADDİNG KALDIRILDI
+            .padding(vertical = 4.dp, horizontal = 0.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         border = BorderStroke(
-            width = 2.dp, 
-            color = if (isExpanded) Color(0xFF1976D2) else Color(0xFF7B1FA2).copy(alpha = 0.3f)
+            width = 2.dp,
+            color = if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
         ),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
     ) {
-        // ARKAPLAN: Her zaman yarı yarıya renkli
+        // ARKAPLAN: Ana tema ile uyumlu yarı yarıya renkli
         Row(modifier = Modifier.fillMaxWidth()) {
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color(0xFFE3F2FD).copy(alpha = 0.3f))
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
             )
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight()
-                    .background(Color(0xFFF3E5F5).copy(alpha = 0.3f))
+                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f))
             )
         }
-        
+
         Column {
             // Kriter başlığı ve checkbox
             Row(
@@ -1413,14 +1442,14 @@ private fun CriterionBox(
                     text = criterionName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (isExpanded) Color(0xFF1976D2) else Color(0xFF424242)
+                    color = if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
                 Checkbox(
                     checked = isExpanded,
                     onCheckedChange = onExpandToggle,
                     colors = CheckboxDefaults.colors(
-                        checkedColor = Color(0xFF1976D2),
-                        uncheckedColor = Color(0xFF7B1FA2)
+                        checkedColor = MaterialTheme.colorScheme.primary,
+                        uncheckedColor = MaterialTheme.colorScheme.secondary
                     )
                 )
             }
@@ -1439,9 +1468,9 @@ private fun CriterionBox(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(2.dp),
-                            border = BorderStroke(1.dp, Color(0xFF1976D2).copy(alpha = 0.7f)),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFE3F2FD).copy(alpha = 0.5f)
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                             )
                         ) {
                             Column(
@@ -1452,7 +1481,7 @@ private fun CriterionBox(
                                     text = team1Name,
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1976D2)
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 ScoreDropdown(
                                     score = currentScores.first,
@@ -1469,9 +1498,9 @@ private fun CriterionBox(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(2.dp),
-                            border = BorderStroke(1.dp, Color(0xFF7B1FA2).copy(alpha = 0.7f)),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f)),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFF3E5F5).copy(alpha = 0.5f)
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
                             )
                         ) {
                             Column(
@@ -1482,7 +1511,7 @@ private fun CriterionBox(
                                     text = team2Name,
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF7B1FA2)
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 ScoreDropdown(
                                     score = currentScores.second,
@@ -1977,13 +2006,21 @@ private fun MatchBasedContent(
                 )
             }
 
-            // 4. SCROLL PENCERESİ: İLK TAKIM TABLOSU
+            // 4. SCROLL PENCERESİ: İLK TAKIM TABLOSU - Çerçeveli ve yuvarlak
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f) // Available space'in yarısını al
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                    .padding(horizontal = 16.dp, vertical = 4.dp) // Çerçeve için boşluk
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        3.dp,
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        RoundedCornerShape(12.dp)
+                    )
                     .clickable {
                         if (!useScores) {
                             uiState.song1?.id?.let { songId ->
@@ -2092,25 +2129,26 @@ private fun MatchBasedContent(
                 }
             }
 
-            // 5. SABİT: 3 BUTON SATIRI - ANA TEMA İLE UYUMLU
+            // 5. SABİT: 3 BUTON SATIRI - TAM YAY VE BİTİŞİK
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .height(48.dp)
+                    .padding(vertical = 8.dp), // Sadece vertical padding
+                horizontalArrangement = Arrangement.Start // Bitişik olmak için
             ) {
-                // Beraberlik butonu
+                // Beraberlik butonu - Sol köşe yuvarlak
                 Button(
                     onClick = {
                         onMatchResult(match.id, null) // null means draw
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp),
+                        .fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
                 ) {
                     Text(
                         text = "BERABERLİK",
@@ -2120,18 +2158,18 @@ private fun MatchBasedContent(
                     )
                 }
 
-                // Skor İşle butonu
+                // Skor İşle butonu - Ortada köşesiz
                 Button(
                     onClick = {
                         onShowScoreDialog(true)
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp),
+                        .fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RectangleShape // Köşesiz, bitişik
                 ) {
                     Text(
                         text = "SKOR İŞLE",
@@ -2141,18 +2179,18 @@ private fun MatchBasedContent(
                     )
                 }
 
-                // Kriter Değerlendirmesi butonu
+                // Kriter Değerlendirmesi butonu - Sağ köşe yuvarlak
                 Button(
                     onClick = {
                         onShowCriteriaDialog(true)
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .height(48.dp),
+                        .fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.tertiaryContainer
                     ),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
                 ) {
                     Text(
                         text = "KRİTER",
@@ -2186,13 +2224,21 @@ private fun MatchBasedContent(
                 )
             }
 
-            // 7. SCROLL PENCERESİ: İKİNCİ TAKIM TABLOSU
+            // 7. SCROLL PENCERESİ: İKİNCİ TAKIM TABLOSU - Çerçeveli ve yuvarlak
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f) // Available space'in yarısını al
-                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f))
-                    .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                    .padding(horizontal = 16.dp, vertical = 4.dp) // Çerçeve için boşluk
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .border(
+                        3.dp,
+                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                        RoundedCornerShape(12.dp)
+                    )
                     .clickable {
                         if (!useScores) {
                             uiState.song2?.id?.let { songId ->
