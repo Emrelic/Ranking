@@ -101,7 +101,20 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private var currentVotingSession: VotingSession? = null
     private var currentPairingMethod: com.example.ranking.data.EmrePairingMethod = com.example.ranking.data.EmrePairingMethod.SEQUENTIAL
     
-    fun initializeRanking(listId: Long, method: String, pairingMethodName: String = "SEQUENTIAL") {
+    private fun resetState() {
+        // Tüm state'i sıfırla
+        directScores.clear()
+        currentSongIndex = 0
+        currentVotingSession = null
+        emreState = null
+        
+        _uiState.value = RankingUiState(
+            isLoading = false,
+            method = currentMethod
+        )
+    }
+    
+    fun initializeRanking(listId: Long, method: String, pairingMethodName: String = "SEQUENTIAL", forceNew: Boolean = true) {
         currentListId = listId
         currentMethod = method
         currentPairingMethod = try {
@@ -112,8 +125,23 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         
         viewModelScope.launch {
             try {
-                // Check for existing active session
-                val activeSession = votingSessionDao.getActiveSession(listId, method)
+                // YENİ TURNUVA: Eski session'ları temizle
+                if (forceNew) {
+                    // Eski aktif session'ları deaktive et
+                    val existingSession = votingSessionDao.getActiveSession(listId, method)
+                    if (existingSession != null) {
+                        votingSessionDao.deactivateSession(existingSession.id)
+                    }
+                    
+                    // Eski maçları temizle
+                    repository.clearMatches(listId, method)
+                    
+                    // State'i sıfırla
+                    resetState()
+                }
+                
+                // Check for existing active session (sadece devam modunda)
+                val activeSession = if (forceNew) null else votingSessionDao.getActiveSession(listId, method)
                 currentVotingSession = activeSession
                 
                 // Load league settings if applicable
@@ -164,6 +192,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 }
                                 "EMRE_CORRECT" -> {
                                     initializeEmre()
+                                }
+                                "SINGLE_ELIMINATION" -> {
+                                    initializeSingleElimination()
+                                }
+                                "DOUBLE_ELIMINATION" -> {
+                                    initializeDoubleElimination()
                                 }
                                 else -> {
                                 }
@@ -334,6 +368,24 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
             val matches = RankingEngine.createFullEliminationMatches(songs)
+            repository.createMatches(matches)
+            loadNextMatch()
+        }
+    }
+    
+    private fun initializeSingleElimination() {
+        viewModelScope.launch {
+            repository.clearMatches(currentListId, currentMethod)
+            val matches = RankingEngine.createDirectEliminationMatches(songs, 1)
+            repository.createMatches(matches)
+            loadNextMatch()
+        }
+    }
+    
+    private fun initializeDoubleElimination() {
+        viewModelScope.launch {
+            repository.clearMatches(currentListId, currentMethod)
+            val matches = RankingEngine.createDoubleEliminationMatches(songs)
             repository.createMatches(matches)
             loadNextMatch()
         }

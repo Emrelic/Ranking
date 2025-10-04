@@ -65,7 +65,9 @@ fun RankingNavigation(
                 onNavigateToSongList = { listId -> navController.navigate("list_view/$listId") },
                 onNavigateToArchive = { navController.navigate("archive") },
                 onNavigateToTest = { navController.navigate("test") },
-                onNavigateToRanking = { listId, method -> navController.navigate("ranking/$listId/$method") }
+                onNavigateToRanking = { listId, method -> 
+                    navController.navigate("ranking/$listId/$method?isResuming=true") 
+                }
             )
         }
         
@@ -170,21 +172,27 @@ fun RankingNavigation(
 
 
         composable(
-            "ranking/{listId}/{method}?pairingMethod={pairingMethod}",
+            "ranking/{listId}/{method}?pairingMethod={pairingMethod}&isResuming={isResuming}",
             arguments = listOf(
                 navArgument("pairingMethod") { 
                     type = NavType.StringType
                     defaultValue = "SEQUENTIAL"
+                },
+                navArgument("isResuming") { 
+                    type = NavType.BoolType
+                    defaultValue = false
                 }
             )
         ) { backStackEntry ->
             val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
             val method = backStackEntry.arguments?.getString("method") ?: ""
             val pairingMethodName = backStackEntry.arguments?.getString("pairingMethod") ?: "SEQUENTIAL"
+            val isResuming = backStackEntry.arguments?.getBoolean("isResuming") ?: false
             RankingScreen(
                 listId = listId,
                 method = method,
                 pairingMethodName = pairingMethodName,
+                isResuming = isResuming,
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToResults = { id, m -> 
                     navController.navigate("results/$id/$m")

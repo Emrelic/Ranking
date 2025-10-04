@@ -53,7 +53,7 @@ fun NewTournamentScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Auto-generate tournament name when song list or system type changes
+    // Auto-generate tournament name when song list, system type, or criteria changes
     LaunchedEffect(selectedSongList, selectedSystemType, useCriteria, selectedCriterionList) {
         if (selectedSongList != null) {
             val systemName = when (selectedSystemType) {
@@ -61,23 +61,21 @@ fun NewTournamentScreen(
                 "SWISS" -> "isviçre"
                 "EMRE_CORRECT" -> "geliştirilmiş isviçre" 
                 "SINGLE_ELIMINATION" -> "eleme"
+                "DOUBLE_ELIMINATION" -> "çift eleme"
+                "DIRECT_SCORING" -> "direkt puanlama"
+                "ELIMINATION" -> "eleme"
+                "FULL_ELIMINATION" -> "gruplu eleme"
                 else -> "turnuva"
             }
             
-            val date = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val dateTime = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
                 .format(java.util.Date())
             
             val criteriaText = if (useCriteria && selectedCriterionList != null) {
-                val criteria = try {
-                    Gson().fromJson<List<String>>(
-                        selectedCriterionList!!.criteria,
-                        object : TypeToken<List<String>>() {}.type
-                    ) ?: emptyList()
-                } catch (e: Exception) { emptyList() }
-                ". ${criteria.size} kriter listeli"
+                " ${selectedCriterionList!!.name}"
             } else ""
             
-            tournamentName = "${selectedSongList!!.name} $systemName $date turnuva$criteriaText"
+            tournamentName = "${selectedSongList!!.name} $systemName$criteriaText $dateTime"
         }
     }
 
@@ -135,22 +133,18 @@ fun NewTournamentScreen(
                             selectedSongList = selectedSongList,
                             onSongListSelected = { selectedSongList = it }
                         )
-                        2 -> TournamentNameStep(
-                            tournamentName = tournamentName,
-                            onNameChanged = { tournamentName = it }
-                        )
-                        3 -> SystemTypeSelectionStep(
+                        2 -> SystemTypeSelectionStep(
                             selectedSystemType = selectedSystemType,
                             onSystemTypeSelected = { selectedSystemType = it }
                         )
-                        4 -> CriteriaSelectionStep(
+                        3 -> CriteriaSelectionStep(
                             criterionLists = criterionLists,
                             useCriteria = useCriteria,
                             selectedCriterionList = selectedCriterionList,
                             onUseCriteriaChanged = { useCriteria = it },
                             onCriterionListSelected = { selectedCriterionList = it }
                         )
-                        5 -> CriteriaSettingsStep(
+                        4 -> CriteriaSettingsStep(
                             enabled = useCriteria,
                             scoringType = scoringType,
                             scoreScale = scoreScale,
@@ -166,6 +160,10 @@ fun NewTournamentScreen(
                             onAutoWinnerFromCriteriaChanged = { autoWinnerFromCriteria = it },
                             onAutoOpenCriteriaPanelChanged = { autoOpenCriteriaPanel = it },
                             onMandatoryCriteriaChanged = { mandatoryCriteria = it }
+                        )
+                        5 -> TournamentNameStep(
+                            tournamentName = tournamentName,
+                            onNameChanged = { tournamentName = it }
                         )
                     }
                     
@@ -210,9 +208,9 @@ fun NewTournamentScreen(
                         onClick = { currentStep++ },
                         enabled = when (currentStep) {
                             1 -> selectedSongList != null
-                            2 -> tournamentName.isNotBlank()
-                            3 -> true
-                            4 -> !useCriteria || selectedCriterionList != null
+                            2 -> true
+                            3 -> !useCriteria || selectedCriterionList != null
+                            4 -> true
                             else -> false
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -252,7 +250,7 @@ fun NewTournamentScreen(
                                 )
                             }
                         },
-                        enabled = !isLoading,
+                        enabled = !isLoading && tournamentName.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         if (isLoading) {
@@ -349,10 +347,14 @@ private fun SystemTypeSelectionStep(
     onSystemTypeSelected: (String) -> Unit
 ) {
     val systemTypes = listOf(
+        "DIRECT_SCORING" to "Direkt Puanlama - Doğrudan puan verme",
         "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
         "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
         "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
-        "SINGLE_ELIMINATION" to "Eleme Sistemi - Tek maç eleme"
+        "ELIMINATION" to "Eleme Usulü - Klasik eleme",
+        "FULL_ELIMINATION" to "Gruplu Eleme Usulü - Tam eleme sistemi",
+        "SINGLE_ELIMINATION" to "Tek Maç Eleme - Bracket sistemi",
+        "DOUBLE_ELIMINATION" to "Çift Eleme - Kaybeden Bracketi"
     )
     
     Column {

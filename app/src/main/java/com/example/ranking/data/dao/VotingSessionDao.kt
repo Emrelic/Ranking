@@ -39,4 +39,7 @@ interface VotingSessionDao {
     
     @Query("UPDATE voting_sessions SET finishedAt = :finishedAt, isCompleted = 1 WHERE id = :sessionId")
     suspend fun completeTournament(sessionId: Long, finishedAt: Long)
+    
+    @Query("UPDATE voting_sessions SET isCompleted = 1 WHERE id = :sessionId")
+    suspend fun deactivateSession(sessionId: Long)
 }

@@ -53,13 +53,15 @@ fun RankingScreen(
     listId: Long,
     method: String,
     pairingMethodName: String = "SEQUENTIAL",
+    isResuming: Boolean = false, // DEVAM EDEN TURNUVA: false = yeni, true = devam eden
     onNavigateBack: () -> Unit,
     onNavigateToResults: (Long, String) -> Unit,
     onNavigateToFixture: (Long, String) -> Unit = { _, _ -> },
     viewModel: RankingViewModel = viewModel()
 ) {
-    LaunchedEffect(listId, method, pairingMethodName) {
-        viewModel.initializeRanking(listId, method, pairingMethodName)
+    LaunchedEffect(listId, method, pairingMethodName, isResuming) {
+        // YENİ TURNUVA: Eski verileri temizle, DEVAM EDEN: Mevcut verileri koru
+        viewModel.initializeRanking(listId, method, pairingMethodName, forceNew = !isResuming)
     }
     
     val uiState by viewModel.uiState.collectAsState()
@@ -378,73 +380,7 @@ private fun StandingsDialog(
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // TMB BUTONLARI - Bitişik Layout (3 Mavi + 3 Kırmızı)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start // Boşluk yok
-                ) {
-                    // 3 MAVİ BUTON
-                    Button(
-                        onClick = { onMatchResult(0, null) }, // Beraberlik
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("BERABERLİK", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                    
-                    Button(
-                        onClick = { /* VS menü */ },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("VS", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                    
-                    Button(
-                        onClick = { /* Skor gir */ },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("SKOR GİR", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                    
-                    // 3 KIRMIZI BUTON
-                    Button(
-                        onClick = { onShowCriteriaDialog(true) },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("KRİTER", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                    
-                    Button(
-                        onClick = { /* TAM EKRAN */ },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("TAM EKRAN", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                    
-                    Button(
-                        onClick = { /* MENÜ */ },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("MENÜ", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
+                // Butonlar kaldırıldı - Ana ekranda zaten mevcut
             }
         },
         confirmButton = {
@@ -818,7 +754,7 @@ private fun AdvancedMatchCard(
             // Resimdeki gibi side-by-side tablo formatı - TAM EŞLEŞTİRME
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp), // Minimal boşluk
+                horizontalArrangement = Arrangement.spacedBy(2.dp), // Daha minimal boşluk
                 verticalAlignment = Alignment.Top // Kartları üstten hizala
             ) {
                 // Sol takım kartı - AFGANİSTAN formatı (Box ile wrap - puan rozeti için)
@@ -845,8 +781,8 @@ private fun AdvancedMatchCard(
                             ) {
                                 Text(
                                     text = song1?.name?.uppercase() ?: "AFGANİSTAN",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     textAlign = TextAlign.Center
                                 )
@@ -914,14 +850,24 @@ private fun AdvancedMatchCard(
                 // VS yazısı kartlar arasında - Horizontal ortada
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = 2.dp) // Daha az padding
                 ) {
-                    Text(
-                        text = "VS",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "V",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "S",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
 
                 // Sağ takım kartı - ARNAVUTLUK formatı (Box ile wrap - puan rozeti için)
@@ -948,8 +894,8 @@ private fun AdvancedMatchCard(
                             ) {
                                 Text(
                                     text = song2?.name?.uppercase() ?: "ARNAVUTLUK",
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     textAlign = TextAlign.Center
                                 )
@@ -1077,7 +1023,9 @@ private fun CriteriaEvaluationDialog(
         )
     ) {
         Surface(
-            modifier = Modifier.fillMaxSize(), // TAM EKRAN - Sistem barları dahil, horizontal/vertical padding YOK
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = (-50).dp), // 50dp aşağı yönde genişletme
             shape = RoundedCornerShape(0.dp),
             color = MaterialTheme.colorScheme.background
         ) {

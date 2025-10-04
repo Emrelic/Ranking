@@ -1393,4 +1393,74 @@ object RankingEngine {
         
         return matches
     }
+    
+    // ÇIFT ELEME SİSTEMİ (DOUBLE ELIMINATION)
+    fun createDoubleEliminationMatches(songs: List<Song>): List<Match> {
+        val matches = mutableListOf<Match>()
+        if (songs.size < 2) return matches
+        
+        // Kazanan bracketi (üst bracket) - normal eleme sistemi
+        val winnerBracketMatches = createDirectEliminationMatches(songs, 1)
+        matches.addAll(winnerBracketMatches)
+        
+        // Kaybeden bracketi (alt bracket) - daha karmaşık
+        val loserBracketMatches = createLoserBracketMatches(songs)
+        matches.addAll(loserBracketMatches)
+        
+        // Final maçları
+        val finalMatches = createDoubleEliminationFinalMatches(songs)
+        matches.addAll(finalMatches)
+        
+        return matches
+    }
+    
+    private fun createLoserBracketMatches(songs: List<Song>): List<Match> {
+        val matches = mutableListOf<Match>()
+        val songCount = songs.size
+        
+        // Kaybeden bracketi için maç sayısı hesapla
+        val rounds = log2(songCount.toDouble()).toInt()
+        var matchNumber = 1000 // Kaybeden bracket için farklı numaralama
+        
+        // Her turdan elenenler için kaybeden bracketi maçları
+        for (round in 1..rounds) {
+            val teamsInThisRound = songCount / (2.0.pow(round.toDouble())).toInt()
+            for (i in 0 until teamsInThisRound step 2) {
+                if (i + 1 < teamsInThisRound) {
+                    matches.add(
+                        Match(
+                            listId = songs[0].listId,
+                            rankingMethod = "DOUBLE_ELIMINATION",
+                            songId1 = songs[i].id,
+                            songId2 = songs[i + 1].id,
+                            winnerId = null,
+                            round = 100 + round, // Kaybeden bracket için offset
+                            matchNumber = matchNumber++
+                        )
+                    )
+                }
+            }
+        }
+        
+        return matches
+    }
+    
+    private fun createDoubleEliminationFinalMatches(songs: List<Song>): List<Match> {
+        val matches = mutableListOf<Match>()
+        
+        // Grand Final (Kazanan vs Kaybeden bracket kazananı)
+        matches.add(
+            Match(
+                listId = songs[0].listId,
+                rankingMethod = "DOUBLE_ELIMINATION",
+                songId1 = songs[0].id, // Placeholder - kazanan bracket kazananı
+                songId2 = songs[1].id, // Placeholder - kaybeden bracket kazananı
+                winnerId = null,
+                round = 200, // Final round
+                matchNumber = 9999
+            )
+        )
+        
+        return matches
+    }
 }
