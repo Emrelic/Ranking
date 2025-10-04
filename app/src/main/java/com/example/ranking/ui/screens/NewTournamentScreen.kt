@@ -59,23 +59,23 @@ fun NewTournamentScreen(
             val systemName = when (selectedSystemType) {
                 "LEAGUE" -> "lig"
                 "SWISS" -> "isviçre"
-                "EMRE_CORRECT" -> "geliştirilmiş isviçre" 
-                "SINGLE_ELIMINATION" -> "eleme"
-                "DOUBLE_ELIMINATION" -> "çift eleme"
+                "EMRE_CORRECT" -> "geliştirilmiş isviçre"
                 "DIRECT_SCORING" -> "direkt puanlama"
                 "ELIMINATION" -> "eleme"
                 "FULL_ELIMINATION" -> "gruplu eleme"
+                "SINGLE_ELIMINATION" -> "tam eleme"
+                "DOUBLE_ELIMINATION" -> "çift eleme"
                 else -> "turnuva"
             }
-            
+
             val dateTime = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
                 .format(java.util.Date())
-            
+
             val criteriaText = if (useCriteria && selectedCriterionList != null) {
-                " ${selectedCriterionList!!.name}"
+                " - ${selectedCriterionList!!.name}"
             } else ""
-            
-            tournamentName = "${selectedSongList!!.name} $systemName$criteriaText $dateTime"
+
+            tournamentName = "${selectedSongList!!.name} - $systemName$criteriaText - $dateTime"
         }
     }
 
@@ -347,14 +347,14 @@ private fun SystemTypeSelectionStep(
     onSystemTypeSelected: (String) -> Unit
 ) {
     val systemTypes = listOf(
-        "DIRECT_SCORING" to "Direkt Puanlama - Doğrudan puan verme",
+        "DIRECT_SCORING" to "Direkt Puanlama - 0-100 arası puan verme",
         "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
         "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
         "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
-        "ELIMINATION" to "Eleme Usulü - Klasik eleme",
-        "FULL_ELIMINATION" to "Gruplu Eleme Usulü - Tam eleme sistemi",
-        "SINGLE_ELIMINATION" to "Tek Maç Eleme - Bracket sistemi",
-        "DOUBLE_ELIMINATION" to "Çift Eleme - Kaybeden Bracketi"
+        "ELIMINATION" to "Eleme Usulü - Çift eleme sistemi",
+        "FULL_ELIMINATION" to "Gruplu Eleme Usulü - Grup eleme",
+        "SINGLE_ELIMINATION" to "Tam Eleme Usulü - Tek maç eleme",
+        "DOUBLE_ELIMINATION" to "Çift Eleme - Kaybeden bracketi"
     )
     
     Column {

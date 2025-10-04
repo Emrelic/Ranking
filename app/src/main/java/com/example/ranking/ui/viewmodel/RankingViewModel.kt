@@ -334,16 +334,18 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 
                 // Doğru Emre usulü sistem başlatma
                 emreState = EmreSystemCorrect.initializeEmreTournament(safeSongs)
-                
-                // İLK SIRALAMA TABLOSUNU GÖSTER - Henüz eşleştirme yapmayacağız
+
+                // Doğrudan turnuvayı başlat - ara ekran gösterme
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    showInitialRanking = true,
+                    showInitialRanking = false,
                     emreState = emreState,
                     allSongs = safeSongs,
                     currentMatch = null
                 )
-                return@launch // Burada dur, kullanıcı butona basınca devam et
+
+                // İlk turu otomatik oluştur
+                createNextEmreRound(1)
                 
                 
             } catch (e: Exception) {
@@ -1326,26 +1328,31 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             emreState = emreState
                         )
                     } else {
-                        // Tüm maçlar tamamlanmış ama turnuva bitmemiş - ilk sıralama tablosunu göster
+                        // Tüm maçlar tamamlanmış ama turnuva bitmemiş - sonraki turu oluştur
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            showInitialRanking = true,
+                            showInitialRanking = false,
                             showMatchingsList = false,
                             emreState = emreState,
                             allSongs = songs,
                             currentMatch = null
                         )
+                        // Sonraki turu otomatik oluştur
+                        val nextRound = (emreState?.currentRound ?: 0) + 1
+                        createNextEmreRound(nextRound)
                     }
                 } else {
-                    // Hiç maç yok - yeni başlayan turnuva, ilk sıralama tablosunu göster
+                    // Hiç maç yok - yeni başlayan turnuva, doğrudan başlat
                     emreState = EmreSystemCorrect.initializeEmreTournament(songs)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        showInitialRanking = true,
+                        showInitialRanking = false,
                         emreState = emreState,
                         allSongs = songs,
                         currentMatch = null
                     )
+                    // İlk turu otomatik oluştur
+                    createNextEmreRound(1)
                 }
             }
             else -> {
