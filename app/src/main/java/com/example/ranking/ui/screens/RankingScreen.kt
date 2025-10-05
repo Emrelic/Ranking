@@ -1022,14 +1022,18 @@ private fun CriteriaEvaluationDialog(
             decorFitsSystemWindows = false
         )
     ) {
-        Surface(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .height(2330.dp)
-                .offset(y = 0.dp),
-            shape = RoundedCornerShape(0.dp),
-            color = MaterialTheme.colorScheme.background
         ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .height(3000.dp)
+                    .offset(y = (-100).dp),
+                shape = RoundedCornerShape(0.dp),
+                color = MaterialTheme.colorScheme.background
+            ) {
             Row(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
@@ -1325,6 +1329,7 @@ private fun CriteriaEvaluationDialog(
                     }
 
                 }
+            }
             }
         }
     }
