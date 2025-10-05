@@ -25,7 +25,47 @@ fun CriteriaScreen(
     onNavigateToEditCriteria: (Long) -> Unit,
     viewModel: CriteriaViewModel = viewModel()
 ) {
+    var hasError by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    
+    if (hasError) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Kriter sayfası yüklenirken hata oluştu",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = errorMessage,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = onNavigateBack) {
+                Text("Ana Menüye Dön")
+            }
+        }
+        return
+    }
     val criterionLists by viewModel.criterionLists.collectAsState()
+    var isLoading by remember { mutableStateOf(true) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(Unit) {
+        try {
+            isLoading = false
+        } catch (e: Exception) {
+            loadError = "Veriler yüklenirken hata oluştu: ${e.message}"
+            isLoading = false
+        }
+    }
+    
     var showDeleteDialog by remember { mutableStateOf(false) }
     var listToDelete by remember { mutableStateOf<com.example.ranking.data.CriterionList?>(null) }
     var deleteError by remember { mutableStateOf<String?>(null) }
@@ -51,7 +91,38 @@ fun CriteriaScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (criterionLists.isEmpty()) {
+        // Loading state
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        // Error state
+        else if (loadError != null) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = loadError!!,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = onNavigateBack) {
+                        Text("Geri Dön")
+                    }
+                }
+            }
+        }
+        // Empty state
+        else if (criterionLists.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -160,12 +231,15 @@ private fun CriterionListCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    // Parse criteria from JSON
     val criteria = try {
-        Gson().fromJson<List<String>>(
-            criterionList.criteria,
-            object : TypeToken<List<String>>() {}.type
-        ) ?: emptyList()
+        if (criterionList.criteria.isBlank()) {
+            emptyList<String>()
+        } else {
+            Gson().fromJson<List<String>>(
+                criterionList.criteria,
+                object : TypeToken<List<String>>() {}.type
+            ) ?: emptyList()
+        }
     } catch (e: Exception) {
         emptyList<String>()
     }

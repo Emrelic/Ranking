@@ -22,8 +22,12 @@ class CriteriaViewModel(application: Application) : AndroidViewModel(application
     
     private fun loadCriterionLists() {
         viewModelScope.launch {
-            database.criterionListDao().getAllActiveCriterionLists().collect { lists ->
-                _criterionLists.value = lists
+            try {
+                database.criterionListDao().getAllActiveCriterionLists().collect { lists ->
+                    _criterionLists.value = lists
+                }
+            } catch (e: Exception) {
+                _criterionLists.value = emptyList()
             }
         }
     }

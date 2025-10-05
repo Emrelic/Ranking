@@ -43,30 +43,3 @@ data class SwissMatchState(
     val lastUpdateTime: Long = System.currentTimeMillis()
 )
 
-/**
- * Stores complete fixture information for Swiss tournament
- * Preserves all match pairings and results across sessions
- */
-@Entity(
-    tableName = "swiss_fixtures",
-    foreignKeys = [
-        ForeignKey(
-            entity = VotingSession::class,
-            parentColumns = ["id"],
-            childColumns = ["sessionId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
-)
-data class SwissFixture(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
-    val sessionId: Long,
-    val currentRound: Int,
-    val totalRounds: Int,
-    val fixtureData: String, // JSON: complete fixture with all rounds
-    val currentStandings: String, // JSON: live standings
-    val nextMatchIndex: Int = 0, // which match to play next
-    val isRoundComplete: Boolean = false,
-    val lastUpdated: Long = System.currentTimeMillis()
-)

@@ -1019,26 +1019,24 @@ private fun CriteriaEvaluationDialog(
             dismissOnBackPress = true,
             dismissOnClickOutside = false,
             usePlatformDefaultWidth = false,
-            decorFitsSystemWindows = false // Sistem barlarını kaplama modunu aktif et
+            decorFitsSystemWindows = false
         )
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = (-50).dp), // 50dp aşağı yönde genişletme
+                .height(2330.dp)
+                .offset(y = 0.dp),
             shape = RoundedCornerShape(0.dp),
             color = MaterialTheme.colorScheme.background
         ) {
-            // ARKAPLAN: Ana tema ile uyumlu yarı yarıya renk sistemi
             Row(modifier = Modifier.fillMaxSize()) {
-                // SOL YARIM - Takım 1 rengi
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
                         .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.1f))
                 )
-                // SAĞ YARIM - Takım 2 rengi
                 Box(
                     modifier = Modifier
                         .weight(1f)
@@ -1047,9 +1045,7 @@ private fun CriteriaEvaluationDialog(
                 )
             }
             
-            // Ana içerik
             Box(modifier = Modifier.fillMaxSize()) {
-                // SAĞ ÜST KÖŞE CLOSE BUTTON
                 IconButton(
                     onClick = onDismiss,
                     modifier = Modifier
@@ -1334,8 +1330,6 @@ private fun CriteriaEvaluationDialog(
     }
 }
 
-// Yeni CriterionBox - Kapalı/açık checkbox ile kriter kutucuğu
-// YENİ CriterionBox - Kıyaslamalı vs Ayrı değerlendirme sistemi
 @Composable
 private fun CriterionBox(
     criterionName: String,

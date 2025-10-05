@@ -12,7 +12,6 @@ class EmreQuickUnitTest {
     
     @Test
     fun testEmreSystemCorrectBasic() {
-        println("🧪 EMRE USULÜ SİSTEM TESTİ (UNIT TEST)")
         
         // 6 takım oluştur
         val songs = listOf(
