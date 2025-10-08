@@ -1028,9 +1028,7 @@ private fun CriteriaEvaluationDialog(
         ) {
             Surface(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .height(3000.dp)
-                    .offset(y = (-100).dp),
+                    .fillMaxSize(),
                 shape = RoundedCornerShape(0.dp),
                 color = MaterialTheme.colorScheme.background
             ) {
@@ -1067,7 +1065,7 @@ private fun CriteriaEvaluationDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 0.dp) // HORIZONTAL PADDİNG KALDIRILDI - EKRAN SINIRLARINI KULLAN
+                        .padding(horizontal = 16.dp, vertical = 20.dp)
                 ) {
                     // BAŞLIK - Kompakt hale getirildi
                     Box(
@@ -1175,131 +1173,159 @@ private fun CriteriaEvaluationDialog(
                         .sumOf { it.second ?: 0.0 }
                     
                     Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                3.dp,
-                                MaterialTheme.colorScheme.primary,
-                                RoundedCornerShape(16.dp)
-                            ),
+                        modifier = Modifier.fillMaxWidth(),
                         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         ),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(24.dp)
                     ) {
                         Column(
-                            modifier = Modifier.padding(8.dp) // Padding azaltıldı
+                            modifier = Modifier.padding(16.dp)
                         ) {
-                            // TOPLAM KUTUCUKLARI - Güzel tasarımla
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Card(
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
-                                    ),
-                                    modifier = Modifier.weight(1f).padding(end = 0.dp)
+                                Surface(
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
                                 ) {
-                                    Text(
-                                        text = "Toplam ${team1Total.toInt()}",
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        textAlign = TextAlign.Center,
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(12.dp)
-                                    )
+                                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = song1?.name ?: "Takım 1",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = if (team1Total % 1.0 == 0.0) "${team1Total.toInt()}" else String.format("%.1f", team1Total),
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    }
                                 }
 
-                                Card(
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
-                                    ),
-                                    modifier = Modifier.weight(1f).padding(start = 0.dp)
+                                Surface(
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
                                 ) {
-                                    Text(
-                                        text = "Toplam ${team2Total.toInt()}",
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                                        textAlign = TextAlign.Center,
+                                    Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(12.dp)
-                                    )
+                                            .padding(vertical = 12.dp, horizontal = 8.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(
+                                            text = song2?.name ?: "Takım 2",
+                                            style = MaterialTheme.typography.labelLarge,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = if (team2Total % 1.0 == 0.0) "${team2Total.toInt()}" else String.format("%.1f", team2Total),
+                                            style = MaterialTheme.typography.headlineSmall,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
+                                    }
                                 }
                             }
                             
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                            // GALİB/BERABERE BUTONLARI - TAM YAY VE BİTİŞİK
+                            // GALİB/BERABERE BUTONLARI - DAHA BELİRGİN
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(48.dp),
-                                horizontalArrangement = Arrangement.Start
+                                    .height(60.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // Takım 1 Galib - Sol köşe yuvarlak
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "team1_wins") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
                                     ),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight(),
-                                    shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(18.dp)
                                 ) {
-                                    Text(
-                                        text = "${song1?.name ?: "Takım 1"}\nGalib",
-                                        fontSize = 11.sp,
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = song1?.name ?: "Takım 1",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Kazandı",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
 
-                                // Berabere - Ortada köşesiz
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "draw") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        contentColor = MaterialTheme.colorScheme.onSurface
                                     ),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight(),
-                                    shape = RectangleShape
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(18.dp)
                                 ) {
-                                    Text(
-                                        text = "Berabere",
-                                        fontSize = 11.sp,
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = "Berabere",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Skor eşit",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
 
-                                // Takım 2 Galib - Sağ köşe yuvarlak
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "team2_wins") },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                                        containerColor = MaterialTheme.colorScheme.secondary,
+                                        contentColor = MaterialTheme.colorScheme.onSecondary
                                     ),
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight(),
-                                    shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(18.dp)
                                 ) {
-                                    Text(
-                                        text = "${song2?.name ?: "Takım 2"}\nGalib",
-                                        fontSize = 11.sp,
-                                        textAlign = TextAlign.Center,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                                    )
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(
+                                            text = song2?.name ?: "Takım 2",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Kazandı",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
                                 }
                             }
                             
@@ -1307,20 +1333,18 @@ private fun CriteriaEvaluationDialog(
                             
                             // İPTAL/KAYDET BUTONLARI
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 0.dp), // HORIZONTAL PADDİNG KALDIRILDI
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 OutlinedButton(
                                     onClick = onDismiss,
-                                    modifier = Modifier.weight(1f).padding(end = 2.dp) // PADDİNG AZALTILDI
+                                    modifier = Modifier.weight(1f)
                                 ) {
                                     Text("İptal")
                                 }
                                 Button(
                                     onClick = { onSave(criteriaScores.toMap(), "save_only") },
-                                    modifier = Modifier.weight(1f).padding(start = 2.dp) // PADDİNG AZALTILDI
+                                    modifier = Modifier.weight(1f)
                                 ) {
                                     Text("Kaydet")
                                 }
