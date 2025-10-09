@@ -1065,13 +1065,14 @@ private fun CriteriaEvaluationDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 20.dp)
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 8.dp, bottom = 8.dp)
                 ) {
                     // BAŞLIK - Kompakt hale getirildi
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp, horizontal = 16.dp), // Padding azaltıldı
+                            .padding(horizontal = 12.dp, vertical = 4.dp), // Daha sıkı hizalama
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -1178,7 +1179,11 @@ private fun CriteriaEvaluationDialog(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         ),
-                        shape = RoundedCornerShape(24.dp)
+                        shape = RoundedCornerShape(24.dp),
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                        )
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp)
@@ -1190,7 +1195,11 @@ private fun CriteriaEvaluationDialog(
                                 Surface(
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(20.dp),
-                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                                    border = BorderStroke(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                                    )
                                 ) {
                                     Column(
                                         modifier = Modifier
@@ -1218,7 +1227,11 @@ private fun CriteriaEvaluationDialog(
                                 Surface(
                                     modifier = Modifier.weight(1f),
                                     shape = RoundedCornerShape(20.dp),
-                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+                                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f),
+                                    border = BorderStroke(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)
+                                    )
                                 ) {
                                     Column(
                                         modifier = Modifier
@@ -1405,15 +1418,15 @@ private fun CriterionBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onExpandToggle(!isExpanded) }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = criterionName,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    color = if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
                 )
                 Checkbox(
                     checked = isExpanded,
@@ -1421,7 +1434,8 @@ private fun CriterionBox(
                     colors = CheckboxDefaults.colors(
                         checkedColor = MaterialTheme.colorScheme.primary,
                         uncheckedColor = MaterialTheme.colorScheme.secondary
-                    )
+                    ),
+                    modifier = Modifier.padding(start = 12.dp)
                 )
             }
             

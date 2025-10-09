@@ -70,31 +70,30 @@ fun CriteriaScreen(
     var listToDelete by remember { mutableStateOf<com.example.ranking.data.CriterionList?>(null) }
     var deleteError by remember { mutableStateOf<String?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        TopAppBar(
-            title = { Text("Kriterler") },
-            navigationIcon = {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("Kriterler") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToCreateCriteria) {
+                        Icon(Icons.Default.Add, contentDescription = "Yeni Kriter Listesi")
+                    }
                 }
-            },
-            actions = {
-                IconButton(onClick = onNavigateToCreateCriteria) {
-                    Icon(Icons.Default.Add, contentDescription = "Yeni Kriter Listesi")
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+            )
+        }
+    ) { paddingValues ->
         // Loading state
         if (isLoading) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -103,7 +102,9 @@ fun CriteriaScreen(
         // Error state
         else if (loadError != null) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -124,7 +125,9 @@ fun CriteriaScreen(
         // Empty state
         else if (criterionLists.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
@@ -151,23 +154,33 @@ fun CriteriaScreen(
                 }
             }
         } else {
-            Text(
-                text = "Toplam ${criterionLists.size} kriter listesi",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Toplam ${criterionLists.size} kriter listesi",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
 
-            LazyColumn {
-                items(criterionLists) { criterionList ->
-                    CriterionListCard(
-                        criterionList = criterionList,
-                        onEdit = { onNavigateToEditCriteria(criterionList.id) },
-                        onDelete = {
-                            listToDelete = criterionList
-                            showDeleteDialog = true
-                        }
-                    )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(criterionLists) { criterionList ->
+                        CriterionListCard(
+                            criterionList = criterionList,
+                            onEdit = { onNavigateToEditCriteria(criterionList.id) },
+                            onDelete = {
+                                listToDelete = criterionList
+                                showDeleteDialog = true
+                            }
+                        )
+                    }
                 }
             }
         }
