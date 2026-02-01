@@ -24,6 +24,7 @@ fun MainMenuScreen(
     onNavigateToArchive: () -> Unit,
     onNavigateToNewTournament: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToYouTubeAnalysis: () -> Unit = {},
     viewModel: MainMenuViewModel = viewModel()
 ) {
     val activeTournamentsCount by viewModel.activeTournamentsCount.collectAsState()
@@ -112,11 +113,20 @@ fun MainMenuScreen(
                 )
             }
             
-            // Third Row  
+            // Third Row - YouTube Music Analysis  
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
+                MenuCard(
+                    title = "🎵 YouTube\nMüzik Analizi",
+                    description = "Şarkıcı view count analizi",
+                    icon = Icons.Default.PlayArrow,
+                    onClick = onNavigateToYouTubeAnalysis,
+                    modifier = Modifier.weight(1f),
+                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
+                
                 MenuCard(
                     title = "Arşiv",
                     description = "$completedTournamentsCount tamamlanan",
@@ -124,7 +134,13 @@ fun MainMenuScreen(
                     onClick = onNavigateToArchive,
                     modifier = Modifier.weight(1f)
                 )
-                
+            }
+            
+            // Fourth Row  
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 MenuCard(
                     title = "Hakkında",
                     description = "Uygulama bilgileri",
@@ -132,6 +148,9 @@ fun MainMenuScreen(
                     onClick = onNavigateToAbout,
                     modifier = Modifier.weight(1f)
                 )
+                
+                // Empty space for symmetry
+                Spacer(modifier = Modifier.weight(1f))
             }
         }
         
@@ -154,13 +173,15 @@ private fun MenuCard(
     description: String,
     icon: ImageVector,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    backgroundColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surface
 ) {
     Card(
         onClick = onClick,
         modifier = modifier.aspectRatio(1f),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(
             modifier = Modifier

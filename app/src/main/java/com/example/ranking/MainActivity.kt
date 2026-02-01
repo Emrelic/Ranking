@@ -21,6 +21,10 @@ import com.example.ranking.ui.theme.RankingTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // YouTube Music Integration Build - 01.02.2026 22:30
+        setTitle("Ranking Pro - YouTube Music Analysis")
+        
         enableEdgeToEdge()
         hideSystemUI()
 

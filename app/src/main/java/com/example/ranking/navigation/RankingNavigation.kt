@@ -24,7 +24,8 @@ fun RankingNavigation(
                 onNavigateToActiveTournaments = { navController.navigate("active_tournaments") },
                 onNavigateToArchive = { navController.navigate("archive") },
                 onNavigateToNewTournament = { navController.navigate("new_tournament_direct") },
-                onNavigateToAbout = { navController.navigate("about") }
+                onNavigateToAbout = { navController.navigate("about") },
+                onNavigateToYouTubeAnalysis = { navController.navigate("youtube_analysis") }
             )
         }
         
