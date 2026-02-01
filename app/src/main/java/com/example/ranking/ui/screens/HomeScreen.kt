@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ fun HomeScreen(
     onNavigateToArchive: () -> Unit,
     onNavigateToTest: () -> Unit = {},
     onNavigateToRanking: (Long, String) -> Unit = { _, _ -> },
+    onNavigateToYouTubeAnalysis: () -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
     val songLists by viewModel.songLists.collectAsState()
@@ -63,6 +65,44 @@ fun HomeScreen(
                     modifier = Modifier.size(56.dp)
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Yeni Liste")
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Quick Actions Section
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "Hızlı İşlemler",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+                
+                Button(
+                    onClick = onNavigateToYouTubeAnalysis,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text("🎵 YouTube Müzik Analizi")
                 }
             }
         }

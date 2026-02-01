@@ -56,6 +56,16 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation("com.google.code.gson:gson:2.10.1")
     implementation(libs.androidx.constraintlayout)
+    
+    // OkHttp for YouTube API calls - simpler approach
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    
+    // JSON parsing
+    implementation("org.json:json:20240303")
+    
+    // Image loading for thumbnails
+    implementation("io.coil-kt:coil-compose:2.5.0")
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

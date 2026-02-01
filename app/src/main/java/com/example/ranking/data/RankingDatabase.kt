@@ -9,8 +9,8 @@ import android.content.Context
 import com.example.ranking.data.dao.*
 
 @Database(
-    entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class, Tournament::class, CriterionList::class, CriterionScore::class],
-    version = 14,
+    entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class, Tournament::class, CriterionList::class, CriterionScore::class, YouTubeTrack::class, YouTubePlaylist::class, PlaylistTrack::class],
+    version = 15,
     exportSchema = false
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -28,6 +28,10 @@ abstract class RankingDatabase : RoomDatabase() {
     abstract fun tournamentDao(): TournamentDao
     abstract fun criterionListDao(): CriterionListDao
     abstract fun criterionScoreDao(): CriterionScoreDao
+    // YouTube integration DAOs
+    abstract fun youTubeTrackDao(): YouTubeTrackDao
+    abstract fun youTubePlaylistDao(): YouTubePlaylistDao
+    abstract fun playlistTrackDao(): PlaylistTrackDao
 
     companion object {
         @Volatile
@@ -317,6 +321,65 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_14_15 = object : Migration(14, 15) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Create YouTube tracks table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS youtube_tracks (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        videoId TEXT NOT NULL UNIQUE,
+                        title TEXT NOT NULL,
+                        artist TEXT NOT NULL,
+                        viewCount INTEGER NOT NULL,
+                        durationSeconds INTEGER,
+                        thumbnailUrl TEXT,
+                        publishedAt TEXT,
+                        createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+                    )
+                """)
+                
+                // Create YouTube playlists table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS youtube_playlists (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        artist TEXT NOT NULL,
+                        trackCount INTEGER NOT NULL DEFAULT 0,
+                        totalViews INTEGER NOT NULL DEFAULT 0,
+                        description TEXT,
+                        createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+                        updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+                    )
+                """)
+                
+                // Create playlist-track relations table
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS playlist_tracks (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        playlistId INTEGER NOT NULL,
+                        trackId INTEGER NOT NULL,
+                        position INTEGER NOT NULL,
+                        addedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+                        FOREIGN KEY (playlistId) REFERENCES youtube_playlists(id) ON DELETE CASCADE,
+                        FOREIGN KEY (trackId) REFERENCES youtube_tracks(id) ON DELETE CASCADE
+                    )
+                """)
+                
+                // Add YouTube integration columns to songs table
+                db.execSQL("ALTER TABLE songs ADD COLUMN youtubeVideoId TEXT")
+                db.execSQL("ALTER TABLE songs ADD COLUMN viewCount INTEGER DEFAULT 0")
+                
+                // Create indices for performance
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_tracks_videoId ON youtube_tracks (videoId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_tracks_artist ON youtube_tracks (artist)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_tracks_viewCount ON youtube_tracks (viewCount DESC)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_playlists_artist ON youtube_playlists (artist)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_playlist_tracks_playlistId ON playlist_tracks (playlistId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_playlist_tracks_trackId ON playlist_tracks (trackId)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_playlist_tracks_unique ON playlist_tracks (playlistId, trackId)")
+            }
+        }
+
 
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
@@ -325,7 +388,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance

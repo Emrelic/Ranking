@@ -12,5 +12,7 @@ data class Song(
     val album: String = "",
     val trackNumber: Int = 0,
     val listId: Long,
-    val csvData: String? = null // JSON formatted tabular data from CSV: {"column1": "value1", "column2": "value2"}
+    val csvData: String? = null, // JSON formatted tabular data from CSV: {"column1": "value1", "column2": "value2"}
+    val youtubeVideoId: String? = null, // YouTube video ID for integration
+    val viewCount: Long = 0 // YouTube view count
 )

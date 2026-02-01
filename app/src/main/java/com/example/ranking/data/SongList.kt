@@ -9,5 +9,6 @@ data class SongList(
     val id: Long = 0,
     val name: String,
     val createdAt: Long = System.currentTimeMillis(),
+    val createdDate: Long = System.currentTimeMillis(), // Compatibility field
     val songCount: Int = 0
 )

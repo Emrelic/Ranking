@@ -67,6 +67,18 @@ fun RankingNavigation(
                 onNavigateToTest = { navController.navigate("test") },
                 onNavigateToRanking = { listId, method -> 
                     navController.navigate("ranking/$listId/$method?isResuming=true") 
+                },
+                onNavigateToYouTubeAnalysis = { navController.navigate("youtube_analysis") }
+            )
+        }
+        
+        composable("youtube_analysis") {
+            YouTubeAnalysisScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToRanking = { listId, method -> 
+                    navController.navigate("ranking/$listId/$method") {
+                        popUpTo("home")
+                    }
                 }
             )
         }
