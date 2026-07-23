@@ -1,6 +1,5 @@
 package com.example.ranking.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -12,34 +11,63 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = ButtonLight,          // Light blue for dark theme
-    primaryContainer = ButtonLightContainer,
-    secondary = ButtonMedium,       // Medium blue
-    tertiary = Pink80
+    primary = DarkBluePrimary,
+    onPrimary = DarkBlueOnPrimary,
+    primaryContainer = DarkBluePrimaryContainer,
+    onPrimaryContainer = DarkBlueOnPrimaryContainer,
+    secondary = DarkBlueSecondary,
+    onSecondary = DarkBlueOnSecondary,
+    secondaryContainer = DarkBlueSecondaryContainer,
+    onSecondaryContainer = DarkBlueOnSecondaryContainer,
+    tertiary = DarkTertiary,
+    onTertiary = DarkOnTertiary,
+    tertiaryContainer = DarkTertiaryContainer,
+    onTertiaryContainer = DarkOnTertiaryContainer,
+    background = DarkBackground,
+    onBackground = DarkOnBackground,
+    surface = DarkSurface,
+    onSurface = DarkOnSurface,
+    surfaceVariant = DarkSurfaceVariant,
+    onSurfaceVariant = DarkOnSurfaceVariant,
+    outline = DarkOutline,
+    error = DarkError,
+    onError = DarkOnError,
+    errorContainer = DarkErrorContainer,
+    onErrorContainer = DarkOnErrorContainer
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = ButtonDark,           // Dark blue for light theme  
-    primaryContainer = ButtonDarkContainer,
-    secondary = ButtonMedium,       // Medium blue
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = BluePrimary,
+    onPrimary = BlueOnPrimary,
+    primaryContainer = BluePrimaryContainer,
+    onPrimaryContainer = BlueOnPrimaryContainer,
+    secondary = BlueSecondary,
+    onSecondary = BlueOnSecondary,
+    secondaryContainer = BlueSecondaryContainer,
+    onSecondaryContainer = BlueOnSecondaryContainer,
+    tertiary = Tertiary,
+    onTertiary = OnTertiary,
+    tertiaryContainer = TertiaryContainer,
+    onTertiaryContainer = OnTertiaryContainer,
+    background = LightBackground,
+    onBackground = LightOnBackground,
+    surface = LightSurface,
+    onSurface = LightOnSurface,
+    surfaceVariant = LightSurfaceVariant,
+    onSurfaceVariant = LightOnSurfaceVariant,
+    outline = LightOutline,
+    error = LightError,
+    onError = LightOnError,
+    errorContainer = LightErrorContainer,
+    onErrorContainer = LightOnErrorContainer
 )
 
 @Composable
 fun RankingTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // Kapalı: dynamic color Android 12+'da marka mavisini cihaz duvar kağıdı
+    // rengiyle eziyordu; tutarlı marka görünümü için özel şema kullanılır.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

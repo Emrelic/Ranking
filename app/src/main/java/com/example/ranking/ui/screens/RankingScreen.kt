@@ -360,13 +360,13 @@ internal fun TeamCardContent(
                         text = key,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0D47A1),
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = value,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF1976D2),
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.End
                     )
@@ -708,7 +708,7 @@ private fun SimpleMatchCard(
                     text = song1?.name ?: "Takım 1",
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF1976D2),
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -1595,7 +1595,7 @@ private fun ComparativeSlider(
             .fillMaxWidth()
             .padding(4.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.8f)
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
         )
     ) {
         Column(
@@ -1613,13 +1613,13 @@ private fun ComparativeSlider(
                     text = "$team1Name: $team1Score",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1976D2)
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     text = "$team2Name: $team2Score",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF7B1FA2)
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
             
@@ -1636,9 +1636,9 @@ private fun ComparativeSlider(
                 },
                 valueRange = 0f..100f,
                 colors = SliderDefaults.colors(
-                    thumbColor = Color(0xFF1976D2),
-                    activeTrackColor = Color(0xFF1976D2),
-                    inactiveTrackColor = Color(0xFF7B1FA2)
+                    thumbColor = MaterialTheme.colorScheme.primary,
+                    activeTrackColor = MaterialTheme.colorScheme.primary,
+                    inactiveTrackColor = MaterialTheme.colorScheme.tertiary
                 )
             )
         }
@@ -2438,13 +2438,13 @@ private fun ScoreInputDialog(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .background(Color(0xFFE3F2FD))
+                        .background(MaterialTheme.colorScheme.primaryContainer)
                 )
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight()
-                        .background(Color(0xFFF3E5F5))
+                        .background(MaterialTheme.colorScheme.tertiaryContainer)
                 )
             }
             
@@ -2483,7 +2483,7 @@ private fun ScoreInputDialog(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .background(Color(0xFF1976D2))
+                            .background(MaterialTheme.colorScheme.primary)
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2491,7 +2491,7 @@ private fun ScoreInputDialog(
                             text = song1?.name?.uppercase() ?: "TAKIM 1",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -2499,7 +2499,7 @@ private fun ScoreInputDialog(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .background(Color(0xFF7B1FA2))
+                            .background(MaterialTheme.colorScheme.tertiary)
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -2507,7 +2507,7 @@ private fun ScoreInputDialog(
                             text = song2?.name?.uppercase() ?: "TAKIM 2",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onTertiary,
                             textAlign = TextAlign.Center
                         )
                     }
@@ -2531,8 +2531,8 @@ private fun ScoreInputDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF1976D2),
-                            focusedLabelColor = Color(0xFF1976D2)
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            focusedLabelColor = MaterialTheme.colorScheme.primary
                         )
                     )
                     
@@ -2554,8 +2554,8 @@ private fun ScoreInputDialog(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF7B1FA2),
-                            focusedLabelColor = Color(0xFF7B1FA2)
+                            focusedBorderColor = MaterialTheme.colorScheme.tertiary,
+                            focusedLabelColor = MaterialTheme.colorScheme.tertiary
                         )
                     )
                 }
