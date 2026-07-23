@@ -11,9 +11,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,10 +36,10 @@ fun ListsScreen(
             .padding(16.dp)
     ) {
         TopAppBar(
-            title = { Text("Listeler") },
+            title = { Text(stringResource(R.string.lists_title)) },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             },
             actions = {
@@ -45,7 +47,7 @@ fun ListsScreen(
                     onClick = onNavigateToCreateList,
                     modifier = Modifier.size(56.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Yeni Liste")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.lists_new_list))
                 }
             }
         )
@@ -61,7 +63,7 @@ fun ListsScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Henüz liste oluşturulmamış",
+                        text = stringResource(R.string.lists_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -69,13 +71,13 @@ fun ListsScreen(
                     Button(onClick = onNavigateToCreateList) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("İlk Listenizi Oluşturun")
+                        Text(stringResource(R.string.lists_create_first))
                     }
                 }
             }
         } else {
             Text(
-                text = "Toplam ${songLists.size} liste",
+                text = stringResource(R.string.lists_total, songLists.size),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -106,12 +108,12 @@ fun ListsScreen(
                                 )
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
-                                    text = "${songList.songCount} öğe",
+                                    text = stringResource(R.string.common_item_count, songList.songCount),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
-                                    text = "Oluşturulma: ${songList.createdAt}",
+                                    text = stringResource(R.string.lists_created_at, songList.createdAt),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                                 )
@@ -125,7 +127,7 @@ fun ListsScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Delete,
-                                    contentDescription = "Sil",
+                                    contentDescription = stringResource(R.string.lists_delete),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }
@@ -139,8 +141,8 @@ fun ListsScreen(
         if (showDeleteDialog && listToDelete != null) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
-                title = { Text("Liste Silme") },
-                text = { Text("'${listToDelete!!.name}' listesini silmek istediğinizden emin misiniz?") },
+                title = { Text(stringResource(R.string.lists_delete_dialog_title)) },
+                text = { Text(stringResource(R.string.lists_delete_dialog_text, listToDelete!!.name)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -149,12 +151,12 @@ fun ListsScreen(
                             listToDelete = null
                         }
                     ) {
-                        Text("Sil", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.lists_delete), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDeleteDialog = false }) {
-                        Text("İptal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                 }
             )

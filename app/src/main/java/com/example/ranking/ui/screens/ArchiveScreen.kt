@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.graphics.Color
 import java.text.SimpleDateFormat
 import java.util.*
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.ArchiveViewModel
 import com.example.ranking.data.Archive
 
@@ -46,10 +48,10 @@ fun ArchiveScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Arşiv") },
+                title = { Text(stringResource(R.string.archive_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 }
             )
@@ -110,7 +112,7 @@ fun ArchiveScreen(
                                         )
                                         Spacer(modifier = Modifier.height(16.dp))
                                         Text(
-                                            text = "Henüz hiç arşiv yok",
+                                            text = stringResource(R.string.archive_empty),
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -138,8 +140,8 @@ fun ArchiveScreen(
         if (archive != null) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = null },
-                title = { Text("Arşivi Sil") },
-                text = { Text("'${archive.name}' arşivini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.") },
+                title = { Text(stringResource(R.string.archive_delete_title)) },
+                text = { Text(stringResource(R.string.archive_delete_text, archive.name)) },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -147,12 +149,12 @@ fun ArchiveScreen(
                             showDeleteDialog = null
                         }
                     ) {
-                        Text("Sil", color = Color.Red)
+                        Text(stringResource(R.string.common_delete), color = Color.Red)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDeleteDialog = null }) {
-                        Text("İptal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                 }
             )
@@ -197,7 +199,7 @@ fun ArchiveListItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "Sıralama: ${getMethodDisplayName(archive.method)}",
+                        text = stringResource(R.string.archive_method, getMethodDisplayName(archive.method)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium
@@ -211,12 +213,12 @@ fun ArchiveListItem(
                 
                 Row {
                     IconButton(onClick = onView) {
-                        Icon(Icons.Default.PlayArrow, contentDescription = "Görüntüle")
+                        Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.archive_view))
                     }
                     IconButton(onClick = onDelete) {
                         Icon(
-                            Icons.Default.Delete, 
-                            contentDescription = "Sil",
+                            Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.common_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
@@ -230,23 +232,23 @@ fun ArchiveListItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "${archive.totalSongs} takım",
+                    text = stringResource(R.string.archive_team_count, archive.totalSongs),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
-                    text = "${archive.completedMatches}/${archive.totalMatches} maç",
+                    text = stringResource(R.string.archive_match_count, archive.completedMatches, archive.totalMatches),
                     style = MaterialTheme.typography.bodySmall
                 )
                 if (archive.isCompleted) {
                     Text(
-                        text = "Tamamlandı",
+                        text = stringResource(R.string.archive_completed),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium
                     )
                 } else {
                     Text(
-                        text = "Devam ediyor",
+                        text = stringResource(R.string.archive_in_progress),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
                         fontWeight = FontWeight.Medium
@@ -270,9 +272,16 @@ fun ArchiveDetailView(
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = if (archive.method == "LEAGUE") {
-        listOf("Son Sıralama", "Puan Durumu", "Maç Sonuçları")
+        listOf(
+            stringResource(R.string.archive_tab_final),
+            stringResource(R.string.archive_tab_standings),
+            stringResource(R.string.archive_tab_matches)
+        )
     } else {
-        listOf("Son Sıralama", "Maç Sonuçları")
+        listOf(
+            stringResource(R.string.archive_tab_final),
+            stringResource(R.string.archive_tab_matches)
+        )
     }
     
     Column(modifier = modifier.fillMaxSize()) {
@@ -280,7 +289,7 @@ fun ArchiveDetailView(
             title = { Text(archive.name) },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             }
         )
@@ -302,26 +311,29 @@ fun ArchiveDetailView(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Sıralama Yöntemi: ${getMethodDisplayName(archive.method)}",
+                    text = stringResource(R.string.archive_detail_method, getMethodDisplayName(archive.method)),
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = "Liste: ${archive.listName}",
+                    text = stringResource(R.string.archive_detail_list, archive.listName),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text(
-                    text = "Takım Sayısı: ${archive.totalSongs} takım",
+                    text = stringResource(R.string.archive_detail_team_count, archive.totalSongs),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 if (archive.totalMatches > 0) {
                     Text(
-                        text = "Maç Durumu: ${archive.completedMatches}/${archive.totalMatches} maç tamamlandı",
+                        text = stringResource(R.string.archive_detail_match_status, archive.completedMatches, archive.totalMatches),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
                 Text(
-                    text = "Durum: ${if (archive.isCompleted) "Tamamlandı" else "Yarım kaldı"}",
+                    text = stringResource(
+                        R.string.archive_detail_status,
+                        stringResource(if (archive.isCompleted) R.string.archive_completed else R.string.archive_incomplete)
+                    ),
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (archive.isCompleted) Color(0xFF4CAF50) else Color(0xFFFF9800)
                 )
@@ -432,14 +444,14 @@ fun ArchiveLeagueTable(table: List<ArchiveViewModel.LeagueTableEntry>) {
                         .padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("Takım", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f))
-                    Text("O", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-                    Text("G", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-                    Text("B", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-                    Text("M", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-                    Text("A", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-                    Text("Y", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
-                    Text("P", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(stringResource(R.string.results_header_team), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(2f))
+                    Text(stringResource(R.string.results_header_played), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(stringResource(R.string.results_header_won), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(stringResource(R.string.results_header_drawn), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(stringResource(R.string.results_header_lost), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(stringResource(R.string.results_header_goals_for), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(stringResource(R.string.results_header_goals_against), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
+                    Text(stringResource(R.string.results_header_points), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, modifier = Modifier.weight(0.5f))
                 }
             }
         }
@@ -533,7 +545,7 @@ fun ArchiveMatchSummary(matches: List<ArchiveViewModel.ArchiveMatch>) {
                         } else {
                             val winnerName = if (match.winnerId == match.team1Id) match.team1Name else match.team2Name
                             Text(
-                                text = "Kazanan:",
+                                text = stringResource(R.string.archive_winner_label),
                                 style = MaterialTheme.typography.bodySmall
                             )
                             Text(

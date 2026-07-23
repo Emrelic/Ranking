@@ -16,10 +16,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.NewTournamentViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -82,10 +84,10 @@ fun NewTournamentScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             // SABİT TOP BAR
             TopAppBar(
-                title = { Text("Yeni Turnuva") },
+                title = { Text(stringResource(R.string.new_tournament_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 }
             )
@@ -193,9 +195,9 @@ fun NewTournamentScreen(
                         onClick = { currentStep-- },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri", modifier = Modifier.size(18.dp))
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back), modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Geri")
+                        Text(stringResource(R.string.common_back))
                     }
                 } else {
                     Spacer(modifier = Modifier.width(80.dp)) // PLACEHOLDER
@@ -214,9 +216,9 @@ fun NewTournamentScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
-                        Text("İleri")
+                        Text(stringResource(R.string.new_tournament_forward))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.ArrowForward, contentDescription = "İleri", modifier = Modifier.size(18.dp))
+                        Icon(Icons.Default.ArrowForward, contentDescription = stringResource(R.string.new_tournament_forward), modifier = Modifier.size(18.dp))
                     }
                 } else {
                     Button(
@@ -255,11 +257,11 @@ fun NewTournamentScreen(
                         if (isLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), color = MaterialTheme.colorScheme.onPrimary)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Oluşturuluyor...")
+                            Text(stringResource(R.string.new_tournament_creating))
                         } else {
-                            Text("Başlat")
+                            Text(stringResource(R.string.new_tournament_start))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Icon(Icons.Default.Check, contentDescription = "Başlat", modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Check, contentDescription = stringResource(R.string.new_tournament_start), modifier = Modifier.size(18.dp))
                         }
                     }
                 }
@@ -276,7 +278,7 @@ private fun SongListSelectionStep(
 ) {
     Column {
         Text(
-            text = "Liste Seçin",
+            text = stringResource(R.string.new_tournament_select_list),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -306,7 +308,7 @@ private fun SongListSelectionStep(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "${songList.songCount} öğe",
+                            text = stringResource(R.string.common_item_count, songList.songCount),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -324,7 +326,7 @@ private fun TournamentNameStep(
 ) {
     Column {
         Text(
-            text = "Turnuva Adı",
+            text = stringResource(R.string.new_tournament_name_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -333,7 +335,7 @@ private fun TournamentNameStep(
         OutlinedTextField(
             value = tournamentName,
             onValueChange = onNameChanged,
-            label = { Text("Turnuva adı girin") },
+            label = { Text(stringResource(R.string.new_tournament_name_label)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -346,20 +348,20 @@ private fun SystemTypeSelectionStep(
     onSystemTypeSelected: (String) -> Unit
 ) {
     val systemTypes = listOf(
-        "DIRECT_SCORING" to "Direkt Puanlama - 0-100 arası puan verme",
-        "MERGE_SORT" to "İkili Karşılaştırma - En az soruyla tam sıralama (büyük listeler için önerilen)",
-        "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
-        "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
-        "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
-        "ELIMINATION" to "Eleme Usulü - Çift eleme sistemi",
-        "FULL_ELIMINATION" to "Gruplu Eleme Usulü - Grup eleme"
+        "DIRECT_SCORING" to stringResource(R.string.new_tournament_system_direct_scoring),
+        "MERGE_SORT" to stringResource(R.string.new_tournament_system_merge_sort),
+        "LEAGUE" to stringResource(R.string.new_tournament_system_league),
+        "SWISS" to stringResource(R.string.new_tournament_system_swiss),
+        "EMRE_CORRECT" to stringResource(R.string.new_tournament_system_emre),
+        "ELIMINATION" to stringResource(R.string.new_tournament_system_elimination),
+        "FULL_ELIMINATION" to stringResource(R.string.new_tournament_system_full_elimination)
         // SINGLE_ELIMINATION ve DOUBLE_ELIMINATION algoritmaları tamamlanana
         // kadar listeden çıkarıldı (yarım özellik kırık deneyim yaratıyordu)
     )
     
     Column {
         Text(
-            text = "Turnuva Sistemi",
+            text = stringResource(R.string.new_tournament_system_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -413,7 +415,7 @@ private fun CriteriaSelectionStep(
 ) {
     Column {
         Text(
-            text = "Kriter Sistemi",
+            text = stringResource(R.string.new_tournament_criteria_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -434,7 +436,7 @@ private fun CriteriaSelectionStep(
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "Kriter sistemi kullan",
+                    text = stringResource(R.string.new_tournament_use_criteria),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -475,7 +477,7 @@ private fun CriteriaSelectionStep(
                                 } catch (e: Exception) { emptyList() }
                                 
                                 Text(
-                                    text = "${criteria.size} kriter",
+                                    text = stringResource(R.string.new_tournament_criterion_count, criteria.size),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -508,7 +510,7 @@ private fun CriteriaSettingsStep(
 ) {
     Column {
         Text(
-            text = "Kriter Ayarları",
+            text = stringResource(R.string.new_tournament_criteria_settings_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -520,7 +522,7 @@ private fun CriteriaSettingsStep(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Text(
-                    text = "Kriter sistemi devre dışı",
+                    text = stringResource(R.string.new_tournament_criteria_disabled),
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -535,7 +537,7 @@ private fun CriteriaSettingsStep(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Puanlama Türü",
+                        text = stringResource(R.string.new_tournament_scoring_type),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -555,7 +557,7 @@ private fun CriteriaSettingsStep(
                                 selected = scoringType == "comparative",
                                 onClick = { onScoringTypeChanged("comparative") }
                             )
-                            Text("Kıyaslamalı (10 puanı böl)")
+                            Text(stringResource(R.string.new_tournament_scoring_comparative))
                         }
                         
                         Row(
@@ -571,7 +573,7 @@ private fun CriteriaSettingsStep(
                                 selected = scoringType == "separate",
                                 onClick = { onScoringTypeChanged("separate") }
                             )
-                            Text("Ayrı ayrı (her takıma puan)")
+                            Text(stringResource(R.string.new_tournament_scoring_separate))
                         }
                     }
                 }
@@ -581,7 +583,7 @@ private fun CriteriaSettingsStep(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Puan Skalası: $scoreScale",
+                        text = stringResource(R.string.new_tournament_score_scale, scoreScale),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -598,14 +600,14 @@ private fun CriteriaSettingsStep(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Beraberlik Eşiği: %$drawThresholdMin - %$drawThresholdMax",
+                        text = stringResource(R.string.new_tournament_draw_threshold, drawThresholdMin, drawThresholdMax),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     
                     Row {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Min %")
+                            Text(stringResource(R.string.new_tournament_min_percent))
                             Slider(
                                 value = drawThresholdMin.toFloat(),
                                 onValueChange = { onDrawThresholdMinChanged(it.toInt()) },
@@ -614,7 +616,7 @@ private fun CriteriaSettingsStep(
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Max %")
+                            Text(stringResource(R.string.new_tournament_max_percent))
                             Slider(
                                 value = drawThresholdMax.toFloat(),
                                 onValueChange = { onDrawThresholdMaxChanged(it.toInt()) },
@@ -629,7 +631,7 @@ private fun CriteriaSettingsStep(
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Ek Ayarlar",
+                        text = stringResource(R.string.new_tournament_extra_settings),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -644,7 +646,7 @@ private fun CriteriaSettingsStep(
                             onCheckedChange = onAutoWinnerFromCriteriaChanged
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Kriterlerden otomatik kazanan belirle")
+                        Text(stringResource(R.string.new_tournament_auto_winner))
                     }
                     
                     Spacer(modifier = Modifier.height(8.dp))
@@ -658,7 +660,7 @@ private fun CriteriaSettingsStep(
                             onCheckedChange = onAutoOpenCriteriaPanelChanged
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Kriter panelini otomatik aç")
+                        Text(stringResource(R.string.new_tournament_auto_open_panel))
                     }
                     
                     Spacer(modifier = Modifier.height(8.dp))
@@ -672,7 +674,7 @@ private fun CriteriaSettingsStep(
                             onCheckedChange = onMandatoryCriteriaChanged
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Kriter değerlendirmesi zorunlu")
+                        Text(stringResource(R.string.new_tournament_mandatory_criteria))
                     }
                 }
             }

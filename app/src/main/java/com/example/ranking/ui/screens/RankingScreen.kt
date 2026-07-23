@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.data.Song
 import com.example.ranking.ui.screens.ranking.CriteriaEvaluationDialog
 import com.example.ranking.ui.screens.ranking.InitialRankingContent
@@ -55,8 +57,8 @@ fun RankingScreen(
     if (showResetConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showResetConfirmDialog = false },
-            title = { Text("Turnuvayı Sıfırla") },
-            text = { Text("Bu turnuvadaki tüm maç sonuçları ve ilerleme kalıcı olarak silinecek. Bu işlem geri alınamaz. Emin misiniz?") },
+            title = { Text(stringResource(R.string.ranking_reset_confirm_title)) },
+            text = { Text(stringResource(R.string.ranking_reset_confirm_text)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -67,12 +69,12 @@ fun RankingScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Sıfırla")
+                    Text(stringResource(R.string.ranking_reset))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetConfirmDialog = false }) {
-                    Text("Vazgeç")
+                    Text(stringResource(R.string.ranking_cancel))
                 }
             }
         )
@@ -92,7 +94,7 @@ fun RankingScreen(
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             },
             actions = {
@@ -110,7 +112,7 @@ fun RankingScreen(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer
                             )
                         ) {
-                            Text("Duraklat", fontSize = 10.sp)
+                            Text(stringResource(R.string.ranking_pause), fontSize = 10.sp)
                         }
 
                         Button(
@@ -121,7 +123,7 @@ fun RankingScreen(
                                 containerColor = MaterialTheme.colorScheme.errorContainer
                             )
                         ) {
-                            Text("Sıfırla", fontSize = 10.sp)
+                            Text(stringResource(R.string.ranking_reset), fontSize = 10.sp)
                         }
                     }
 
@@ -134,7 +136,7 @@ fun RankingScreen(
                                 containerColor = MaterialTheme.colorScheme.secondaryContainer
                             )
                         ) {
-                            Text("Fikstür", fontSize = 10.sp)
+                            Text(stringResource(R.string.ranking_fixture), fontSize = 10.sp)
                         }
                     }
                     if (method == "LEAGUE" || method == "EMRE_CORRECT") {
@@ -147,7 +149,7 @@ fun RankingScreen(
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer
                             )
                         ) {
-                            Text(if (showStandings) "Maçlar" else "Puan", fontSize = 10.sp)
+                            Text(stringResource(if (showStandings) R.string.ranking_matches else R.string.ranking_points), fontSize = 10.sp)
                         }
 
                         if (showStandings) {
@@ -171,7 +173,7 @@ fun RankingScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
             ) {
                 Text(
-                    text = "Hata: $error",
+                    text = stringResource(R.string.ranking_error, error),
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.onErrorContainer
                 )
@@ -383,7 +385,7 @@ private fun EliminationContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Eleme sistemi")
+        Text(stringResource(R.string.ranking_elimination_system))
     }
 }
 
@@ -402,13 +404,13 @@ private fun DirectScoringContent(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Puanlama Tamamlandı!",
+                text = stringResource(R.string.ranking_scoring_complete),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onComplete) {
-                Text("Sonuçları Görüntüle")
+                Text(stringResource(R.string.ranking_view_results))
             }
         }
         return
@@ -429,7 +431,7 @@ private fun DirectScoringContent(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "${uiState.currentIndex + 1} / ${uiState.totalCount}",
+                text = stringResource(R.string.ranking_progress_count, uiState.currentIndex + 1, uiState.totalCount),
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -452,7 +454,7 @@ private fun DirectScoringContent(
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
-                text = "Bu öğeye 0-100 arası kaç puan veriyorsunuz?",
+                text = stringResource(R.string.ranking_direct_score_question),
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center
             )
@@ -466,7 +468,7 @@ private fun DirectScoringContent(
                         scoreText = it
                     }
                 },
-                label = { Text("Puan (0-100)") },
+                label = { Text(stringResource(R.string.ranking_score_label)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(0.5f)
             )
@@ -484,7 +486,7 @@ private fun DirectScoringContent(
                 enabled = scoreText.toDoubleOrNull()?.let { it in 0.0..100.0 } == true,
                 modifier = Modifier.fillMaxWidth(0.5f)
             ) {
-                Text("Puanı Kaydet")
+                Text(stringResource(R.string.ranking_save_score))
             }
 
             // Show completed scores if there are any
@@ -492,7 +494,7 @@ private fun DirectScoringContent(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    text = "Verilen Puanlar",
+                    text = stringResource(R.string.ranking_given_scores),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -647,13 +649,13 @@ private fun MatchBasedContent(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Eşleşmeler Tamamlandı!",
+                text = stringResource(R.string.ranking_matches_complete),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onComplete) {
-                Text("Sonuçları Görüntüle")
+                Text(stringResource(R.string.ranking_view_results))
             }
         }
         return
@@ -685,7 +687,7 @@ private fun MatchBasedContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "${uiState.completedMatches + 1} / ${uiState.totalMatches}",
+                        text = stringResource(R.string.ranking_progress_count, uiState.completedMatches + 1, uiState.totalMatches),
                         style = MaterialTheme.typography.bodySmall
                     )
 
@@ -695,13 +697,13 @@ private fun MatchBasedContent(
                             onClick = { viewModel.undoLastMatch() },
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
                         ) {
-                            Text("↩ Son Maçı Geri Al", style = MaterialTheme.typography.bodySmall)
+                            Text(stringResource(R.string.ranking_undo_last_match), style = MaterialTheme.typography.bodySmall)
                         }
                     }
 
                     if (method == "SWISS" || method == "EMRE_CORRECT") {
                         Text(
-                            text = "Tur: ${match.round}",
+                            text = stringResource(R.string.ranking_round, match.round),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -721,7 +723,7 @@ private fun MatchBasedContent(
                 )
             ) {
                 Text(
-                    text = if (useScores) "Maç Skoru Girin" else "Hangisi daha iyi?",
+                    text = stringResource(if (useScores) R.string.ranking_enter_match_score else R.string.ranking_which_better),
                     style = MaterialTheme.typography.headlineSmall, // ANA SAYFA FONT STİLİ
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -744,7 +746,7 @@ private fun MatchBasedContent(
                 )
             ) {
                 Text(
-                    text = uiState.song1?.name?.uppercase() ?: "TAKIM 1",
+                    text = uiState.song1?.name?.uppercase() ?: stringResource(R.string.ranking_team1_fallback),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -797,7 +799,7 @@ private fun MatchBasedContent(
                     shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
                 ) {
                     Text(
-                        text = "BERABERLİK",
+                        text = stringResource(R.string.ranking_draw_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
@@ -819,7 +821,7 @@ private fun MatchBasedContent(
                     shape = RectangleShape // Köşesiz, bitişik
                 ) {
                     Text(
-                        text = "SKOR İŞLE",
+                        text = stringResource(R.string.ranking_process_score),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -840,7 +842,7 @@ private fun MatchBasedContent(
                     shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
                 ) {
                     Text(
-                        text = "KRİTER",
+                        text = stringResource(R.string.ranking_criteria_button),
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onTertiaryContainer
@@ -860,7 +862,7 @@ private fun MatchBasedContent(
                 )
             ) {
                 Text(
-                    text = uiState.song2?.name?.uppercase() ?: "TAKIM 2",
+                    text = uiState.song2?.name?.uppercase() ?: stringResource(R.string.ranking_team2_fallback),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,

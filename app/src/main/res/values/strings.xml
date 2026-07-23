@@ -1,3 +1,202 @@
 <resources>
     <string name="app_name">Ranking Pro FAZ3 2026-07-24 00:31</string>
+
+    <!-- Common -->
+    <string name="common_back">Geri</string>
+    <string name="common_cancel">İptal</string>
+    <string name="common_delete">Sil</string>
+    <string name="common_ok">Tamam</string>
+    <string name="common_item_count">%1$d öğe</string>
+
+    <!-- Main Menu -->
+    <string name="main_menu_title">Ranking Sistemi</string>
+    <string name="main_menu_subtitle">Turnuva ve değerlendirme yönetimi</string>
+    <string name="main_menu_new_tournament">Yeni Turnuva</string>
+    <string name="main_menu_new_tournament_desc">Kriter sistemi ile</string>
+    <string name="main_menu_lists">Listeler</string>
+    <string name="main_menu_lists_desc">%1$d liste</string>
+    <string name="main_menu_criteria">Kriterler</string>
+    <string name="main_menu_criteria_desc">%1$d kriter listesi</string>
+    <string name="main_menu_active_tournaments">Devam Eden\nTurnuvalar</string>
+    <string name="main_menu_active_tournaments_desc">%1$d aktif turnuva</string>
+    <string name="main_menu_youtube_analysis">🎵 YouTube\nMüzik Analizi</string>
+    <string name="main_menu_youtube_analysis_desc">Şarkıcı view count analizi</string>
+    <string name="main_menu_archive">Arşiv</string>
+    <string name="main_menu_archive_desc">%1$d tamamlanan</string>
+    <string name="main_menu_about">Hakkında</string>
+    <string name="main_menu_about_desc">Uygulama bilgileri</string>
+    <string name="main_menu_footer">Geliştirilmiş İsviçre Sistemi v2.0\nKriterler Sistemi Aktif</string>
+
+    <!-- New Tournament -->
+    <string name="new_tournament_title">Yeni Turnuva</string>
+    <string name="new_tournament_forward">İleri</string>
+    <string name="new_tournament_start">Başlat</string>
+    <string name="new_tournament_creating">Oluşturuluyor...</string>
+    <string name="new_tournament_select_list">Liste Seçin</string>
+    <string name="new_tournament_name_title">Turnuva Adı</string>
+    <string name="new_tournament_name_label">Turnuva adı girin</string>
+    <string name="new_tournament_system_title">Turnuva Sistemi</string>
+    <string name="new_tournament_system_direct_scoring">Direkt Puanlama - 0-100 arası puan verme</string>
+    <string name="new_tournament_system_merge_sort">İkili Karşılaştırma - En az soruyla tam sıralama (büyük listeler için önerilen)</string>
+    <string name="new_tournament_system_league">Lig Sistemi - Herkes herkesle eşleşir</string>
+    <string name="new_tournament_system_swiss">İsviçre Sistemi - Puana göre eşleştirme</string>
+    <string name="new_tournament_system_emre">Geliştirilmiş İsviçre Sistemi (Önerilen)</string>
+    <string name="new_tournament_system_elimination">Eleme Usulü - Çift eleme sistemi</string>
+    <string name="new_tournament_system_full_elimination">Gruplu Eleme Usulü - Grup eleme</string>
+    <string name="new_tournament_criteria_title">Kriter Sistemi</string>
+    <string name="new_tournament_use_criteria">Kriter sistemi kullan</string>
+    <string name="new_tournament_criterion_count">%1$d kriter</string>
+    <string name="new_tournament_criteria_settings_title">Kriter Ayarları</string>
+    <string name="new_tournament_criteria_disabled">Kriter sistemi devre dışı</string>
+    <string name="new_tournament_scoring_type">Puanlama Türü</string>
+    <string name="new_tournament_scoring_comparative">Kıyaslamalı (10 puanı böl)</string>
+    <string name="new_tournament_scoring_separate">Ayrı ayrı (her takıma puan)</string>
+    <string name="new_tournament_score_scale">Puan Skalası: %1$d</string>
+    <string name="new_tournament_draw_threshold">Beraberlik Eşiği: %%%1$d - %%%2$d</string>
+    <string name="new_tournament_min_percent" formatted="false">Min %</string>
+    <string name="new_tournament_max_percent" formatted="false">Max %</string>
+    <string name="new_tournament_extra_settings">Ek Ayarlar</string>
+    <string name="new_tournament_auto_winner">Kriterlerden otomatik kazanan belirle</string>
+    <string name="new_tournament_auto_open_panel">Kriter panelini otomatik aç</string>
+    <string name="new_tournament_mandatory_criteria">Kriter değerlendirmesi zorunlu</string>
+
+    <!-- Lists -->
+    <string name="lists_title">Listeler</string>
+    <string name="lists_new_list">Yeni Liste</string>
+    <string name="lists_empty">Henüz liste oluşturulmamış</string>
+    <string name="lists_create_first">İlk Listenizi Oluşturun</string>
+    <string name="lists_total">Toplam %1$d liste</string>
+    <string name="lists_created_at">Oluşturulma: %1$s</string>
+    <string name="lists_delete">Sil</string>
+    <string name="lists_delete_dialog_title">Liste Silme</string>
+    <string name="lists_delete_dialog_text">\'%1$s\' listesini silmek istediğinizden emin misiniz?</string>
+
+    <!-- Create List -->
+    <string name="create_list_title">Yeni Liste Oluştur</string>
+    <string name="create_list_name_label">Liste Adı</string>
+    <string name="create_list_name_error">Lütfen liste adını boş bırakmayın</string>
+    <string name="create_list_how_add">Öğeleri nasıl eklemek istiyorsunuz?</string>
+    <string name="create_list_manual">Manuel Giriş</string>
+    <string name="create_list_csv">CSV Dosyasından Yükle</string>
+    <string name="create_list_supported_formats">Desteklenen formatlar:\n• Her satıra bir öğe\n• Tablo formatı (CSV): başlık satırı + veri satırları\n• Excel\'den kopyala-yapıştır (tab ayrımlı)\n• Format: Sanatçı - Albüm - Öğe veya Sanatçı - Öğe</string>
+    <string name="create_list_table_settings">Tablo formatı ayarları</string>
+    <string name="create_list_delimiter">Ayırıcı Karakter</string>
+    <string name="create_list_delimiter_comma">Virgül (,)</string>
+    <string name="create_list_delimiter_semicolon">Noktalı virgül (;)</string>
+    <string name="create_list_delimiter_tab">Tab</string>
+    <string name="create_list_delimiter_pipe">Pipe (|)</string>
+    <string name="create_list_table_example">Tablo örneği:\nÜlke%1$sKıta%1$sNüfus%1$sGSYİH\nTürkiye%1$sAsya%1$s84 Milyon%1$s819 Milyar</string>
+    <string name="create_list_items_label">Öğe Listesi</string>
+    <string name="create_list_items_placeholder">Basit liste örneği:\nHello\nFix You\nShape of You\n\nTablo örneği:\nÜlke,Kıta,Nüfus\nTürkiye,Asya,84M\nFransa,Avrupa,68M</string>
+    <string name="create_list_csv_pick_info">CSV dosyanızı seçin. Dosya şu formatlardan birinde olmalı:</string>
+    <string name="create_list_csv_format_info">• Başlık satırı + veri satırları\n• Virgül (,) ile ayrılmış\n• Örnek: Ülke,Kıta,Nüfus\\nTürkiye,Asya,84M</string>
+    <string name="create_list_advanced_settings">Gelişmiş ayarlar</string>
+    <string name="create_list_pick_csv">CSV Dosyası Seç</string>
+    <string name="create_list_selected_file">Seçilen dosya: %1$s</string>
+    <string name="create_list_create">Liste Oluştur</string>
+
+    <!-- Ranking -->
+    <string name="ranking_reset_confirm_title">Turnuvayı Sıfırla</string>
+    <string name="ranking_reset_confirm_text">Bu turnuvadaki tüm maç sonuçları ve ilerleme kalıcı olarak silinecek. Bu işlem geri alınamaz. Emin misiniz?</string>
+    <string name="ranking_reset">Sıfırla</string>
+    <string name="ranking_cancel">Vazgeç</string>
+    <string name="ranking_pause">Duraklat</string>
+    <string name="ranking_fixture">Fikstür</string>
+    <string name="ranking_matches">Maçlar</string>
+    <string name="ranking_points">Puan</string>
+    <string name="ranking_error">Hata: %1$s</string>
+    <string name="ranking_elimination_system">Eleme sistemi</string>
+    <string name="ranking_scoring_complete">Puanlama Tamamlandı!</string>
+    <string name="ranking_view_results">Sonuçları Görüntüle</string>
+    <string name="ranking_progress_count">%1$d / %2$d</string>
+    <string name="ranking_direct_score_question">Bu öğeye 0-100 arası kaç puan veriyorsunuz?</string>
+    <string name="ranking_score_label">Puan (0-100)</string>
+    <string name="ranking_save_score">Puanı Kaydet</string>
+    <string name="ranking_given_scores">Verilen Puanlar</string>
+    <string name="ranking_matches_complete">Eşleşmeler Tamamlandı!</string>
+    <string name="ranking_undo_last_match">↩ Son Maçı Geri Al</string>
+    <string name="ranking_round">Tur: %1$d</string>
+    <string name="ranking_enter_match_score">Maç Skoru Girin</string>
+    <string name="ranking_which_better">Hangisi daha iyi?</string>
+    <string name="ranking_team1_fallback">TAKIM 1</string>
+    <string name="ranking_team2_fallback">TAKIM 2</string>
+    <string name="ranking_draw_button">BERABERLİK</string>
+    <string name="ranking_process_score">SKOR İŞLE</string>
+    <string name="ranking_criteria_button">KRİTER</string>
+
+    <!-- Results -->
+    <string name="results_title">%1$s Sonuçları</string>
+    <string name="results_archive_save">Arşive Kaydet</string>
+    <string name="results_archiving_title">Arşivleniyor...</string>
+    <string name="results_archiving_text">Sonuçlar arşive kaydediliyor...</string>
+    <string name="results_success_title">Başarılı!</string>
+    <string name="results_success_text">\"%1$s\" başarıyla arşive kaydedildi.</string>
+    <string name="results_error_title">Hata!</string>
+    <string name="results_empty">Henüz sonuç bulunmuyor</string>
+    <string name="results_final_ranking">Final Sıralaması</string>
+    <string name="results_tab_standings">Puan Durumu</string>
+    <string name="results_tab_match_summary">Maç Özeti</string>
+    <string name="results_detailed_standings">Detaylı Puan Durumu</string>
+    <string name="results_header_rank">Sıra</string>
+    <string name="results_header_team">Takım</string>
+    <string name="results_header_played">O</string>
+    <string name="results_header_won">G</string>
+    <string name="results_header_drawn">B</string>
+    <string name="results_header_lost">M</string>
+    <string name="results_header_goals_for">A</string>
+    <string name="results_header_goals_against">Y</string>
+    <string name="results_header_points">P</string>
+    <string name="results_team_won">%1$s Kazandı</string>
+    <string name="results_draw_label">Berabere</string>
+    <string name="results_trophy">Trophy</string>
+    <string name="results_archive_prompt">Bu sıralamanın sonuçlarını arşive kaydetmek için bir isim girin:</string>
+    <string name="results_archive_name_label">Arşiv İsmi</string>
+    <string name="results_archive_name_placeholder">Örn: Yılbaşı Listesi 2024</string>
+    <string name="results_save">Kaydet</string>
+
+    <!-- Active Tournaments -->
+    <string name="active_tournaments_title">Devam Eden Turnuvalar</string>
+    <string name="active_tournaments_empty">Devam eden turnuva yok</string>
+    <string name="active_tournaments_empty_hint">Yeni turnuva başlatmak için bir liste seçin</string>
+    <string name="active_tournaments_swiss">İsviçre Sistemi</string>
+    <string name="active_tournaments_emre">Geliştirilmiş İsviçre</string>
+    <string name="active_tournaments_with_criteria">Kriterli</string>
+    <string name="active_tournaments_continue">Devam Et</string>
+    <string name="active_tournaments_delete_title">Turnuvayı Sil</string>
+    <string name="active_tournaments_delete_text">\"%1$s\" turnuvasını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</string>
+
+    <!-- Archive -->
+    <string name="archive_title">Arşiv</string>
+    <string name="archive_empty">Henüz hiç arşiv yok</string>
+    <string name="archive_delete_title">Arşivi Sil</string>
+    <string name="archive_delete_text">\'%1$s\' arşivini silmek istediğinize emin misiniz? Bu işlem geri alınamaz.</string>
+    <string name="archive_view">Görüntüle</string>
+    <string name="archive_method">Sıralama: %1$s</string>
+    <string name="archive_team_count">%1$d takım</string>
+    <string name="archive_match_count">%1$d/%2$d maç</string>
+    <string name="archive_completed">Tamamlandı</string>
+    <string name="archive_in_progress">Devam ediyor</string>
+    <string name="archive_incomplete">Yarım kaldı</string>
+    <string name="archive_tab_final">Son Sıralama</string>
+    <string name="archive_tab_standings">Puan Durumu</string>
+    <string name="archive_tab_matches">Maç Sonuçları</string>
+    <string name="archive_detail_method">Sıralama Yöntemi: %1$s</string>
+    <string name="archive_detail_list">Liste: %1$s</string>
+    <string name="archive_detail_team_count">Takım Sayısı: %1$d takım</string>
+    <string name="archive_detail_match_status">Maç Durumu: %1$d/%2$d maç tamamlandı</string>
+    <string name="archive_detail_status">Durum: %1$s</string>
+    <string name="archive_winner_label">Kazanan:</string>
+
+    <!-- Criteria -->
+    <string name="criteria_load_error">Kriter sayfası yüklenirken hata oluştu</string>
+    <string name="criteria_back_to_main">Ana Menüye Dön</string>
+    <string name="criteria_title">Kriterler</string>
+    <string name="criteria_new_list">Yeni Kriter Listesi</string>
+    <string name="criteria_back">Geri Dön</string>
+    <string name="criteria_empty">Henüz kriter listesi oluşturulmamış</string>
+    <string name="criteria_create_first">İlk Kriter Listenizi Oluşturun</string>
+    <string name="criteria_total">Toplam %1$d kriter listesi</string>
+    <string name="criteria_delete_dialog_title">Kriter Listesi Silme</string>
+    <string name="criteria_delete_dialog_text">\'%1$s\' kriter listesini silmek istediğinizden emin misiniz?</string>
+    <string name="criteria_edit">Düzenle</string>
 </resources>

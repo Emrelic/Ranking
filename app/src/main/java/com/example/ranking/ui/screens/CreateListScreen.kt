@@ -16,10 +16,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.CreateListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,10 +56,10 @@ fun CreateListScreen(
             .padding(16.dp)
     ) {
         TopAppBar(
-            title = { Text("Yeni Liste Oluştur") },
+            title = { Text(stringResource(R.string.create_list_title)) },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             }
         )
@@ -71,14 +73,14 @@ fun CreateListScreen(
             OutlinedTextField(
                 value = listName,
                 onValueChange = { listName = it },
-                label = { Text("Liste Adı") },
+                label = { Text(stringResource(R.string.create_list_name_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 isError = listName.isBlank() && (selectedOption == "manual" && manualSongs.isNotBlank() || selectedOption == "csv" && selectedFileUri != null),
                 supportingText = {
                     if (listName.isBlank() && (selectedOption == "manual" && manualSongs.isNotBlank() || selectedOption == "csv" && selectedFileUri != null)) {
                         Text(
-                            text = "Lütfen liste adını boş bırakmayın",
+                            text = stringResource(R.string.create_list_name_error),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -88,7 +90,7 @@ fun CreateListScreen(
             Spacer(modifier = Modifier.height(24.dp))
             
             Text(
-                text = "Öğeleri nasıl eklemek istiyorsunuz?",
+                text = stringResource(R.string.create_list_how_add),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Medium
             )
@@ -104,7 +106,7 @@ fun CreateListScreen(
                     onClick = { selectedOption = "manual" }
                 )
                 Text(
-                    text = "Manuel Giriş",
+                    text = stringResource(R.string.create_list_manual),
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
@@ -118,7 +120,7 @@ fun CreateListScreen(
                     onClick = { selectedOption = "csv" }
                 )
                 Text(
-                    text = "CSV Dosyasından Yükle",
+                    text = stringResource(R.string.create_list_csv),
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
@@ -128,7 +130,7 @@ fun CreateListScreen(
                 "manual" -> {
                     Column {
                         Text(
-                            text = "Desteklenen formatlar:\n• Her satıra bir öğe\n• Tablo formatı (CSV): başlık satırı + veri satırları\n• Excel'den kopyala-yapıştır (tab ayrımlı)\n• Format: Sanatçı - Albüm - Öğe veya Sanatçı - Öğe",
+                            text = stringResource(R.string.create_list_supported_formats),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -144,7 +146,7 @@ fun CreateListScreen(
                                 onCheckedChange = { showCsvSettings = it }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Tablo formatı ayarları")
+                            Text(stringResource(R.string.create_list_table_settings))
                         }
                         
                         // CSV Settings Panel
@@ -159,7 +161,7 @@ fun CreateListScreen(
                                     modifier = Modifier.padding(16.dp)
                                 ) {
                                     Text(
-                                        text = "Ayırıcı Karakter",
+                                        text = stringResource(R.string.create_list_delimiter),
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -171,22 +173,22 @@ fun CreateListScreen(
                                     ) {
                                         FilterChip(
                                             onClick = { csvDelimiter = "," },
-                                            label = { Text("Virgül (,)") },
+                                            label = { Text(stringResource(R.string.create_list_delimiter_comma)) },
                                             selected = csvDelimiter == ","
                                         )
                                         FilterChip(
                                             onClick = { csvDelimiter = ";" },
-                                            label = { Text("Noktalı virgül (;)") },
+                                            label = { Text(stringResource(R.string.create_list_delimiter_semicolon)) },
                                             selected = csvDelimiter == ";"
                                         )
                                         FilterChip(
                                             onClick = { csvDelimiter = "\t" },
-                                            label = { Text("Tab") },
+                                            label = { Text(stringResource(R.string.create_list_delimiter_tab)) },
                                             selected = csvDelimiter == "\t"
                                         )
                                         FilterChip(
                                             onClick = { csvDelimiter = "|" },
-                                            label = { Text("Pipe (|)") },
+                                            label = { Text(stringResource(R.string.create_list_delimiter_pipe)) },
                                             selected = csvDelimiter == "|"
                                         )
                                     }
@@ -197,7 +199,7 @@ fun CreateListScreen(
                                     Spacer(modifier = Modifier.height(8.dp))
                                     
                                     Text(
-                                        text = "Tablo örneği:\nÜlke${csvDelimiter}Kıta${csvDelimiter}Nüfus${csvDelimiter}GSYİH\nTürkiye${csvDelimiter}Asya${csvDelimiter}84 Milyon${csvDelimiter}819 Milyar",
+                                        text = stringResource(R.string.create_list_table_example, csvDelimiter),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
@@ -211,11 +213,11 @@ fun CreateListScreen(
                         OutlinedTextField(
                             value = manualSongs,
                             onValueChange = { manualSongs = it },
-                            label = { Text("Öğe Listesi") },
+                            label = { Text(stringResource(R.string.create_list_items_label)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(200.dp),
-                            placeholder = { Text("Basit liste örneği:\nHello\nFix You\nShape of You\n\nTablo örneği:\nÜlke,Kıta,Nüfus\nTürkiye,Asya,84M\nFransa,Avrupa,68M") },
+                            placeholder = { Text(stringResource(R.string.create_list_items_placeholder)) },
                             maxLines = 10
                         )
                     }
@@ -224,7 +226,7 @@ fun CreateListScreen(
                 "csv" -> {
                     Column {
                         Text(
-                            text = "CSV dosyanızı seçin. Dosya şu formatlardan birinde olmalı:",
+                            text = stringResource(R.string.create_list_csv_pick_info),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -232,7 +234,7 @@ fun CreateListScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         Text(
-                            text = "• Başlık satırı + veri satırları\n• Virgül (,) ile ayrılmış\n• Örnek: Ülke,Kıta,Nüfus\\nTürkiye,Asya,84M",
+                            text = stringResource(R.string.create_list_csv_format_info),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
@@ -249,7 +251,7 @@ fun CreateListScreen(
                                 onCheckedChange = { showCsvSettings = it }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Gelişmiş ayarlar")
+                            Text(stringResource(R.string.create_list_advanced_settings))
                         }
                         
                         Spacer(modifier = Modifier.height(16.dp))
@@ -258,12 +260,12 @@ fun CreateListScreen(
                             onClick = { csvLauncher.launch("*/*") },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("CSV Dosyası Seç")
+                            Text(stringResource(R.string.create_list_pick_csv))
                         }
                         
                         selectedFileUri?.let { uri ->
                             Text(
-                                text = "Seçilen dosya: ${uri.lastPathSegment}",
+                                text = stringResource(R.string.create_list_selected_file, uri.lastPathSegment.toString()),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.padding(top = 8.dp)
@@ -329,7 +331,7 @@ fun CreateListScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                Text("Liste Oluştur")
+                Text(stringResource(R.string.create_list_create))
             }
         }
     }

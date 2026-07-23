@@ -10,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.ActiveTournamentsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,10 +30,10 @@ fun ActiveTournamentsScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         TopAppBar(
-            title = { Text("Devam Eden Turnuvalar") },
+            title = { Text(stringResource(R.string.active_tournaments_title)) },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             }
         )
@@ -52,13 +54,13 @@ fun ActiveTournamentsScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Devam eden turnuva yok",
+                        text = stringResource(R.string.active_tournaments_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Yeni turnuva başlatmak için bir liste seçin",
+                        text = stringResource(R.string.active_tournaments_empty_hint),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -136,8 +138,8 @@ private fun TournamentCard(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = when (tournament.systemType) {
-                        "SWISS" -> "İsviçre Sistemi"
-                        "EMRE_CORRECT" -> "Geliştirilmiş İsviçre"
+                        "SWISS" -> stringResource(R.string.active_tournaments_swiss)
+                        "EMRE_CORRECT" -> stringResource(R.string.active_tournaments_emre)
                         else -> tournament.systemType
                     },
                     style = MaterialTheme.typography.bodySmall,
@@ -154,7 +156,7 @@ private fun TournamentCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Kriterli",
+                        text = stringResource(R.string.active_tournaments_with_criteria),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -173,7 +175,7 @@ private fun TournamentCard(
                 ) {
                     Icon(Icons.Default.PlayArrow, contentDescription = null)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Devam Et")
+                    Text(stringResource(R.string.active_tournaments_continue))
                 }
                 
                 IconButton(
@@ -182,7 +184,7 @@ private fun TournamentCard(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Icon(Icons.Default.Delete, contentDescription = "Sil")
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.common_delete))
                 }
             }
         }
@@ -192,9 +194,9 @@ private fun TournamentCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Turnuvayı Sil") },
-            text = { 
-                Text("\"${tournament.name}\" turnuvasını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.")
+            title = { Text(stringResource(R.string.active_tournaments_delete_title)) },
+            text = {
+                Text(stringResource(R.string.active_tournaments_delete_text, tournament.name))
             },
             confirmButton = {
                 TextButton(
@@ -206,14 +208,14 @@ private fun TournamentCard(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Sil")
+                    Text(stringResource(R.string.common_delete))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showDeleteDialog = false }
                 ) {
-                    Text("İptal")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )

@@ -9,10 +9,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.MainMenuViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +49,7 @@ fun MainMenuScreen(
         
         // Header
         Text(
-            text = "Ranking Sistemi",
+            text = stringResource(R.string.main_menu_title),
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
@@ -56,7 +58,7 @@ fun MainMenuScreen(
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "Turnuva ve değerlendirme yönetimi",
+            text = stringResource(R.string.main_menu_subtitle),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -75,16 +77,16 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 MenuCard(
-                    title = "Yeni Turnuva",
-                    description = "Kriter sistemi ile",
+                    title = stringResource(R.string.main_menu_new_tournament),
+                    description = stringResource(R.string.main_menu_new_tournament_desc),
                     icon = Icons.Default.Add,
                     onClick = onNavigateToNewTournament,
                     modifier = Modifier.weight(1f)
                 )
                 
                 MenuCard(
-                    title = "Listeler",
-                    description = "$songListsCount liste",
+                    title = stringResource(R.string.main_menu_lists),
+                    description = stringResource(R.string.main_menu_lists_desc, songListsCount),
                     icon = Icons.Default.List,
                     onClick = onNavigateToLists,
                     modifier = Modifier.weight(1f)
@@ -97,16 +99,16 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 MenuCard(
-                    title = "Kriterler",
-                    description = "$criterionListsCount kriter listesi",
+                    title = stringResource(R.string.main_menu_criteria),
+                    description = stringResource(R.string.main_menu_criteria_desc, criterionListsCount),
                     icon = Icons.Default.Star,
                     onClick = onNavigateToCriteria,
                     modifier = Modifier.weight(1f)
                 )
                 
                 MenuCard(
-                    title = "Devam Eden\nTurnuvalar",
-                    description = "$activeTournamentsCount aktif turnuva",
+                    title = stringResource(R.string.main_menu_active_tournaments),
+                    description = stringResource(R.string.main_menu_active_tournaments_desc, activeTournamentsCount),
                     icon = Icons.Default.PlayArrow,
                     onClick = onNavigateToActiveTournaments,
                     modifier = Modifier.weight(1f)
@@ -119,8 +121,8 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 MenuCard(
-                    title = "🎵 YouTube\nMüzik Analizi",
-                    description = "Şarkıcı view count analizi",
+                    title = stringResource(R.string.main_menu_youtube_analysis),
+                    description = stringResource(R.string.main_menu_youtube_analysis_desc),
                     icon = Icons.Default.PlayArrow,
                     onClick = onNavigateToYouTubeAnalysis,
                     modifier = Modifier.weight(1f),
@@ -128,8 +130,8 @@ fun MainMenuScreen(
                 )
                 
                 MenuCard(
-                    title = "Arşiv",
-                    description = "$completedTournamentsCount tamamlanan",
+                    title = stringResource(R.string.main_menu_archive),
+                    description = stringResource(R.string.main_menu_archive_desc, completedTournamentsCount),
                     icon = Icons.Default.List,
                     onClick = onNavigateToArchive,
                     modifier = Modifier.weight(1f)
@@ -142,8 +144,8 @@ fun MainMenuScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 MenuCard(
-                    title = "Hakkında",
-                    description = "Uygulama bilgileri",
+                    title = stringResource(R.string.main_menu_about),
+                    description = stringResource(R.string.main_menu_about_desc),
                     icon = Icons.Default.Info,
                     onClick = onNavigateToAbout,
                     modifier = Modifier.weight(1f)
@@ -158,7 +160,7 @@ fun MainMenuScreen(
         
         // Footer info
         Text(
-            text = "Geliştirilmiş İsviçre Sistemi v2.0\nKriterler Sistemi Aktif",
+            text = stringResource(R.string.main_menu_footer),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
             textAlign = TextAlign.Center,

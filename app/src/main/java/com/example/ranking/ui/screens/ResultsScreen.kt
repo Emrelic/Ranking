@@ -11,9 +11,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.ResultsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,12 +41,12 @@ fun ResultsScreen(
             .padding(16.dp)
     ) {
         TopAppBar(
-            title = { 
-                Text("${getMethodTitle(method)} Sonuçları")
+            title = {
+                Text(stringResource(R.string.results_title, getMethodTitle(method)))
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             },
             actions = {
@@ -52,7 +54,7 @@ fun ResultsScreen(
                     TextButton(
                         onClick = { onNavigateToFixture(listId, method) }
                     ) {
-                        Text("Fikstür")
+                        Text(stringResource(R.string.ranking_fixture))
                     }
                 }
                 
@@ -60,7 +62,7 @@ fun ResultsScreen(
                 TextButton(
                     onClick = { showArchiveDialog = true }
                 ) {
-                    Text("Arşive Kaydet")
+                    Text(stringResource(R.string.results_archive_save))
                 }
                 
                 if (showArchiveDialog) {
@@ -84,14 +86,14 @@ fun ResultsScreen(
                 is ResultsViewModel.ArchiveStatus.Loading -> {
                     AlertDialog(
                         onDismissRequest = { },
-                        title = { Text("Arşivleniyor...") },
+                        title = { Text(stringResource(R.string.results_archiving_title)) },
                         text = { 
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CircularProgressIndicator()
-                                Text("Sonuçlar arşive kaydediliyor...")
+                                Text(stringResource(R.string.results_archiving_text))
                             }
                         },
                         confirmButton = { }
@@ -100,13 +102,13 @@ fun ResultsScreen(
                 is ResultsViewModel.ArchiveStatus.Success -> {
                     AlertDialog(
                         onDismissRequest = { viewModel.clearArchiveStatus() },
-                        title = { Text("Başarılı!") },
-                        text = { Text("\"${status.archiveName}\" başarıyla arşive kaydedildi.") },
+                        title = { Text(stringResource(R.string.results_success_title)) },
+                        text = { Text(stringResource(R.string.results_success_text, status.archiveName)) },
                         confirmButton = {
                             TextButton(
                                 onClick = { viewModel.clearArchiveStatus() }
                             ) {
-                                Text("Tamam")
+                                Text(stringResource(R.string.common_ok))
                             }
                         }
                     )
@@ -114,13 +116,13 @@ fun ResultsScreen(
                 is ResultsViewModel.ArchiveStatus.Error -> {
                     AlertDialog(
                         onDismissRequest = { viewModel.clearArchiveStatus() },
-                        title = { Text("Hata!") },
+                        title = { Text(stringResource(R.string.results_error_title)) },
                         text = { Text(status.message) },
                         confirmButton = {
                             TextButton(
                                 onClick = { viewModel.clearArchiveStatus() }
                             ) {
-                                Text("Tamam")
+                                Text(stringResource(R.string.common_ok))
                             }
                         }
                     )
@@ -143,7 +145,7 @@ fun ResultsScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Henüz sonuç bulunmuyor",
+                    text = stringResource(R.string.results_empty),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -157,7 +159,7 @@ fun ResultsScreen(
                 )
             } else {
                 Text(
-                    text = "Final Sıralaması",
+                    text = stringResource(R.string.results_final_ranking),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -200,7 +202,11 @@ private fun LeagueResultsTabs(
     viewModel: ResultsViewModel
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val tabTitles = listOf("Final Sıralaması", "Puan Durumu", "Maç Özeti")
+    val tabTitles = listOf(
+        stringResource(R.string.results_final_ranking),
+        stringResource(R.string.results_tab_standings),
+        stringResource(R.string.results_tab_match_summary)
+    )
     
     Column {
         TabRow(selectedTabIndex = selectedTab) {
@@ -219,7 +225,7 @@ private fun LeagueResultsTabs(
             0 -> {
                 // Final Sıralaması
                 Text(
-                    text = "Final Sıralaması",
+                    text = stringResource(R.string.results_final_ranking),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -288,7 +294,7 @@ private fun LeagueTable(
         }
     } else {
         Text(
-            text = "Detaylı Puan Durumu",
+            text = stringResource(R.string.results_detailed_standings),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )
@@ -308,15 +314,15 @@ private fun LeagueTable(
                     .padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Sıra", modifier = Modifier.width(40.dp), fontWeight = FontWeight.Bold)
-                Text("Takım", modifier = Modifier.weight(2f), fontWeight = FontWeight.Bold)
-                Text("O", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
-                Text("G", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
-                Text("B", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
-                Text("M", modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
-                Text("A", modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
-                Text("Y", modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
-                Text("P", modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_rank), modifier = Modifier.width(40.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_team), modifier = Modifier.weight(2f), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_played), modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_won), modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_drawn), modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_lost), modifier = Modifier.width(30.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_goals_for), modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_goals_against), modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.results_header_points), modifier = Modifier.width(35.dp), fontWeight = FontWeight.Bold)
             }
         }
         
@@ -382,7 +388,7 @@ private fun MatchSummary(
     val matchSummary by viewModel.matchSummary.collectAsState()
     
     Text(
-        text = "Maç Özeti",
+        text = stringResource(R.string.results_tab_match_summary),
         style = MaterialTheme.typography.headlineSmall,
         fontWeight = FontWeight.Bold
     )
@@ -456,9 +462,9 @@ private fun MatchSummaryCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = when {
-                        match.winnerId == match.team1Id -> "${match.team1Name} Kazandı"
-                        match.winnerId == match.team2Id -> "${match.team2Name} Kazandı"
-                        else -> "Berabere"
+                        match.winnerId == match.team1Id -> stringResource(R.string.results_team_won, match.team1Name)
+                        match.winnerId == match.team2Id -> stringResource(R.string.results_team_won, match.team2Name)
+                        else -> stringResource(R.string.results_draw_label)
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
@@ -512,7 +518,7 @@ private fun ResultCard(
                     if (position <= 3) {
                         Icon(
                             Icons.Default.Star,
-                            contentDescription = "Trophy",
+                            contentDescription = stringResource(R.string.results_trophy),
                             tint = textColor,
                             modifier = Modifier.size(24.dp)
                         )
@@ -629,18 +635,18 @@ private fun ArchiveDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Arşive Kaydet") },
+        title = { Text(stringResource(R.string.results_archive_save)) },
         text = {
             Column {
-                Text("Bu sıralamanın sonuçlarını arşive kaydetmek için bir isim girin:")
+                Text(stringResource(R.string.results_archive_prompt))
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 OutlinedTextField(
                     value = archiveName,
                     onValueChange = { archiveName = it },
-                    label = { Text("Arşiv İsmi") },
-                    placeholder = { Text("Örn: Yılbaşı Listesi 2024") },
+                    label = { Text(stringResource(R.string.results_archive_name_label)) },
+                    placeholder = { Text(stringResource(R.string.results_archive_name_placeholder)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -651,12 +657,12 @@ private fun ArchiveDialog(
                 onClick = { onConfirm(archiveName) },
                 enabled = archiveName.isNotBlank()
             ) {
-                Text("Kaydet")
+                Text(stringResource(R.string.results_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("İptal")
+                Text(stringResource(R.string.common_cancel))
             }
         }
     )

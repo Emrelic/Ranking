@@ -10,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.CriteriaViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -37,7 +39,7 @@ fun CriteriaScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Kriter sayfası yüklenirken hata oluştu",
+                text = stringResource(R.string.criteria_load_error),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.error
             )
@@ -49,7 +51,7 @@ fun CriteriaScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = onNavigateBack) {
-                Text("Ana Menüye Dön")
+                Text(stringResource(R.string.criteria_back_to_main))
             }
         }
         return
@@ -74,15 +76,15 @@ fun CriteriaScreen(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Kriterler") },
+                title = { Text(stringResource(R.string.criteria_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToCreateCriteria) {
-                        Icon(Icons.Default.Add, contentDescription = "Yeni Kriter Listesi")
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.criteria_new_list))
                     }
                 }
             )
@@ -117,7 +119,7 @@ fun CriteriaScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = onNavigateBack) {
-                        Text("Geri Dön")
+                        Text(stringResource(R.string.criteria_back))
                     }
                 }
             }
@@ -141,7 +143,7 @@ fun CriteriaScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Henüz kriter listesi oluşturulmamış",
+                        text = stringResource(R.string.criteria_empty),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -149,7 +151,7 @@ fun CriteriaScreen(
                     Button(onClick = onNavigateToCreateCriteria) {
                         Icon(Icons.Default.Add, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("İlk Kriter Listenizi Oluşturun")
+                        Text(stringResource(R.string.criteria_create_first))
                     }
                 }
             }
@@ -162,7 +164,7 @@ fun CriteriaScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Toplam ${criterionLists.size} kriter listesi",
+                    text = stringResource(R.string.criteria_total, criterionLists.size),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -192,10 +194,10 @@ fun CriteriaScreen(
                     showDeleteDialog = false
                     deleteError = null
                 },
-                title = { Text("Kriter Listesi Silme") },
-                text = { 
+                title = { Text(stringResource(R.string.criteria_delete_dialog_title)) },
+                text = {
                     Column {
-                        Text("'${listToDelete!!.name}' kriter listesini silmek istediğinizden emin misiniz?")
+                        Text(stringResource(R.string.criteria_delete_dialog_text, listToDelete!!.name))
                         if (deleteError != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -222,7 +224,7 @@ fun CriteriaScreen(
                             )
                         }
                     ) {
-                        Text("Sil", color = MaterialTheme.colorScheme.error)
+                        Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
                     }
                 },
                 dismissButton = {
@@ -230,7 +232,7 @@ fun CriteriaScreen(
                         showDeleteDialog = false
                         deleteError = null
                     }) {
-                        Text("İptal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                 }
             )
@@ -279,12 +281,12 @@ private fun CriterionListCard(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "${criteria.size} kriter",
+                        text = stringResource(R.string.new_tournament_criterion_count, criteria.size),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Oluşturulma: ${criterionList.createdDate}",
+                        text = stringResource(R.string.lists_created_at, criterionList.createdDate),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
@@ -294,14 +296,14 @@ private fun CriterionListCard(
                     IconButton(onClick = onEdit) {
                         Icon(
                             Icons.Default.Edit,
-                            contentDescription = "Düzenle",
+                            contentDescription = stringResource(R.string.criteria_edit),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
                     IconButton(onClick = onDelete) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = "Sil",
+                            contentDescription = stringResource(R.string.common_delete),
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
