@@ -900,15 +900,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val remainingTeams = getRemainingTeamsAfterRound(allMatches, maxRound)
             val eliminatedSoFar = songCount - remainingTeams.size
             
-            // Debug için log ekle
-            _uiState.value = _uiState.value.copy(
-                error = "Debug: Tur $maxRound, Kalan: ${remainingTeams.size}, Elenen: $eliminatedSoFar, Hedef Z: $teamsToEliminate"
-            )
-            
             if (eliminatedSoFar >= teamsToEliminate) {
                 // Yeterince takım elendi, final bracket başlat
                 if (remainingTeams.size == targetSize) {
-                    val finalMatches = RankingEngine.createDirectEliminationMatches(remainingTeams, 101)
+                    val finalMatches = RankingEngine.createDirectEliminationMatches(remainingTeams, 101, "FULL_ELIMINATION")
                     repository.createMatches(finalMatches)
                     return true
                 } else {

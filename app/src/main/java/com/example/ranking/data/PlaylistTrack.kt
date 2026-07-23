@@ -2,6 +2,7 @@ package com.example.ranking.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -19,6 +20,11 @@ import androidx.room.PrimaryKey
             childColumns = ["trackId"],
             onDelete = ForeignKey.CASCADE
         )
+    ],
+    indices = [
+        Index("playlistId"),
+        Index("trackId"),
+        Index(value = ["playlistId", "trackId"], unique = true, name = "index_playlist_tracks_unique")
     ]
 )
 data class PlaylistTrack(

@@ -10,8 +10,8 @@ import com.example.ranking.data.dao.*
 
 @Database(
     entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class, Tournament::class, CriterionList::class, CriterionScore::class, YouTubeTrack::class, YouTubePlaylist::class, PlaylistTrack::class],
-    version = 15,
-    exportSchema = false
+    version = 16,
+    exportSchema = true
 )
 abstract class RankingDatabase : RoomDatabase() {
     abstract fun songDao(): SongDao
@@ -381,6 +381,41 @@ abstract class RankingDatabase : RoomDatabase() {
         }
 
 
+        /**
+         * Entity anotasyonları ile migration'larla oluşturulan şemayı hizalar.
+         * Önceki sürümlerde indeksler sadece migration SQL'lerinde vardı; taze
+         * kurulumlar (annotation'dan üretilen şema) bu indekslerden yoksundu.
+         * Bu migration her iki popülasyonu da aynı şemaya taşır.
+         */
+        private val MIGRATION_15_16 = object : Migration(15, 16) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Çekirdek tablolar için sorgu indeksleri (yeni)
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_songs_listId ON songs (listId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_matches_listId ON matches (listId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_matches_tournamentId ON matches (tournamentId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_ranking_results_listId ON ranking_results (listId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_league_settings_listId ON league_settings (listId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_voting_sessions_listId ON voting_sessions (listId)")
+
+                // FK indeksleri (önceki migration'larda vardı, taze kurulumlarda eksikti)
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_states_sessionId ON swiss_states (sessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_match_states_sessionId ON swiss_match_states (sessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_match_states_matchId ON swiss_match_states (matchId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_swiss_fixtures_sessionId ON swiss_fixtures (sessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_tournaments_songListId ON tournaments (songListId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_tournaments_criterionListId ON tournaments (criterionListId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_criterion_scores_matchId ON criterion_scores (matchId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_criterion_scores_tournamentId ON criterion_scores (tournamentId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_tracks_videoId ON youtube_tracks (videoId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_tracks_artist ON youtube_tracks (artist)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_tracks_viewCount ON youtube_tracks (viewCount DESC)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_youtube_playlists_artist ON youtube_playlists (artist)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_playlist_tracks_playlistId ON playlist_tracks (playlistId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_playlist_tracks_trackId ON playlist_tracks (trackId)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_playlist_tracks_unique ON playlist_tracks (playlistId, trackId)")
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -388,8 +423,11 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15)
-                .fallbackToDestructiveMigration()
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+                // fallbackToDestructiveMigration KALDIRILDI:
+                // Kapsanmayan bir sürüm geçişinde tüm kullanıcı verisini sessizce
+                // siliyordu. Artık tüm geçişler explicit migration ile yapılır;
+                // eksik migration varsa sessiz veri kaybı yerine hata alınır.
                 .build()
                 INSTANCE = instance
                 instance

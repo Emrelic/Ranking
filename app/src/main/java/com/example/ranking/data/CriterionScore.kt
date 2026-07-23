@@ -1,6 +1,7 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
 
@@ -19,7 +20,8 @@ import androidx.room.ForeignKey
             childColumns = ["tournamentId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index("matchId"), Index("tournamentId")]
 )
 data class CriterionScore(
     @PrimaryKey(autoGenerate = true)

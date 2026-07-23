@@ -1,9 +1,13 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "matches")
+@Entity(
+    tableName = "matches",
+    indices = [Index("listId"), Index("tournamentId")]
+)
 data class Match(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

@@ -69,7 +69,35 @@ fun RankingScreen(
     var showCriteriaDialog by remember { mutableStateOf(false) }
     var showStandingsDialog by remember { mutableStateOf(false) }
     var showScoreDialog by remember { mutableStateOf(false) }
-    
+    var showResetConfirmDialog by remember { mutableStateOf(false) }
+
+    // Sıfırlama onayı - tek dokunuşla turnuva silinmesini engeller
+    if (showResetConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetConfirmDialog = false },
+            title = { Text("Turnuvayı Sıfırla") },
+            text = { Text("Bu turnuvadaki tüm maç sonuçları ve ilerleme kalıcı olarak silinecek. Bu işlem geri alınamaz. Emin misiniz?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showResetConfirmDialog = false
+                        viewModel.deleteCurrentSession()
+                    },
+                    colors = ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Sıfırla")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetConfirmDialog = false }) {
+                    Text("Vazgeç")
+                }
+            }
+        )
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         // Ana içerik - Dialog açıkken gizle
         if (!showCriteriaDialog) {
@@ -106,7 +134,7 @@ fun RankingScreen(
                         }
 
                         Button(
-                            onClick = { viewModel.deleteCurrentSession() },
+                            onClick = { showResetConfirmDialog = true },
                             shape = RoundedCornerShape(6.dp),
                             modifier = Modifier.height(32.dp),
                             colors = ButtonDefaults.buttonColors(
@@ -404,27 +432,13 @@ private fun InitialRankingContent(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "🎯 EMRE_CORRECT İlk Sıralama",
+            text = "İlk Sıralama Hazır",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = Color.Blue,
+            color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
-        Text(
-            text = "Debug: showInitialRanking = ${uiState.showInitialRanking}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Red,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        
-        Text(
-            text = "Debug: emreState = ${uiState.emreState != null}",
-            style = MaterialTheme.typography.bodySmall,
-            color = Color.Red,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        
+
         Button(
             onClick = {
                 viewModel.startScoring()

@@ -1,6 +1,7 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
 
@@ -19,7 +20,8 @@ import androidx.room.ForeignKey
             childColumns = ["criterionListId"],
             onDelete = ForeignKey.SET_NULL
         )
-    ]
+    ],
+    indices = [Index("songListId"), Index("criterionListId")]
 )
 data class Tournament(
     @PrimaryKey(autoGenerate = true)

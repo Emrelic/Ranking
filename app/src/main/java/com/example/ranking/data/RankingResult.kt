@@ -1,9 +1,13 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "ranking_results")
+@Entity(
+    tableName = "ranking_results",
+    indices = [Index("listId")]
+)
 data class RankingResult(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

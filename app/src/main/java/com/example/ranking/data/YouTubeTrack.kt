@@ -1,9 +1,17 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "youtube_tracks")
+@Entity(
+    tableName = "youtube_tracks",
+    indices = [
+        Index("videoId"),
+        Index("artist"),
+        Index(value = ["viewCount"], orders = [Index.Order.DESC])
+    ]
+)
 data class YouTubeTrack(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

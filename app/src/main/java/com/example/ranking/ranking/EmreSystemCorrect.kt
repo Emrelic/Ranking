@@ -5,34 +5,34 @@ import com.example.ranking.data.Match
 import com.example.ranking.data.RankingResult
 
 /**
- * GERÇEK Emre Usulü Sıralama Sistemi
- * 
- * DOĞRU Algoritma Kuralları (Kullanıcının belirttiği şekilde):
- * 1. Başlangıç: Takımlara ID (sabit) ve sıra numarası (1-79) atanır
+ * Geliştirilmiş İsviçre Sistemi (Emre Usulü)
+ *
+ * Algoritma Kuralları:
+ * 1. Başlangıç: Takımlara sabit ID ve sıra numarası atanır
  * 2. İlk tur: 1-2, 3-4, 5-6... eşleştirme, tek sayıda ise son takım bye geçer
  * 3. Puanlama: Galibiyet=1, beraberlik=0.5, mağlubiyet=0, bye=1 puan
- * 4. Yeniden sıralama: Puana göre → tiebreaker → yeni sıra numaraları (1-79)
- * 5. Sonraki turlar: 1. takım 2. ile eşleşmedi mi kontrol → eşleştir
- *    Eşleşmiş ise 1-3, 1-4, 1-5... şeklinde ilk eşleşmemiş rakip bulunana kadar
- * 6. Aynı puan kontrolü: Eğer her eşleşmede aynı puanlı takımlar varsa tur oynanır
- *    Hiçbir eşleşmede aynı puanlı takım yoksa turnuva biter
- * 7. Her takım diğer takımla EN FAZLA 1 KEZ oynar
+ * 4. Yeniden sıralama: Puana göre → tiebreaker → yeni sıra numaraları
+ * 5. Sonraki turlar: Sıraya göre ilk eşleşmemiş rakip bulunana kadar arama
+ * 6. Aynı puan kontrolü: En az bir eşleşme aynı puanlı ise tur oynanır,
+ *    hiçbir eşleşme aynı puanlı değilse turnuva biter
+ * 7. Her takım diğer takımla EN FAZLA 1 KEZ oynar (kırmızı çizgi)
+ * 8. Tüm takımları kapsayan tekrarsız eşleştirme kurulamıyorsa turnuva biter
+ *    (sonsuz döngü koruması)
  */
 object EmreSystemCorrect {
-    
+
     data class EmreTeam(
         val song: Song,
         var points: Double = 0.0,
         var currentPosition: Int = 0,           // Anlık sıra numarası (değişken)
-        val teamId: Long,                       // Sabit ID numarası  
-        var preRoundPosition: Int = 0,          // 🆕 Tur öncesi anlık sıralama (tiebreaker için)
+        val teamId: Long,                       // Sabit ID numarası
+        var preRoundPosition: Int = 0,          // Tur öncesi anlık sıralama (tiebreaker için)
         var byePassed: Boolean = false,         // Bye geçti mi?
-        var byeCount: Int = 0,                  // 🆕 Kaç kere bye geçti (maksimum 1)
-        var secondaryPoints: Double = 0.0       // 🆕 İkincil puan (H2H) - UI gösterimi için
+        var byeCount: Int = 0,                  // Kaç kere bye geçti
+        var secondaryPoints: Double = 0.0       // İkincil puan (H2H) - UI gösterimi için
     ) {
         val id: Long get() = song.id
-        
-        // Deep copy fonksiyonu - CRITICAL for avoiding duplicate match bug
+
         fun deepCopy(): EmreTeam {
             return EmreTeam(
                 song = song,
@@ -46,90 +46,45 @@ object EmreSystemCorrect {
             )
         }
     }
-    
+
     data class EmreState(
         val teams: List<EmreTeam>,
-        val matchHistory: Set<Pair<Long, Long>> = emptySet(), // Oynanan eşleşmeler
+        val matchHistory: Set<Pair<Long, Long>> = emptySet(), // Oynanan eşleşmeler (normalize: küçük ID önce)
         val currentRound: Int = 1,
         val isComplete: Boolean = false
     )
-    
+
     data class EmrePairingResult(
         val matches: List<Match>,
         val byeTeam: EmreTeam? = null,
-        val hasSamePointMatch: Boolean = false, // Aynı puanlı eşleşme var mı?
+        val hasSamePointMatch: Boolean = false,
         val canContinue: Boolean = true,
-        val candidateMatches: List<CandidateMatch> = emptyList() // Aday eşleşmeler
+        val candidateMatches: List<CandidateMatch> = emptyList()
     )
-    
-    // Aday eşleşme sistemi için yeni data class
+
     data class CandidateMatch(
         val team1: EmreTeam,
         val team2: EmreTeam,
         val isAsymmetricPoints: Boolean, // Farklı puanlı mı?
-        var matchNumber: Int = 0 // 🆕 Alternating match numbering için
+        var matchNumber: Int = 0         // Alternating match numbering için
     )
-    
-    // 🆕 YENİ KAVRAMLAR İÇİN DATA CLASS'LAR
-    
-    /**
-     * Eşleşme motoru durumları
-     */
-    data class PairingEngineState(
-        val candidateMatches: MutableList<CandidateMatch> = mutableListOf(),
-        val usedTeams: MutableSet<Long> = mutableSetOf(),
-        val unpairedTeams: MutableList<EmreTeam> = mutableListOf(), // 🆕 Eşleşilemeden kalanlar grubu
-        var byeTeam: EmreTeam? = null,
-        var currentSearchingTeam: EmreTeam? = null // 🆕 Eşleştirme arayan takım
-    )
-    
-    /**
-     * Backtrack operasyonu sonucu
-     */
-    data class BacktrackResult(
-        val success: Boolean,
-        val newMatch: CandidateMatch? = null,
-        val stolenPartnerTeam: EmreTeam? = null, // 🆕 Partneri çalınan takım
-        val reason: String = ""
-    )
-    
-    /**
-     * 🆕 Eşleştirme arama sonuçları
-     */
-    sealed class PairingSearchResult {
-        data class Success(val partner: EmreTeam, val displacedTeam: EmreTeam? = null) : PairingSearchResult()
-        data class RequiresBacktrack(val targetTeam: EmreTeam) : PairingSearchResult()
-        object TournamentFinished : PairingSearchResult()
-        object Bye : PairingSearchResult()
-    }
-    
-    // İki kademeli kontrol durumları
-    enum class PairingPhase {
-        CANDIDATE_CREATION,    // Aday eşleştirme oluşturma
-        CONFIRMATION_PENDING,  // Onay bekliyor
-        CONFIRMED,            // Onaylandı
-        TOURNAMENT_FINISHED   // Turnuva bitti (asimetrik puan yok)
-    }
-    
+
     /**
      * Emre turnuvası başlat
      */
     fun initializeEmreTournament(songs: List<Song>): EmreState {
         val teams = songs.mapIndexed { index, song ->
             EmreTeam(
-                song = song, 
-                points = 0.0, 
-                currentPosition = index + 1,      // Anlık sıra numarası
-                teamId = (1000 + index).toLong(), // 4 basamaklı TeamID: 1000, 1001, 1002...
-                preRoundPosition = index + 1,     // 🆕 İlk turda tur öncesi = başlangıç sırası
+                song = song,
+                points = 0.0,
+                currentPosition = index + 1,
+                teamId = (1000 + index).toLong(), // 4 basamaklı sabit TeamID
+                preRoundPosition = index + 1,
                 byePassed = false,
                 byeCount = 0
             )
         }
-        
-        teams.forEach { team ->
-        }
-        
+
         return EmreState(
             teams = teams,
             matchHistory = emptySet(),
@@ -137,1501 +92,532 @@ object EmreSystemCorrect {
             isComplete = false
         )
     }
-    
+
+    // ==========================================
+    // HİBRİT EŞLEŞTİRME MOTORU (canlı motor)
+    // ==========================================
+
     /**
-     * İKİ KADEMELİ KONTROLLU SONRAKI TUR EŞLEŞTİRMELERİ
-     * 
-     * KULLANICININ TARİF ETTİĞİ SİSTEM:
-     * 1. Onay sistemi: "X. Tur eşleştirmeleri yapılacaktır" → kullanıcı onayı
-     * 2. Aday eşleştirmeler oluştur → asimetrik puan kontrolü
-     * 3. Eğer asimetrik puan yoksa → turnuva biter
-     * 4. Eğer asimetrik puan varsa → onay sonrası kesin eşleştirmeler
+     * HİBRİT EŞLEŞTİRME ALGORİTMASI
+     *
+     * KAVRAMLAR:
+     * - EBTG: Eşleştirme Bekleyen Takımlar Grubu
+     * - KEAT: Kendine Eşleştirme Arayan Takım
+     * - AEG: Aday Eşleştirmeler Grubu
+     * - EBT: Eşleştirmesi Bozulan Takım
+     * - PÇT: Partneri Çalınan Takım
+     *
+     * ADIMLAR:
+     * 1. Hibrit tarama: Bir üstten bir alttan KEAT seçimi
+     * 2. KEAT kendinden sonraki/önceki takımlarla uygunluk kontrolü
+     * 3. Uygun bulamazsa backtrack: Mevcut eşleştirme bozma
+     * 4. PÇT-EBT karar matrisi ile yeniden eşleştirme
      */
-    fun createNextRoundWithConfirmation(state: EmreState): EmrePairingResult {
+    fun createHybridPairingSystem(state: EmreState): EmrePairingResult {
         if (state.isComplete) {
             return EmrePairingResult(
-                matches = emptyList(), 
-                byeTeam = null, 
-                hasSamePointMatch = false, 
+                matches = emptyList(),
+                byeTeam = null,
+                hasSamePointMatch = false,
                 canContinue = false,
                 candidateMatches = emptyList()
             )
         }
-        
-        // 🆕 TUR ÖNCESİ ANLIK SIRALAMA HAFIZAYA ALINIR
-        val teamsWithPreRoundPosition = state.teams.map { team ->
+
+        // Tur öncesi anlık sıralama hafızaya alınır (tiebreaker için)
+        val teamsWithPreRound = state.teams.map { team ->
             team.deepCopy().apply {
-                preRoundPosition = currentPosition // Tur öncesi sıralama hafızaya al
+                preRoundPosition = currentPosition
             }
         }
-        
-        // Takımları anlık sıra numaralarına göre sırala 
-        val sortedTeams = teamsWithPreRoundPosition.sortedBy { it.currentPosition }
-        
-        sortedTeams.forEach { team ->
+
+        val sortedTeams = teamsWithPreRound.sortedBy { it.currentPosition }
+
+        // BYE sistemi
+        val (teamsToMatch, byeTeam) = handleAdvancedByeSystem(sortedTeams)
+
+        // Hibrit eşleştirme motoru
+        val pairingResult = executeHybridPairingEngine(teamsToMatch, state.matchHistory)
+
+        val expectedPairs = teamsToMatch.size / 2
+        val candidates = pairingResult.AEG.map {
+            CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints, it.matchNumber)
         }
-        
-        // 🆕 YENİ BYE KONTROL SİSTEMİ
-        val (teamsToMatch, byeTeam) = handleByeTeamAdvanced(sortedTeams)
-        
-        // 🆕 YENİ EŞLEŞTIRME MOTORU - Round numarası doğru kullanılacak
-        val result = createNewPairingEngine(teamsToMatch, state.matchHistory, state.currentRound)
-        
-        // Bye ekibini result'a ekle
-        return result.copy(byeTeam = byeTeam)
+
+        // SONSUZ DÖNGÜ / KİLİTLENME KORUMASI:
+        // Tüm takımları kapsayan tekrarsız eşleştirme kurulamadıysa turnuva biter.
+        // (Kırmızı çizgi: iki takım ikinci kez eşleştirilemez; eksik turla devam edilemez.)
+        if (pairingResult.AEG.size < expectedPairs) {
+            return EmrePairingResult(
+                matches = emptyList(),
+                byeTeam = byeTeam,
+                hasSamePointMatch = false,
+                canContinue = false,
+                candidateMatches = candidates
+            )
+        }
+
+        // Aynı puanlı eşleşme kontrolü ve turnuva bitiş analizi
+        val analysis = analyzeTournamentContinuation(candidates, state.currentRound)
+        if (!analysis.canContinue) {
+            return EmrePairingResult(
+                matches = emptyList(),
+                byeTeam = byeTeam,
+                hasSamePointMatch = false,
+                canContinue = false,
+                candidateMatches = candidates
+            )
+        }
+
+        // AEG'yi alternating match numbering ile Match'lere çevir
+        val convertedMatches = pairingResult.AEG.map { candidateMatch ->
+            Match(
+                listId = state.teams.firstOrNull()?.song?.listId ?: 0L,
+                rankingMethod = "EMRE_CORRECT",
+                songId1 = candidateMatch.team1.song.id,
+                songId2 = candidateMatch.team2.song.id,
+                winnerId = null,
+                round = state.currentRound,
+                matchNumber = candidateMatch.matchNumber,
+                isCompleted = false
+            )
+        }
+
+        return EmrePairingResult(
+            matches = convertedMatches,
+            byeTeam = byeTeam,
+            hasSamePointMatch = analysis.hasSamePointMatches,
+            canContinue = true,
+            candidateMatches = candidates
+        )
     }
-    
-    
+
     /**
-     * 🆕 YENİ BYE KONTROL SİSTEMİ - Geliştirilmiş İsviçre Usulü Kuralları
-     * 
-     * KURALLAR:
-     * - Çift sayıda takım: Hiçbir takım bye geçemez
-     * - Tek sayıda takım: En alttaki (en düşük anlık sıralı) takım bye geçer
-     * - Bir takım turnuvada en fazla 1 kere bye geçebilir
+     * BYE SİSTEMİ
+     * Tek sayıda takımda, en alttan başlayarak bye geçmemiş ilk takım bye geçer.
+     * Çift sayıda takımda hiçbir takım bye geçemez.
      */
-    private fun handleByeTeamAdvanced(sortedTeams: List<EmreTeam>): Pair<List<EmreTeam>, EmreTeam?> {
-        
+    private fun handleAdvancedByeSystem(sortedTeams: List<EmreTeam>): Pair<List<EmreTeam>, EmreTeam?> {
         if (sortedTeams.size % 2 == 0) {
-            // Çift sayıda takım - hiçbir takım bye geçemez
             return Pair(sortedTeams, null)
         }
-        
-        // Tek sayıda takım - bye geçecek takımı bul
-        
-        // En alttaki takımdan başlayarak bye geçmemiş takımı bul
-        var byeTeam: EmreTeam? = null
-        val remainingTeams = mutableListOf<EmreTeam>()
-        
-        // Tersten tarayarak en alttaki bye geçmemiş takımı bul
+
+        // En alttan başlayarak bye geçmemiş takım ara
         for (i in sortedTeams.indices.reversed()) {
-            val team = sortedTeams[i]
-            if (byeTeam == null && team.byeCount == 0) {
-                byeTeam = team
-            } else {
-                remainingTeams.add(0, team) // Başa ekle (sıralama korunur)
-            }
-        }
-        
-        // Eğer tüm takımlar bye geçmişse, en alttakini tekrar bye yap (olağanüstü durum)
-        if (byeTeam == null) {
-            byeTeam = sortedTeams.last()
-            remainingTeams.addAll(sortedTeams.dropLast(1))
-        }
-        
-        return Pair(remainingTeams, byeTeam)
-    }
-    
-    /**
-     * 🧪 TEST LOG 1: DUPLICATE PAIRING CHECK
-     * Her eşleştirme öncesi duplicate kontrolünü detaylıca loglar
-     */
-    private fun logDuplicateTest(team1: EmreTeam, team2: EmreTeam, matchHistory: Set<Pair<Long, Long>>, testResult: Boolean, testName: String) {
-    }
-    
-    /**
-     * 🧪 TEST LOG 2: EQUAL MATCH COUNT PER ROUND
-     * Her turda eşit sayıda maç oynanıp oynanmadığını kontrol eder
-     */
-    private fun logMatchCountTest(teams: List<EmreTeam>, matches: List<CandidateMatch>, byeTeam: EmreTeam?, currentRound: Int) {
-        val totalTeams = teams.size
-        val expectedMatches = if (totalTeams % 2 == 0) totalTeams / 2 else (totalTeams - 1) / 2
-        val expectedBye = totalTeams % 2
-        val actualMatches = matches.size
-        val actualBye = if (byeTeam != null) 1 else 0
-        
-        
-        if (actualMatches != expectedMatches || actualBye != expectedBye) {
-        }
-    }
-    
-    /**
-     * 🧪 TEST LOG 3: TOURNAMENT END ALGORITHM 
-     * Turnuva bitişinin algoritmasal doğruluğunu test eder
-     */
-    private fun logTournamentEndTest(candidateMatches: List<CandidateMatch>, canContinue: Boolean, currentRound: Int) {
-        val samePointMatches = candidateMatches.filter { !it.isAsymmetricPoints }
-        val asymmetricMatches = candidateMatches.filter { it.isAsymmetricPoints }
-        
-        
-        samePointMatches.forEachIndexed { index, match ->
-        }
-        
-        asymmetricMatches.forEachIndexed { index, match ->
-        }
-        
-    }
-    
-    /**
-     * 🔍 COMPREHENSIVE TOURNAMENT ANALYSIS
-     * User requested detailed analysis of team pairings, duplicates, and round validation
-     */
-    fun generateComprehensiveTournamentAnalysis(state: EmreState, allMatches: List<Match>) {
-        
-        // 1. Tournament Overview
-        
-        // 2. Round-by-round analysis
-        val roundMatches = allMatches.groupBy { it.round }
-        roundMatches.keys.sorted().forEach { round ->
-            val matches = roundMatches[round]!!
-        }
-        
-        // 3. Individual team pairing history
-        
-        val songToTeamMap = state.teams.associate { team -> team.song.id to team }
-        
-        state.teams.sortedBy { it.teamId }.forEach { team ->
-            val opponentList = mutableListOf<String>()
-            
-            allMatches.forEach { match ->
-                when {
-                    match.songId1 == team.song.id -> {
-                        val opponent = songToTeamMap[match.songId2]
-                        opponent?.let { opponentList.add("TeamID ${it.teamId} (Round ${match.round})") }
-                    }
-                    match.songId2 == team.song.id -> {
-                        val opponent = songToTeamMap[match.songId1]
-                        opponent?.let { opponentList.add("TeamID ${it.teamId} (Round ${match.round})") }
-                    }
+            val candidate = sortedTeams[i]
+            if (!candidate.byePassed) {
+                val updatedByeTeam = candidate.deepCopy().apply {
+                    byePassed = true
+                    byeCount += 1
                 }
-            }
-            
-        }
-        
-        // 4. Duplicate pairing detection
-        
-        val pairingCounts = mutableMapOf<Pair<Long, Long>, Int>()
-        allMatches.forEach { match ->
-            val team1 = songToTeamMap[match.songId1]
-            val team2 = songToTeamMap[match.songId2]
-            
-            if (team1 != null && team2 != null) {
-                val normalizedPair = if (team1.teamId < team2.teamId) {
-                    Pair(team1.teamId, team2.teamId)
-                } else {
-                    Pair(team2.teamId, team1.teamId)
-                }
-                pairingCounts[normalizedPair] = pairingCounts.getOrDefault(normalizedPair, 0) + 1
+                val remainingTeams = sortedTeams.filterNot { it.teamId == candidate.teamId }
+                return Pair(remainingTeams, updatedByeTeam)
             }
         }
-        
-        val duplicates = pairingCounts.filter { it.value > 1 }
-        if (duplicates.isEmpty()) {
-        } else {
-            duplicates.forEach { (pair, count) ->
-            }
+
+        // Tüm takımlar bye geçmiş - en alttakini seç (olağanüstü durum)
+        val byeTeam = sortedTeams.last().deepCopy().apply {
+            byeCount += 1
         }
-        
-        // 5. Final standings
-        state.teams.sortedBy { it.currentPosition }.forEach { team ->
-        }
-        
-        // 6. Secondary scoring system analysis
-        val samePointGroups = state.teams.groupBy { it.points }
-        samePointGroups.forEach { (points, teams) ->
-            if (teams.size > 1) {
-            }
-        }
-        
+        return Pair(sortedTeams.dropLast(1), byeTeam)
     }
 
-    /**
-     * 🧪 TEST LOG 4: HEAD-TO-HEAD TIEBREAKER TEST
-     * İkincil puan durumu (head-to-head) hesaplamasını test eder
-     */
-    private fun logHeadToHeadTest(samePointTeams: List<EmreTeam>, headToHeadPoints: Map<Long, Double>, completedMatches: List<Match>) {
-        
-        samePointTeams.forEach { team ->
-            val h2hPoints = headToHeadPoints[team.id] ?: 0.0
-        }
-        
-        // Head-to-head maçlarını say
-        val samePointTeamIds = samePointTeams.map { it.id }.toSet()
-        val h2hMatches = completedMatches.filter { match ->
-            match.isCompleted &&
-            match.songId1 in samePointTeamIds &&
-            match.songId2 in samePointTeamIds &&
-            match.songId1 != match.songId2
-        }
-        
-        h2hMatches.forEachIndexed { index, match ->
-            val winner = when (match.winnerId) {
-                match.songId1 -> "Team with Song ${match.songId1}"
-                match.songId2 -> "Team with Song ${match.songId2}"
-                null -> "DRAW"
-                else -> "Unknown"
-            }
-        }
-        
-        // Test doğruluğu
-        val hasValidH2H = samePointTeams.size > 1 && h2hMatches.isNotEmpty()
-        
-        // Direct head-to-head testini ekle
-        if (samePointTeams.size >= 2) {
-            val directMatches = mutableListOf<String>()
-            for (i in 0 until samePointTeams.size - 1) {
-                for (j in i + 1 until samePointTeams.size) {
-                    val team1 = samePointTeams[i]
-                    val team2 = samePointTeams[j]
-                    val directMatch = completedMatches.find { match ->
-                        match.isCompleted &&
-                        ((match.songId1 == team1.id && match.songId2 == team2.id) ||
-                         (match.songId1 == team2.id && match.songId2 == team1.id))
-                    }
-                    
-                    if (directMatch != null) {
-                        val winner = when (directMatch.winnerId) {
-                            team1.id -> "Team ${team1.currentPosition}"
-                            team2.id -> "Team ${team2.currentPosition}" 
-                            null -> "DRAW"
-                            else -> "Unknown"
-                        }
-                        directMatches.add("Team ${team1.currentPosition} vs Team ${team2.currentPosition} → Winner: $winner")
-                    }
-                }
-            }
-            
-            directMatches.forEach { matchResult ->
-            }
-        }
-    }
-
-    /**
-     * 🆕 YENİ EŞLEŞTIRME MOTORU - Geliştirilmiş İsviçre Usulü
-     * 
-     * ALGORİTMA AKIŞI:
-     * 1. En üst anlık sıralı takım → "eşleştirme arayan takım" statüsü
-     * 2. Kendinden sonraki ilk eşleşmemiş takımla eşleştir
-     * 3. Eğer bulamazsa geriye dön ve mevcut eşleşmeyi boz
-     * 4. "Partneri çalınan takım" ile "eşleşilemeden kalanlar" kontrolü
-     * 5. Tüm takımlar eşleşince "eş puanlı eşleşme" kontrolü
-     * 6. En az 1 eş puanlı varsa tur oyna, yoksa turnuva bitir
-     */
-    private fun createNewPairingEngine(
-        teams: List<EmreTeam>, 
-        matchHistory: Set<Pair<Long, Long>>,
-        currentRound: Int
-    ): EmrePairingResult {
-        
-        
-        // 1. EŞLEŞTIRME MOTORU DURUMU BAŞLAT
-        val engineState = PairingEngineState()
-        val availableTeams = teams.sortedBy { it.currentPosition }.toMutableList()
-        
-        availableTeams.forEach { team ->
-        }
-        
-        // 2. ANA EŞLEŞTIRME DÖNGÜSÜ
-        var safetyCounter = 0
-        val maxIterations = teams.size * 5 // Backtrack için daha yüksek limit
-        
-        while (availableTeams.isNotEmpty() && safetyCounter < maxIterations) {
-            safetyCounter++
-            
-            if (safetyCounter % 50 == 0) {
-            }
-            
-            // En üst anlık sıralı takımı "eşleştirme arayan takım" yap
-            val searchingTeam = availableTeams.removeFirstOrNull()
-            if (searchingTeam == null) break
-            
-            engineState.currentSearchingTeam = searchingTeam
-            
-            // Bu takım için eşleştirme arayan statüsü
-            val pairingResult = findPartnerForSearchingTeam(
-                searchingTeam, 
-                availableTeams, 
-                teams, // 🆕 All teams for backward search
-                engineState, 
-                matchHistory
-            )
-            
-            when (pairingResult) {
-                is PairingSearchResult.Success -> {
-                    // Başarılı eşleştirme - her iki takımı da available listeden çıkar
-                    availableTeams.remove(pairingResult.partner)
-                    engineState.usedTeams.add(searchingTeam.teamId)
-                    engineState.usedTeams.add(pairingResult.partner.teamId)
-                    
-                    
-                    // 🔴 CRITICAL FIX: DISPLACED TEAM'İ MAIN DÖNGÜYE GERİ AL
-                    pairingResult.displacedTeam?.let { displacedTeam ->
-                        if (!availableTeams.contains(displacedTeam)) {
-                            availableTeams.add(0, displacedTeam) // Başa ekle (öncelikli)
-                        } else {
-                        }
-                    }
-                }
-                is PairingSearchResult.RequiresBacktrack -> {
-                    // Backtrack gerekiyor - önceki eşleştirmeyi boz
-                    val backtrackResult = performAdvancedBacktrack(
-                        searchingTeam, 
-                        pairingResult.targetTeam,
-                        engineState, 
-                        availableTeams, 
-                        matchHistory
-                    )
-                    
-                    if (!backtrackResult.success) {
-                        // Backtrack başarısız - eşleşilemeden kalanlar grubuna ekle
-                        engineState.unpairedTeams.add(searchingTeam)
-                    } else {
-                        // 🔴 CRITICAL FIX: STOLEN PARTNER'İ MAIN DÖNGÜYE GERİ AL
-                        backtrackResult.stolenPartnerTeam?.let { stolenPartner ->
-                            availableTeams.add(stolenPartner)
-                        }
-                    }
-                }
-                is PairingSearchResult.TournamentFinished -> {
-                    // 🔥 FIX: Turnuva bitti - ama asymmetric check yap!
-                    
-                    // Mevcut candidate matches ile asymmetric check yap
-                    return performAsymmetricPointCheck(engineState.candidateMatches, engineState.byeTeam, currentRound, teams.size)
-                }
-                is PairingSearchResult.Bye -> {
-                    // Takım bye geçer
-                    engineState.byeTeam = searchingTeam
-                    availableTeams.remove(searchingTeam)
-                }
-            }
-        }
-        
-        // 3. INFINITE LOOP PROTECTION - KALAN TAKIMLAR
-        if (availableTeams.isNotEmpty()) {
-            // Kalan takımları unpaired teams'e ekle
-            engineState.unpairedTeams.addAll(availableTeams)
-            availableTeams.clear()
-        }
-        
-        // 4. EŞLEŞİLEMEDEN KALANLAR GRUBU İŞLEME
-        if (engineState.unpairedTeams.isNotEmpty()) {
-            
-            // 🔴 CRITICAL FIX: DUPLICATE PREVENTION IN EMERGENCY PAIRING
-            val processedTeams = mutableSetOf<Long>()
-            val emergencyPairs = mutableListOf<Pair<EmreTeam, EmreTeam>>()
-            
-            // İlk olarak tüm unpaired teams'i duplicate olmayan çiftler halinde eşleştir
-            for (i in engineState.unpairedTeams.indices) {
-                val team1 = engineState.unpairedTeams[i]
-                if (team1.teamId in processedTeams) continue
-                
-                // Bu takım için duplicate olmayan partner ara
-                var foundPartner: EmreTeam? = null
-                for (j in i + 1 until engineState.unpairedTeams.size) {
-                    val team2 = engineState.unpairedTeams[j]
-                    if (team2.teamId in processedTeams) continue
-                    
-                    // DUPLICATE KONTROL
-                    val duplicateCheck = hasTeamsPlayedBefore(team1.teamId, team2.teamId, matchHistory)
-                    logDuplicateTest(team1, team2, matchHistory, duplicateCheck, "EMERGENCY_PAIRING")
-                    
-                    if (!duplicateCheck) {
-                        foundPartner = team2
-                        break
-                    }
-                }
-                
-                if (foundPartner != null) {
-                    emergencyPairs.add(Pair(team1, foundPartner))
-                    processedTeams.add(team1.teamId)
-                    processedTeams.add(foundPartner.teamId)
-                } else {
-                }
-            }
-            
-            // Duplicate-safe eşleştirmeleri candidateMatches'e ekle
-            for (pair in emergencyPairs) {
-                engineState.candidateMatches.add(CandidateMatch(
-                    team1 = pair.first,
-                    team2 = pair.second, 
-                    isAsymmetricPoints = pair.first.points != pair.second.points
-                ))
-            }
-            
-            // İşlenmeyen takımları bye grubuna ekle
-            engineState.unpairedTeams.clear()
-            for (team in engineState.unpairedTeams.toList()) {
-                if (team.teamId !in processedTeams) {
-                    engineState.byeTeam = team // Son çare olarak bye
-                }
-            }
-        }
-        
-        // 5. FINAL VALIDATION
-        val totalTeamsInPairs = engineState.candidateMatches.size * 2 + (if (engineState.byeTeam != null) 1 else 0)
-        if (totalTeamsInPairs != teams.size) {
-            
-            // 🔥 FIX: Team count mismatch olsa bile asymmetric check yap!
-            return performAsymmetricPointCheck(engineState.candidateMatches, engineState.byeTeam, currentRound, teams.size)
-        }
-        
-        
-        // 🧪 TEST LOG 2: MATCH COUNT TEST
-        logMatchCountTest(teams, engineState.candidateMatches, engineState.byeTeam, currentRound)
-        
-        // 6. EŞ PUANLI EŞLEŞME KONTROLÜ VE TUR ONAY
-        return performAsymmetricPointCheck(engineState.candidateMatches, engineState.byeTeam, currentRound, teams.size)
-    }
-    
-    /**
-     * 🆕 EŞLEŞTİRME ARAYAN TAKIM İÇİN PARTNER BULMA
-     * 
-     * ALGORİTMA:
-     * 1. Kendinden sonraki takımları kontrol et
-     * 2. Eşleşmemiş ve daha önce oynamamış ilk takımla eşleş
-     * 3. Bulamazsa kendinden önceki takımları kontrol et
-     * 4. Önceki takım kullanılmışsa backtrack gerekir
-     */
-    private fun findPartnerForSearchingTeam(
-        searchingTeam: EmreTeam,
-        availableTeams: List<EmreTeam>,
-        allTeams: List<EmreTeam>, // 🆕 For backward search
-        engineState: PairingEngineState,
-        matchHistory: Set<Pair<Long, Long>>
-    ): PairingSearchResult {
-        
-        
-        // 1. ÖNCE SONRAKI TAKIMLARI KONTROL ET
-        for (candidate in availableTeams) {
-            if (candidate.currentPosition <= searchingTeam.currentPosition) continue // Sadece sonrakiler
-            if (candidate.id in engineState.usedTeams) continue // Zaten kullanılmış
-            
-            // 🔴 KRİTİK: Daha önce oynamış mı kontrol et
-            val duplicateCheck = hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)
-            logDuplicateTest(searchingTeam, candidate, matchHistory, duplicateCheck, "FORWARD_SEARCH")
-            
-            if (duplicateCheck) {
-                continue
-            }
-            
-            // 🔴 KRİTİK: Candidate matches'te duplicate kontrolü
-            val isDuplicateInCandidates = engineState.candidateMatches.any { existingMatch ->
-                (existingMatch.team1.teamId == searchingTeam.teamId && existingMatch.team2.teamId == candidate.teamId) ||
-                (existingMatch.team1.teamId == candidate.teamId && existingMatch.team2.teamId == searchingTeam.teamId)
-            }
-            if (isDuplicateInCandidates) {
-                continue
-            }
-            
-            // UYGUN PARTNER BULUNDU
-            
-            // Eşleştirmeyi candidate matches'a ekle
-            engineState.candidateMatches.add(CandidateMatch(
-                team1 = searchingTeam,
-                team2 = candidate,
-                isAsymmetricPoints = searchingTeam.points != candidate.points
-            ))
-            
-            return PairingSearchResult.Success(candidate)
-        }
-        
-        
-        // 2. GERİYE DÖN - ÖNCEKİ TAKIMLARI KONTROL ET (TÜM TAKIMLARDAN)
-        for (candidate in allTeams.reversed()) {
-            
-            // Sadece kendinden önceki takımları kontrol et
-            if (candidate.currentPosition >= searchingTeam.currentPosition) {
-                continue
-            }
-            
-            // 🔴 KRİTİK: Daha önce oynamış mı kontrol et
-            val duplicateCheck = hasTeamsPlayedBefore(searchingTeam.teamId, candidate.teamId, matchHistory)
-            logDuplicateTest(searchingTeam, candidate, matchHistory, duplicateCheck, "BACKWARD_SEARCH")
-            
-            if (duplicateCheck) {
-                continue
-            }
-            
-            // 🔴 KRİTİK: Candidate matches'te duplicate kontrolü
-            val isDuplicateInCandidates = engineState.candidateMatches.any { existingMatch ->
-                (existingMatch.team1.teamId == searchingTeam.teamId && existingMatch.team2.teamId == candidate.teamId) ||
-                (existingMatch.team1.teamId == candidate.teamId && existingMatch.team2.teamId == searchingTeam.teamId)
-            }
-            if (isDuplicateInCandidates) {
-                continue
-            }
-            
-            // Bu takım zaten kullanılmış mı? (Eşleşmiş takımlar için ADVANCED BACKTRACK)
-            if (candidate.teamId in engineState.usedTeams) {
-                // 🔥 GELİŞTİRİLMİŞ BACKTRACK ALGORİTMASI (METİNDEKİ 7. MADDE)
-                val backtrackResult = performAdvancedBacktrackAlgorithm(
-                    searchingTeam = searchingTeam,
-                    targetTeam = candidate,
-                    engineState = engineState,
-                    matchHistory = matchHistory,
-                    allTeams = allTeams
-                )
-                
-                return when (backtrackResult.success) {
-                    true -> PairingSearchResult.Success(candidate, backtrackResult.displacedTeam)
-                    false -> PairingSearchResult.Bye // Eşleştirme başarısız, bye geçer
-                }
-            }
-            
-            // UYGUN PARTNER BULUNDU (GERİDEN)
-            
-            // Eşleştirmeyi candidate matches'a ekle
-            engineState.candidateMatches.add(CandidateMatch(
-                team1 = searchingTeam,
-                team2 = candidate,
-                isAsymmetricPoints = searchingTeam.points != candidate.points
-            ))
-            
-            return PairingSearchResult.Success(candidate)
-        }
-        
-        // 3. HİÇBİR YERİDE PARTNER BULUNAMADI
-        return PairingSearchResult.TournamentFinished
-    }
-    
-    /**
-     * 🆕 GELİŞMİŞ BACKTRACK İŞLEMİ
-     * 
-     * KULLANICININ ALGORİTMASI:
-     * 1. Hedef takımın mevcut eşleşmesini boz
-     * 2. "Partneri çalınan takım" ile "eşleşilemeden kalanlar" kontrolü
-     * 3. En uygun çözümü uygula
-     */
-    private fun performAdvancedBacktrack(
-        searchingTeam: EmreTeam,
-        targetTeam: EmreTeam,
-        engineState: PairingEngineState,
-        availableTeams: MutableList<EmreTeam>,
-        matchHistory: Set<Pair<Long, Long>>
-    ): BacktrackResult {
-        
-        
-        // 1. HEDEF TAKIMIN MEVCUT EŞLEŞMESİNİ BUL VE BOZ
-        val existingMatch = engineState.candidateMatches.find { 
-            it.team1.id == targetTeam.id || it.team2.id == targetTeam.id 
-        }
-        
-        if (existingMatch == null) {
-            return BacktrackResult(false, reason = "Target team has no existing match")
-        }
-        
-        // 2. EŞLEŞMEYİ BOZ VE PARTNERİ ÇALINAN TAKIMI BELİRLE
-        engineState.candidateMatches.remove(existingMatch)
-        val stolenPartnerTeam = if (existingMatch.team1.id == targetTeam.id) existingMatch.team2 else existingMatch.team1
-        
-        // Used teams'den çıkar
-        engineState.usedTeams.remove(existingMatch.team1.teamId)
-        engineState.usedTeams.remove(existingMatch.team2.teamId)
-        
-        // Available teams'e geri ekle - ÖNCELİKLİ OLARAK BAŞA EKLE
-        availableTeams.add(0, stolenPartnerTeam) // Displaced team önceliği
-        
-        
-        // 3. YENİ EŞLEŞMEYİ OLUŞTUR (searchingTeam + targetTeam) - DUPLICATE KONTROL İLE
-        
-        // 🔴 CRITICAL CHECK: DUPLICATE PREVENTION IN BACKTRACK
-        val backtrackDuplicateCheck = hasTeamsPlayedBefore(searchingTeam.teamId, targetTeam.teamId, matchHistory)
-        logDuplicateTest(searchingTeam, targetTeam, matchHistory, backtrackDuplicateCheck, "BACKTRACK_VALIDATION")
-        
-        if (backtrackDuplicateCheck) {
-            
-            // Broken match'i geri yükle
-            engineState.candidateMatches.add(existingMatch)
-            engineState.usedTeams.add(existingMatch.team1.teamId)
-            engineState.usedTeams.add(existingMatch.team2.teamId)
-            availableTeams.remove(stolenPartnerTeam) // Displaced team'i geri çıkar
-            
-            return BacktrackResult(false, reason = "Backtrack would create duplicate pairing")
-        }
-        
-        val newMatch = CandidateMatch(
-            team1 = searchingTeam,
-            team2 = targetTeam,
-            isAsymmetricPoints = searchingTeam.points != targetTeam.points
-        )
-        engineState.candidateMatches.add(newMatch)
-        engineState.usedTeams.add(searchingTeam.teamId)
-        engineState.usedTeams.add(targetTeam.teamId)
-        
-        // Target team'i available'dan çıkar (zaten available değildi ama güvenlik için)
-        availableTeams.remove(targetTeam)
-        
-        
-        return BacktrackResult(
-            success = true,
-            newMatch = newMatch,
-            stolenPartnerTeam = stolenPartnerTeam,
-            reason = "Backtrack successful"
-        )
-    }
-    
-    /**
-     * 🆕 ESİMETRİK PUAN KONTROLÜ VE TUR ONAY
-     * 
-     * KULLANICININ KURALI:
-     * - En az 1 aynı puanlı eşleşme varsa → tur oyna
-     * - Hiçbir aynı puanlı eşleşme yoksa → turnuva bitir
-     */
-    private fun performAsymmetricPointCheck(
-        candidateMatches: List<CandidateMatch>,
-        byeTeam: EmreTeam?,
-        currentRound: Int,
-        totalTeams: Int
-    ): EmrePairingResult {
-        
-        
-        // 🔴 KESIN ONAY KONTROLÜ - ADAY EŞLEŞTİRMELER BEKLENEN SAYIYA ULAŞMALI
-        val expectedMatches = if (totalTeams % 2 == 0) {
-            // Çift sayıda takım: Tüm takımlar eşleşir, bye yok
-            totalTeams / 2
-        } else {
-            // Tek sayıda takım: 1 bye, geri kalan eşleşir  
-            (totalTeams - 1) / 2
-        }
-        
-        
-        if (candidateMatches.size < expectedMatches) {
-            
-            // Eksik eşleştirmelerle turnuva devam etmesin
-            return EmrePairingResult(
-                matches = emptyList(),
-                canContinue = false,
-                byeTeam = byeTeam
-            )
-        } else {
-        }
-        
-        // Her eşleştirmeyi kontrol et
-        candidateMatches.forEachIndexed { index, match ->
-        }
-        
-        // Aynı puanlı eşleşme var mı kontrol et
-        val hasSamePointMatch = if (currentRound == 1) {
-            true // İlk tur her zaman oynanır
-        } else {
-            val samePointMatches = candidateMatches.filter { !it.isAsymmetricPoints }
-            samePointMatches.forEach { match ->
-            }
-            candidateMatches.any { !it.isAsymmetricPoints }
-        }
-        
-        // 🧪 TEST LOG 3: TOURNAMENT END ALGORITHM TEST
-        logTournamentEndTest(candidateMatches, hasSamePointMatch, currentRound)
-        
-        if (hasSamePointMatch) {
-            // TUR OYNA
-            
-            val matches = candidateMatches.map { candidate ->
-                Match(
-                    listId = candidate.team1.song.listId,
-                    rankingMethod = "EMRE_CORRECT",
-                    songId1 = candidate.team1.id,
-                    songId2 = candidate.team2.id,
-                    winnerId = null,
-                    round = currentRound
-                )
-            }
-            
-            return EmrePairingResult(
-                matches = matches,
-                byeTeam = byeTeam,
-                hasSamePointMatch = true,
-                canContinue = true,
-                candidateMatches = candidateMatches
-            )
-        } else {
-            // TURNUVA BİTİR
-            
-            return EmrePairingResult(
-                matches = emptyList(),
-                byeTeam = byeTeam,
-                hasSamePointMatch = false,
-                canContinue = false,
-                candidateMatches = candidateMatches
-            )
-        }
-    }
-    
-    /**
-     * 🔥 GELİŞTİRİLMİŞ BACKTRACK ALGORİTMASI - METİNDEKİ 7. MADDE
-     * 
-     * KULLANICININ ALGORİTMASI (29-25-15 Örneği):
-     * 1. 29 nolu takım 25 ile eşleşebilir → 25'in mevcut eşleşmesi BOZULUR (25-15 eşleştirmesi)
-     * 2. 15 nolu takıma "partneri çalınan takım" denir
-     * 3. KONTROLLAR:
-     *    - 29 ile 15 eşleşebilir mi? 
-     *    - 15 ile "eşleşilemeden kalanlar grubu" eşleşebilir mi?
-     *    - 25 ile "eşleşilemeden kalanlar grubu" eşleşebilir mi?
-     * 4. En uygun çözümü uygula
-     */
-    data class AdvancedBacktrackResult(
-        val success: Boolean,
-        val reason: String = "",
-        val displacedTeam: EmreTeam? = null
+    data class HybridPairingState(
+        val EBTG: MutableList<EmreTeam> = mutableListOf(),      // Eşleştirme Bekleyen Takımlar Grubu
+        val AEG: MutableList<CandidateMatch> = mutableListOf(), // Aday Eşleştirmeler Grubu
+        var keatSelectionFromTop: Boolean = true,               // Üstten mi seçiliyor KEAT
+        val stolenPartners: MutableMap<Long, Long> = mutableMapOf() // TeamID -> çalınan partner ID (bu tur için)
     )
-    
-    private fun performAdvancedBacktrackAlgorithm(
-        searchingTeam: EmreTeam,        // 29 nolu takım
-        targetTeam: EmreTeam,           // 25 nolu takım (eşleşmesi bozulacak)
-        engineState: PairingEngineState,
+
+    data class TournamentAnalysis(
+        val hasSamePointMatches: Boolean,
+        val canContinue: Boolean,
+        val asymmetricCount: Int,
+        val samePointCount: Int
+    )
+
+    /**
+     * ANA HİBRİT EŞLEŞTİRME MOTORU
+     *
+     * Döngü iki koşulla sınırlıdır:
+     * - Normal bitiş: EBTG boşalır veya beklenen eşleşme sayısına ulaşılır
+     * - Güvenlik sınırı: maxIterations aşılırsa döngü durur; eksik eşleştirme
+     *   createHybridPairingSystem tarafında turnuva bitişi olarak yorumlanır.
+     */
+    private fun executeHybridPairingEngine(
+        teams: List<EmreTeam>,
+        matchHistory: Set<Pair<Long, Long>>
+    ): HybridPairingState {
+        val totalMatches = teams.size / 2
+        val expectedPairs = teams.size / 2
+
+        val state = HybridPairingState()
+        state.EBTG.addAll(teams.map { it.deepCopy() })
+
+        var iterations = 0
+        val maxIterations = (teams.size * 10).coerceAtLeast(100)
+        var consecutiveFailures = 0
+
+        while (state.EBTG.isNotEmpty() && state.AEG.size < expectedPairs && iterations < maxIterations) {
+            iterations++
+
+            // Ardışık başarısızlık sayısı EBTG'deki takım sayısını aşarsa,
+            // kalan takımların hiçbiri için çözüm yok demektir - döngüyü bitir.
+            if (consecutiveFailures > state.EBTG.size + 1) {
+                break
+            }
+
+            // KEAT seçimi - hibrit sistem (üst-alt-üst-alt)
+            val keat = selectNextKEAT(state) ?: break
+
+            state.EBTG.removeAll { it.teamId == keat.teamId }
+
+            val pairingResult = searchPartnerForKEAT(keat, state, matchHistory)
+
+            when {
+                pairingResult.isSuccess -> {
+                    consecutiveFailures = 0
+                    val partner = pairingResult.partner!!
+                    val candidateMatch = CandidateMatch(
+                        team1 = keat,
+                        team2 = partner,
+                        isAsymmetricPoints = (keat.points != partner.points)
+                    )
+                    addToAEGWithHybridOrdering(state.AEG, candidateMatch, state.keatSelectionFromTop, totalMatches)
+                    state.EBTG.removeAll { it.teamId == partner.teamId }
+                }
+
+                pairingResult.needsBacktrack -> {
+                    val backtrackResult = executeBacktrackChain(keat, state, matchHistory, totalMatches)
+                    if (backtrackResult.isSuccess) {
+                        consecutiveFailures = 0
+                    } else {
+                        consecutiveFailures++
+                        state.EBTG.add(0, keat)
+                    }
+                }
+
+                else -> {
+                    consecutiveFailures++
+                    state.EBTG.add(0, keat)
+                }
+            }
+        }
+
+        return state
+    }
+
+    /**
+     * HİBRİT KEAT SEÇİM SİSTEMİ - bir üstten bir alttan seçim yapar
+     */
+    private fun selectNextKEAT(state: HybridPairingState): EmreTeam? {
+        if (state.EBTG.isEmpty()) return null
+
+        val selectedKeat = if (state.keatSelectionFromTop) {
+            state.EBTG.minByOrNull { it.currentPosition }
+        } else {
+            state.EBTG.maxByOrNull { it.currentPosition }
+        }
+
+        state.keatSelectionFromTop = !state.keatSelectionFromTop
+        return selectedKeat
+    }
+
+    data class PartnerSearchResult(
+        val isSuccess: Boolean = false,
+        val partner: EmreTeam? = null,
+        val needsBacktrack: Boolean = false
+    )
+
+    private fun searchPartnerForKEAT(
+        keat: EmreTeam,
+        state: HybridPairingState,
+        matchHistory: Set<Pair<Long, Long>>
+    ): PartnerSearchResult {
+        // Önce kendi yönünde ara (üstten seçildiyse aşağıya, alttan seçildiyse yukarıya)
+        val searchDirection = !state.keatSelectionFromTop // Toggle edilmiş durumda
+        val candidates = if (searchDirection) {
+            state.EBTG.filter { it.currentPosition > keat.currentPosition }.sortedBy { it.currentPosition }
+        } else {
+            state.EBTG.filter { it.currentPosition < keat.currentPosition }.sortedByDescending { it.currentPosition }
+        }
+
+        for (candidate in candidates) {
+            if (isValidPairing(keat, candidate, matchHistory, state)) {
+                return PartnerSearchResult(isSuccess = true, partner = candidate)
+            }
+        }
+
+        // Kendi yönünde bulamadı - ters yöne bak
+        val reverseCandidates = if (!searchDirection) {
+            state.EBTG.filter { it.currentPosition > keat.currentPosition }.sortedBy { it.currentPosition }
+        } else {
+            state.EBTG.filter { it.currentPosition < keat.currentPosition }.sortedByDescending { it.currentPosition }
+        }
+
+        for (candidate in reverseCandidates) {
+            if (isValidPairing(keat, candidate, matchHistory, state)) {
+                return PartnerSearchResult(isSuccess = true, partner = candidate)
+            }
+        }
+
+        // Hiçbir yerde bulamadı - backtrack gerekli
+        return PartnerSearchResult(needsBacktrack = true)
+    }
+
+    data class BacktrackChainResult(
+        val isSuccess: Boolean = false,
+        val newPairing: CandidateMatch? = null,
+        val displacedTeams: List<EmreTeam> = emptyList()
+    )
+
+    /**
+     * BACKTRACK CHAIN - KEAT eşleştirme bulamadığında AEG'deki mevcut eşleştirmeleri bozar
+     */
+    private fun executeBacktrackChain(
+        keat: EmreTeam,
+        state: HybridPairingState,
         matchHistory: Set<Pair<Long, Long>>,
-        allTeams: List<EmreTeam>
-    ): AdvancedBacktrackResult {
-        
-        
-        // 1. HEDEF TAKIMIN MEVCUT EŞLEŞMESİNİ BUL VE BOZ
-        val existingMatch = engineState.candidateMatches.find { match ->
-            match.team1.teamId == targetTeam.teamId || match.team2.teamId == targetTeam.teamId
-        }
-        
-        if (existingMatch == null) {
-            return AdvancedBacktrackResult(false, "Target team has no existing match")
-        }
-        
-        // Partneri çalınan takımı tespit et (15 nolu takım)
-        val displacedTeam = if (existingMatch.team1.teamId == targetTeam.teamId) {
-            existingMatch.team2
-        } else {
-            existingMatch.team1
-        }
-        
-        
-        // 2. DUPLICATE KONTROLÜ - 29 ile 25 eşleşebilir mi?
-        val canPairWith25 = !hasTeamsPlayedBefore(searchingTeam.teamId, targetTeam.teamId, matchHistory)
-        if (!canPairWith25) {
-            return AdvancedBacktrackResult(false, "Teams have already played together")
-        }
-        
-        // 3. KARMAŞIK KONTROL SİSTEMİ (METİNDEKİ 7. MADDE DETAYLARI)
-        
-        // 3a. 29 ile 15 eşleşebilir mi kontrolü
-        val canPairWith15 = !hasTeamsPlayedBefore(searchingTeam.teamId, displacedTeam.teamId, matchHistory)
-        
-        // 3b. "Eşleşilemeden kalanlar grubu"nu tespit et
-        val unpairedTeams = findUnpairedTeamsGroup(allTeams, engineState)
-        
-        // 3c. 15 ile unpaired teams eşleşebilir mi?
-        val displaced15CanPairWithUnpaired = unpairedTeams.any { unpairedTeam ->
-            !hasTeamsPlayedBefore(displacedTeam.teamId, unpairedTeam.teamId, matchHistory)
-        }
-        
-        // 3d. 25 ile unpaired teams eşleşebilir mi?
-        val target25CanPairWithUnpaired = unpairedTeams.any { unpairedTeam ->
-            !hasTeamsPlayedBefore(targetTeam.teamId, unpairedTeam.teamId, matchHistory)
-        }
-        
-        
-        // 4. METİNDEKİ KOŞULLU KARAR AĞACI
-        
-        if (!canPairWith15) {
-            // 29 ile 15 eşleşemez → 29-25 eşleştir, 15 ayrı çözüm bul
-            return executeBacktrackSolution(searchingTeam, targetTeam, displacedTeam, engineState, "29-25, 15 displaced")
-        }
-        
-        if (canPairWith15 && displaced15CanPairWithUnpaired) {
-            // 29 ile 15 eşleşebilir VE 15 unpaired ile eşleşebilir
-            // → 29-25 eşleştir, 15'i unpaired ile eşleştir
-            val unpairedPartner = unpairedTeams.find { !hasTeamsPlayedBefore(displacedTeam.teamId, it.teamId, matchHistory) }
-            if (unpairedPartner != null) {
-                return executeBacktrackSolutionWithUnpaired(searchingTeam, targetTeam, displacedTeam, unpairedPartner, engineState, "29-25, 15-unpaired")
+        totalMatches: Int
+    ): BacktrackChainResult {
+        for (candidateMatch in state.AEG.toList()) {
+            val ebt = candidateMatch.team1  // Eşleştirmesi Bozulan Takım
+            val pct = candidateMatch.team2  // Partneri Çalınan Takım
+
+            val keatEbtCompatible = isValidPairing(keat, ebt, matchHistory, state)
+            val keatPctCompatible = isValidPairing(keat, pct, matchHistory, state)
+
+            if (!keatEbtCompatible && !keatPctCompatible) {
+                continue
+            }
+
+            state.AEG.remove(candidateMatch)
+
+            val decision = makePctEbtDecision(keat, ebt, pct, state, matchHistory)
+
+            when {
+                decision.keatPairs == ebt -> {
+                    val newMatch = CandidateMatch(
+                        team1 = keat,
+                        team2 = ebt,
+                        isAsymmetricPoints = (keat.points != ebt.points)
+                    )
+                    state.stolenPartners[pct.teamId] = ebt.teamId
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
+                    insertTeamBackToEBTG(pct, state)
+                    return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(pct))
+                }
+
+                decision.keatPairs == pct -> {
+                    val newMatch = CandidateMatch(
+                        team1 = keat,
+                        team2 = pct,
+                        isAsymmetricPoints = (keat.points != pct.points)
+                    )
+                    state.stolenPartners[ebt.teamId] = pct.teamId
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
+                    insertTeamBackToEBTG(ebt, state)
+                    return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(ebt))
+                }
+
+                else -> {
+                    // Karar verilemedi - eşleştirmeyi geri yükle
+                    state.AEG.add(candidateMatch)
+                }
             }
         }
-        
-        if (canPairWith15 && !displaced15CanPairWithUnpaired && target25CanPairWithUnpaired) {
-            // 15 unpaired ile eşleşemez ama 25 eşleşebilir
-            // → 25'i unpaired ile eşleştir, 29-15 eşleştir
-            val unpairedPartner = unpairedTeams.find { !hasTeamsPlayedBefore(targetTeam.teamId, it.teamId, matchHistory) }
-            if (unpairedPartner != null) {
-                return executeBacktrackSolutionAlternative(searchingTeam, targetTeam, displacedTeam, unpairedPartner, engineState, "25-unpaired, 29-15")
-            }
-        }
-        
-        if (!displaced15CanPairWithUnpaired) {
-            // 15 hiçbir unpaired ile eşleşemez → 29-25 eşleştir, 15 displaced
-            return executeBacktrackSolution(searchingTeam, targetTeam, displacedTeam, engineState, "29-25, 15 displaced")
-        }
-        
-        // Fallback - basit çözüm
-        return executeBacktrackSolution(searchingTeam, targetTeam, displacedTeam, engineState, "fallback 29-25")
+
+        return BacktrackChainResult(isSuccess = false)
     }
-    
-    private fun findUnpairedTeamsGroup(allTeams: List<EmreTeam>, engineState: PairingEngineState): List<EmreTeam> {
-        return allTeams.filter { team ->
-            team.teamId !in engineState.usedTeams &&
-            engineState.candidateMatches.none { match ->
-                match.team1.teamId == team.teamId || match.team2.teamId == team.teamId
-            }
-        }
-    }
-    
-    private fun executeBacktrackSolution(
-        searchingTeam: EmreTeam,
-        targetTeam: EmreTeam, 
-        displacedTeam: EmreTeam,
-        engineState: PairingEngineState,
-        solution: String
-    ): AdvancedBacktrackResult {
-        
-        
-        // Eski eşleştirmeyi kaldır
-        engineState.candidateMatches.removeAll { match ->
-            match.team1.teamId == targetTeam.teamId || match.team2.teamId == targetTeam.teamId
-        }
-        
-        // Used teams'den displaced team'i çıkar
-        engineState.usedTeams.remove(displacedTeam.teamId)
-        
-        // Yeni eşleştirmeyi ekle (29-25)
-        engineState.candidateMatches.add(CandidateMatch(
-            team1 = searchingTeam,
-            team2 = targetTeam,
-            isAsymmetricPoints = searchingTeam.points != targetTeam.points
-        ))
-        
-        // Used teams'e ekle
-        engineState.usedTeams.add(searchingTeam.teamId)
-        engineState.usedTeams.add(targetTeam.teamId)
-        
-        
-        return AdvancedBacktrackResult(true, solution, displacedTeam)
-    }
-    
-    private fun executeBacktrackSolutionWithUnpaired(
-        searchingTeam: EmreTeam,
-        targetTeam: EmreTeam,
-        displacedTeam: EmreTeam,
-        unpairedPartner: EmreTeam,
-        engineState: PairingEngineState,
-        solution: String
-    ): AdvancedBacktrackResult {
-        
-        
-        // Eski eşleştirmeyi kaldır  
-        engineState.candidateMatches.removeAll { match ->
-            match.team1.teamId == targetTeam.teamId || match.team2.teamId == targetTeam.teamId
-        }
-        
-        // Used teams'den displaced team'i çıkar
-        engineState.usedTeams.remove(displacedTeam.teamId)
-        
-        // Yeni eşleştirme 1: 29-25
-        engineState.candidateMatches.add(CandidateMatch(
-            team1 = searchingTeam,
-            team2 = targetTeam,
-            isAsymmetricPoints = searchingTeam.points != targetTeam.points
-        ))
-        
-        // Yeni eşleştirme 2: 15-unpaired
-        engineState.candidateMatches.add(CandidateMatch(
-            team1 = displacedTeam,
-            team2 = unpairedPartner,
-            isAsymmetricPoints = displacedTeam.points != unpairedPartner.points
-        ))
-        
-        // Used teams güncellemeleri
-        engineState.usedTeams.add(searchingTeam.teamId)
-        engineState.usedTeams.add(targetTeam.teamId)
-        engineState.usedTeams.add(displacedTeam.teamId)
-        engineState.usedTeams.add(unpairedPartner.teamId)
-        
-        
-        return AdvancedBacktrackResult(true, solution)
-    }
-    
-    private fun executeBacktrackSolutionAlternative(
-        searchingTeam: EmreTeam,
-        targetTeam: EmreTeam,
-        displacedTeam: EmreTeam,
-        unpairedPartner: EmreTeam,
-        engineState: PairingEngineState,
-        solution: String
-    ): AdvancedBacktrackResult {
-        
-        
-        // Eski eşleştirmeyi kaldır
-        engineState.candidateMatches.removeAll { match ->
-            match.team1.teamId == targetTeam.teamId || match.team2.teamId == targetTeam.teamId
-        }
-        
-        // Used teams'den target team'i çıkar
-        engineState.usedTeams.remove(targetTeam.teamId)
-        engineState.usedTeams.remove(displacedTeam.teamId)
-        
-        // Alternatif eşleştirme 1: 25-unpaired
-        engineState.candidateMatches.add(CandidateMatch(
-            team1 = targetTeam,
-            team2 = unpairedPartner,
-            isAsymmetricPoints = targetTeam.points != unpairedPartner.points
-        ))
-        
-        // Alternatif eşleştirme 2: 29-15
-        engineState.candidateMatches.add(CandidateMatch(
-            team1 = searchingTeam,
-            team2 = displacedTeam,
-            isAsymmetricPoints = searchingTeam.points != displacedTeam.points
-        ))
-        
-        // Used teams güncellemeleri
-        engineState.usedTeams.add(searchingTeam.teamId)
-        engineState.usedTeams.add(targetTeam.teamId)
-        engineState.usedTeams.add(displacedTeam.teamId)
-        engineState.usedTeams.add(unpairedPartner.teamId)
-        
-        
-        return AdvancedBacktrackResult(true, solution)
-    }
-    
+
+    data class PairingDecision(
+        val keatPairs: EmreTeam? = null,
+        val reason: String = ""
+    )
+
     /**
-     * SIRA SIRA EŞLEŞTİRME - Kullanıcının tarif ettiği DOĞRU algoritma
-     * ✅ DÜZELTME: Displaced team tracking eklendi
-     * 
-     * ⚠️ KRİTİK FARK: Geriye dönükten uygun takım bulduğunda eşleştirmeyi KONTROL ET
-     * ✅ YENİ: Backtrack sırasında displaced team'i otomatik track eder
+     * PÇT-EBT KARAR MATRİSİ - KEAT'ın EBT/PÇT ile eşleşme kararını verir
      */
-    private fun findPartnerSequentiallyWithDisplacement(
-        searchingTeam: EmreTeam,
-        teams: List<EmreTeam>, 
-        usedTeams: MutableSet<Long>,
+    private fun makePctEbtDecision(
+        keat: EmreTeam,
+        ebt: EmreTeam,
+        pct: EmreTeam,
+        state: HybridPairingState,
+        matchHistory: Set<Pair<Long, Long>>
+    ): PairingDecision {
+        val keatEbtCompatible = isValidPairing(keat, ebt, matchHistory, state)
+        val keatPctCompatible = isValidPairing(keat, pct, matchHistory, state)
+
+        return when {
+            keatEbtCompatible && !keatPctCompatible ->
+                PairingDecision(keatPairs = ebt, reason = "Only EBT compatible")
+
+            !keatEbtCompatible && keatPctCompatible ->
+                PairingDecision(keatPairs = pct, reason = "Only PÇT compatible")
+
+            keatEbtCompatible && keatPctCompatible -> {
+                // İkisi de uyumlu - kalan havuzda partner bulma şansına göre karar ver
+                val ebtCanFindPartner = canFindPartnerInEBTG(ebt, state, matchHistory)
+                val pctCanFindPartner = canFindPartnerInEBTG(pct, state, matchHistory)
+
+                when {
+                    ebtCanFindPartner && !pctCanFindPartner ->
+                        PairingDecision(keatPairs = pct, reason = "EBT has better future prospects")
+
+                    !ebtCanFindPartner && pctCanFindPartner ->
+                        PairingDecision(keatPairs = ebt, reason = "PÇT has better future prospects")
+
+                    else ->
+                        PairingDecision(keatPairs = ebt, reason = "Default algorithm preference")
+                }
+            }
+
+            else -> PairingDecision(keatPairs = null, reason = "No compatible pairing")
+        }
+    }
+
+    /**
+     * Eşleştirme geçerlilik kontrolü:
+     * 1. Daha önce oynamamış olmalılar (kırmızı çizgi)
+     * 2. Bu turda birinden partner çalınmışsa aynı ikili tekrar kurulamaz (iki yönlü kontrol)
+     */
+    private fun isValidPairing(
+        team1: EmreTeam,
+        team2: EmreTeam,
         matchHistory: Set<Pair<Long, Long>>,
-        candidateMatches: MutableList<CandidateMatch>,
-        displacedTeams: MutableSet<Long> // ✅ YENİ PARAMETRE
-    ): SequentialPartnerResult {
-        
-        
-        // ÖNCE SONRAKI EKİPLERE BAK (kendisinden sonraki sıradakiler)
-        for (i in searchingTeam.currentPosition until teams.size) {
-            val potentialPartner = teams.find { it.currentPosition == i + 1 }
-            if (potentialPartner == null || potentialPartner.id in usedTeams) continue
-            
-            // ⚠️ KRİTİK KONTROLLER:
-            // 1. Daha önce oynamışlar mı kontrol et (match history)
-            if (hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
-                continue // Bu takımla daha önce oynamış, sonrakini dene
-            }
-            
-            // 2. Aday listede zaten bu ikili var mı kontrol et
-            if (candidateMatches.any { 
-                (it.team1.id == searchingTeam.id && it.team2.id == potentialPartner.id) ||
-                (it.team1.id == potentialPartner.id && it.team2.id == searchingTeam.id)
-            }) {
-                continue // Aday listede zaten var, sonrakini dene
-            }
-            
-            // Her iki kontrol de geçti → partner bulundu
-            return SequentialPartnerResult.Found(potentialPartner)
+        state: HybridPairingState
+    ): Boolean {
+        if (hasTeamsPlayedBefore(team1.teamId, team2.teamId, matchHistory)) {
+            return false
         }
-        
-        
-        // SONRAKI EKİPLERDE BULUNAMADI → GERİYE DÖN (kendinden öncekiler)
-        for (i in searchingTeam.currentPosition - 2 downTo 0) {
-            val potentialPartner = teams.find { it.currentPosition == i + 1 }
-            if (potentialPartner == null) continue
-            
-            // ⚠️ KRİTİK KONTROLLER:
-            // 1. Daha önce oynamışlar mı kontrol et
-            if (hasTeamsPlayedBefore(searchingTeam.teamId, potentialPartner.teamId, matchHistory)) {
-                continue // Bu takımla daha önce oynamış, sonrakini dene
-            }
-            
-            // 2. Aday listede zaten bu ikili var mı kontrol et  
-            if (candidateMatches.any { 
-                (it.team1.id == searchingTeam.id && it.team2.id == potentialPartner.id) ||
-                (it.team1.id == potentialPartner.id && it.team2.id == searchingTeam.id)
-            }) {
-                continue // Aday listede zaten var, sonrakini dene
-            }
-            
-            // 🎯 KRİTİK NOKTA: Bu takım zaten kullanılmış mı kontrol et
-            if (potentialPartner.id in usedTeams) {
-                // EVET KULLANILMIŞ → EŞLEŞTIRMEYI BOZ VE YENİSİNİ YAP
-                
-                // MEVCUT EŞLEŞMEYİ BOZ
-                val existingMatch = candidateMatches.find { 
-                    it.team1.id == potentialPartner.id || it.team2.id == potentialPartner.id 
-                }
-                
-                existingMatch?.let { match ->
-                    candidateMatches.remove(match)
-                    usedTeams.remove(match.team1.teamId)
-                    usedTeams.remove(match.team2.teamId)
-                    
-                    // ✅ KRİTİK DÜZELTME: BOZULAN TAKIMI DISPLACED QUEUE'YA EKLE
-                    val displacedTeam = if (match.team1.id == potentialPartner.id) match.team2 else match.team1
-                    displacedTeams.add(displacedTeam.teamId)
-                }
-                
-                // YENİ EŞLEŞMEYİ OLUŞTUR
-                return SequentialPartnerResult.Found(potentialPartner)
-            } else {
-                // HAYIR KULLANILMAMIŞA → direkt eşleştir
-                return SequentialPartnerResult.Found(potentialPartner)
-            }
+
+        if (state.stolenPartners[team1.teamId] == team2.teamId ||
+            state.stolenPartners[team2.teamId] == team1.teamId
+        ) {
+            return false
         }
-        
-        // HIÇBIR YERDE PARTNER BULUNAMADI → kontrol et
-        
-        // KRİTİK FIX REMOVED: FORCE PAIRING VİOLATES RED LINE RULE #1
-        // KIRMIZI ÇİZGİ İHLALİ: Aynı takımlar tekrar eşleşemez - bu fix kaldırıldı
-        
-        // Eğer bu takım displaced ise ve partner bulamıyorsa bye yap
-        if (searchingTeam.id in displacedTeams) {
-            return SequentialPartnerResult.Bye
-        }
-        
-        return SequentialPartnerResult.TournamentFinished
+
+        return true
     }
-    
-    /**
-     * 1. PRE-ROUND VALIDATION SYSTEM
-     * Tur başlamadan önce 3 temel kuralı kontrol eder
-     */
-    private fun validateRoundRequirements(
-        teams: List<EmreTeam>,
-        matchHistory: Set<Pair<Long, Long>>,
-        currentRound: Int
-    ): ValidationResult {
-        
-        
-        // KURAL 1: Takım sayısı kontrolü
-        if (teams.isEmpty()) {
-            return ValidationResult(false, "No teams available for pairing")
-        }
-        
-        // KURAL 2: Her turda tam yarı eşleştirme olmalı (36→18, 37→18+1bye)
-        val expectedMatches = if (teams.size % 2 == 0) teams.size / 2 else (teams.size - 1) / 2
-        val expectedBye = teams.size % 2
-        
-        
-        // KURAL 3: Match history integrity check
-        val totalPossiblePairs = teams.size * (teams.size - 1) / 2
-        val playedPairs = matchHistory.size
-        val remainingPairs = totalPossiblePairs - playedPairs
-        
-        
-        if (remainingPairs < expectedMatches) {
-            return ValidationResult(false, "Not enough unique pairs remaining: need $expectedMatches, have $remainingPairs")
-        }
-        
-        return ValidationResult(true, "All requirements validated")
-    }
-    
-    /**
-     * 2. PROXIMITY-BASED INITIAL PAIRING
-     * En yakın sıralamadaki takımlarla eşleştirme yapar
-     */
-    private fun createProximityBasedPairings(
-        teams: List<EmreTeam>,
+
+    private fun canFindPartnerInEBTG(
+        team: EmreTeam,
+        state: HybridPairingState,
         matchHistory: Set<Pair<Long, Long>>
-    ): InitialPairingResult {
-        
-        
-        val matches = mutableListOf<CandidateMatch>()
-        val usedTeams = mutableSetOf<Long>()
-        val unpairedTeams = mutableListOf<EmreTeam>()
-        var byeTeam: EmreTeam? = null
-        
-        // Takımları sıraya göre sırala
-        val sortedTeams = teams.sortedBy { it.currentPosition }
-        
-        for (searchingTeam in sortedTeams) {
-            if (searchingTeam.id in usedTeams) continue
-            
-            
-            // En yakın uygun partner'ı bul
-            val partner = findClosestAvailablePartner(searchingTeam, sortedTeams, usedTeams, matchHistory)
-            
-            if (partner != null) {
-                // Eşleştirme oluştur
-                matches.add(CandidateMatch(
-                    team1 = searchingTeam,
-                    team2 = partner,
-                    isAsymmetricPoints = searchingTeam.points != partner.points
-                ))
-                usedTeams.add(searchingTeam.teamId)
-                usedTeams.add(partner.teamId)
-            } else {
-                // Partner bulunamadı
-                unpairedTeams.add(searchingTeam)
-            }
+    ): Boolean {
+        return state.EBTG.any { candidate ->
+            isValidPairing(team, candidate, matchHistory, state)
         }
-        
-        // ENHANCED BYE TEAM LOGIC: Handle odd number of teams properly
-        if (teams.size % 2 == 1) {
-            if (unpairedTeams.size == 1) {
-                byeTeam = unpairedTeams.first()
-                unpairedTeams.clear()
-            } else if (unpairedTeams.size > 1) {
-                // Multiple unpaired teams, assign lowest position as bye
-                val lowestPositionTeam = unpairedTeams.maxByOrNull { it.currentPosition }
-                if (lowestPositionTeam != null) {
-                    byeTeam = lowestPositionTeam
-                    unpairedTeams.remove(lowestPositionTeam)
-                }
-            }
-        } else if (unpairedTeams.size > 0) {
-        }
-        
-        return InitialPairingResult(matches, unpairedTeams, byeTeam)
     }
-    
+
     /**
-     * 3. EN YAKIN PARTNER BULMA ALGORİTMASI
-     * Sıraya göre en yakın eşleşmemiş takımı bulur
+     * Bozulan eşleşmenin açıkta kalan takımını anlık sıralama pozisyonuna göre EBTG'ye geri ekler
      */
-    private fun findClosestAvailablePartner(
-        searchingTeam: EmreTeam,
-        sortedTeams: List<EmreTeam>,
-        usedTeams: Set<Long>,
-        matchHistory: Set<Pair<Long, Long>>
-    ): EmreTeam? {
-        
-        val searchPosition = searchingTeam.currentPosition
-        
-        // İki yönde de ara: önce yakın olanlar, sonra uzak olanlar
-        var distance = 1
-        val maxDistance = sortedTeams.size
-        
-        while (distance < maxDistance) {
-            // Önce yukarıya bak (searchPosition + distance)
-            val upperCandidate = sortedTeams.find { 
-                it.currentPosition == searchPosition + distance && 
-                it.id !in usedTeams &&
-                !hasTeamsPlayedBefore(searchingTeam.teamId, it.teamId, matchHistory)
-            }
-            if (upperCandidate != null) {
-                return upperCandidate
-            }
-            
-            // Sonra aşağıya bak (searchPosition - distance)  
-            val lowerCandidate = sortedTeams.find { 
-                it.currentPosition == searchPosition - distance && 
-                it.id !in usedTeams &&
-                !hasTeamsPlayedBefore(searchingTeam.teamId, it.teamId, matchHistory)
-            }
-            if (lowerCandidate != null) {
-                return lowerCandidate
-            }
-            
-            distance++
-        }
-        
-        return null // Partner bulunamadı
-    }
-    
-    /**
-     * 4. SMART BACKTRACK FOR UNPAIRED TEAMS
-     * Eşleşemeyen takımlar için yakın eşleştirmeleri bozar
-     */
-    private fun resolveUnpairedTeamsWithSmartBacktrack(
-        initialResult: InitialPairingResult,
-        teams: List<EmreTeam>,
-        matchHistory: Set<Pair<Long, Long>>
-    ): InitialPairingResult {
-        
-        
-        val matches = initialResult.matches.toMutableList()
-        val unpairedTeams = initialResult.unpairedTeams.toMutableList()
-        var byeTeam = initialResult.byeTeam
-        
-        // CRITICAL FIX: Use while loop with dynamic list to handle newly added unpaired teams
-        var index = 0
-        var iterationCount = 0
-        val maxIterations = teams.size * 5 // Safety limit to prevent infinite loops
-        
-        while (index < unpairedTeams.size && iterationCount < maxIterations) {
-            iterationCount++
-            val unpairedTeam = unpairedTeams[index]
-            
-            // En yakın eşleştirmeyi bul ve boz
-            val targetMatch = findClosestMatchToBreak(unpairedTeam, matches, teams, matchHistory)
-            
-            if (targetMatch != null) {
-                
-                // Eşleştirmeyi boz
-                matches.remove(targetMatch)
-                
-                // Yeni eşleştirmeler oluştur - TÜM TAKIMLARDAN daha önce oynamadığı birini bul
-                val allAvailableTeams = listOf(targetMatch.team1, targetMatch.team2) + teams.filter { team ->
-                    team.id != unpairedTeam.id && 
-                    team.id != targetMatch.team1.id && 
-                    team.id != targetMatch.team2.id &&
-                    !hasTeamsPlayedBefore(unpairedTeam.id, team.id, matchHistory)
-                }
-                val newPartner = findBestPartnerForBacktrack(unpairedTeam, allAvailableTeams, matchHistory)
-                
-                if (newPartner != null) {
-                    val remainingTeam = if (newPartner == targetMatch.team1) targetMatch.team2 else targetMatch.team1
-                    
-                    // Yeni eşleştirme ekle
-                    matches.add(CandidateMatch(
-                        team1 = unpairedTeam,
-                        team2 = newPartner,
-                        isAsymmetricPoints = unpairedTeam.points != newPartner.points
-                    ))
-                    
-                    // CRITICAL FIX: Remove current unpaired team and add remaining team
-                    unpairedTeams.removeAt(index)  // Remove current team at index
-                    unpairedTeams.add(remainingTeam)  // Add remaining team to end
-                    
-                    
-                    // Don't increment index since we removed current item
-                    continue
-                }
-            }
-            
-            // Move to next unpaired team
-            index++
-        }
-        
-        // Check for infinite loop protection
-        if (iterationCount >= maxIterations) {
-            unpairedTeams.forEachIndexed { i, team ->
-            }
-        }
-        
-        // CRITICAL VALIDATION: Ensure no teams are lost during backtrack
-        val totalProcessedTeams = matches.size * 2 + unpairedTeams.size + (if (byeTeam != null) 1 else 0)
-        if (totalProcessedTeams != teams.size) {
-            
-            // Log unpaired teams for debugging
-            unpairedTeams.forEachIndexed { i, team ->
-            }
+    private fun insertTeamBackToEBTG(team: EmreTeam, state: HybridPairingState) {
+        val insertIndex = state.EBTG.indexOfFirst { it.currentPosition > team.currentPosition }
+        if (insertIndex == -1) {
+            state.EBTG.add(team)
         } else {
-        }
-        
-        return InitialPairingResult(matches, unpairedTeams, byeTeam)
-    }
-    
-    /**
-     * 5. EN YAKIN EŞLEŞTİRMEYİ BULMA (BOZMAK İÇİN)
-     */
-    private fun findClosestMatchToBreak(
-        unpairedTeam: EmreTeam,
-        matches: List<CandidateMatch>,
-        teams: List<EmreTeam>,
-        matchHistory: Set<Pair<Long, Long>>
-    ): CandidateMatch? {
-        
-        var closestMatch: CandidateMatch? = null
-        var minDistance = Int.MAX_VALUE
-        
-        for (match in matches) {
-            // Bu maçtaki takımlardan biriyle eşleşebilir mi?
-            val canPairWithTeam1 = !hasTeamsPlayedBefore(unpairedTeam.teamId, match.team1.teamId, matchHistory)
-            val canPairWithTeam2 = !hasTeamsPlayedBefore(unpairedTeam.teamId, match.team2.teamId, matchHistory)
-            
-            if (canPairWithTeam1 || canPairWithTeam2) {
-                val distance1 = kotlin.math.abs(unpairedTeam.currentPosition - match.team1.currentPosition)
-                val distance2 = kotlin.math.abs(unpairedTeam.currentPosition - match.team2.currentPosition)
-                val minMatchDistance = kotlin.math.min(distance1, distance2)
-                
-                if (minMatchDistance < minDistance) {
-                    minDistance = minMatchDistance
-                    closestMatch = match
-                }
-            }
-        }
-        
-        return closestMatch
-    }
-    
-    /**
-     * 6. BACKTRACK İÇİN EN İYİ PARTNER SEÇİMİ
-     */
-    private fun findBestPartnerForBacktrack(
-        unpairedTeam: EmreTeam,
-        candidates: List<EmreTeam>,
-        matchHistory: Set<Pair<Long, Long>>
-    ): EmreTeam? {
-        
-        return candidates.find { candidate ->
-            !hasTeamsPlayedBefore(unpairedTeam.teamId, candidate.teamId, matchHistory)
+            state.EBTG.add(insertIndex, team)
         }
     }
-    
-    // Yardımcı data class'lar
-    data class ValidationResult(val isValid: Boolean, val reason: String)
-    data class InitialPairingResult(val matches: List<CandidateMatch>, val unpairedTeams: List<EmreTeam>, val byeTeam: EmreTeam?)
-    
+
     /**
-     * Sıralı partner arama sonucu
+     * AEG'YE HİBRİT SIRALAMA İLE EKLEME - Alternating match numbering:
+     * TOP KEAT → 1, 2, 3... artan; BOTTOM KEAT → N, N-1, N-2... azalan.
+     * Numara çakışması durumunda ilk boş numara atanır (çakışma imkânsız hale gelir).
      */
-    sealed class SequentialPartnerResult {
-        data class Found(val partner: EmreTeam) : SequentialPartnerResult()
-        object Bye : SequentialPartnerResult()
-        object TournamentFinished : SequentialPartnerResult()
-    }
-    
-    // breakExistingMatch fonksiyonu kaldırıldı - backtrack işlemi findPartnerSequentially içinde yapılıyor
-    
-    /**
-     * AYNI PUANLI KONTROL VE TUR ONAY - Kullanıcının tarif ettiği sistem
-     */
-    private fun checkAndApproveRound(
-        candidateMatches: List<CandidateMatch>,
-        byeTeam: EmreTeam?,
-        currentRound: Int,
-        matchHistory: Set<Pair<Long, Long>>
-    ): EmrePairingResult {
-        
-        if (candidateMatches.isEmpty()) {
-            return EmrePairingResult(
-                matches = emptyList(),
-                byeTeam = byeTeam,
-                hasSamePointMatch = false,
-                canContinue = false,
-                candidateMatches = emptyList()
-            )
-        }
-        
-        // AYNI PUANLI EŞLEŞİM VAR MI KONTROL ET
-        // ⚠️ ÖNEMLİ: İlk turda (currentRound == 1) herkes 0 puanda - özel durum
-        
-        candidateMatches.forEachIndexed { index, match ->
-        }
-        
-        val hasSamePointMatch = if (currentRound == 1) {
-            true // İlk tur her zaman oynanır
-        } else {
-            val samePointMatches = candidateMatches.filter { !it.isAsymmetricPoints }
-            samePointMatches.forEach { match ->
-            }
-            candidateMatches.any { !it.isAsymmetricPoints }  // isAsymmetricPoints=false → aynı puanlı
-        }
-        
-        if (hasSamePointMatch) {
-            // EN AZ BİR AYNI PUANLI EŞLEŞİM VAR → TUR ONAYLANIR
-            
-            // ⚠️ CRITICAL FIX: Final duplicate check before creating matches
-            val validMatches = candidateMatches.filter { candidate ->
-                val team1Id = candidate.team1.teamId
-                val team2Id = candidate.team2.teamId
-                
-                // Final duplicate kontrolü - bu çift daha önce eşleşmiş mi?
-                val isDuplicate = hasTeamsPlayedBefore(team1Id, team2Id, matchHistory)
-                
-                if (isDuplicate) {
-                }
-                
-                !isDuplicate
-            }
-            
-            val matches = validMatches.map { candidate ->
-                Match(
-                    listId = candidate.team1.song.listId,
-                    rankingMethod = "EMRE_CORRECT",
-                    songId1 = candidate.team1.id,
-                    songId2 = candidate.team2.id,
-                    winnerId = null,
-                    round = currentRound
-                )
-            }
-            
-            return EmrePairingResult(
-                matches = matches,
-                byeTeam = byeTeam,
-                hasSamePointMatch = true,
-                canContinue = true,
-                candidateMatches = candidateMatches
-            )
-        } else {
-            // HİÇBİR EŞLEŞİM AYNI PUANDA DEĞİL → TUR İPTAL, ŞAMPIYONA BITER
-            
-            candidateMatches.forEachIndexed { index, match ->
-                val team1Points = match.team1.points
-                val team2Points = match.team2.points
-                val pointDiff = kotlin.math.abs(team1Points - team2Points)
-            }
-            
-            
-            return EmrePairingResult(
-                matches = emptyList(),
-                byeTeam = byeTeam,
-                hasSamePointMatch = false,
-                canContinue = false,
-                candidateMatches = candidateMatches
-            )
-        }
-    }
-    
-    /*
-     * DEPRECATED FUNCTION REMOVED - Compile error fix
-     * Original function: findPartnerForTeam()
-     * Replaced by: Hybrid pairing system functions
-     */
-    
-    // Eski PartnerSearchResult silindi - Yeni hibrit sistem kullanıyor
-    
-    /**
-     * DEPRECATED - Geri dönüş senaryosunu handle et
-     * ✅ YENİ: Backtrack findPartnerSequentiallyWithDisplacement içinde yapılıyor
-     */
-    @Deprecated("Backtrack is now handled inside findPartnerSequentiallyWithDisplacement")
-    private fun handleBacktrackScenario(
-        candidateMatches: MutableList<CandidateMatch>,
-        usedTeams: MutableSet<Long>,
-        conflictTeam: EmreTeam,
-        searchingTeam: EmreTeam
+    private fun addToAEGWithHybridOrdering(
+        AEG: MutableList<CandidateMatch>,
+        match: CandidateMatch,
+        wasFromTop: Boolean,
+        totalMatches: Int
     ) {
-        // Conflict team'in önceki eşleşmesini bul ve kaldır
-        val conflictMatch = candidateMatches.find { 
-            it.team1.id == conflictTeam.id || it.team2.id == conflictTeam.id 
+        val usedNumbers = AEG.map { it.matchNumber }.toSet()
+
+        match.matchNumber = if (wasFromTop) {
+            (1..totalMatches).firstOrNull { it !in usedNumbers }
+                ?: ((usedNumbers.maxOrNull() ?: 0) + 1)
+        } else {
+            (totalMatches downTo 1).firstOrNull { it !in usedNumbers }
+                ?: ((usedNumbers.maxOrNull() ?: 0) + 1)
         }
-        
-        conflictMatch?.let { match ->
-            candidateMatches.remove(match)
-            usedTeams.remove(match.team1.teamId)
-            usedTeams.remove(match.team2.teamId)
-            
-            // Yeni eşleşmeyi ekle
-            candidateMatches.add(
-                CandidateMatch(
-                    team1 = searchingTeam,
-                    team2 = conflictTeam,
-                    isAsymmetricPoints = searchingTeam.points != conflictTeam.points
-                )
-            )
-            usedTeams.add(searchingTeam.teamId)
-            usedTeams.add(conflictTeam.teamId)
+
+        if (wasFromTop) {
+            // Üstten gelen eşleştirme - başa yakın ekle
+            val insertIndex = AEG.indexOfFirst {
+                it.team1.currentPosition > match.team1.currentPosition &&
+                it.team2.currentPosition > match.team2.currentPosition
+            }
+            if (insertIndex == -1) AEG.add(match) else AEG.add(insertIndex, match)
+        } else {
+            // Alttan gelen eşleştirme - sona ekle
+            AEG.add(match)
         }
     }
-    
+
     /**
-     * İki takımın daha önce oynayıp oynamadığını kontrol et
+     * TOURNAMENT CONTINUATION ANALYSIS
+     * En az bir aynı puanlı eşleşme varsa tur oynanır; yoksa turnuva biter.
+     * İlk tur her zaman oynanır.
+     */
+    private fun analyzeTournamentContinuation(
+        candidateMatches: List<CandidateMatch>,
+        currentRound: Int
+    ): TournamentAnalysis {
+        if (candidateMatches.isEmpty()) {
+            return TournamentAnalysis(
+                hasSamePointMatches = false,
+                canContinue = false,
+                asymmetricCount = 0,
+                samePointCount = 0
+            )
+        }
+
+        val samePointCount = candidateMatches.count { it.team1.points == it.team2.points }
+        val asymmetricCount = candidateMatches.size - samePointCount
+
+        val hasSamePointMatches = if (currentRound == 1) true else samePointCount > 0
+
+        return TournamentAnalysis(
+            hasSamePointMatches = hasSamePointMatches,
+            canContinue = hasSamePointMatches,
+            asymmetricCount = asymmetricCount,
+            samePointCount = samePointCount
+        )
+    }
+
+    // ==========================================
+    // SONUÇ İŞLEME VE SIRALAMA
+    // ==========================================
+
+    /**
+     * İki takımın daha önce oynayıp oynamadığını kontrol et (normalize pair lookup)
      */
     private fun hasTeamsPlayedBefore(team1Id: Long, team2Id: Long, matchHistory: Set<Pair<Long, Long>>): Boolean {
-        // 🔥 CRITICAL FIX: Normalized pair lookup (küçük ID önce)
         val normalizedPair = if (team1Id < team2Id) {
             Pair(team1Id, team2Id)
         } else {
             Pair(team2Id, team1Id)
         }
-        val hasPlayed = normalizedPair in matchHistory
-        
-        // 🔍 DETAILED DEBUG LOG - Match history kontrolü
-        
-        // 🆕 DEBUG: Match history sample göster (ilk 3 pair)
-        if (matchHistory.size > 0) {
-            val sample = matchHistory.take(3)
-        }
-        
-        if (hasPlayed) {
-        } else {
-        }
-        
-        return hasPlayed
+        return normalizedPair in matchHistory
     }
-    
+
     /**
      * Tur sonuçlarını işle ve sıralamayı yenile
      */
     fun processRoundResults(
-        state: EmreState, 
-        completedMatches: List<Match>, 
+        state: EmreState,
+        completedMatches: List<Match>,
         byeTeam: EmreTeam? = null
     ): EmreState {
         val updatedTeams = state.teams.map { it.deepCopy() }.toMutableList()
         val newMatchHistory = state.matchHistory.toMutableSet()
-        
-        // 🆕 Create song-to-team mapping from current teams
+
+        // Song ID → sabit team ID eşlemesi (match history sabit ID'lerle tutulur)
         val songToTeamMap = state.teams.associate { team -> team.song.id to team.teamId }
-        
-        // 🆕 BYE GEÇEN TAKIMA PUAN EKLE VE BYE COUNT GÜNCELLE
+
+        // Bye geçen takıma puan ekle
         byeTeam?.let { bye ->
             val teamIndex = updatedTeams.indexOfFirst { it.id == bye.id }
             if (teamIndex >= 0) {
@@ -1639,70 +625,56 @@ object EmreSystemCorrect {
                 updatedTeams[teamIndex] = currentTeam.copy(
                     points = currentTeam.points + 1.0,
                     byePassed = true,
-                    byeCount = currentTeam.byeCount + 1 // 🆕 Bye count artır
+                    byeCount = currentTeam.byeCount + 1
                 )
             }
         }
-        
-        // Maç sonuçlarını işle
-        
-        // 🆕 Track processed match IDs to prevent duplicate processing
+
+        // Aynı maçın iki kez işlenmesini engelle
         val processedMatchIds = mutableSetOf<Long>()
-        
+
         completedMatches.forEach { match ->
-            // 🔴 Skip if match already processed
             if (match.id in processedMatchIds) {
                 return@forEach
             }
             processedMatchIds.add(match.id)
-            // 🆕 CRITICAL FIX: Convert song IDs to stable team IDs for match history
+
             val teamId1 = songToTeamMap[match.songId1]
             val teamId2 = songToTeamMap[match.songId2]
-            
+
             if (teamId1 != null && teamId2 != null) {
-                // 🔥 CRITICAL FIX: Sadece tek yönlü kaydet (küçük ID önce)
                 val normalizedPair = if (teamId1 < teamId2) {
                     Pair(teamId1, teamId2)
                 } else {
                     Pair(teamId2, teamId1)
                 }
-                
-                // 🔴 KRİTİK FIX: DUPLICATE KONTROLÜ - SADECE DAHA ÖNCE EŞLEŞMİŞ DEĞİLLERLE EŞLEŞİR
-                if (!newMatchHistory.contains(normalizedPair)) {
-                    newMatchHistory.add(normalizedPair)
-                } else {
-                }
-            } else {
+                newMatchHistory.add(normalizedPair)
             }
-            
+
             // Puanları güncelle (sadece tamamlanmış maçlar)
             if (match.isCompleted) {
                 when (match.winnerId) {
                     match.songId1 -> {
-                        // Takım 1 kazandı (+1 puan)
                         val winnerIndex = updatedTeams.indexOfFirst { it.id == match.songId1 }
                         if (winnerIndex >= 0) {
                             updatedTeams[winnerIndex] = updatedTeams[winnerIndex].copy(
                                 points = updatedTeams[winnerIndex].points + 1.0
                             )
                         }
-                        // Takım 2 kaybetti (+0 puan, değişiklik yok)
                     }
                     match.songId2 -> {
-                        // Takım 2 kazandı (+1 puan)
                         val winnerIndex = updatedTeams.indexOfFirst { it.id == match.songId2 }
                         if (winnerIndex >= 0) {
                             updatedTeams[winnerIndex] = updatedTeams[winnerIndex].copy(
                                 points = updatedTeams[winnerIndex].points + 1.0
                             )
                         }
-                        // Takım 1 kaybetti (+0 puan, değişiklik yok)
                     }
                     null -> {
                         // Beraberlik - her takıma 0.5 puan
                         val team1Index = updatedTeams.indexOfFirst { it.id == match.songId1 }
                         val team2Index = updatedTeams.indexOfFirst { it.id == match.songId2 }
-                        
+
                         if (team1Index >= 0) {
                             updatedTeams[team1Index] = updatedTeams[team1Index].copy(
                                 points = updatedTeams[team1Index].points + 0.5
@@ -1717,10 +689,10 @@ object EmreSystemCorrect {
                 }
             }
         }
-        
-        // KULLANICININ BELİRTTİĞİ Emre usulü sıralamayı yenile
+
+        // Emre usulü sıralamayı yenile
         val reorderedTeams = reorderTeamsEmreStyle(updatedTeams, completedMatches)
-        
+
         return EmreState(
             teams = reorderedTeams,
             matchHistory = newMatchHistory,
@@ -1728,183 +700,121 @@ object EmreSystemCorrect {
             isComplete = false
         )
     }
-    
+
     /**
-     * Takımları Emre usulü kurallarına göre yeniden sırala
-     * 
-     * KULLANICININ TARİF ETTİĞİ TİEBREAKER KURALLARI:
+     * Takımları Emre usulü kurallarına göre yeniden sırala:
      * 1. Puana göre yüksekten alçağa
-     * 2. Eşit puanlı takımlar için:
-     *    a) Aynı puanlı ekipler ayrı grup alınır
-     *    b) Kendi aralarındaki maçlara göre ikinci puan listesi yapılır
-     *    c) İkinci puan listesine göre sıralama
-     *    d) İkinci puanda da eşitlik → ID numarası (teamId) küçük olan üstte
-     * 3. Yeni sıra numaraları atanır (1-79)
+     * 2. Eşit puanlı takımlar için tiebreaker zinciri (applySamePointTiebreaker)
+     * 3. Yeni sıra numaraları atanır
      */
     private fun reorderTeamsEmreStyle(teams: List<EmreTeam>, completedMatches: List<Match>): List<EmreTeam> {
-        // Önce puana göre grupla
         val pointGroups = teams.groupBy { it.points }
         val sortedResults = mutableListOf<EmreTeam>()
-        
-        // Her puan grubunu en yüksekten en alçağa işle
+
         pointGroups.keys.sortedDescending().forEach { points ->
             val samePointTeams = pointGroups[points]!!
-            
             if (samePointTeams.size == 1) {
-                // Tek takım varsa direkt ekle
                 sortedResults.addAll(samePointTeams)
             } else {
-                // Aynı puanlı takımlar için karmaşık tiebreaker
-                val tiebreakerSorted = applySamePointTiebreaker(samePointTeams, completedMatches)
-                sortedResults.addAll(tiebreakerSorted)
+                sortedResults.addAll(applySamePointTiebreaker(samePointTeams, completedMatches))
             }
         }
-        
-        // Yeni sıra numaralarını ata
+
         return sortedResults.mapIndexed { index, team ->
             team.copy(currentPosition = index + 1)
         }
     }
-    
+
     /**
-     * 🆕 YENİ TIEBREAKER ALGORİTMASI - Geliştirilmiş İsviçre Usulü
-     * 
-     * KULLANICININ YENİ SİSTEMİ:
-     * 1. Aynı puanlı takımları al
-     * 2. Kendi aralarındaki maçlara bak (bye puanları hariç)
-     * 3. Head-to-head puanlama yap (ikinci puan sistemi)
-     * 4. İkinci puan sistemine göre sırala
-     * 5. Hala eşitlik varsa → Tur öncesi anlık sıralama (düşük önce)
+     * TIEBREAKER ZİNCİRİ (aynı puanlı takımlar için):
+     * 1. Head-to-head puanlar (aynı puanlı takımların kendi aralarındaki maç puanları)
+     * 2. Direkt maç sonucu
+     * 3. En az mağlubiyet
+     * 4. Tur öncesi anlık sıralama (düşük önce)
      */
     private fun applySamePointTiebreaker(samePointTeams: List<EmreTeam>, completedMatches: List<Match>): List<EmreTeam> {
         if (samePointTeams.size <= 1) return samePointTeams
-        
-        samePointTeams.forEach { team ->
-        }
-        
+
         // Her takım için head-to-head puanları hesapla
         val headToHeadPoints = mutableMapOf<Long, Double>()
         samePointTeams.forEach { team ->
             headToHeadPoints[team.id] = 0.0
         }
-        
-        // Aynı puanlı takımların ID'lerini al
-        val samePointTeamIds = samePointTeams.map { it.id }.toSet()
-        
-        // 🎯 DOĞRU İKİNCİL PUAN SİSTEMİ: Sadece comprehensive hesaplama kullan
-        
-        // 🆕 GELIŞMIŞ İKINCIL PUAN HESABI: Aynı puanlı takımların tüm turnuva boyunca birbirleriyle oynadığı maçlar
-        
-        // Her aynı puanlı takım için, diğer aynı puanlı takımlara karşı oynadığı tüm maçlardaki performansını hesapla
+
         samePointTeams.forEach { teamA ->
             samePointTeams.forEach { teamB ->
                 if (teamA.id != teamB.id) {
-                    // teamA ile teamB arasındaki tüm turnuva maçlarına bak
                     val matchesBetween = completedMatches.filter { match ->
-                        match.isCompleted && 
+                        match.isCompleted &&
                         ((match.songId1 == teamA.id && match.songId2 == teamB.id) ||
                          (match.songId1 == teamB.id && match.songId2 == teamA.id)) &&
                         match.songId1 != match.songId2 // Bye değil
                     }
-                    
+
                     matchesBetween.forEach { match ->
                         when (match.winnerId) {
-                            teamA.id -> {
-                                headToHeadPoints[teamA.id] = headToHeadPoints[teamA.id]!! + 1.0
-                            }
-                            teamB.id -> {
-                                // teamB kazandı ama teamA'nın puanını etkilemez (0 puan)
-                            }
-                            null -> {
-                                headToHeadPoints[teamA.id] = headToHeadPoints[teamA.id]!! + 0.5
-                            }
+                            teamA.id -> headToHeadPoints[teamA.id] = headToHeadPoints[teamA.id]!! + 1.0
+                            null -> headToHeadPoints[teamA.id] = headToHeadPoints[teamA.id]!! + 0.5
                         }
                     }
                 }
             }
         }
-        
-        // Head-to-head puanlarını logla
-        headToHeadPoints.forEach { (teamId, points) ->
-            val team = samePointTeams.find { it.id == teamId }
-        }
-        
-        // 🧪 TEST LOG 4: HEAD-TO-HEAD TIEBREAKER TEST  
-        logHeadToHeadTest(samePointTeams, headToHeadPoints, completedMatches)
-        
-        // 🆕 COMPLETE TIEBREAKER: Head-to-head puanları, sonra direct H2H, sonra tur öncesi sıralama
+
         val sortedTeams = samePointTeams.sortedWith(
-            compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // 1. Head-to-head puan (yüksek önce)
+            compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // 1. H2H puan (yüksek önce)
                 .thenComparing { team1, team2 ->
-                    // 2. Direct head-to-head: Eğer H2H puanları eşitse, direkt maçta kim yendi?
+                    // 2. Direkt maç: H2H puanları eşitse, direkt maçta kim yendi?
                     val h2h1 = headToHeadPoints[team1.id] ?: 0.0
                     val h2h2 = headToHeadPoints[team2.id] ?: 0.0
-                    
+
                     if (h2h1 == h2h2) {
-                        // H2H puanları eşit - direkt maça bakılır
                         val directMatch = completedMatches.find { match ->
                             match.isCompleted &&
                             ((match.songId1 == team1.id && match.songId2 == team2.id) ||
                              (match.songId1 == team2.id && match.songId2 == team1.id)) &&
-                            match.winnerId != null // Beraberlik değil
+                            match.winnerId != null
                         }
-                        
-                        if (directMatch != null) {
-                            when (directMatch.winnerId) {
-                                team1.id -> {
-                                    -1 // team1 kazandı, team1 üstte
-                                }
-                                team2.id -> {
-                                    1 // team2 kazandı, team2 üstte
-                                }
-                                else -> 0 // Beraberlik veya beklenmeyen durum
-                            }
-                        } else {
-                            0 // Direkt maç yok, bir sonraki tiebreaker'a geç
+                        when (directMatch?.winnerId) {
+                            team1.id -> -1
+                            team2.id -> 1
+                            else -> 0
                         }
                     } else {
-                        0 // H2H puanları farklı, zaten ilk kriter çözüyor
+                        0 // İlk kriter zaten çözüyor
                     }
                 }
-                .thenBy { team -> 
-                    // 3. EN AZ MAĞLUP KURALI (METİNDEKİ 5d MADDESİ)
-                    calculateLossCount(team, completedMatches)
-                }
-                .thenBy { it.preRoundPosition } // 4. Tur öncesi sıralama (düşük önce = üstte olan)
+                .thenBy { team -> calculateLossCount(team, completedMatches) } // 3. En az mağlubiyet
+                .thenBy { it.preRoundPosition }                               // 4. Tur öncesi sıralama
         )
-        
-        sortedTeams.forEachIndexed { index, team ->
-            
-            // 🆕 İkincil puanları (H2H) takıma ata - UI gösterimi için
+
+        // İkincil puanları (H2H) takıma ata - UI gösterimi için
+        sortedTeams.forEach { team ->
             team.secondaryPoints = headToHeadPoints[team.id] ?: 0.0
         }
-        
+
         return sortedTeams
     }
-    
+
     /**
-     * 🆕 EN AZ MAĞLUP KURALI - METİNDEKİ 5d MADDESİ
-     * Takımın toplam kaybettiği maç sayısını hesaplar
-     * En az mağlup olan takım üstte çıkar
+     * Takımın toplam kaybettiği maç sayısı (en az mağlubiyet kuralı için)
      */
     private fun calculateLossCount(team: EmreTeam, completedMatches: List<Match>): Int {
-        val lossCount = completedMatches.count { match ->
-            match.isCompleted && 
+        return completedMatches.count { match ->
+            match.isCompleted &&
             (match.songId1 == team.id || match.songId2 == team.id) &&
-            match.winnerId != null && 
+            match.winnerId != null &&
             match.winnerId != team.id &&
             match.songId1 != match.songId2 // Bye değil
         }
-        
-        return lossCount
     }
-    
+
     /**
      * Final sonuçlarını hesapla
      */
     fun calculateFinalResults(state: EmreState): List<RankingResult> {
         val sortedTeams = state.teams.sortedBy { it.currentPosition }
-        
+
         return sortedTeams.mapIndexed { index, team ->
             RankingResult(
                 songId = team.id,
@@ -1915,663 +825,4 @@ object EmreSystemCorrect {
             )
         }
     }
-    
-    /**
-     * Turnuva durumunu kontrol et
-     */
-    fun checkTournamentStatus(state: EmreState): TournamentStatus {
-        return when {
-            state.isComplete -> TournamentStatus.COMPLETED
-            state.currentRound == 1 -> TournamentStatus.NOT_STARTED
-            else -> TournamentStatus.IN_PROGRESS
-        }
-    }
-    
-    enum class TournamentStatus {
-        NOT_STARTED,
-        IN_PROGRESS,
-        COMPLETED
-    }
-
-    // ==========================================
-    // YENİ HİBRİT EŞLEŞTİRME ALGORİTMASI
-    // ==========================================
-    
-    /**
-     * 🆕 YENİ HİBRİT EŞLEŞTİRME ALGORİTMASI - KULLANICININ TARİF ETTİĞİ SİSTEM
-     * 
-     * ALGORİTMA KAVRAMI:
-     * - EBTG: Eşleştirme Bekleyen Takımlar Grubu
-     * - KEAT: Kendine Eşleştirme Arayan Takım
-     * - AEG: Aday Eşleştirmeler Grubu
-     * - EM: Eşleştirme Motoru
-     * - EKG: Eşleşilemeden Kalanlar Grubu 
-     * - EBT: Eşleştirmesi Bozulan Takım
-     * - PÇT: Partneri Çalınan Takım
-     * 
-     * ALGORİTMA ADIMLARI:
-     * 1. Hibrit Tarama: Bir üstten bir alttan KEAT seçimi
-     * 2. KEAT kendinden sonraki/önceki takımlarla uygunluk kontrolü
-     * 3. Uygun bulamazsa backtrack: Mevcut eşleştirme bozma
-     * 4. PÇT-EBT karar matrisi ile yeniden eşleştirme
-     * 5. Recursive backtrack chain ile tüm takımların eşleşmesi
-     */
-    fun createHybridPairingSystem(state: EmreState): EmrePairingResult {
-        
-        if (state.isComplete) {
-            return EmrePairingResult(
-                matches = emptyList(),
-                byeTeam = null,
-                hasSamePointMatch = false,
-                canContinue = false,
-                candidateMatches = emptyList()
-            )
-        }
-        
-        // Tur öncesi anlık sıralama hafızaya alınır
-        val teamsWithPreRound = state.teams.map { team ->
-            team.deepCopy().apply {
-                preRoundPosition = currentPosition
-            }
-        }
-        
-        // Takımları anlık sıra numaralarına göre sırala
-        val sortedTeams = teamsWithPreRound.sortedBy { it.currentPosition }
-        
-        
-        // BYE sistemi - geliştirilmiş kontrol
-        val (teamsToMatch, byeTeam) = handleAdvancedByeSystem(sortedTeams)
-        
-        if (byeTeam != null) {
-        }
-        
-        // Hibrit eşleştirme motoru başlatılır
-        val pairingResult = executeHybridPairingEngine(teamsToMatch, state.matchHistory, state.currentRound)
-        
-        // Aynı puanlı kontrol ve turnuva bitiş analizi
-        val tournamentAnalysis = analyzeTournamentContinuation(pairingResult.AEG.map { 
-            CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints, it.matchNumber) 
-        }, state.currentRound)
-        
-        // ✅ AEG'yi alternating match numbering ile Match'lere convert et
-        val convertedMatches = pairingResult.AEG.map { candidateMatch ->
-            Match(
-                listId = state.teams.firstOrNull()?.song?.listId ?: 0L,
-                rankingMethod = "EMRE_CORRECT",
-                songId1 = candidateMatch.team1.song.id,
-                songId2 = candidateMatch.team2.song.id,
-                winnerId = null,
-                round = state.currentRound,
-                matchNumber = candidateMatch.matchNumber, // 🆕 Alternating match numbering kullan
-                isCompleted = false
-            )
-        }
-        
-        // 🎯 ALTERNATING MATCH NUMBERING LOG
-        convertedMatches.forEach { match ->
-        }
-        
-        
-        return EmrePairingResult(
-            matches = convertedMatches, // ✅ Artık gerçek Match'ler döndürülüyor
-            byeTeam = byeTeam,
-            hasSamePointMatch = tournamentAnalysis.hasSamePointMatches,
-            canContinue = tournamentAnalysis.canContinue,
-            candidateMatches = pairingResult.AEG.map { 
-                CandidateMatch(it.team1, it.team2, it.isAsymmetricPoints, it.matchNumber) 
-            }
-        )
-    }
-    
-    /**
-     * 🆕 ADVANCED BYE SİSTEMİ
-     * Tek sayıda takımda bye geçmişlik kontrolü ile en uygun bye takımını seçer
-     */
-    private fun handleAdvancedByeSystem(sortedTeams: List<EmreTeam>): Pair<List<EmreTeam>, EmreTeam?> {
-        
-        if (sortedTeams.size % 2 == 0) {
-            // Çift sayıda takım - bye yok
-            return Pair(sortedTeams, null)
-        }
-        
-        // Tek sayıda takım - bye gerekli
-        
-        // En alttan başlayarak bye geçmemiş takım ara
-        for (i in sortedTeams.indices.reversed()) {
-            val candidate = sortedTeams[i]
-            if (!candidate.byePassed) {
-                val updatedByeTeam = candidate.deepCopy().apply { 
-                    byePassed = true
-                    byeCount += 1
-                }
-                val remainingTeams = sortedTeams.filterNot { it.teamId == candidate.teamId }
-                return Pair(remainingTeams, updatedByeTeam)
-            }
-        }
-        
-        // Tüm takımlar bye geçmiş - en alttakini seç
-        val byeTeam = sortedTeams.last().deepCopy().apply { 
-            byeCount += 1 
-        }
-        val remainingTeams = sortedTeams.dropLast(1)
-        
-        return Pair(remainingTeams, byeTeam)
-    }
-    
-    /**
-     * 🆕 HİBRİT EŞLEŞTİRME MOTORU DATA CLASS'LARI
-     */
-    data class HybridPairingState(
-        val EBTG: MutableList<EmreTeam> = mutableListOf(),      // Eşleştirme Bekleyen Takımlar Grubu
-        val AEG: MutableList<CandidateMatch> = mutableListOf(), // Aday Eşleştirmeler Grubu
-        val EKG: MutableList<EmreTeam> = mutableListOf(),       // Eşleşilemeden Kalanlar Grubu
-        var currentKEAT: EmreTeam? = null,                      // Kendine Eşleştirme Arayan Takım
-        var keatSelectionFromTop: Boolean = true,               // Üstten mi seçiliyor KEAT
-        var backtrackDepth: Int = 0,                           // Backtrack derinliği
-        val stolenPartners: MutableMap<Long, Long> = mutableMapOf() // TeamID -> Stolen Partner ID (bu tur için)
-    )
-    
-    data class TournamentAnalysis(
-        val hasSamePointMatches: Boolean,
-        val canContinue: Boolean,
-        val asymmetricCount: Int,
-        val samePointCount: Int
-    )
-    
-    /**
-     * 🆕 ANA HİBRİT EŞLEŞTİRME MOTORU
-     */
-    private fun executeHybridPairingEngine(
-        teams: List<EmreTeam>, 
-        matchHistory: Set<Pair<Long, Long>>, 
-        currentRound: Int
-    ): HybridPairingState {
-        
-        val totalMatches = teams.size / 2 // 🆕 Toplam maç sayısı hesapla
-        
-        val state = HybridPairingState()
-        state.EBTG.addAll(teams.map { it.deepCopy() })
-        
-        val expectedPairs = teams.size / 2
-        
-        // Ana hibrit döngü - tüm takımlar eşleşene kadar
-        while (state.EBTG.isNotEmpty() && state.AEG.size < expectedPairs) {
-            
-            // KEAT seçimi - hibrit sistem (üst-alt-üst-alt)
-            val keat = selectNextKEAT(state)
-            if (keat == null) {
-                break
-            }
-            
-            
-            // KEAT'ı EBTG'den çıkar
-            state.EBTG.removeAll { it.teamId == keat.teamId }
-            state.currentKEAT = keat
-            
-            // KEAT için partner arama
-            val pairingResult = searchPartnerForKEAT(keat, state, matchHistory)
-            
-            when {
-                pairingResult.isSuccess -> {
-                    // Başarılı eşleştirme
-                    val partner = pairingResult.partner!!
-                    val candidateMatch = CandidateMatch(
-                        team1 = keat,
-                        team2 = partner,
-                        isAsymmetricPoints = (keat.points != partner.points)
-                    )
-                    
-                    // AEG'ye hibrit sıralama ile ekle
-                    val totalMatches = teams.size / 2 // 🆕 Dinamik toplam maç sayısı
-                    addToAEGWithHybridOrdering(state.AEG, candidateMatch, state.keatSelectionFromTop, totalMatches)
-                    
-                    // Partneri EBTG'den çıkar
-                    state.EBTG.removeAll { it.teamId == partner.teamId }
-                    
-                }
-                
-                pairingResult.needsBacktrack -> {
-                    // Backtrack gerekli
-                    
-                    val backtrackResult = executeBacktrackChain(keat, state, matchHistory, totalMatches)
-                    
-                    if (backtrackResult.isSuccess) {
-                        
-                        // Backtrack depth kontrolü
-                        state.backtrackDepth++
-                        if (state.backtrackDepth >= 10) {
-                        }
-                    } else {
-                        // KEAT'ı geri EBTG'ye ekle
-                        state.EBTG.add(0, keat)
-                    }
-                }
-                
-                else -> {
-                    state.EBTG.add(0, keat) // Geri ekle
-                }
-            }
-            
-            // State validation - önemli noktalarda
-            validateHybridState(state, teams.size)
-        }
-        
-        return state
-    }
-    
-    /**
-     * 🆕 HİBRİT KEAT SEÇİM SİSTEMİ
-     * Bir üstten bir alttan seçim yapar
-     */
-    private fun selectNextKEAT(state: HybridPairingState): EmreTeam? {
-        if (state.EBTG.isEmpty()) return null
-        
-        val selectedKeat = if (state.keatSelectionFromTop) {
-            // En üstteki (en küçük currentPosition)
-            state.EBTG.minByOrNull { it.currentPosition }
-        } else {
-            // En alttaki (en büyük currentPosition)  
-            state.EBTG.maxByOrNull { it.currentPosition }
-        }
-        
-        // Toggle pattern
-        state.keatSelectionFromTop = !state.keatSelectionFromTop
-        
-        
-        return selectedKeat
-    }
-    
-    /**
-     * 🆕 KEAT İÇİN PARTNER ARAMA SİSTEMİ
-     */
-    data class PartnerSearchResult(
-        val isSuccess: Boolean = false,
-        val partner: EmreTeam? = null,
-        val needsBacktrack: Boolean = false,
-        val targetForBacktrack: EmreTeam? = null
-    )
-    
-    private fun searchPartnerForKEAT(
-        keat: EmreTeam, 
-        state: HybridPairingState, 
-        matchHistory: Set<Pair<Long, Long>>
-    ): PartnerSearchResult {
-        
-        
-        // Önce kendi yönünde (üstten seçildiyse aşağıya, alttan seçildiyse yukarıya)
-        val searchDirection = !state.keatSelectionFromTop // Toggle edilmiş durumda
-        val candidates = if (searchDirection) {
-            // Aşağıya doğru ara (currentPosition > keat.currentPosition)
-            state.EBTG.filter { it.currentPosition > keat.currentPosition }.sortedBy { it.currentPosition }
-        } else {
-            // Yukarıya doğru ara (currentPosition < keat.currentPosition)
-            state.EBTG.filter { it.currentPosition < keat.currentPosition }.sortedByDescending { it.currentPosition }
-        }
-        
-        
-        // Öncelikli arama - kendi yönünde
-        for (candidate in candidates) {
-            if (isValidPairing(keat, candidate, matchHistory, state)) {
-                return PartnerSearchResult(isSuccess = true, partner = candidate)
-            }
-        }
-        
-        // Kendi yönünde bulamadı - ters yöne bak
-        val reverseCandidates = if (!searchDirection) {
-            state.EBTG.filter { it.currentPosition > keat.currentPosition }.sortedBy { it.currentPosition }
-        } else {
-            state.EBTG.filter { it.currentPosition < keat.currentPosition }.sortedByDescending { it.currentPosition }
-        }
-        
-        
-        for (candidate in reverseCandidates) {
-            if (isValidPairing(keat, candidate, matchHistory, state)) {
-                return PartnerSearchResult(isSuccess = true, partner = candidate)
-            }
-        }
-        
-        // Hiçbir yerde bulamadı - backtrack gerekli
-        return PartnerSearchResult(needsBacktrack = true)
-    }
-    
-    /**
-     * 🆕 BACKTRACK CHAIN SİSTEMİ - RECURSİVE
-     * KEAT eşleştirme bulamadığında AEG'deki mevcut eşleştirmeleri bozar
-     */
-    data class BacktrackChainResult(
-        val isSuccess: Boolean = false,
-        val newPairing: CandidateMatch? = null,
-        val displacedTeams: List<EmreTeam> = emptyList()
-    )
-    
-    private fun executeBacktrackChain(
-        keat: EmreTeam, 
-        state: HybridPairingState, 
-        matchHistory: Set<Pair<Long, Long>>,
-        totalMatches: Int
-    ): BacktrackChainResult {
-        
-        
-        // AEG'deki eşleştirmeleri tarayarak bozulabilecek eşleştirme ara
-        for (candidateMatch in state.AEG.toList()) { // toList() ile kopya al
-            val EBT = candidateMatch.team1
-            val PÇT = candidateMatch.team2
-            
-            
-            // KEAT ile EBT uyumlu mu?
-            val keatEBTCompatible = isValidPairing(keat, EBT, matchHistory, state)
-            // KEAT ile PÇT uyumlu mu?
-            val keatPÇTCompatible = isValidPairing(keat, PÇT, matchHistory, state)
-            
-            if (!keatEBTCompatible && !keatPÇTCompatible) {
-                continue
-            }
-            
-            // Bu eşleştirmeyi boz
-            state.AEG.remove(candidateMatch)
-            
-            // PÇT-EBT karar matrisi
-            val decision = makePÇTEBTDecision(keat, EBT, PÇT, state, matchHistory)
-            
-            when {
-                decision.keatPairs == EBT -> {
-                    // KEAT-EBT eşleşmesi
-                    val newMatch = CandidateMatch(
-                        team1 = keat,
-                        team2 = EBT,
-                        isAsymmetricPoints = (keat.points != EBT.points)
-                    )
-                    
-                    // Stolen partner prevention
-                    state.stolenPartners[PÇT.teamId] = EBT.teamId
-                    
-                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
-                    
-                    // PÇT'yi EBTG'ye geri ekle (anlık sıralamasına göre)
-                    insertPÇTBackToEBTG(PÇT, state)
-                    
-                    return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(PÇT))
-                }
-                
-                decision.keatPairs == PÇT -> {
-                    // KEAT-PÇT eşleşmesi
-                    val newMatch = CandidateMatch(
-                        team1 = keat,
-                        team2 = PÇT,
-                        isAsymmetricPoints = (keat.points != PÇT.points)
-                    )
-                    
-                    // Stolen partner prevention
-                    state.stolenPartners[EBT.teamId] = PÇT.teamId
-                    
-                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
-                    
-                    // EBT'yi EBTG'ye geri ekle
-                    insertPÇTBackToEBTG(EBT, state)
-                    
-                    return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(EBT))
-                }
-                
-                else -> {
-                    // Karar verilemedi - eşleştirmeyi geri yükle
-                    state.AEG.add(candidateMatch)
-                }
-            }
-        }
-        
-        return BacktrackChainResult(isSuccess = false)
-    }
-    
-    /**
-     * 🆕 PÇT-EBT KARAR MATRİSİ SİSTEMİ
-     * KEAT'ın EBT/PÇT ile eşleşme kararını verir
-     */
-    data class PairingDecision(
-        val keatPairs: EmreTeam? = null,
-        val reason: String = ""
-    )
-    
-    private fun makePÇTEBTDecision(
-        keat: EmreTeam,
-        EBT: EmreTeam, 
-        PÇT: EmreTeam,
-        state: HybridPairingState,
-        matchHistory: Set<Pair<Long, Long>>
-    ): PairingDecision {
-        
-        
-        val keatEBTCompatible = isValidPairing(keat, EBT, matchHistory, state)
-        val keatPÇTCompatible = isValidPairing(keat, PÇT, matchHistory, state)
-        
-        when {
-            keatEBTCompatible && !keatPÇTCompatible -> {
-                return PairingDecision(keatPairs = EBT, reason = "Only EBT compatible")
-            }
-            
-            !keatEBTCompatible && keatPÇTCompatible -> {
-                return PairingDecision(keatPairs = PÇT, reason = "Only PÇT compatible")
-            }
-            
-            keatEBTCompatible && keatPÇTCompatible -> {
-                // İkisi de uyumlu - EKG analizi gerekli
-                
-                // EBT'nin EBTG'de (gelecekte) uygun partner bulabilme şansı
-                val EBTCanFindPartner = canFindPartnerInEBTG(EBT, state, matchHistory)
-                // PÇT'nin EBTG'de (gelecekte) uygun partner bulabilme şansı  
-                val PÇTCanFindPartner = canFindPartnerInEBTG(PÇT, state, matchHistory)
-                
-                when {
-                    EBTCanFindPartner && !PÇTCanFindPartner -> {
-                        return PairingDecision(keatPairs = PÇT, reason = "EBT has better future prospects")
-                    }
-                    
-                    !EBTCanFindPartner && PÇTCanFindPartner -> {
-                        return PairingDecision(keatPairs = EBT, reason = "PÇT has better future prospects")
-                    }
-                    
-                    else -> {
-                        // Default: KEAT-EBT (kullanıcının algoritmasına göre)
-                        return PairingDecision(keatPairs = EBT, reason = "Default algorithm preference")
-                    }
-                }
-            }
-            
-            else -> {
-                return PairingDecision(keatPairs = null, reason = "No compatible pairing")
-            }
-        }
-    }
-    
-    /**
-     * 🆕 VALIDATION SİSTEMİ
-     */
-    private fun isValidPairing(
-        team1: EmreTeam, 
-        team2: EmreTeam, 
-        matchHistory: Set<Pair<Long, Long>>,
-        state: HybridPairingState
-    ): Boolean {
-        
-        // 1. Duplicate kontrol - match history
-        if (hasTeamsPlayedBefore(team1.teamId, team2.teamId, matchHistory)) {
-            return false
-        }
-        
-        // 2. Stolen partner prevention (bu tur için)
-        val stolenPartner = state.stolenPartners[team1.teamId]
-        if (stolenPartner == team2.teamId) {
-            return false
-        }
-        
-        return true
-    }
-    
-    /**
-     * 🆕 EBTG'DE GELECEKTE PARTNER BULABILME ANALİZİ
-     */
-    private fun canFindPartnerInEBTG(
-        team: EmreTeam, 
-        state: HybridPairingState, 
-        matchHistory: Set<Pair<Long, Long>>
-    ): Boolean {
-        
-        // EBTG'deki takımlarla uyumluluk kontrolü
-        for (candidate in state.EBTG) {
-            if (isValidPairing(team, candidate, matchHistory, state)) {
-                return true
-            }
-        }
-        return false
-    }
-    
-    /**
-     * 🆕 PÇT'Yİ EBTG'YE GERİ EKLEME
-     * Anlık sıralama pozisyonuna göre doğru yere ekler
-     */
-    private fun insertPÇTBackToEBTG(pçt: EmreTeam, state: HybridPairingState) {
-        // Anlık sıralama pozisyonuna göre doğru yere ekle
-        val insertIndex = state.EBTG.indexOfFirst { it.currentPosition > pçt.currentPosition }
-        
-        if (insertIndex == -1) {
-            // En sona ekle
-            state.EBTG.add(pçt)
-        } else {
-            // Doğru pozisyona ekle
-            state.EBTG.add(insertIndex, pçt)
-        }
-        
-    }
-    
-    /**
-     * 🆕 AEG'YE HİBRİT SIRALAMA İLE EKLEME
-     * Üstten/alttan gelen eşleştirmeleri doğru sırayla ekler
-     */
-    private fun addToAEGWithHybridOrdering(
-        AEG: MutableList<CandidateMatch>, 
-        match: CandidateMatch, 
-        wasFromTop: Boolean,
-        totalMatches: Int = 18 // 🆕 Toplam maç sayısı (36 takım ÷ 2 = 18)
-    ) {
-        // 🆕 ALTERNATING MATCH NUMBERING SYSTEM - DÜZELTME
-        if (wasFromTop) {
-            // TOP KEAT → 1, 2, 3, 4, 5... sıralı numara (1'den başla)
-            val existingTopNumbers = AEG.map { it.matchNumber }.filter { it in 1..(totalMatches / 2) }.sorted()
-            match.matchNumber = if (existingTopNumbers.isEmpty()) 1 else existingTopNumbers.last() + 1
-            
-            // Üstten gelen eşleştirme - başa yakın ekle
-            val insertIndex = AEG.indexOfFirst { 
-                it.team1.currentPosition > match.team1.currentPosition && 
-                it.team2.currentPosition > match.team2.currentPosition 
-            }
-            if (insertIndex == -1) AEG.add(match) else AEG.add(insertIndex, match)
-        } else {
-            // BOTTOM KEAT → 18, 17, 16, 15, 14... azalan numara (totalMatches'den başla)
-            val existingBottomNumbers = AEG.map { it.matchNumber }.filter { it > (totalMatches / 2) }.sorted()
-            match.matchNumber = if (existingBottomNumbers.isEmpty()) totalMatches else existingBottomNumbers.first() - 1
-            
-            // Alttan gelen eşleştirme - sona yakın ekle  
-            AEG.add(match)
-        }
-        
-    }
-    
-    /**
-     * 🆕 STATE VALİDATİON SİSTEMİ
-     */
-    private fun validateHybridState(state: HybridPairingState, totalTeams: Int) {
-        val pairedTeams = state.AEG.size * 2
-        val unpairedTeams = state.EBTG.size
-        val totalCounted = pairedTeams + unpairedTeams
-        
-        if (totalCounted != totalTeams) {
-        }
-        
-        // Duplicate team kontrolü
-        val allTeamIds = mutableSetOf<Long>()
-        state.EBTG.forEach { allTeamIds.add(it.teamId) }
-        state.AEG.forEach { 
-            allTeamIds.add(it.team1.teamId)
-            allTeamIds.add(it.team2.teamId)
-        }
-        
-        if (allTeamIds.size != totalTeams) {
-        }
-    }
-    
-    /**
-     * 🆕 TOURNAMENT CONTINUATION ANALYSIS
-     * Aynı puanlı eşleştirme analizi ve turnuva bitiş kararı
-     */
-    private fun analyzeTournamentContinuation(
-        candidateMatches: List<CandidateMatch>,
-        currentRound: Int
-    ): TournamentAnalysis {
-        
-        
-        if (candidateMatches.isEmpty()) {
-            return TournamentAnalysis(
-                hasSamePointMatches = false,
-                canContinue = false,
-                asymmetricCount = 0,
-                samePointCount = 0
-            )
-        }
-        
-        var samePointCount = 0
-        var asymmetricCount = 0
-        
-        candidateMatches.forEachIndexed { index, match ->
-            val isSamePoint = (match.team1.points == match.team2.points)
-            if (isSamePoint) {
-                samePointCount++
-            } else {
-                asymmetricCount++
-            }
-        }
-        
-        // İlk tur özel durumu - her zaman oynanır
-        val hasSamePointMatches = if (currentRound == 1) {
-            true
-        } else {
-            samePointCount > 0
-        }
-        
-        val canContinue = hasSamePointMatches
-        
-        
-        return TournamentAnalysis(
-            hasSamePointMatches = hasSamePointMatches,
-            canContinue = canContinue,
-            asymmetricCount = asymmetricCount,
-            samePointCount = samePointCount
-        )
-    }
-    
-    /**
-     * 🆕 CANDIDATE MATCHES TO ACTUAL MATCHES CONVERTER
-     * NOT COMPLETE - listId ve rankingMethod parametreleri gerekli
-     */
-    private fun convertCandidatesToMatches(
-        candidateMatches: List<CandidateMatch>, 
-        currentRound: Int,
-        listId: Long,
-        rankingMethod: String
-    ): List<Match> {
-        return candidateMatches.mapIndexed { index, candidate ->
-            Match(
-                id = 0, // Database'de auto-generate edilecek
-                listId = listId,
-                rankingMethod = rankingMethod,
-                songId1 = candidate.team1.song.id,
-                songId2 = candidate.team2.song.id,
-                winnerId = null, // Henüz oynanmadı
-                round = currentRound,
-                isCompleted = false,
-                createdAt = System.currentTimeMillis()
-            )
-        }
-    }
-    
-    // hasTeamsPlayedBefore fonksiyonu mevcut - line 1784'te tanımlı
-
 }

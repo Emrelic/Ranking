@@ -1,9 +1,13 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "youtube_playlists")
+@Entity(
+    tableName = "youtube_playlists",
+    indices = [Index("artist")]
+)
 data class YouTubePlaylist(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

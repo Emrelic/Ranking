@@ -59,26 +59,12 @@ fun RankingNavigation(
             )
         }
         
-        // Keep old home route for backward compatibility during development
-        composable("home") {
-            HomeScreen(
-                onNavigateToCreateList = { navController.navigate("create_list") },
-                onNavigateToSongList = { listId -> navController.navigate("list_view/$listId") },
-                onNavigateToArchive = { navController.navigate("archive") },
-                onNavigateToTest = { navController.navigate("test") },
-                onNavigateToRanking = { listId, method -> 
-                    navController.navigate("ranking/$listId/$method?isResuming=true") 
-                },
-                onNavigateToYouTubeAnalysis = { navController.navigate("youtube_analysis") }
-            )
-        }
-        
         composable("youtube_analysis") {
             YouTubeAnalysisScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToRanking = { listId, method -> 
+                onNavigateToRanking = { listId, method ->
                     navController.navigate("ranking/$listId/$method") {
-                        popUpTo("home")
+                        popUpTo("main_menu")
                     }
                 }
             )
@@ -91,23 +77,6 @@ fun RankingNavigation(
                     navController.navigate("list_view/$listId") {
                         popUpTo("lists")
                     }
-                }
-            )
-        }
-        
-        composable("song_list/{listId}") { backStackEntry ->
-            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
-            SongListScreen(
-                listId = listId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToRanking = { id, method -> 
-                    navController.navigate("ranking/$id/$method")
-                },
-                onNavigateToLeagueSettings = { id, method ->
-                    navController.navigate("league_settings/$id/$method")
-                },
-                onNavigateToEmrePairingSettings = { id ->
-                    navController.navigate("emre_pairing_settings/$id")
                 }
             )
         }

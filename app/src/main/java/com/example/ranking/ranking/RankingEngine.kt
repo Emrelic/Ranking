@@ -220,31 +220,34 @@ object RankingEngine {
         return GroupConfig(groupCount, baseGroupSize, remainder, 2)
     }
     
-    fun createDirectEliminationMatches(songs: List<Song>, startRound: Int): List<Match> {
+    /**
+     * Sadece verilen turun eşleştirmelerini üretir (n/2 maç).
+     * Kazananlar bilinmeden sonraki turların maçları üretilemez; sonraki tur,
+     * bu tur tamamlandığında kazanan listesiyle tekrar çağrılarak oluşturulur.
+     */
+    fun createDirectEliminationMatches(
+        songs: List<Song>,
+        startRound: Int,
+        rankingMethod: String = "ELIMINATION"
+    ): List<Match> {
         val matches = mutableListOf<Match>()
-        val currentRoundSongs = songs.toMutableList()
-        
-        for (round in startRound until startRound + log2(songs.size.toDouble()).toInt()) {
-            for (i in 0 until currentRoundSongs.size step 2) {
-                if (i + 1 < currentRoundSongs.size) {
-                    matches.add(
-                        Match(
-                            listId = songs[0].listId,
-                            rankingMethod = "ELIMINATION",
-                            songId1 = currentRoundSongs[i].id,
-                            songId2 = currentRoundSongs[i + 1].id,
-                            winnerId = null,
-                            round = round
-                        )
+        if (songs.size <= 1) return matches
+
+        for (i in 0 until songs.size step 2) {
+            if (i + 1 < songs.size) {
+                matches.add(
+                    Match(
+                        listId = songs[0].listId,
+                        rankingMethod = rankingMethod,
+                        songId1 = songs[i].id,
+                        songId2 = songs[i + 1].id,
+                        winnerId = null,
+                        round = startRound
                     )
-                }
+                )
             }
-            // For next iteration, we'd have half the songs (winners)
-            if (currentRoundSongs.size <= 2) break
-            // Note: We don't actually update currentRoundSongs here as we don't know winners yet
-            // This is just for creating the bracket structure
         }
-        
+
         return matches
     }
     
@@ -703,14 +706,6 @@ object RankingEngine {
     
     
     /**
-     * DOĞRU Emre Usulü Sistemi - Yeniden yazılan algoritma
-     */
-    fun createCorrectEmreMatches(songs: List<Song>, state: EmreSystemCorrect.EmreState?): EmreSystemCorrect.EmrePairingResult {
-        val currentState = state ?: EmreSystemCorrect.initializeEmreTournament(songs)
-        return EmreSystemCorrect.createNextRoundWithConfirmation(currentState)
-    }
-    
-    /**
      * Doğru Emre sistemi için sonuçları işle
      */
     fun processCorrectEmreResults(
@@ -795,7 +790,7 @@ object RankingEngine {
         
         if (isPowerOfTwo(songCount)) {
             // Zaten 2'nin üssü, direkt eleme yapılır
-            return createDirectEliminationMatches(songs, 1)
+            return createDirectEliminationMatches(songs, 1, "FULL_ELIMINATION")
         }
         
         // Sadece ilk turın maçlarını yarat - ön eleme
@@ -871,14 +866,14 @@ object RankingEngine {
         
         return when (progress) {
             FullEliminationStatus.DIRECT_ELIMINATION -> {
-                createDirectEliminationMatches(songs, 1)
+                createDirectEliminationMatches(songs, 1, "FULL_ELIMINATION")
             }
             FullEliminationStatus.NEED_MORE_PRE_ELIMINATION -> {
                 createNextPreEliminationRound(songs, completedMatches, targetSize)
             }
             FullEliminationStatus.READY_FOR_FINAL_BRACKET -> {
                 val qualifiedTeams = getQualifiedTeamsFromMatches(songs, completedMatches.filter { it.round < 101 })
-                createDirectEliminationMatches(qualifiedTeams, 101)
+                createDirectEliminationMatches(qualifiedTeams, 101, "FULL_ELIMINATION")
             }
             else -> emptyList()
         }

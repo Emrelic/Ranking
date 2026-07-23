@@ -1,6 +1,7 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
 
@@ -13,7 +14,8 @@ import androidx.room.ForeignKey
             childColumns = ["sessionId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index("sessionId")]
 )
 data class SwissState(
     @PrimaryKey(autoGenerate = true)

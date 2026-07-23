@@ -1,87 +1,185 @@
 package com.example.ranking
 
+import com.example.ranking.data.Match
 import com.example.ranking.data.Song
 import com.example.ranking.ranking.EmreSystemCorrect
-import org.junit.Test
 import org.junit.Assert.*
+import org.junit.Test
 
 /**
- * Emre System Correct Unit Test
+ * Geliştirilmiş İsviçre Sistemi (Emre Usulü) - Canlı hibrit motor testleri
+ *
+ * Test edilen kritik kurallar:
+ * - İki takım birbiriyle en fazla 1 kez eşleşir (kırmızı çizgi)
+ * - Her turda tam eşleştirme (çift: n/2 maç, tek: (n-1)/2 maç + 1 bye)
+ * - Turnuva her senaryoda sonlanır (sonsuz döngü koruması)
+ * - Puanlama: galibiyet 1, beraberlik 0.5, bye 1
  */
 class EmreQuickUnitTest {
-    
+
+    private fun makeSongs(count: Int): List<Song> =
+        (1..count).map { i -> Song(id = i.toLong(), name = "Team$i", listId = 1L) }
+
+    /**
+     * Deterministik turnuva simülasyonu.
+     * winnerPicker her maç için kazanan songId döndürür (null = beraberlik).
+     */
+    private fun simulateTournament(
+        songCount: Int,
+        maxRoundsGuard: Int,
+        winnerPicker: (Match) -> Long?
+    ): Triple<EmreSystemCorrect.EmreState, List<Match>, Int> {
+        var state = EmreSystemCorrect.initializeEmreTournament(makeSongs(songCount))
+        val allCompleted = mutableListOf<Match>()
+        var nextMatchId = 1L
+        var rounds = 0
+
+        while (rounds < maxRoundsGuard) {
+            val pairing = EmreSystemCorrect.createHybridPairingSystem(state)
+            if (!pairing.canContinue || pairing.matches.isEmpty()) break
+            rounds++
+            val completed = pairing.matches.map { m ->
+                m.copy(id = nextMatchId++, winnerId = winnerPicker(m), isCompleted = true)
+            }
+            allCompleted.addAll(completed)
+            state = EmreSystemCorrect.processRoundResults(state, completed, pairing.byeTeam)
+        }
+        return Triple(state, allCompleted, rounds)
+    }
+
     @Test
-    fun testEmreSystemCorrectBasic() {
-        
-        // 6 takım oluştur
-        val songs = listOf(
-            Song(1L, "Team1", "", "", 1, 1L),
-            Song(2L, "Team2", "", "", 2, 1L),
-            Song(3L, "Team3", "", "", 3, 1L),
-            Song(4L, "Team4", "", "", 4, 1L),
-            Song(5L, "Team5", "", "", 5, 1L),
-            Song(6L, "Team6", "", "", 6, 1L)
-        )
-        
-        // Test 1: Sistem başlatma
-        var state = EmreSystemCorrect.initializeEmreTournament(songs)
+    fun testInitializationAndFirstRound() {
+        val state = EmreSystemCorrect.initializeEmreTournament(makeSongs(6))
         assertEquals("Takım sayısı 6 olmalı", 6, state.teams.size)
         assertEquals("İlk tur 1 olmalı", 1, state.currentRound)
-        
-        // Test 2: İlk tur eşleştirmeler
-        val round1 = EmreSystemCorrect.createNextRound(state)
+
+        val round1 = EmreSystemCorrect.createHybridPairingSystem(state)
         assertEquals("İlk turda 3 maç olmalı", 3, round1.matches.size)
-        assertTrue("İlk turda aynı puanlı eşleşme olmalı", round1.hasSamePointMatch)
-        assertTrue("Turnuva devam edebilmeli", round1.canContinue)
-        
-        // Test 3: 1-2 eşleştirmesi kontrolü
-        val firstMatch = round1.matches.find { 
+        assertTrue("İlk tur her zaman oynanmalı", round1.canContinue)
+        assertNull("Çift sayıda takımda bye olmamalı", round1.byeTeam)
+
+        // 1-2 komşu eşleştirmesi ilk turda olmalı
+        val firstMatch = round1.matches.find {
             (it.songId1 == 1L && it.songId2 == 2L) || (it.songId1 == 2L && it.songId2 == 1L)
         }
         assertNotNull("1-2 eşleştirmesi olmalı", firstMatch)
-        
-        // Test 4: İlk tur sonuçları (Team1, Team4, Team5 kazansın)
-        val round1Results = round1.matches.mapIndexed { i, match ->
-            val winnerId = when(i) {
-                0 -> if (match.songId1 == 1L || match.songId1 == 2L) 1L else match.songId1 // Team1 kazansın
-                1 -> if (match.songId1 == 3L || match.songId1 == 4L) 4L else match.songId2 // Team4 kazansın
-                2 -> if (match.songId1 == 5L || match.songId1 == 6L) 5L else match.songId1 // Team5 kazansın
-                else -> match.songId1
-            }
-            match.copy(winnerId = winnerId, isCompleted = true)
+
+        // Her takım tam olarak 1 maçta yer almalı
+        val participants = round1.matches.flatMap { listOf(it.songId1, it.songId2) }
+        assertEquals("6 katılımcı olmalı", 6, participants.size)
+        assertEquals("Hiçbir takım iki maçta olmamalı", 6, participants.toSet().size)
+    }
+
+    @Test
+    fun testPointsAfterFirstRound() {
+        val winners = setOf(1L, 4L, 5L)
+        var state = EmreSystemCorrect.initializeEmreTournament(makeSongs(6))
+        val round1 = EmreSystemCorrect.createHybridPairingSystem(state)
+
+        var id = 1L
+        val completed = round1.matches.map { m ->
+            val winnerId = if (m.songId1 in winners) m.songId1 else if (m.songId2 in winners) m.songId2 else m.songId1
+            m.copy(id = id++, winnerId = winnerId, isCompleted = true)
         }
-        
-        // Test 5: Sonuçları işleme
-        state = EmreSystemCorrect.processRoundResults(state, round1Results, round1.byeTeam)
+        state = EmreSystemCorrect.processRoundResults(state, completed, round1.byeTeam)
+
         assertEquals("2. tur olmalı", 2, state.currentRound)
-        
-        // Kazananların puanı 1 olmalı
-        val team1Points = state.teams.find { it.id == 1L }?.points
-        val team4Points = state.teams.find { it.id == 4L }?.points  
-        val team5Points = state.teams.find { it.id == 5L }?.points
-        assertEquals("Team1 puanı 1 olmalı", 1.0, team1Points!!, 0.01)
-        assertEquals("Team4 puanı 1 olmalı", 1.0, team4Points!!, 0.01)
-        assertEquals("Team5 puanı 1 olmalı", 1.0, team5Points!!, 0.01)
-        
-        // Kaybedenlerin puanı 0 olmalı
-        val team2Points = state.teams.find { it.id == 2L }?.points
-        val team3Points = state.teams.find { it.id == 3L }?.points
-        val team6Points = state.teams.find { it.id == 6L }?.points
-        assertEquals("Team2 puanı 0 olmalı", 0.0, team2Points!!, 0.01)
-        assertEquals("Team3 puanı 0 olmalı", 0.0, team3Points!!, 0.01) 
-        assertEquals("Team6 puanı 0 olmalı", 0.0, team6Points!!, 0.01)
-        
-        // Test 6: İkinci tur
-        val round2 = EmreSystemCorrect.createNextRound(state)
-        assertTrue("İkinci turda eşleşme olmalı", round2.matches.isNotEmpty())
-        
-        // Test 7: Final sonuçlar
-        val finalResults = EmreSystemCorrect.calculateFinalResults(state)
-        assertEquals("6 sonuç olmalı", 6, finalResults.size)
-        
-        val positions = finalResults.map { it.position }.sorted()
-        assertEquals("Pozisyonlar 1-6 arası olmalı", (1..6).toList(), positions)
-        
-        println("✅ Tüm testler BAŞARILI!")
+        winners.forEach { winnerId ->
+            assertEquals("Kazanan $winnerId 1 puan almalı", 1.0, state.teams.first { it.id == winnerId }.points, 0.001)
+        }
+        state.teams.filter { it.id !in winners }.forEach { loser ->
+            assertEquals("Kaybeden ${loser.id} 0 puanda kalmalı", 0.0, loser.points, 0.001)
+        }
+    }
+
+    @Test
+    fun testOddTeamCountByeHandling() {
+        val state = EmreSystemCorrect.initializeEmreTournament(makeSongs(7))
+        val round1 = EmreSystemCorrect.createHybridPairingSystem(state)
+
+        assertEquals("7 takımda 3 maç olmalı", 3, round1.matches.size)
+        assertNotNull("Tek sayıda takımda 1 bye olmalı", round1.byeTeam)
+        assertEquals("İlk turda en alttaki takım bye geçmeli", 7L, round1.byeTeam!!.song.id)
+
+        // Bye geçen takım +1 puan almalı
+        var id = 1L
+        val completed = round1.matches.map { m -> m.copy(id = id++, winnerId = m.songId1, isCompleted = true) }
+        val newState = EmreSystemCorrect.processRoundResults(state, completed, round1.byeTeam)
+        assertEquals("Bye geçen takım 1 puan almalı", 1.0, newState.teams.first { it.id == 7L }.points, 0.001)
+        assertTrue("Bye bilgisi işaretlenmeli", newState.teams.first { it.id == 7L }.byePassed)
+    }
+
+    @Test
+    fun testNoRematchInvariant() {
+        // 16 takım, deterministik sonuçlar: küçük ID her zaman kazanır
+        val (_, allMatches, rounds) = simulateTournament(16, maxRoundsGuard = 40) { m ->
+            minOf(m.songId1, m.songId2)
+        }
+
+        assertTrue("En az 2 tur oynanmalı", rounds >= 2)
+
+        // KIRMIZI ÇİZGİ: Hiçbir ikili iki kez eşleşmemeli
+        val pairCounts = allMatches.groupingBy { m ->
+            if (m.songId1 < m.songId2) Pair(m.songId1, m.songId2) else Pair(m.songId2, m.songId1)
+        }.eachCount()
+        val duplicates = pairCounts.filter { it.value > 1 }
+        assertTrue("Tekrar eşleşme olmamalı ama bulundu: $duplicates", duplicates.isEmpty())
+
+        // Her turda eşit sayıda (n/2) maç oynanmalı
+        allMatches.groupBy { it.round }.forEach { (round, matches) ->
+            assertEquals("Tur $round: 8 maç olmalı", 8, matches.size)
+        }
+    }
+
+    @Test
+    fun testAllDrawsTerminates() {
+        // KRİTİK REGRESYON TESTİ: Tüm maçlar berabere biterse herkes hep aynı
+        // puanda kalır. Eski motor bu senaryoda sonsuz döngüye girebiliyordu.
+        // Yeni kural: tekrarsız tam eşleştirme kurulamadığında turnuva biter.
+        val guard = 20
+        val (_, allMatches, rounds) = simulateTournament(8, maxRoundsGuard = guard) { null }
+
+        assertTrue("Turnuva sonlanmalı (guard'a çarpmamalı)", rounds < guard)
+        // 8 takımla round-robin üst sınırı 7 turdur
+        assertTrue("Tur sayısı round-robin sınırını aşmamalı", rounds <= 7)
+
+        // Sonlanana kadar da kırmızı çizgi korunmalı
+        val pairCounts = allMatches.groupingBy { m ->
+            if (m.songId1 < m.songId2) Pair(m.songId1, m.songId2) else Pair(m.songId2, m.songId1)
+        }.eachCount()
+        assertTrue("Beraberlik senaryosunda da tekrar eşleşme olmamalı", pairCounts.none { it.value > 1 })
+    }
+
+    @Test
+    fun testMatchNumbersUniquePerRound() {
+        val (_, allMatches, _) = simulateTournament(18, maxRoundsGuard = 30) { m ->
+            minOf(m.songId1, m.songId2)
+        }
+
+        allMatches.groupBy { it.round }.forEach { (round, matches) ->
+            val numbers = matches.map { it.matchNumber }
+            assertEquals(
+                "Tur $round: maç numaraları benzersiz olmalı (bulunan: $numbers)",
+                numbers.size, numbers.toSet().size
+            )
+            assertTrue(
+                "Tur $round: maç numaraları 1..${matches.size} aralığında olmalı",
+                numbers.all { it in 1..matches.size }
+            )
+        }
+    }
+
+    @Test
+    fun testFinalResultsCompleteRanking() {
+        val (finalState, _, _) = simulateTournament(10, maxRoundsGuard = 30) { m ->
+            minOf(m.songId1, m.songId2)
+        }
+
+        val results = EmreSystemCorrect.calculateFinalResults(finalState)
+        assertEquals("10 sonuç olmalı", 10, results.size)
+        assertEquals("Pozisyonlar 1-10 arası benzersiz olmalı", (1..10).toList(), results.map { it.position }.sorted())
+
+        // Deterministik senaryoda (küçük ID hep kazanır) 1 numaralı takım şampiyon olmalı
+        assertEquals("Team1 şampiyon olmalı", 1L, results.first { it.position == 1 }.songId)
     }
 }

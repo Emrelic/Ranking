@@ -40,6 +40,11 @@ android {
     }
 }
 
+ksp {
+    // Room şema geçmişini dışa aktar (migration doğrulaması ve sürüm takibi için)
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)

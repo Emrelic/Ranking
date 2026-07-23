@@ -1,6 +1,7 @@
 package com.example.ranking.data
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
 
@@ -13,7 +14,8 @@ import androidx.room.ForeignKey
             childColumns = ["listId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    indices = [Index("listId")]
 )
 data class VotingSession(
     @PrimaryKey(autoGenerate = true)
