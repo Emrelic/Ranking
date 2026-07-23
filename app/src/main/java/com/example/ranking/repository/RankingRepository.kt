@@ -187,6 +187,10 @@ class RankingRepository(
     suspend fun clearMatches(listId: Long, method: String) {
         matchDao.deleteMatches(listId, method)
     }
+
+    suspend fun deleteUncompletedMatches(listId: Long, method: String) {
+        matchDao.deleteUncompletedMatches(listId, method)
+    }
     
     suspend fun getMatchProgress(listId: Long, method: String): Pair<Int, Int> {
         val completed = matchDao.getCompletedMatchCount(listId, method)

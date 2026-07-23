@@ -40,6 +40,9 @@ interface MatchDao {
     @Query("DELETE FROM matches WHERE listId = :listId")
     suspend fun deleteAllMatchesByListId(listId: Long)
 
+    @Query("DELETE FROM matches WHERE listId = :listId AND rankingMethod = :method AND isCompleted = 0")
+    suspend fun deleteUncompletedMatches(listId: Long, method: String)
+
     @Query("SELECT COUNT(*) FROM matches WHERE listId = :listId AND rankingMethod = :method AND isCompleted = 1")
     suspend fun getCompletedMatchCount(listId: Long, method: String): Int
 

@@ -60,11 +60,10 @@ fun NewTournamentScreen(
                 "LEAGUE" -> "lig"
                 "SWISS" -> "isviçre"
                 "EMRE_CORRECT" -> "geliştirilmiş isviçre"
+                "MERGE_SORT" -> "ikili karşılaştırma"
                 "DIRECT_SCORING" -> "direkt puanlama"
                 "ELIMINATION" -> "eleme"
                 "FULL_ELIMINATION" -> "gruplu eleme"
-                "SINGLE_ELIMINATION" -> "tam eleme"
-                "DOUBLE_ELIMINATION" -> "çift eleme"
                 else -> "turnuva"
             }
 
@@ -348,13 +347,14 @@ private fun SystemTypeSelectionStep(
 ) {
     val systemTypes = listOf(
         "DIRECT_SCORING" to "Direkt Puanlama - 0-100 arası puan verme",
+        "MERGE_SORT" to "İkili Karşılaştırma - En az soruyla tam sıralama (büyük listeler için önerilen)",
         "LEAGUE" to "Lig Sistemi - Herkes herkesle eşleşir",
         "SWISS" to "İsviçre Sistemi - Puana göre eşleştirme",
         "EMRE_CORRECT" to "Geliştirilmiş İsviçre Sistemi (Önerilen)",
         "ELIMINATION" to "Eleme Usulü - Çift eleme sistemi",
-        "FULL_ELIMINATION" to "Gruplu Eleme Usulü - Grup eleme",
-        "SINGLE_ELIMINATION" to "Tam Eleme Usulü - Tek maç eleme",
-        "DOUBLE_ELIMINATION" to "Çift Eleme - Kaybeden bracketi"
+        "FULL_ELIMINATION" to "Gruplu Eleme Usulü - Grup eleme"
+        // SINGLE_ELIMINATION ve DOUBLE_ELIMINATION algoritmaları tamamlanana
+        // kadar listeden çıkarıldı (yarım özellik kırık deneyim yaratıyordu)
     )
     
     Column {

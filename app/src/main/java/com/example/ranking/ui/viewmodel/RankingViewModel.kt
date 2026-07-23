@@ -8,6 +8,7 @@ import com.example.ranking.data.*
 import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
 import com.example.ranking.ranking.EmreSystemCorrect
+import com.example.ranking.ranking.PairwiseComparisonSort
 import com.example.ranking.ranking.TournamentTestProtocol
 import com.example.ranking.repository.RankingRepository
 import com.example.ranking.utils.CsvReader
@@ -96,7 +97,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     // olmaktan çıkar; bu yüzden tur kapanışında null'lanır.
     private var lastCompletedMatchId: Long? = null
 
-    private fun undoSupported(): Boolean = currentMethod in setOf("LEAGUE", "EMRE_CORRECT")
+    private fun undoSupported(): Boolean = currentMethod in setOf("LEAGUE", "EMRE_CORRECT", "MERGE_SORT")
     private var currentPairingMethod: com.example.ranking.data.EmrePairingMethod = com.example.ranking.data.EmrePairingMethod.SEQUENTIAL
     
     private fun resetState() {
@@ -192,6 +193,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "EMRE_CORRECT" -> {
                                     initializeEmre()
                                 }
+                                "MERGE_SORT" -> {
+                                    initializePairwiseSort()
+                                }
                                 "SINGLE_ELIMINATION" -> {
                                     initializeSingleElimination()
                                 }
@@ -286,6 +290,28 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
             repository.createMatches(matches)
             loadNextMatch()
+        }
+    }
+
+    private fun initializePairwiseSort() {
+        viewModelScope.launch {
+            repository.clearMatches(currentListId, currentMethod)
+            advancePairwiseSort()
+        }
+    }
+
+    /**
+     * İkili karşılaştırmalı sıralamada sıradaki soruyu üretir.
+     * Karşılaştırmalar teker teker oluşturulur; sorulacak soru kalmadıysa sıralama biter.
+     */
+    private suspend fun advancePairwiseSort() {
+        val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+        val next = PairwiseComparisonSort.createNextComparisonMatch(songs, allMatches.filter { it.isCompleted })
+        if (next != null) {
+            repository.createMatches(listOf(next))
+            loadNextMatch()
+        } else {
+            completeRanking()
         }
     }
     
@@ -457,6 +483,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     createNextEmreRound(currentRound)
                     return
                 }
+                "MERGE_SORT" -> {
+                    // Sıradaki karşılaştırmayı üret (kalmadıysa advance içinde tamamlanır)
+                    advancePairwiseSort()
+                    return
+                }
                 "ELIMINATION" -> {
                     // Check if we need to start knockout rounds after group stage
                     val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
@@ -509,14 +540,22 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             }
         }
         
+        // İkili karşılaştırmada maçlar teker teker üretilir; DB'deki toplam yerine
+        // tahmini toplam soru sayısı gösterilir (ilerleme çubuğu anlamlı olsun diye)
+        val displayTotal = if (currentMethod == "MERGE_SORT") {
+            maxOf(PairwiseComparisonSort.estimatedTotalComparisons(safeSongs.size), completed + 1)
+        } else {
+            total
+        }
+
         _uiState.value = _uiState.value.copy(
             isLoading = false,
             currentMatch = nextMatch,
             song1 = song1,
             song2 = song2,
             completedMatches = completed,
-            totalMatches = total,
-            progress = if (total > 0) completed.toFloat() / total else 0f,
+            totalMatches = displayTotal,
+            progress = if (displayTotal > 0) completed.toFloat() / displayTotal else 0f,
             emreState = if (currentMethod == "EMRE_CORRECT") emreState else null,
             showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
             showInitialRanking = false,  // İlk sıralama tablosunu da gizle
@@ -702,6 +741,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 "ELIMINATION" -> RankingEngine.calculateEliminationResults(songs, allMatches)
                 "FULL_ELIMINATION" -> RankingEngine.calculateFullEliminationResults(songs, allMatches)
+                "MERGE_SORT" -> PairwiseComparisonSort.calculateResults(songs, allMatches.filter { it.isCompleted })
                 else -> emptyList()
             }
             
@@ -783,6 +823,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     lastCompletedMatchId = null
                     _uiState.value = _uiState.value.copy(canUndo = false)
                     return@launch
+                }
+
+                // İkili karşılaştırmada bir sonraki soru önceden oluşturulmuş olabilir;
+                // geri alınan cevaba bağlı olduğu için önce o silinir.
+                if (currentMethod == "MERGE_SORT") {
+                    repository.deleteUncompletedMatches(currentListId, currentMethod)
                 }
 
                 val restored = match.copy(winnerId = null, score1 = null, score2 = null, isCompleted = false)

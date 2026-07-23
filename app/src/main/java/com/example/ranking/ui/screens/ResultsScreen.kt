@@ -601,6 +601,7 @@ private fun formatScore(score: Double, method: String): String {
         "DIRECT_SCORING" -> "${score.toInt()}/100"
         "LEAGUE", "SWISS" -> "${score.toInt()} puan"
         "EMRE_CORRECT" -> if (score % 1.0 == 0.0) "${score.toInt()}" else "$score"
+        "MERGE_SORT" -> "${score.toInt()}"
         else -> score.toString()
     }
 }
@@ -611,6 +612,7 @@ private fun getScoreLabel(method: String): String {
         "LEAGUE" -> "lig puanı"
         "SWISS" -> "turnuva puanı"
         "EMRE_CORRECT" -> "sıra puanı"
+        "MERGE_SORT" -> "sıra puanı"
         else -> ""
     }
 }
@@ -667,6 +669,7 @@ private fun getMethodTitle(method: String): String {
         "ELIMINATION" -> "Eleme Sistemi"
         "SWISS" -> "İsviçre Sistemi"
         "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
+        "MERGE_SORT" -> "İkili Karşılaştırma"
         else -> "Sıralama"
     }
 }

@@ -207,7 +207,7 @@ fun RankingScreen(
                 onScoreUpdate = viewModel::updateScoreInSession,
                 onComplete = { onNavigateToResults(listId, method) }
             )
-            "LEAGUE", "SWISS", "EMRE_CORRECT" -> MatchBasedContent(
+            "LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT" -> MatchBasedContent(
                 uiState = uiState,
                 method = method,
                 viewModel = viewModel,
@@ -318,6 +318,7 @@ private fun getMethodTitle(method: String): String {
         "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
         "ELIMINATION" -> "Eleme Sistemi"
         "FULL_ELIMINATION" -> "Tam Eleme"
+        "MERGE_SORT" -> "İkili Karşılaştırma"
         else -> "Ranking Sistemi"
     }
 }
@@ -2189,6 +2190,8 @@ private fun MatchBasedContent(
                 horizontalArrangement = Arrangement.Start // Bitişik olmak için
             ) {
                 // Beraberlik butonu - Sol köşe yuvarlak
+                // İkili karşılaştırmada beraberlik yok: her soruda kazanan seçilmeli
+                if (method != "MERGE_SORT") {
                 Button(
                     onClick = {
                         onMatchResult(match.id, null) // null means draw
@@ -2207,6 +2210,7 @@ private fun MatchBasedContent(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
+                }
                 }
 
                 // Skor İşle butonu - Ortada köşesiz
