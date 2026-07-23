@@ -14,6 +14,9 @@ interface LeagueSettingsDao {
     
     @Delete
     suspend fun delete(leagueSettings: LeagueSettings)
+
+    @Query("DELETE FROM league_settings WHERE listId = :listId")
+    suspend fun deleteByListId(listId: Long)
     
     @Query("SELECT * FROM league_settings WHERE listId = :listId AND rankingMethod = :method LIMIT 1")
     suspend fun getByListAndMethod(listId: Long, method: String): LeagueSettings?

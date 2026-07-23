@@ -17,17 +17,7 @@ import kotlinx.coroutines.launch
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
     
     private val database = RankingDatabase.getDatabase(application)
-    private val repository = RankingRepository(
-        songDao = database.songDao(),
-        songListDao = database.songListDao(),
-        rankingResultDao = database.rankingResultDao(),
-        matchDao = database.matchDao(),
-        leagueSettingsDao = database.leagueSettingsDao(),
-        archiveDao = database.archiveDao(),
-        csvReader = CsvReader(),
-        swissStateDao = database.swissStateDao(),
-        swissMatchStateDao = database.swissMatchStateDao()
-    )
+    private val repository = RankingRepository(database)
     
     private val votingSessionDao = database.votingSessionDao()
     

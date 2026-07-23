@@ -1983,12 +1983,23 @@ private fun MatchBasedContent(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = "${uiState.completedMatches + 1} / ${uiState.totalMatches}",
                         style = MaterialTheme.typography.bodySmall
                     )
+
+                    // Son maç sonucunu geri alma (tur kapanana kadar)
+                    if (uiState.canUndo) {
+                        TextButton(
+                            onClick = { viewModel.undoLastMatch() },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                        ) {
+                            Text("↩ Son Maçı Geri Al", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
 
                     if (method == "SWISS" || method == "EMRE_CORRECT") {
                         Text(

@@ -2,16 +2,23 @@ package com.example.ranking.utils
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.text.Normalizer
-import java.nio.charset.StandardCharsets
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.nio.charset.Charset
-import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
+import java.text.Normalizer
 
+/**
+ * RFC-4180 uyumlu CSV okuyucu.
+ * - Tırnaklı alanlar içindeki ayraçları ve satır sonlarını doğru işler
+ *   ("Beatles, The" tek alan olarak kalır)
+ * - "" ile kaçırılmış tırnakları çözer
+ * - Ayraç tespiti (virgül / noktalı virgül / tab) tırnak DIŞI sayıma göre yapılır
+ * - BOM ve Türkçe encoding (UTF-8 / windows-1254) tespiti korunmuştur
+ */
 class CsvReader {
-    
+
     data class CsvSong(
         val trackNumber: Int = 0,
         val artist: String = "",
@@ -19,289 +26,227 @@ class CsvReader {
         val name: String,
         val csvData: String? = null // JSON formatted tabular data
     )
-    
-    suspend fun readCsvFromUri(context: Context, uri: Uri): List<CsvSong> {
-        val songs = mutableListOf<CsvSong>()
-        var csvHeaders: List<String>? = null
-        
-        try {
-            
+
+    suspend fun readCsvFromUri(context: Context, uri: Uri): List<CsvSong> = withContext(Dispatchers.IO) {
+        val text = try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                
-                // Read all bytes first to detect encoding and BOM
                 val allBytes = inputStream.readBytes()
-                
-                // Detect and remove BOM if present
-                val (cleanBytes, detectedCharset) = detectEncodingAndRemoveBOM(allBytes)
-                
-                // Create reader with detected charset
-                val reader = BufferedReader(
-                    InputStreamReader(ByteArrayInputStream(cleanBytes), detectedCharset)
-                )
-                
-                reader.use { bufferedReader ->
-                    var line: String?
-                    var isFirstLine = true
-                    var lineNumber = 0
-                    
-                    while (bufferedReader.readLine().also { line = it } != null) {
-                        lineNumber++
-                        line?.let { currentLine ->
-                            
-                            val normalizedLine = currentLine.trim().normalize()
-                            
-                            // Check if this is a header line - ALWAYS assume first line is header if it has separators
-                            if (isFirstLine) {
-                                if (currentLine.contains(",") || currentLine.contains(";") || currentLine.contains("\t")) {
-                                    // First line has separators - assume it's a header
-                                    csvHeaders = parseHeaderLine(normalizedLine)
-                                    isFirstLine = false
-                                    return@let
-                                }
-                            }
-                            isFirstLine = false
-                            
-                            
-                            val song = parseCsvLineWithHeaders(normalizedLine, csvHeaders)
-                            if (song.name.isNotBlank()) {
-                                songs.add(song)
-                            } else {
-                            }
-                        }
-                    }
-                }
+                val (cleanBytes, charset) = detectEncodingAndRemoveBOM(allBytes)
+                String(cleanBytes, charset)
             } ?: throw Exception("Dosya açılamadı. Dosya erişim izni olmayabilir.")
-            
-            
         } catch (e: Exception) {
-            throw Exception("CSV dosyası okunamadı: ${e.message}")
+            throw Exception("CSV dosyası okunamadı: ${e.message}", e)
         }
-        
-        return songs
+
+        parseText(text)
     }
-    
-    private fun parseHeaderLine(line: String): List<String> {
-        if (line.isBlank()) return emptyList()
-        
-        // Handle different CSV separators (comma, semicolon, tab)
-        val separator = when {
-            line.contains(";") && line.count { it == ';' } > line.count { it == ',' } -> ";"
-            line.contains("\t") -> "\t"
-            else -> ","
-        }
-        
-        // Split and clean header parts
-        return line.split(separator).map { header ->
-            header.trim()
-                .removeSurrounding("\"")
-                .removeSurrounding("'")
-                .trim()
-                .normalize()
+
+    /** Test edilebilirlik için ayrık: tam metni CsvSong listesine çevirir. */
+    fun parseText(text: String): List<CsvSong> {
+        if (text.isBlank()) return emptyList()
+
+        val separator = detectSeparator(text)
+        val rows = parseRows(text, separator)
+            .map { row -> row.map { it.trim().normalize() } }
+            .filter { row -> row.any { it.isNotBlank() } }
+
+        if (rows.isEmpty()) return emptyList()
+
+        // İlk satır birden fazla alana sahipse başlık kabul edilir (mevcut davranış)
+        val hasHeader = rows.first().size >= 2
+        val headers = if (hasHeader) rows.first() else null
+        val dataRows = if (hasHeader) rows.drop(1) else rows
+
+        return dataRows.mapNotNull { row ->
+            val song = mapRowToSong(row, headers)
+            if (song.name.isNotBlank()) song else null
         }
     }
-    
-    private fun parseCsvLineWithHeaders(line: String, headers: List<String>?): CsvSong {
-        if (line.isBlank()) return CsvSong(name = "")
-        
-        // Handle different CSV separators (comma, semicolon, tab)
-        val separator = when {
-            line.contains(";") && line.count { it == ';' } > line.count { it == ',' } -> ";"
-            line.contains("\t") -> "\t"
-            else -> ","
-        }
-        
-        // Split and clean parts
-        val parts = line.split(separator).map { part ->
-            part.trim()
-                .removeSurrounding("\"")
-                .removeSurrounding("'")
-                .trim()
-                .normalize()
-        }
-        
-        
-        // Create JSON data from headers and values
-        val csvData = if (headers != null && headers.isNotEmpty() && parts.size >= headers.size) {
-            val dataMap = mutableMapOf<String, String>()
-            for (i in headers.indices) {
-                if (i < parts.size) {
-                    dataMap[headers[i]] = parts[i]
+
+    /** Tırnak dışı ayraç sayımına göre ayraç tespiti (ilk satır üzerinden). */
+    private fun detectSeparator(text: String): Char {
+        var inQuotes = false
+        var commas = 0
+        var semicolons = 0
+        var tabs = 0
+        for (ch in text) {
+            when {
+                ch == '"' -> inQuotes = !inQuotes
+                ch == '\n' && !inQuotes -> break
+                !inQuotes -> when (ch) {
+                    ',' -> commas++
+                    ';' -> semicolons++
+                    '\t' -> tabs++
                 }
             }
-            // Convert to JSON string (simple manual JSON creation for this case)
-            val jsonEntries = dataMap.map { "\"${it.key}\": \"${it.value.replace("\"", "\\\"")}\""  }
-            "{${jsonEntries.joinToString(", ")}}"
+        }
+        return when {
+            semicolons > commas && semicolons >= tabs -> ';'
+            tabs > commas && tabs > semicolons -> '\t'
+            else -> ','
+        }
+    }
+
+    /**
+     * RFC-4180 durum makinesi: tırnaklı alanlar, "" kaçışı ve
+     * tırnak içi satır sonları desteklenir.
+     */
+    private fun parseRows(text: String, separator: Char): List<List<String>> {
+        val rows = mutableListOf<List<String>>()
+        val currentRow = mutableListOf<String>()
+        val currentField = StringBuilder()
+        var inQuotes = false
+        var i = 0
+
+        fun endField() {
+            currentRow.add(currentField.toString())
+            currentField.clear()
+        }
+
+        fun endRow() {
+            endField()
+            rows.add(currentRow.toList())
+            currentRow.clear()
+        }
+
+        while (i < text.length) {
+            val ch = text[i]
+            when {
+                inQuotes -> when {
+                    ch == '"' && i + 1 < text.length && text[i + 1] == '"' -> {
+                        currentField.append('"'); i++ // "" -> kaçırılmış tırnak
+                    }
+                    ch == '"' -> inQuotes = false
+                    else -> currentField.append(ch)
+                }
+                ch == '"' && currentField.isBlank() -> {
+                    currentField.clear() // Alan başındaki tırnak: tırnaklı alan başlat
+                    inQuotes = true
+                }
+                ch == separator -> endField()
+                ch == '\r' -> {
+                    if (i + 1 < text.length && text[i + 1] == '\n') i++
+                    endRow()
+                }
+                ch == '\n' -> endRow()
+                else -> currentField.append(ch)
+            }
+            i++
+        }
+        // Son satır (dosya newline ile bitmiyorsa)
+        if (currentField.isNotEmpty() || currentRow.isNotEmpty()) {
+            endRow()
+        }
+
+        return rows
+    }
+
+    private fun mapRowToSong(parts: List<String>, headers: List<String>?): CsvSong {
+        // Başlık varsa hücreleri JSON olarak sakla (tablo görünümü için)
+        val csvData = if (headers != null && headers.isNotEmpty()) {
+            val json = JSONObject()
+            for (i in headers.indices) {
+                if (i < parts.size && headers[i].isNotBlank()) {
+                    json.put(headers[i], parts[i])
+                }
+            }
+            if (json.length() > 0) json.toString() else null
         } else {
             null
         }
-        
-        
-        // Use existing logic for parsing basic fields
-        val baseSong = parseCsvLine(line)
-        
-        // Return CsvSong with CSV data
-        return CsvSong(
-            trackNumber = baseSong.trackNumber,
-            artist = baseSong.artist,
-            album = baseSong.album,
-            name = baseSong.name,
-            csvData = csvData
-        )
-    }
-    
-    private fun parseCsvLine(line: String): CsvSong {
-        if (line.isBlank()) return CsvSong(name = "")
-        
-        // Handle different CSV separators (comma, semicolon, tab)
-        val separator = when {
-            line.contains(";") && line.count { it == ';' } > line.count { it == ',' } -> ";"
-            line.contains("\t") -> "\t"
-            else -> ","
-        }
-        
-        
-        // Split and clean parts
-        val parts = line.split(separator).map { part ->
-            part.trim()
-                .removeSurrounding("\"")
-                .removeSurrounding("'")
-                .trim()
-                .normalize()
-        }
-        
-        
+
         return when {
-            parts.size >= 4 -> {
-                // Four columns: A=numara, B=sanatçı, C=albüm, D=öğe
-                val trackNumber = parts[0].toIntOrNull() ?: 0
-                val artist = parts[1]
-                val album = parts[2]
-                val songName = parts[3]
-                CsvSong(
-                    trackNumber = trackNumber,
-                    artist = artist,
-                    album = album,
-                    name = songName
-                )
-            }
-            parts.size == 3 -> {
-                // Three columns: assume sanatçı, albüm, öğe (no track number)
-                val artist = parts[0]
-                val album = parts[1]
-                val songName = parts[2]
-                CsvSong(
-                    trackNumber = 0,
-                    artist = artist,
-                    album = album,
-                    name = songName
-                )
-            }
-            parts.size == 2 -> {
-                // Two columns: assume sanatçı, öğe
-                val artist = parts[0]
-                val songName = parts[1]
-                CsvSong(
-                    trackNumber = 0,
-                    artist = artist,
-                    album = "",
-                    name = songName
-                )
-            }
+            parts.size >= 4 -> CsvSong(
+                // Dört sütun: A=numara, B=sanatçı, C=albüm, D=öğe
+                trackNumber = parts[0].toIntOrNull() ?: 0,
+                artist = parts[1],
+                album = parts[2],
+                name = parts[3],
+                csvData = csvData
+            )
+            parts.size == 3 -> CsvSong(
+                // Üç sütun: sanatçı, albüm, öğe
+                artist = parts[0],
+                album = parts[1],
+                name = parts[2],
+                csvData = csvData
+            )
+            parts.size == 2 -> CsvSong(
+                // İki sütun: sanatçı, öğe
+                artist = parts[0],
+                name = parts[1],
+                csvData = csvData
+            )
             parts.size == 1 -> {
-                // Single column, check if it contains " - " separator
+                // Tek sütun: "Sanatçı - Öğe" kalıbını dene
                 val singleValue = parts[0]
                 if (singleValue.contains(" - ")) {
                     val songParts = singleValue.split(" - ", limit = 2)
                     CsvSong(
-                        trackNumber = 0,
                         artist = songParts[0].trim(),
-                        album = "",
-                        name = songParts[1].trim()
+                        name = songParts[1].trim(),
+                        csvData = csvData
                     )
                 } else {
-                    CsvSong(
-                        trackNumber = 0,
-                        artist = "",
-                        album = "",
-                        name = singleValue
-                    )
+                    CsvSong(name = singleValue, csvData = csvData)
                 }
             }
             else -> CsvSong(name = "")
         }
     }
-    
+
     // Detect encoding and remove BOM if present
     private fun detectEncodingAndRemoveBOM(bytes: ByteArray): Pair<ByteArray, Charset> {
-        // Check for UTF-8 BOM (EF BB BF)
+        // UTF-8 BOM (EF BB BF)
         if (bytes.size >= 3 && bytes[0] == 0xEF.toByte() && bytes[1] == 0xBB.toByte() && bytes[2] == 0xBF.toByte()) {
             return Pair(bytes.sliceArray(3 until bytes.size), StandardCharsets.UTF_8)
         }
-        
-        // Check for UTF-16 BE BOM (FE FF)
+        // UTF-16 BE BOM (FE FF)
         if (bytes.size >= 2 && bytes[0] == 0xFE.toByte() && bytes[1] == 0xFF.toByte()) {
             return Pair(bytes.sliceArray(2 until bytes.size), StandardCharsets.UTF_16BE)
         }
-        
-        // Check for UTF-16 LE BOM (FF FE)
+        // UTF-16 LE BOM (FF FE)
         if (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xFE.toByte()) {
             return Pair(bytes.sliceArray(2 until bytes.size), StandardCharsets.UTF_16LE)
         }
-        
-        // Try to detect Turkish characters to determine if we need Windows-1254
-        val sampleText = String(bytes.take(1024).toByteArray(), StandardCharsets.UTF_8)
-        
-        // Also try with Windows-1254 for comparison
-        try {
-            val sampleWindows1254 = String(bytes.take(1024).toByteArray(), Charset.forName("windows-1254"))
-        } catch (e: Exception) {
-        }
-        
-        // If we see Turkish characters or common Turkish words, assume it's UTF-8
-        if (sampleText.contains(Regex("[çğıöşüÇĞIÖŞÜ]")) || 
-            sampleText.lowercase().contains(Regex("\\b(sanatçı|şarkı|albüm|öğe)\\b"))) {
+
+        val sample = bytes.take(4096).toByteArray()
+
+        // UTF-8 olarak geçerli mi? Geçersiz baytlar U+FFFD (replacement) üretir.
+        val utf8Text = String(sample, StandardCharsets.UTF_8)
+        if (!utf8Text.contains('�')) {
             return Pair(bytes, StandardCharsets.UTF_8)
         }
-        
-        // Try Windows-1254 for Turkish files that might be encoded in that format
-        try {
-            val windows1254Text = String(bytes.take(1024).toByteArray(), Charset.forName("windows-1254"))
-            if (windows1254Text.contains(Regex("[çğıöşüÇĞIÖŞÜ]"))) {
-                return Pair(bytes, Charset.forName("windows-1254"))
-            }
+
+        // UTF-8 geçersizse Türkçe dosyalar için windows-1254 dene
+        return try {
+            Pair(bytes, Charset.forName("windows-1254"))
         } catch (e: Exception) {
+            Pair(bytes, StandardCharsets.UTF_8)
         }
-        
-        // Default to UTF-8
-        return Pair(bytes, StandardCharsets.UTF_8)
     }
-    
-    // Extension function for Unicode normalization to handle Turkish characters properly
+
+    // Unicode normalizasyonu + yaygin mojibake (cift kodlama) onarimlari
     private fun String.normalize(): String {
         val normalized = Normalizer.normalize(this, Normalizer.Form.NFC)
-        
-        // Additional cleanup for Turkish characters that might be corrupted
+
         return normalized
-            .replace("Ä±", "ı")      // Common corruption: Ä± -> ı
-            .replace("Å\u009F", "ş") // Common corruption: Åž -> ş  
-            .replace("Ä\u009F", "ğ") // Common corruption: Äž -> ğ
-            .replace("Ã§", "ç")      // Common corruption: Ã§ -> ç
-            .replace("Ã¼", "ü")      // Common corruption: Ã¼ -> ü
-            .replace("Ã¶", "ö")      // Common corruption: Ã¶ -> ö
-            .replace("Ä°", "İ")      // Common corruption: Ä° -> İ
-            .replace("Å\u009E", "Ş") // Common corruption: Åž -> Ş
-            .replace("Ä\u009E", "Ğ") // Common corruption: Äž -> Ğ
-            .replace("Ã\u0087", "Ç") // Common corruption: Ã‡ -> Ç
-            .replace("Ãœ", "Ü")      // Common corruption: Ãœ -> Ü
-            .replace("Ã\u0096", "Ö") // Common corruption: Ã– -> Ö
-            // Additional double-encoding fixes
-            .replace("\u00E2\u0080\u0099", "'")     // Smart apostrophe
-            .replace("\u00E2\u0080\u009C", "\"")    // Smart quote start  
-            .replace("\u00E2\u0080\u009D", "\"")    // Smart quote end
-            .replace("\u00E2\u0080\u0094", "-")     // Em dash
-            // Fix common encoding issues for Turkish characters
-            .replace("\u00C3\u0083\u00C2\u00A7", "ç")
-            .replace("\u00C3\u0083\u00C2\u00BC", "ü")
-            .replace("\u00C3\u0083\u00C2\u00B6", "ö")
+            .replace("Ä±", "ı")            // A-umlaut+-  -> i (noktasiz)
+            .replace("Å", "ş")            // s (sedilli)
+            .replace("Ä", "ğ")            // g (yumusak)
+            .replace("Ã§", "ç")            // c (sedilli)
+            .replace("Ã¼", "ü")            // u (umlaut)
+            .replace("Ã¶", "ö")            // o (umlaut)
+            .replace("Ä°", "İ")            // I (noktali)
+            .replace("Å", "Ş")            // S (sedilli)
+            .replace("Ä", "Ğ")            // G (yumusak)
+            .replace("Ã", "Ç")            // C (sedilli)
+            .replace("Ã", "Ü")            // U (umlaut)
+            .replace("Ã", "Ö")            // O (umlaut)
+            // Akilli tirnak / tire cift-kodlama onarimlari
+            .replace("â", "'")
+            .replace("â", "\"")
+            .replace("â", "\"")
+            .replace("â", "-")
     }
 }

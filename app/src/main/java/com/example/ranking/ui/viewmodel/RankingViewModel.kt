@@ -35,17 +35,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     )
     
     private val database = RankingDatabase.getDatabase(application)
-    private val repository = RankingRepository(
-        songDao = database.songDao(),
-        songListDao = database.songListDao(),
-        rankingResultDao = database.rankingResultDao(),
-        matchDao = database.matchDao(),
-        leagueSettingsDao = database.leagueSettingsDao(),
-        archiveDao = database.archiveDao(),
-        csvReader = CsvReader(),
-        swissStateDao = database.swissStateDao(),
-        swissMatchStateDao = database.swissMatchStateDao()
-    )
+    private val repository = RankingRepository(database)
     
     private val votingSessionDao = database.votingSessionDao()
     private val votingScoreDao = database.votingScoreDao()
@@ -77,7 +67,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val method: String = "", // Ranking metodu
         val showTestReport: Boolean = false, // Test raporu dialog'unu göster
         val testReportData: String = "", // Test raporu içeriği
-        val testReportTitle: String = "" // Test raporu başlığı
+        val testReportTitle: String = "", // Test raporu başlığı
+        val canUndo: Boolean = false // Son maç sonucu geri alınabilir mi
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -99,6 +90,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private var directScores: MutableMap<Long, Double> = mutableMapOf()
     private var currentSongIndex: Int = 0
     private var currentVotingSession: VotingSession? = null
+
+    // Son tamamlanan maç - tur kapanana kadar geri alınabilir.
+    // Tur kapanınca (Emre'de sonuçlar işlenip yeni tur üretilince) geri alma güvenli
+    // olmaktan çıkar; bu yüzden tur kapanışında null'lanır.
+    private var lastCompletedMatchId: Long? = null
+
+    private fun undoSupported(): Boolean = currentMethod in setOf("LEAGUE", "EMRE_CORRECT")
     private var currentPairingMethod: com.example.ranking.data.EmrePairingMethod = com.example.ranking.data.EmrePairingMethod.SEQUENTIAL
     
     private fun resetState() {
@@ -107,6 +105,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         currentSongIndex = 0
         currentVotingSession = null
         emreState = null
+        lastCompletedMatchId = null
         
         _uiState.value = RankingUiState(
             isLoading = false,
@@ -520,7 +519,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             progress = if (total > 0) completed.toFloat() / total else 0f,
             emreState = if (currentMethod == "EMRE_CORRECT") emreState else null,
             showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
-            showInitialRanking = false  // İlk sıralama tablosunu da gizle
+            showInitialRanking = false,  // İlk sıralama tablosunu da gizle
+            canUndo = undoSupported() && lastCompletedMatchId != null
         )
     }
     
@@ -753,18 +753,62 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     isCompleted = true
                 )
                 repository.updateMatch(updatedMatch)
-                
+                if (undoSupported()) lastCompletedMatchId = updatedMatch.id
+
                 // Update Swiss state if this is a Swiss tournament
                 if (currentMethod == "SWISS") {
                     updateSwissStateAfterMatch(updatedMatch)
                 }
-                
+
                 // Update Emre state if this is an Emre tournament
                 if (currentMethod == "EMRE_CORRECT") {
                     updateEmreCorrectStateAfterMatch(updatedMatch)
                 }
-                
+
                 loadNextMatch()
+            }
+        }
+    }
+
+    /**
+     * Son tamamlanan maç sonucunu geri alır (tur kapanmadıysa).
+     * Maç tekrar "oynanmamış" duruma döner ve puanlama ekranına getirilir.
+     */
+    fun undoLastMatch() {
+        viewModelScope.launch {
+            try {
+                val matchId = lastCompletedMatchId ?: return@launch
+                val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                val match = allMatches.find { it.id == matchId } ?: run {
+                    lastCompletedMatchId = null
+                    _uiState.value = _uiState.value.copy(canUndo = false)
+                    return@launch
+                }
+
+                val restored = match.copy(winnerId = null, score1 = null, score2 = null, isCompleted = false)
+                repository.updateMatch(restored)
+                lastCompletedMatchId = null
+
+                val safeSongs = getSafeSongs()
+                val (completed, total) = repository.getMatchProgress(currentListId, currentMethod)
+                _uiState.value = _uiState.value.copy(
+                    currentMatch = restored,
+                    song1 = safeSongs.find { it.id == restored.songId1 },
+                    song2 = safeSongs.find { it.id == restored.songId2 },
+                    completedMatches = completed,
+                    totalMatches = total,
+                    progress = if (total > 0) completed.toFloat() / total else 0f,
+                    isComplete = false,
+                    canUndo = false,
+                    showMatchingsList = false,
+                    showInitialRanking = false
+                )
+
+                if (currentMethod == "EMRE_CORRECT") {
+                    calculateCurrentStandings()
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "Geri alma hatası: ${e.message}")
             }
         }
     }
@@ -780,7 +824,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     isCompleted = true
                 )
                 repository.updateMatch(updatedMatch)
-                
+                if (undoSupported()) lastCompletedMatchId = updatedMatch.id
+
                 // Update Swiss state if this is a Swiss tournament
                 if (currentMethod == "SWISS") {
                     updateSwissStateAfterMatch(updatedMatch)
@@ -808,9 +853,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     score1 = team1Score,
                     score2 = team2Score
                 )
-                
+
                 try {
                     repository.updateMatch(updatedMatch)
+                    if (undoSupported()) lastCompletedMatchId = updatedMatch.id
                     Log.d("RankingViewModel", "✅ Skor güncellendi: ${match.songId1} vs ${match.songId2}")
                     
                     loadNextMatch()
@@ -1614,6 +1660,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             
             if (currentRoundMatches.size >= expectedMatchesInRound) {
                 // Tur tamamlandı, sonuçları işle
+                // Tur kapandıktan sonra maç geri alınamaz (yeni tur eşleştirmeleri bu sonuçlara dayanır)
+                lastCompletedMatchId = null
                 val byeTeam = findByeTeam(currentState, currentRoundMatches)
                 emreState = RankingEngine.processCorrectEmreResults(currentState, currentRoundMatches, byeTeam)
                 

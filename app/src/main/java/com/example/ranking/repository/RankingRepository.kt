@@ -2,77 +2,98 @@ package com.example.ranking.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
+import androidx.room.withTransaction
 import com.example.ranking.data.*
 import com.example.ranking.data.dao.*
 import com.example.ranking.utils.CsvReader
 import kotlinx.coroutines.flow.Flow
 
 class RankingRepository(
-    private val songDao: SongDao,
-    private val songListDao: SongListDao,
-    private val rankingResultDao: RankingResultDao,
-    private val matchDao: MatchDao,
-    private val leagueSettingsDao: LeagueSettingsDao,
-    private val archiveDao: ArchiveDao,
-    private val csvReader: CsvReader,
-    private val swissStateDao: SwissStateDao? = null,
-    private val swissMatchStateDao: SwissMatchStateDao? = null
+    private val database: RankingDatabase,
+    private val csvReader: CsvReader = CsvReader()
 ) {
-    
+    private val songDao: SongDao = database.songDao()
+    private val songListDao: SongListDao = database.songListDao()
+    private val rankingResultDao: RankingResultDao = database.rankingResultDao()
+    private val matchDao: MatchDao = database.matchDao()
+    private val leagueSettingsDao: LeagueSettingsDao = database.leagueSettingsDao()
+    private val archiveDao: ArchiveDao = database.archiveDao()
+    private val swissStateDao: SwissStateDao = database.swissStateDao()
+    private val swissMatchStateDao: SwissMatchStateDao = database.swissMatchStateDao()
+
     // Song List operations
     fun getAllSongLists(): Flow<List<SongList>> = songListDao.getAllSongLists()
-    
+
     suspend fun createSongList(name: String): Long {
         val songList = SongList(name = name)
         return songListDao.insertSongList(songList)
     }
-    
+
     suspend fun getSongListById(id: Long): SongList? = songListDao.getSongListById(id)
-    
+
     suspend fun getSongListByIdSync(id: Long): SongList? = songListDao.getSongListById(id)
-    
+
+    /**
+     * Listeyi ve ona bağlı TÜM verileri atomik olarak siler.
+     * matches ve league_settings tablolarında FK olmadığı için elle silinir
+     * (silinmezse kalıcı yetim kayıt birikir); voting_sessions ve ona bağlı
+     * swiss_* tabloları FK CASCADE ile kendiliğinden temizlenir.
+     * Arşivler bilinçli olarak korunur (snapshot mantığı).
+     */
     suspend fun deleteSongList(songList: SongList) {
-        songDao.deleteSongsByListId(songList.id)
-        rankingResultDao.deleteAllRankingResults(songList.id)
-        songListDao.deleteSongList(songList)
+        database.withTransaction {
+            matchDao.deleteAllMatchesByListId(songList.id)
+            leagueSettingsDao.deleteByListId(songList.id)
+            rankingResultDao.deleteAllRankingResults(songList.id)
+            songDao.deleteSongsByListId(songList.id)
+            songListDao.deleteSongList(songList)
+        }
     }
-    
+
     // Song operations
     fun getSongsByListId(listId: Long): Flow<List<Song>> = songDao.getSongsByListId(listId)
-    
+
     suspend fun getSongsByListIdSync(listId: Long): List<Song> = songDao.getSongsByListIdSync(listId)
-    
+
     suspend fun addSong(listId: Long, name: String, artist: String = "", album: String = "", trackNumber: Int = 0): Long {
         val song = Song(name = name, artist = artist, album = album, trackNumber = trackNumber, listId = listId)
-        val songId = songDao.insertSong(song)
-        updateSongCount(listId)
-        return songId
+        return database.withTransaction {
+            val songId = songDao.insertSong(song)
+            updateSongCount(listId)
+            songId
+        }
     }
-    
+
     suspend fun addSongWithCsvData(listId: Long, name: String, artist: String = "", album: String = "", csvData: String? = null): Long {
         val song = Song(name = name, artist = artist, album = album, trackNumber = 0, listId = listId, csvData = csvData)
-        val songId = songDao.insertSong(song)
-        updateSongCount(listId)
-        return songId
+        return database.withTransaction {
+            val songId = songDao.insertSong(song)
+            updateSongCount(listId)
+            songId
+        }
     }
-    
+
     suspend fun updateSongWithCsvData(songId: Long, name: String, artist: String = "", album: String = "", csvData: String? = null) {
         val existingSong = songDao.getSongById(songId)
-        if (existingSong != null) {
-            val updatedSong = existingSong.copy(
+            ?: throw IllegalArgumentException("Güncellenecek öğe bulunamadı (id=$songId)")
+        songDao.updateSong(
+            existingSong.copy(
                 name = name,
                 artist = artist,
                 album = album,
                 csvData = csvData
             )
-            songDao.updateSong(updatedSong)
-        } else {
-        }
+        )
     }
-    
+
     suspend fun deleteSong(songId: Long) {
-        songDao.deleteSongById(songId)
+        database.withTransaction {
+            val song = songDao.getSongById(songId)
+            if (song != null) {
+                songDao.deleteSongById(songId)
+                updateSongCount(song.listId)
+            }
+        }
     }
     
     suspend fun importSongsFromCsv(context: Context, listId: Long, uri: Uri) {
@@ -80,48 +101,45 @@ class RankingRepository(
     }
     
     suspend fun importSongsFromCsvWithDisplayMode(context: Context, listId: Long, uri: Uri, displayMode: String = "cards") {
-        try {
-            val csvSongs = csvReader.readCsvFromUri(context, uri)
-            
-            if (csvSongs.isEmpty()) {
-                throw Exception("CSV dosyasında öğe bulunamadı")
-            }
-            
-            val songs = csvSongs.map { csvSong ->
-                
-                // Add displayMode to csvData if it exists
-                val updatedCsvData = if (csvSong.csvData != null) {
-                    try {
-                        val jsonObject = org.json.JSONObject(csvSong.csvData)
-                        jsonObject.put("_displayMode", displayMode)
-                        val result = jsonObject.toString()
-                        result
-                    } catch (e: Exception) {
-                        csvSong.csvData
-                    }
-                } else if (displayMode == "table") {
-                    // If no csvData but table mode requested, create minimal metadata
-                    val result = "{\"_displayMode\": \"$displayMode\", \"Name\": \"${csvSong.name}\"}"
-                    result
-                } else {
+        val csvSongs = csvReader.readCsvFromUri(context, uri)
+
+        if (csvSongs.isEmpty()) {
+            throw Exception("CSV dosyasında öğe bulunamadı")
+        }
+
+        val songs = csvSongs.map { csvSong ->
+            // Add displayMode to csvData if it exists
+            val updatedCsvData = if (csvSong.csvData != null) {
+                try {
+                    val jsonObject = org.json.JSONObject(csvSong.csvData)
+                    jsonObject.put("_displayMode", displayMode)
+                    jsonObject.toString()
+                } catch (e: Exception) {
                     csvSong.csvData
                 }
-                
-                Song(
-                    name = csvSong.name, 
-                    artist = csvSong.artist, 
-                    album = csvSong.album,
-                    trackNumber = csvSong.trackNumber,
-                    listId = listId,
-                    csvData = updatedCsvData
-                )
+            } else if (displayMode == "table") {
+                // If no csvData but table mode requested, create minimal metadata
+                org.json.JSONObject()
+                    .put("_displayMode", displayMode)
+                    .put("Name", csvSong.name)
+                    .toString()
+            } else {
+                csvSong.csvData
             }
-            
+
+            Song(
+                name = csvSong.name,
+                artist = csvSong.artist,
+                album = csvSong.album,
+                trackNumber = csvSong.trackNumber,
+                listId = listId,
+                csvData = updatedCsvData
+            )
+        }
+
+        database.withTransaction {
             songDao.insertSongs(songs)
             updateSongCount(listId)
-            
-        } catch (e: Exception) {
-            throw e
         }
     }
     
@@ -184,11 +202,13 @@ class RankingRepository(
         leagueSettingsDao.getByListAndMethod(listId, method)
     
     suspend fun saveLeagueSettings(settings: LeagueSettings) {
-        val existing = leagueSettingsDao.getByListAndMethod(settings.listId, settings.rankingMethod)
-        if (existing != null) {
-            leagueSettingsDao.update(settings.copy(id = existing.id))
-        } else {
-            leagueSettingsDao.insert(settings)
+        database.withTransaction {
+            val existing = leagueSettingsDao.getByListAndMethod(settings.listId, settings.rankingMethod)
+            if (existing != null) {
+                leagueSettingsDao.update(settings.copy(id = existing.id))
+            } else {
+                leagueSettingsDao.insert(settings)
+            }
         }
     }
     
@@ -212,26 +232,24 @@ class RankingRepository(
         standings: Map<Long, Double>,
         pairingHistory: Set<Pair<Long, Long>>,
         roundHistory: List<com.example.ranking.data.RoundResult>
-    ): Long? {
-        return swissStateDao?.let { dao ->
-            val standingsJson = com.example.ranking.utils.SwissStateSerializer.serializeStandings(standings)
-            val pairingHistoryJson = com.example.ranking.utils.SwissStateSerializer.serializePairingHistory(pairingHistory)
-            val roundHistoryJson = com.example.ranking.utils.SwissStateSerializer.serializeRoundHistory(roundHistory)
-            
-            val swissState = SwissState(
-                sessionId = sessionId,
-                currentRound = currentRound,
-                maxRounds = maxRounds,
-                standings = standingsJson,
-                pairingHistory = pairingHistoryJson,
-                roundHistory = roundHistoryJson
-            )
-            dao.insertOrUpdateSwissState(swissState)
-        }
+    ): Long {
+        val standingsJson = com.example.ranking.utils.SwissStateSerializer.serializeStandings(standings)
+        val pairingHistoryJson = com.example.ranking.utils.SwissStateSerializer.serializePairingHistory(pairingHistory)
+        val roundHistoryJson = com.example.ranking.utils.SwissStateSerializer.serializeRoundHistory(roundHistory)
+
+        val swissState = SwissState(
+            sessionId = sessionId,
+            currentRound = currentRound,
+            maxRounds = maxRounds,
+            standings = standingsJson,
+            pairingHistory = pairingHistoryJson,
+            roundHistory = roundHistoryJson
+        )
+        return swissStateDao.insertOrUpdateSwissState(swissState)
     }
-    
+
     suspend fun loadSwissState(sessionId: Long): com.example.ranking.data.SwissStandings? {
-        return swissStateDao?.getSwissStateBySession(sessionId)?.let { swissState ->
+        return swissStateDao.getSwissStateBySession(sessionId)?.let { swissState ->
             val standings = com.example.ranking.utils.SwissStateSerializer.deserializeStandings(swissState.standings)
             val pairingHistory = com.example.ranking.utils.SwissStateSerializer.deserializePairingHistory(swissState.pairingHistory)
             val roundHistory = com.example.ranking.utils.SwissStateSerializer.deserializeRoundHistory(swissState.roundHistory)
@@ -245,7 +263,7 @@ class RankingRepository(
     }
     
     suspend fun deleteSwissState(sessionId: Long) {
-        swissStateDao?.deleteSwissStateBySession(sessionId)
+        swissStateDao.deleteSwissStateBySession(sessionId)
     }
     
     // Advanced Swiss Match State operations - Real-time persistence
@@ -258,23 +276,21 @@ class RankingRepository(
         preliminaryScore1: Int? = null,
         preliminaryScore2: Int? = null
     ) {
-        swissMatchStateDao?.let { dao ->
-            val matchState = SwissMatchState(
-                sessionId = sessionId,
-                matchId = match.id,
-                currentRound = match.round,
-                song1Id = match.songId1,
-                song2Id = match.songId2,
-                song1Name = song1Name,
-                song2Name = song2Name,
-                isMatchInProgress = true,
-                preliminaryWinnerId = preliminaryWinnerId,
-                preliminaryScore1 = preliminaryScore1,
-                preliminaryScore2 = preliminaryScore2,
-                lastUpdateTime = System.currentTimeMillis()
-            )
-            dao.insertOrUpdateMatchState(matchState)
-        }
+        val matchState = SwissMatchState(
+            sessionId = sessionId,
+            matchId = match.id,
+            currentRound = match.round,
+            song1Id = match.songId1,
+            song2Id = match.songId2,
+            song1Name = song1Name,
+            song2Name = song2Name,
+            isMatchInProgress = true,
+            preliminaryWinnerId = preliminaryWinnerId,
+            preliminaryScore1 = preliminaryScore1,
+            preliminaryScore2 = preliminaryScore2,
+            lastUpdateTime = System.currentTimeMillis()
+        )
+        swissMatchStateDao.insertOrUpdateMatchState(matchState)
     }
     
     suspend fun updateMatchProgress(
@@ -283,26 +299,24 @@ class RankingRepository(
         preliminaryScore1: Int? = null,
         preliminaryScore2: Int? = null
     ) {
-        swissMatchStateDao?.let { dao ->
-            val currentState = dao.getCurrentMatchState(sessionId)
-            currentState?.let { state ->
-                val updatedState = state.copy(
-                    preliminaryWinnerId = preliminaryWinnerId,
-                    preliminaryScore1 = preliminaryScore1,
-                    preliminaryScore2 = preliminaryScore2,
-                    lastUpdateTime = System.currentTimeMillis()
-                )
-                dao.updateMatchState(updatedState)
-            }
+        val currentState = swissMatchStateDao.getCurrentMatchState(sessionId)
+        currentState?.let { state ->
+            val updatedState = state.copy(
+                preliminaryWinnerId = preliminaryWinnerId,
+                preliminaryScore1 = preliminaryScore1,
+                preliminaryScore2 = preliminaryScore2,
+                lastUpdateTime = System.currentTimeMillis()
+            )
+            swissMatchStateDao.updateMatchState(updatedState)
         }
     }
-    
+
     suspend fun getCurrentMatchState(sessionId: Long): SwissMatchState? {
-        return swissMatchStateDao?.getCurrentMatchState(sessionId)
+        return swissMatchStateDao.getCurrentMatchState(sessionId)
     }
-    
+
     suspend fun completeCurrentMatch(sessionId: Long) {
-        swissMatchStateDao?.markAllMatchesComplete(sessionId)
+        swissMatchStateDao.markAllMatchesComplete(sessionId)
     }
     
     suspend fun saveCompleteFixture(
@@ -312,36 +326,34 @@ class RankingRepository(
         allMatches: List<Match>,
         currentStandings: Map<Long, Double>
     ) {
-        swissMatchStateDao?.let { dao ->
-            // Create fixture data
-            val fixtureData = com.example.ranking.utils.SwissFixtureData(
-                allMatches = allMatches,
-                currentRoundMatches = allMatches.filter { it.round == currentRound },
-                completedMatches = allMatches.filter { it.isCompleted },
-                upcomingMatches = allMatches.filter { !it.isCompleted },
-                roundsData = createRoundsData(allMatches, currentStandings)
-            )
-            
-            // Create live standings
-            val liveStandings = createLiveStandings(allMatches, currentStandings)
-            
-            val fixture = SwissFixture(
-                sessionId = sessionId,
-                currentRound = currentRound,
-                totalRounds = totalRounds,
-                fixtureData = com.example.ranking.utils.SwissFixtureSerializer.serializeFixtureData(fixtureData),
-                currentStandings = com.example.ranking.utils.SwissFixtureSerializer.serializeLiveStandings(liveStandings),
-                nextMatchIndex = allMatches.indexOfFirst { !it.isCompleted },
-                isRoundComplete = allMatches.filter { it.round == currentRound }.all { it.isCompleted },
-                lastUpdated = System.currentTimeMillis()
-            )
-            
-            dao.insertOrUpdateFixture(fixture)
-        }
+        // Create fixture data
+        val fixtureData = com.example.ranking.utils.SwissFixtureData(
+            allMatches = allMatches,
+            currentRoundMatches = allMatches.filter { it.round == currentRound },
+            completedMatches = allMatches.filter { it.isCompleted },
+            upcomingMatches = allMatches.filter { !it.isCompleted },
+            roundsData = createRoundsData(allMatches, currentStandings)
+        )
+
+        // Create live standings
+        val liveStandings = createLiveStandings(allMatches, currentStandings)
+
+        val fixture = SwissFixture(
+            sessionId = sessionId,
+            currentRound = currentRound,
+            totalRounds = totalRounds,
+            fixtureData = com.example.ranking.utils.SwissFixtureSerializer.serializeFixtureData(fixtureData),
+            currentStandings = com.example.ranking.utils.SwissFixtureSerializer.serializeLiveStandings(liveStandings),
+            nextMatchIndex = allMatches.indexOfFirst { !it.isCompleted },
+            isRoundComplete = allMatches.filter { it.round == currentRound }.all { it.isCompleted },
+            lastUpdated = System.currentTimeMillis()
+        )
+
+        swissMatchStateDao.insertOrUpdateFixture(fixture)
     }
-    
+
     suspend fun loadCompleteFixture(sessionId: Long): SwissFixture? {
-        return swissMatchStateDao?.getFixture(sessionId)
+        return swissMatchStateDao.getFixture(sessionId)
     }
     
     private fun createRoundsData(allMatches: List<Match>, currentStandings: Map<Long, Double>): Map<Int, com.example.ranking.utils.RoundData> {
@@ -429,8 +441,10 @@ class RankingRepository(
     }
     
     suspend fun deleteAllSwissMatchStates(sessionId: Long) {
-        swissMatchStateDao?.deleteAllMatchStates(sessionId)
-        swissMatchStateDao?.deleteFixture(sessionId)
+        database.withTransaction {
+            swissMatchStateDao.deleteAllMatchStates(sessionId)
+            swissMatchStateDao.deleteFixture(sessionId)
+        }
     }
     
     // Test Protocol için completed matches'ları al
