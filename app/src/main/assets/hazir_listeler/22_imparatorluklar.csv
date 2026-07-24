@@ -1,31 +1,39 @@
-No,Kuruluş Yılı,Süre (yıl),İmparatorluk,Yıkılış Yılı,Başkent,En Geniş Sınır (milyon km²),Kurucu,Bölge
-1,1299,623,Osmanlı İmparatorluğu,1922,İstanbul,5.2,Osman Gazi,Avrupa - Asya - Afrika
-2,1037,157,Büyük Selçuklu Devleti,1194,İsfahan,3.9,Tuğrul Bey,Orta Doğu - Orta Asya
-3,1077,231,Anadolu Selçuklu Devleti,1308,Konya,0.8,Süleyman Şah,Anadolu
-4,MÖ 27,503,Roma İmparatorluğu,476,Roma,5.0,Augustus,Avrupa - Akdeniz
-5,395,1058,Bizans İmparatorluğu,1453,Konstantinopolis,2.7,I. Theodosius,Anadolu - Balkanlar
-6,MÖ 550,220,Pers İmparatorluğu (Ahameniş),MÖ 330,Persepolis,5.5,Büyük Kiros,Orta Doğu - İran
-7,MÖ 336,13,Makedon İmparatorluğu,MÖ 323,Babil,5.2,Büyük İskender,Balkanlar - Asya
-8,1206,162,Moğol İmparatorluğu,1368,Karakurum,24.0,Cengiz Han,Asya - Avrupa
-9,1370,137,Timur İmparatorluğu,1507,Semerkant,4.4,Timur,Orta Asya - İran
-10,661,89,Emevi Devleti,750,Şam,11.1,Muaviye,Orta Doğu - Kuzey Afrika
-11,750,508,Abbasi Devleti,1258,Bağdat,11.1,Ebul Abbas,Orta Doğu
-12,552,192,Göktürk Kağanlığı,744,Ötüken,6.0,Bumin Kağan,Orta Asya
-13,MÖ 220,436,Asya Hun İmparatorluğu,216,Ötüken,9.0,Teoman,Orta Asya
-14,1583,414,Britanya İmparatorluğu,1997,Londra,35.5,I. Elizabeth,Küresel
-15,1492,484,İspanya İmparatorluğu,1976,Madrid,20.0,Katolik Krallar,Küresel
-16,1721,196,Rus İmparatorluğu,1917,Sankt Petersburg,22.8,I. Petro,Avrasya
-17,1867,51,Avusturya-Macaristan İmparatorluğu,1918,Viyana,0.7,I. Franz Joseph,Orta Avrupa
-18,MÖ 206,426,Han Hanedanı,220,Chang-an,6.5,Liu Bang,Doğu Asya
-19,MÖ 322,137,Maurya İmparatorluğu,MÖ 185,Pataliputra,5.0,Çandragupta Maurya,Hindistan
-20,1428,93,Aztek İmparatorluğu,1521,Tenochtitlan,0.2,I. Itzcoatl,Orta Amerika
-21,1438,95,İnka İmparatorluğu,1533,Cusco,2.0,Pachacuti,Güney Amerika
-22,MÖ 1550,473,Mısır İmparatorluğu (Yeni Krallık),MÖ 1077,Teb,1.0,I. Ahmose,Kuzey Afrika
-23,1415,584,Portekiz İmparatorluğu,1999,Lizbon,5.5,I. Joao,Küresel
-24,1534,446,Fransız Sömürge İmparatorluğu,1980,Paris,13.5,I. Francois,Küresel
-25,962,844,Kutsal Roma Cermen İmparatorluğu,1806,Viyana,1.0,I. Otto,Orta Avrupa
-26,224,427,Sasani İmparatorluğu,651,Ktesifon,3.5,I. Ardeşir,İran - Mezopotamya
-27,1250,267,Memlük Devleti,1517,Kahire,2.1,Aybek,Mısır - Suriye
-28,1526,331,Babür İmparatorluğu,1857,Delhi,4.0,Babür Şah,Hindistan
-29,840,372,Karahanlı Devleti,1212,Balasagun,3.0,Bilge Kül Kadir Han,Orta Asya
-30,963,223,Gazneli Devleti,1186,Gazne,3.4,Alptegin,Afganistan - Hindistan
+No,Kuruluş Yılı,Süre (yıl),İmparatorluk,Yıkılış Yılı,Başkent,En Geniş Sınır (milyon km²),Kurucu,Bölge,Hanedan/Yönetim,Din,En Ünlü Hükümdarı
+1,1299,623,Osmanlı İmparatorluğu,1922,İstanbul,5.2,Osman Gazi,Avrupa - Asya - Afrika,Osmanlı Hanedanı,İslam (Sünni),Kanuni Sultan Süleyman
+2,1037,157,Büyük Selçuklu Devleti,1194,İsfahan,3.9,Tuğrul Bey,Orta Doğu - Orta Asya,Selçuklu Hanedanı,İslam (Sünni),Melikşah
+3,1077,231,Anadolu Selçuklu Devleti,1308,Konya,0.8,Süleyman Şah,Anadolu,Selçuklu Hanedanı,İslam (Sünni),I. Alaeddin Keykubad
+4,MÖ 27,503,Roma İmparatorluğu,476,Roma,5.0,Augustus,Avrupa - Akdeniz,Çeşitli hanedanlar,Çok tanrılı sonra Hristiyan,Augustus
+5,395,1058,Bizans İmparatorluğu,1453,Konstantinopolis,2.7,I. Theodosius,Anadolu - Balkanlar,Çeşitli hanedanlar,Ortodoks Hristiyan,I. Justinianos
+6,MÖ 550,220,Pers İmparatorluğu (Ahameniş),MÖ 330,Persepolis,5.5,Büyük Kiros,Orta Doğu - İran,Ahameniş Hanedanı,Zerdüştlük,I. Darius
+7,MÖ 336,13,Makedon İmparatorluğu,MÖ 323,Babil,5.2,Büyük İskender,Balkanlar - Asya,Argead Hanedanı,Çok tanrılı (Yunan),Büyük İskender
+8,1206,162,Moğol İmparatorluğu,1368,Karakurum,24.0,Cengiz Han,Asya - Avrupa,Cengiz Hanedanı,Gök Tanrı inancı,Cengiz Han
+9,1370,137,Timur İmparatorluğu,1507,Semerkant,4.4,Timur,Orta Asya - İran,Timurlu Hanedanı,İslam (Sünni),Timur
+10,661,89,Emevi Devleti,750,Şam,11.1,Muaviye,Orta Doğu - Kuzey Afrika,Emevi Hanedanı,İslam (Sünni),Abdülmelik bin Mervan
+11,750,508,Abbasi Devleti,1258,Bağdat,11.1,Ebul Abbas,Orta Doğu,Abbasi Hanedanı,İslam (Sünni),Harun Reşid
+12,552,192,Göktürk Kağanlığı,744,Ötüken,6.0,Bumin Kağan,Orta Asya,Aşina Hanedanı,Gök Tanrı inancı,Bilge Kağan
+13,MÖ 220,436,Asya Hun İmparatorluğu,216,Ötüken,9.0,Teoman,Orta Asya,Hun Hanedanı,Gök Tanrı inancı,Mete Han
+14,1583,414,Britanya İmparatorluğu,1997,Londra,35.5,I. Elizabeth,Küresel,Çeşitli hanedanlar,Protestan (Anglikan),Kraliçe Victoria
+15,1492,484,İspanya İmparatorluğu,1976,Madrid,20.0,Katolik Krallar,Küresel,Habsburg ve Bourbon,Katolik Hristiyan,II. Felipe
+16,1721,196,Rus İmparatorluğu,1917,Sankt Petersburg,22.8,I. Petro,Avrasya,Romanov Hanedanı,Ortodoks Hristiyan,Büyük Petro
+17,1867,51,Avusturya-Macaristan İmparatorluğu,1918,Viyana,0.7,I. Franz Joseph,Orta Avrupa,Habsburg-Lorraine,Katolik Hristiyan,I. Franz Joseph
+18,MÖ 206,426,Han Hanedanı,220,Chang-an,6.5,Liu Bang,Doğu Asya,Liu Hanedanı,Konfüçyüsçülük ve Taoizm,Han Wudi
+19,MÖ 322,137,Maurya İmparatorluğu,MÖ 185,Pataliputra,5.0,Çandragupta Maurya,Hindistan,Maurya Hanedanı,Budizm ve Hinduizm,Asoka
+20,1428,93,Aztek İmparatorluğu,1521,Tenochtitlan,0.2,I. Itzcoatl,Orta Amerika,Aztek yönetimi,Çok tanrılı,II. Montezuma
+21,1438,95,İnka İmparatorluğu,1533,Cusco,2.0,Pachacuti,Güney Amerika,İnka Hanedanı,Güneş kültü,Pachacuti
+22,MÖ 1550,473,Mısır İmparatorluğu (Yeni Krallık),MÖ 1077,Teb,1.0,I. Ahmose,Kuzey Afrika,18.-20. Hanedan,Çok tanrılı,II. Ramses
+23,1415,584,Portekiz İmparatorluğu,1999,Lizbon,5.5,I. Joao,Küresel,Aviz Hanedanı,Katolik Hristiyan,I. Manuel
+24,1534,446,Fransız Sömürge İmparatorluğu,1980,Paris,13.5,I. Francois,Küresel,Cumhuriyet ve krallık,Katolik Hristiyan,XIV. Louis
+25,962,844,Kutsal Roma Cermen İmparatorluğu,1806,Viyana,1.0,I. Otto,Orta Avrupa,Habsburg Hanedanı,Katolik Hristiyan,V. Karl
+26,224,427,Sasani İmparatorluğu,651,Ktesifon,3.5,I. Ardeşir,İran - Mezopotamya,Sasani Hanedanı,Zerdüştlük,I. Hüsrev (Anuşirvan)
+27,1250,267,Memlük Devleti,1517,Kahire,2.1,Aybek,Mısır - Suriye,Memlük yönetimi,İslam (Sünni),Baybars
+28,1526,331,Babür İmparatorluğu,1857,Delhi,4.0,Babür Şah,Hindistan,Babürlü Hanedanı,İslam (Sünni),Ekber Şah
+29,840,372,Karahanlı Devleti,1212,Balasagun,3.0,Bilge Kül Kadir Han,Orta Asya,Karahanlı Hanedanı,İslam (Sünni),Satuk Buğra Han
+30,963,223,Gazneli Devleti,1186,Gazne,3.4,Alptegin,Afganistan - Hindistan,Gazneli Hanedanı,İslam (Sünni),Gazneli Mahmud
+31,1171,79,Eyyubi Devleti,1250,Kahire,2.0,Selahaddin Eyyubi,Mısır - Suriye,Eyyubi Hanedanı,İslam (Sünni),Selahaddin Eyyubi
+32,1097,134,Harzemşahlar Devleti,1231,Gürgenç,3.6,Anuş Tegin,Orta Asya - İran,Harzemşah Hanedanı,İslam (Sünni),Alaeddin Muhammed
+33,909,262,Fatımi Devleti,1171,Kahire,4.1,Ubeydullah el-Mehdi,Kuzey Afrika - Mısır,Fatımi Hanedanı,İslam (Şii-İsmaili),el-Muizz
+34,744,96,Uygur Kağanlığı,840,Ordu Balık,3.1,Kutluk Bilge Kül Kağan,Orta Asya,Uygur Hanedanı,Maniheizm,Bögü Kağan
+35,618,289,Tang Hanedanı,907,Chang-an,5.4,Li Yuan,Doğu Asya,Tang Hanedanı,Budizm ve Taoizm,Tang Taizong
+36,1636,276,Qing Hanedanı,1912,Pekin,14.7,Huang Taiji,Doğu Asya,Qing Hanedanı,Budizm ve Konfüçyüsçülük,Kangxi
+37,MÖ 814,668,Kartaca İmparatorluğu,MÖ 146,Kartaca,0.5,Kraliçe Dido,Kuzey Afrika - Akdeniz,Fenike yönetimi,Çok tanrılı (Fenike),Hannibal
+38,MÖ 247,471,Part İmparatorluğu,224,Ktesifon,2.8,I. Arsakes,İran - Mezopotamya,Arsak Hanedanı,Zerdüştlük,II. Mithridates

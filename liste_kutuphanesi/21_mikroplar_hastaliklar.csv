@@ -1,31 +1,31 @@
-No,Mikrop Tipi,Bulaşma Yolu,Hastalık,Etken Mikroorganizma,Etkilediği Sistem,Başlıca Belirtiler,Korunma/Tedavi,Keşif/İlk Tanım Yılı
-1,Bakteri,Solunum yolu,Verem,Mycobacterium tuberculosis,Solunum sistemi,Öksürük - ateş - kilo kaybı,BCG aşısı - antibiyotik,1882
-2,Virüs,Solunum yolu,Grip,Influenza virüsü,Solunum sistemi,Ateş - kas ağrısı - halsizlik,Yıllık aşı - dinlenme,1933
-3,Virüs,Solunum yolu,Kızamık,Kızamık virüsü,Deri ve bağışıklık,Ateş - döküntü - öksürük,KKK aşısı,1954
-4,Parazit,Sivrisinek ısırığı,Sıtma,Plasmodium türleri,Kan ve karaciğer,Nöbet halinde ateş - titreme,Cibinlik - sıtma ilacı,1880
-5,Bakteri,Kirli su ve gıda,Kolera,Vibrio cholerae,Sindirim sistemi,Şiddetli ishal - susuz kalma,Temiz su - sıvı tedavisi,1854
-6,Bakteri,Yara ve toprak teması,Tetanoz,Clostridium tetani,Sinir sistemi,Kas kasılması - çene kilitlenmesi,Tetanoz aşısı - serum,1884
-7,Virüs,Hayvan ısırığı,Kuduz,Kuduz virüsü,Sinir sistemi,Sudan korkma - saldırganlık,Aşı - temas sonrası tedavi,1885
-8,Virüs,Solunum yolu,COVID-19,SARS-CoV-2,Solunum sistemi,Ateş - öksürük - tat kaybı,Aşı - maske - hijyen,2019
-9,Bakteri,Solunum yolu,Zatürre,Streptococcus pneumoniae,Solunum sistemi,Ateş - balgamlı öksürük,Aşı - antibiyotik,1881
-10,Bakteri,Kirli su ve gıda,Tifo,Salmonella typhi,Sindirim sistemi,Yüksek ateş - karın ağrısı,Aşı - antibiyotik,1880
-11,Bakteri,Pire ısırığı,Veba,Yersinia pestis,Lenf sistemi,Şişmiş lenf bezleri - ateş,Antibiyotik - hijyen,1894
-12,Virüs,Kan ve cinsel yol,AIDS,HIV,Bağışıklık sistemi,Bağışıklık düşüklüğü - tekrarlayan enfeksiyon,Antiretroviral tedavi - korunma,1983
-13,Virüs,Kan ve vücut sıvıları,Hepatit B,Hepatit B virüsü,Karaciğer,Sarılık - halsizlik - bulantı,Aşı - antiviral ilaç,1965
-14,Virüs,Solunum ve temas,Çiçek Hastalığı,Variola virüsü,Deri ve bağışıklık,Ateş - iltihaplı kabarcık,Aşı ile kökü kazındı,1798
-15,Virüs,Kirli su ve dışkı,Çocuk Felci,Poliovirüs,Sinir sistemi,Kas güçsüzlüğü - felç,Polio aşısı,1908
-16,Virüs,Tükürük ve solunum,Kabakulak,Kabakulak virüsü,Tükürük bezleri,Yanak şişmesi - ateş,KKK aşısı,1934
-17,Virüs,Solunum ve temas,Suçiçeği,Varicella zoster virüsü,Deri,Kaşıntılı kabarcık - ateş,Aşı - dinlenme,1875
-18,Virüs,Solunum yolu,Kızamıkçık,Rubella virüsü,Deri ve lenf,Hafif döküntü - lenf şişliği,KKK aşısı,1962
-19,Bakteri,Solunum yolu,Boğmaca,Bordetella pertussis,Solunum sistemi,Nöbet halinde şiddetli öksürük,Karma aşı - antibiyotik,1906
-20,Bakteri,Solunum yolu,Difteri,Corynebacterium diphtheriae,Boğaz ve solunum,Boğazda zar - ateş,Karma aşı - serum,1884
-21,Bakteri,Hayvan ve toprak teması,Şarbon,Bacillus anthracis,Deri ve solunum,Deride siyah yara - ateş,Antibiyotik - hayvan aşısı,1876
-22,Bakteri,Cinsel yol,Frengi,Treponema pallidum,Deri ve sinir sistemi,Yara - döküntü - lenf şişliği,Penisilin tedavisi,1905
-23,Bakteri,Çiğ süt ve peynir,Brusella,Brucella türleri,Eklem ve kas,Dalgalı ateş - eklem ağrısı,Pastörizasyon - antibiyotik,1887
-24,Bakteri,Bit ısırığı,Tifüs,Rickettsia prowazekii,Kan dolaşımı,Yüksek ateş - döküntü,Hijyen - antibiyotik,1916
-25,Bakteri,Uzun süreli yakın temas,Cüzzam,Mycobacterium leprae,Deri ve sinirler,Deride leke - his kaybı,Çoklu ilaç tedavisi,1873
-26,Mantar,Temas ve hayvan teması,Saçkıran,Trichophyton türleri,Deri ve saçlı deri,Halka biçiminde kızarıklık - kaşıntı,Antifungal krem - hijyen,1841
-27,Virüs,Vücut sıvıları,Ebola,Ebola virüsü,Kan dolaşımı,Yüksek ateş - iç kanama,Aşı - izolasyon,1976
-28,Parazit,Yakın temas,Uyuz,Sarcoptes scabiei,Deri,Şiddetli kaşıntı - deride tünel izi,Uyuz losyonu - hijyen,1687
-29,Parazit,Köpek teması ve çiğ sebze,Kist Hidatik,Echinococcus granulosus,Karaciğer ve akciğer,Kist oluşumu - karın ağrısı,Hijyen - cerrahi tedavi,1808
-30,Mantar,Temas ve bağışıklık düşüklüğü,Pamukçuk,Candida albicans,Ağız ve sindirim,Ağızda beyaz plak - yanma,Antifungal ilaç - ağız hijyeni,1839
+No,Mikrop Tipi,Bulaşma Yolu,Hastalık,Etken Mikroorganizma,Etkilediği Sistem,Başlıca Belirtiler,Korunma/Tedavi,Keşif/İlk Tanım Yılı,Kuluçka Süresi,Aşı Var mı
+1,Bakteri,Solunum yolu,Verem,Mycobacterium tuberculosis,Solunum sistemi,Öksürük - ateş - kilo kaybı,BCG aşısı - antibiyotik,1882,4-12 hafta,Var
+2,Virüs,Solunum yolu,Grip,Influenza virüsü,Solunum sistemi,Ateş - kas ağrısı - halsizlik,Yıllık aşı - dinlenme,1933,1-4 gün,Var
+3,Virüs,Solunum yolu,Kızamık,Kızamık virüsü,Deri ve bağışıklık,Ateş - döküntü - öksürük,KKK aşısı,1954,10-14 gün,Var
+4,Parazit,Sivrisinek ısırığı,Sıtma,Plasmodium türleri,Kan ve karaciğer,Nöbet halinde ateş - titreme,Cibinlik - sıtma ilacı,1880,7-30 gün,Var (sınırlı)
+5,Bakteri,Kirli su ve gıda,Kolera,Vibrio cholerae,Sindirim sistemi,Şiddetli ishal - susuz kalma,Temiz su - sıvı tedavisi,1854,2 saat-5 gün,Var (oral)
+6,Bakteri,Yara ve toprak teması,Tetanoz,Clostridium tetani,Sinir sistemi,Kas kasılması - çene kilitlenmesi,Tetanoz aşısı - serum,1884,3-21 gün,Var
+7,Virüs,Hayvan ısırığı,Kuduz,Kuduz virüsü,Sinir sistemi,Sudan korkma - saldırganlık,Aşı - temas sonrası tedavi,1885,1-3 ay,Var
+8,Virüs,Solunum yolu,COVID-19,SARS-CoV-2,Solunum sistemi,Ateş - öksürük - tat kaybı,Aşı - maske - hijyen,2019,2-14 gün,Var
+9,Bakteri,Solunum yolu,Zatürre,Streptococcus pneumoniae,Solunum sistemi,Ateş - balgamlı öksürük,Aşı - antibiyotik,1881,1-3 gün,Var (pnömokok)
+10,Bakteri,Kirli su ve gıda,Tifo,Salmonella typhi,Sindirim sistemi,Yüksek ateş - karın ağrısı,Aşı - antibiyotik,1880,6-30 gün,Var
+11,Bakteri,Pire ısırığı,Veba,Yersinia pestis,Lenf sistemi,Şişmiş lenf bezleri - ateş,Antibiyotik - hijyen,1894,1-7 gün,Var (sınırlı)
+12,Virüs,Kan ve cinsel yol,AIDS,HIV,Bağışıklık sistemi,Bağışıklık düşüklüğü - tekrarlayan enfeksiyon,Antiretroviral tedavi - korunma,1983,Değişken (yıllar),Yok
+13,Virüs,Kan ve vücut sıvıları,Hepatit B,Hepatit B virüsü,Karaciğer,Sarılık - halsizlik - bulantı,Aşı - antiviral ilaç,1965,1-6 ay,Var
+14,Virüs,Solunum ve temas,Çiçek Hastalığı,Variola virüsü,Deri ve bağışıklık,Ateş - iltihaplı kabarcık,Aşı ile kökü kazındı,1798,7-17 gün,Var
+15,Virüs,Kirli su ve dışkı,Çocuk Felci,Poliovirüs,Sinir sistemi,Kas güçsüzlüğü - felç,Polio aşısı,1908,7-21 gün,Var
+16,Virüs,Tükürük ve solunum,Kabakulak,Kabakulak virüsü,Tükürük bezleri,Yanak şişmesi - ateş,KKK aşısı,1934,16-18 gün,Var
+17,Virüs,Solunum ve temas,Suçiçeği,Varicella zoster virüsü,Deri,Kaşıntılı kabarcık - ateş,Aşı - dinlenme,1875,10-21 gün,Var
+18,Virüs,Solunum yolu,Kızamıkçık,Rubella virüsü,Deri ve lenf,Hafif döküntü - lenf şişliği,KKK aşısı,1962,14-21 gün,Var
+19,Bakteri,Solunum yolu,Boğmaca,Bordetella pertussis,Solunum sistemi,Nöbet halinde şiddetli öksürük,Karma aşı - antibiyotik,1906,7-10 gün,Var
+20,Bakteri,Solunum yolu,Difteri,Corynebacterium diphtheriae,Boğaz ve solunum,Boğazda zar - ateş,Karma aşı - serum,1884,2-5 gün,Var
+21,Bakteri,Hayvan ve toprak teması,Şarbon,Bacillus anthracis,Deri ve solunum,Deride siyah yara - ateş,Antibiyotik - hayvan aşısı,1876,1-7 gün,Var (sınırlı)
+22,Bakteri,Cinsel yol,Frengi,Treponema pallidum,Deri ve sinir sistemi,Yara - döküntü - lenf şişliği,Penisilin tedavisi,1905,10-90 gün,Yok
+23,Bakteri,Çiğ süt ve peynir,Brusella,Brucella türleri,Eklem ve kas,Dalgalı ateş - eklem ağrısı,Pastörizasyon - antibiyotik,1887,5-60 gün,Yok (insan)
+24,Bakteri,Bit ısırığı,Tifüs,Rickettsia prowazekii,Kan dolaşımı,Yüksek ateş - döküntü,Hijyen - antibiyotik,1916,7-14 gün,Yok
+25,Bakteri,Uzun süreli yakın temas,Cüzzam,Mycobacterium leprae,Deri ve sinirler,Deride leke - his kaybı,Çoklu ilaç tedavisi,1873,3-5 yıl,Yok
+26,Mantar,Temas ve hayvan teması,Saçkıran,Trichophyton türleri,Deri ve saçlı deri,Halka biçiminde kızarıklık - kaşıntı,Antifungal krem - hijyen,1841,4-14 gün,Yok
+27,Virüs,Vücut sıvıları,Ebola,Ebola virüsü,Kan dolaşımı,Yüksek ateş - iç kanama,Aşı - izolasyon,1976,2-21 gün,Var
+28,Parazit,Yakın temas,Uyuz,Sarcoptes scabiei,Deri,Şiddetli kaşıntı - deride tünel izi,Uyuz losyonu - hijyen,1687,2-6 hafta,Yok
+29,Parazit,Köpek teması ve çiğ sebze,Kist Hidatik,Echinococcus granulosus,Karaciğer ve akciğer,Kist oluşumu - karın ağrısı,Hijyen - cerrahi tedavi,1808,Aylar-yıllar,Yok
+30,Mantar,Temas ve bağışıklık düşüklüğü,Pamukçuk,Candida albicans,Ağız ve sindirim,Ağızda beyaz plak - yanma,Antifungal ilaç - ağız hijyeni,1839,2-5 gün,Yok

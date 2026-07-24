@@ -1,43 +1,43 @@
-No,Albüm,Yıl,Şarkı
-1,Kadın,1996,Vazgeçtim Dünyadan
-2,Kadın,1996,Deli Kızım Uyan
-3,Kadın,1996,Bu Aşk Fazla Sana
-4,Kadın,1996,Fırtına
-5,Kadın,1996,Yağmurlar
-6,Kadın,1996,İyi Gün Dostlarım
-7,Artık Kısa Cümleler Kuruyorum,1999,Bugün
-8,Artık Kısa Cümleler Kuruyorum,1999,Kalbim
-9,Artık Kısa Cümleler Kuruyorum,1999,Herkes Bilsin İstedim
-10,Artık Kısa Cümleler Kuruyorum,1999,Yorgun
-11,Artık Kısa Cümleler Kuruyorum,1999,Nefessiz Kaldım
-12,Artık Kısa Cümleler Kuruyorum,1999,Artık Kısa Cümleler Kuruyorum
-13,Perdeler,2001,Sigara
-14,Perdeler,2001,Sil Baştan
-15,Perdeler,2001,Perdeler
-16,Perdeler,2001,Aşk
-17,Perdeler,2001,Nereye Kadar
-18,Perdeler,2001,Günaydın Sevgilim
-19,Kelimeler Yetse,2003,Ben Şarkımı Söylerken
-20,Kelimeler Yetse,2003,Mayın Tarlası
-21,Kelimeler Yetse,2003,Gözlerimin Etrafındaki Çizgiler
-22,Kelimeler Yetse,2003,Babam Oğlum
-23,Kelimeler Yetse,2003,Her Şey İnsanlar İçin
-24,Can Kırıkları,2005,Can Kırıkları
-25,Can Kırıkları,2005,Delgeç
-26,Can Kırıkları,2005,Çakıl Taşları
-27,Can Kırıkları,2005,Hoşçakal
-28,Can Kırıkları,2005,Bir Kalp Kırıldığında
-29,Benim Adım Orman,2009,Benim Adım Orman
-30,Benim Adım Orman,2009,Yalnız
-31,Benim Adım Orman,2009,Eski
-32,Benim Adım Orman,2009,İstiklal Caddesi Kadar
-33,Benim Adım Orman,2009,Bazı Aşklar
-34,Od,2013,Od
-35,Od,2013,Kalbim Mezar
-36,Od,2013,Ya Hep Ya Hiç
-37,Od,2013,Savaş Boyası
-38,Od,2013,Çok Yorgunum
-39,Parmak İzi,2018,Şarkılar Yalan Söylemez
-40,Parmak İzi,2018,Parmak İzi
-41,Parmak İzi,2018,Küllerinden
-42,Parmak İzi,2018,Vicdan
+No,Albüm,Yıl,Şarkı,Tür
+1,Kadın,1996,Vazgeçtim Dünyadan,Balad
+2,Kadın,1996,Deli Kızım Uyan,Rock
+3,Kadın,1996,Bu Aşk Fazla Sana,Balad
+4,Kadın,1996,Fırtına,Rock
+5,Kadın,1996,Yağmurlar,Balad
+6,Kadın,1996,İyi Gün Dostlarım,Rock
+7,Artık Kısa Cümleler Kuruyorum,1999,Bugün,Rock
+8,Artık Kısa Cümleler Kuruyorum,1999,Kalbim,Balad
+9,Artık Kısa Cümleler Kuruyorum,1999,Herkes Bilsin İstedim,Balad
+10,Artık Kısa Cümleler Kuruyorum,1999,Yorgun,Rock
+11,Artık Kısa Cümleler Kuruyorum,1999,Nefessiz Kaldım,Rock
+12,Artık Kısa Cümleler Kuruyorum,1999,Artık Kısa Cümleler Kuruyorum,Balad
+13,Perdeler,2001,Sigara,Rock
+14,Perdeler,2001,Sil Baştan,Rock
+15,Perdeler,2001,Perdeler,Balad
+16,Perdeler,2001,Aşk,Balad
+17,Perdeler,2001,Nereye Kadar,Rock
+18,Perdeler,2001,Günaydın Sevgilim,Balad
+19,Kelimeler Yetse,2003,Ben Şarkımı Söylerken,Rock
+20,Kelimeler Yetse,2003,Mayın Tarlası,Rock
+21,Kelimeler Yetse,2003,Gözlerimin Etrafındaki Çizgiler,Balad
+22,Kelimeler Yetse,2003,Babam Oğlum,Balad
+23,Kelimeler Yetse,2003,Her Şey İnsanlar İçin,Rock
+24,Can Kırıkları,2005,Can Kırıkları,Balad
+25,Can Kırıkları,2005,Delgeç,Rock
+26,Can Kırıkları,2005,Çakıl Taşları,Balad
+27,Can Kırıkları,2005,Hoşçakal,Balad
+28,Can Kırıkları,2005,Bir Kalp Kırıldığında,Balad
+29,Benim Adım Orman,2009,Benim Adım Orman,Rock
+30,Benim Adım Orman,2009,Yalnız,Balad
+31,Benim Adım Orman,2009,Eski,Balad
+32,Benim Adım Orman,2009,İstiklal Caddesi Kadar,Balad
+33,Benim Adım Orman,2009,Bazı Aşklar,Balad
+34,Od,2013,Od,Metal
+35,Od,2013,Kalbim Mezar,Rock
+36,Od,2013,Ya Hep Ya Hiç,Rock
+37,Od,2013,Savaş Boyası,Metal
+38,Od,2013,Çok Yorgunum,Balad
+39,Parmak İzi,2018,Şarkılar Yalan Söylemez,Rock
+40,Parmak İzi,2018,Parmak İzi,Rock
+41,Parmak İzi,2018,Küllerinden,Balad
+42,Parmak İzi,2018,Vicdan,Balad

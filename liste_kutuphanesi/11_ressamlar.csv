@@ -1,26 +1,33 @@
-No,Akım,Yaşadığı Yıllar,Ressam,Ülke,Ünlü Eseri
-1,Oryantalizm,1842-1910,Osman Hamdi Bey,Osmanlı-Türkiye,Kaplumbağa Terbiyecisi
-2,İzlenimcilik,1882-1960,İbrahim Çallı,Türkiye,Manolyalar
-3,Dışavurumculuk,1903-1967,Fikret Mualla,Türkiye-Fransa,Paris sokak sahneleri
-4,Modern,1913-1993,Abidin Dino,Türkiye,El serisi
-5,Modern,1911-1975,Bedri Rahmi Eyüboğlu,Türkiye,Han Kahvesi
-6,Rönesans,1452-1519,Leonardo da Vinci,İtalya,Mona Lisa
-7,Rönesans,1475-1564,Michelangelo,İtalya,Sistina Şapeli tavanı
-8,Rönesans,1483-1520,Raffaello,İtalya,Atina Okulu
-9,Barok,1571-1610,Caravaggio,İtalya,Emmaus'ta Akşam Yemeği
-10,Barok,1606-1669,Rembrandt,Hollanda,Gece Devriyesi
-11,Barok,1632-1675,Johannes Vermeer,Hollanda,İnci Küpeli Kız
-12,Romantizm,1746-1828,Francisco Goya,İspanya,3 Mayıs 1808
-13,İzlenimcilik,1840-1926,Claude Monet,Fransa,Nilüferler
-14,İzlenimcilik,1832-1883,Edouard Manet,Fransa,Kırda Öğle Yemeği
-15,İzlenimcilik,1841-1919,Auguste Renoir,Fransa,Moulin de la Galette'te Dans
-16,Art Sonrası İzlenimcilik,1853-1890,Vincent van Gogh,Hollanda,Yıldızlı Gece
-17,Art Sonrası İzlenimcilik,1848-1903,Paul Gauguin,Fransa,Tahiti resimleri
-18,Art Sonrası İzlenimcilik,1839-1906,Paul Cezanne,Fransa,Sainte-Victoire Dağı
-19,Kübizm,1881-1973,Pablo Picasso,İspanya,Guernica
-20,Sürrealizm,1904-1989,Salvador Dali,İspanya,Belleğin Azmi
-21,Fovizm,1869-1954,Henri Matisse,Fransa,Dans
-22,Soyut,1866-1944,Vasili Kandinski,Rusya,Kompozisyon serisi
-23,Dışavurumculuk,1863-1944,Edvard Munch,Norveç,Çığlık
-24,Art Nouveau,1862-1918,Gustav Klimt,Avusturya,Öpücük
-25,Sürrealizm,1907-1954,Frida Kahlo,Meksika,Otoportreler
+No,Akım,Yaşadığı Yıllar,Ressam,Ülke,Ünlü Eseri,Doğum Yeri,Tarz Özelliği
+1,Oryantalizm,1842-1910,Osman Hamdi Bey,Osmanlı-Türkiye,Kaplumbağa Terbiyecisi,İstanbul,Fotogerçekçi oryantalist figürler
+2,İzlenimcilik,1882-1960,İbrahim Çallı,Türkiye,Manolyalar,Çal Denizli,Işıklı izlenimci fırça
+3,Dışavurumculuk,1903-1967,Fikret Mualla,Türkiye-Fransa,Paris sokak sahneleri,İstanbul,Guaj ve canlı renkler
+4,Modern,1913-1993,Abidin Dino,Türkiye,El serisi,İstanbul,Çizgisel toplumsal anlatım
+5,Modern,1911-1975,Bedri Rahmi Eyüboğlu,Türkiye,Han Kahvesi,Görele,Anadolu motifleri ve renk
+6,Rönesans,1452-1519,Leonardo da Vinci,İtalya,Mona Lisa,Vinci,Sfumato tekniği
+7,Rönesans,1475-1564,Michelangelo,İtalya,Sistina Şapeli tavanı,Caprese,Anatomik heykelsi figürler
+8,Rönesans,1483-1520,Raffaello,İtalya,Atina Okulu,Urbino,Dengeli klasik kompozisyon
+9,Barok,1571-1610,Caravaggio,İtalya,Emmaus'ta Akşam Yemeği,Milano,Tenebrizm ışık-gölge
+10,Barok,1606-1669,Rembrandt,Hollanda,Gece Devriyesi,Leiden,Dramatik ışık ve portre
+11,Barok,1632-1675,Johannes Vermeer,Hollanda,İnci Küpeli Kız,Delft,Yumuşak gün ışığı
+12,Romantizm,1746-1828,Francisco Goya,İspanya,3 Mayıs 1808,Fuendetodos,Karanlık dışavurumcu ton
+13,İzlenimcilik,1840-1926,Claude Monet,Fransa,Nilüferler,Paris,Işık ve an yakalama
+14,İzlenimcilik,1832-1883,Edouard Manet,Fransa,Kırda Öğle Yemeği,Paris,Modern yaşam sahneleri
+15,İzlenimcilik,1841-1919,Auguste Renoir,Fransa,Moulin de la Galette'te Dans,Limoges,Sıcak ışıltılı figürler
+16,Art Sonrası İzlenimcilik,1853-1890,Vincent van Gogh,Hollanda,Yıldızlı Gece,Zundert,Kalın darbeli renk
+17,Art Sonrası İzlenimcilik,1848-1903,Paul Gauguin,Fransa,Tahiti resimleri,Paris,Yassı canlı renk alanları
+18,Art Sonrası İzlenimcilik,1839-1906,Paul Cezanne,Fransa,Sainte-Victoire Dağı,Aix-en-Provence,Geometrik form arayışı
+19,Kübizm,1881-1973,Pablo Picasso,İspanya,Guernica,Malaga,Çok yönlü form parçalama
+20,Sürrealizm,1904-1989,Salvador Dali,İspanya,Belleğin Azmi,Figueres,Düşsel gerçekçilik
+21,Fovizm,1869-1954,Henri Matisse,Fransa,Dans,Le Cateau-Cambresis,Saf parlak renk
+22,Soyut,1866-1944,Vasili Kandinski,Rusya,Kompozisyon serisi,Moskova,Renkli soyut kompozisyon
+23,Dışavurumculuk,1863-1944,Edvard Munch,Norveç,Çığlık,Loten,Kaygılı dışavurum
+24,Art Nouveau,1862-1918,Gustav Klimt,Avusturya,Öpücük,Baumgarten,Altın varak ve süsleme
+25,Sürrealizm,1907-1954,Frida Kahlo,Meksika,Otoportreler,Coyoacan,Sembolik otoportre
+26,Barok,1599-1660,Diego Velazquez,İspanya,Las Meninas,Sevilla,Gerçekçi saray portresi
+27,Romantizm,1775-1851,William Turner,İngiltere,Yağmur Buhar ve Hız,Londra,Atmosferik ışık ve renk
+28,Ukiyo-e,1760-1849,Katsushika Hokusai,Japonya,Kanagawa'da Büyük Dalga,Edo,Ahşap baskı çizgisi
+29,Soyut Dışavurumculuk,1912-1956,Jackson Pollock,ABD,No. 5 1948,Wyoming,Damlatma tekniği
+30,Pop Art,1928-1987,Andy Warhol,ABD,Campbell Çorba Kutuları,Pittsburgh,Serigrafiyle çoğaltma
+31,Sürrealizm,1898-1967,Rene Magritte,Belçika,İmgelerin İhaneti,Lessines,Gizemli gündelik nesneler
+32,Soyut,1901-1991,Fahrelnissa Zeid,Türkiye,Cehennemim,Büyükada,Renkli devasa soyut kompozisyon

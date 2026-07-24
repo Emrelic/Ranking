@@ -1,21 +1,24 @@
-No,Kıta,Uzunluk (km),Nehir,Döküldüğü Yer,Geçtiği Ülkeler
-1,Afrika,6650,Nil,Akdeniz,Uganda - Sudan - Mısır
-2,Güney Amerika,6400,Amazon,Atlas Okyanusu,Peru - Kolombiya - Brezilya
-3,Asya,6300,Yangtze,Doğu Çin Denizi,Çin
-4,Kuzey Amerika,6275,Mississippi-Missouri,Meksika Körfezi,ABD
-5,Asya,5539,Yenisey,Kara Denizi (Kuzey Buz),Moğolistan - Rusya
-6,Asya,5464,Sarı Irmak,Bohai Denizi,Çin
-7,Asya,5410,Obi,Kara Denizi (Kuzey Buz),Rusya
-8,Afrika,4700,Kongo,Atlas Okyanusu,Kongo DC - Kongo Cumhuriyeti
-9,Asya,4444,Amur,Ohotsk Denizi,Rusya - Çin
-10,Asya,4400,Lena,Laptev Denizi,Rusya
-11,Asya,4350,Mekong,Güney Çin Denizi,Çin - Laos - Kamboçya - Vietnam
-12,Kuzey Amerika,4241,Mackenzie,Kuzey Buz Denizi,Kanada
-13,Afrika,4200,Nijer,Gine Körfezi,Gine - Mali - Nijer - Nijerya
-14,Avrupa,3531,Volga,Hazar Denizi,Rusya
-15,Asya,3180,İndus,Umman Denizi,Çin - Hindistan - Pakistan
-16,Avrupa,2850,Tuna,Karadeniz,Almanya - Avusturya - Macaristan - Romanya
-17,Asya,2800,Fırat,Basra Körfezi (Şattülarap),Türkiye - Suriye - Irak
-18,Asya,2525,Ganj,Bengal Körfezi,Hindistan - Bangladeş
-19,Asya,1900,Dicle,Basra Körfezi (Şattülarap),Türkiye - Irak
-20,Asya,1355,Kızılırmak,Karadeniz,Türkiye
+No,Kıta,Uzunluk (km),Nehir,Döküldüğü Yer,Geçtiği Ülkeler,Kaynağı,Havza Alanı (bin km²)
+1,Afrika,6650,Nil,Akdeniz,Uganda - Sudan - Mısır,Victoria Gölü bölgesi,3255
+2,Güney Amerika,6400,Amazon,Atlas Okyanusu,Peru - Kolombiya - Brezilya,And Dağları,7000
+3,Asya,6300,Yangtze,Doğu Çin Denizi,Çin,Tibet Platosu,1800
+4,Kuzey Amerika,6275,Mississippi-Missouri,Meksika Körfezi,ABD,Kayalık Dağlar,3220
+5,Asya,5539,Yenisey,Kara Denizi (Kuzey Buz),Moğolistan - Rusya,Moğolistan Dağları,2580
+6,Asya,5464,Sarı Irmak,Bohai Denizi,Çin,Bayan Har Dağları,745
+7,Asya,5410,Obi,Kara Denizi (Kuzey Buz),Rusya,Altay Dağları,2990
+8,Güney Amerika,4880,Paraná,Río de la Plata,Brezilya - Paraguay - Arjantin,Brezilya Yaylası,2582
+9,Afrika,4700,Kongo,Atlas Okyanusu,Kongo DC - Kongo Cumhuriyeti,Doğu Afrika Yaylası,3680
+10,Asya,4444,Amur,Ohotsk Denizi,Rusya - Çin,Moğolistan Dağları,1855
+11,Asya,4400,Lena,Laptev Denizi,Rusya,Baykal Dağları,2490
+12,Asya,4350,Mekong,Güney Çin Denizi,Çin - Laos - Kamboçya - Vietnam,Tibet Platosu,810
+13,Kuzey Amerika,4241,Mackenzie,Kuzey Buz Denizi,Kanada,Kayalık Dağlar,1790
+14,Afrika,4200,Nijer,Gine Körfezi,Gine - Mali - Nijer - Nijerya,Gine Yaylası,2090
+15,Avrupa,3531,Volga,Hazar Denizi,Rusya,Valday Tepeleri,1360
+16,Asya,3180,İndus,Umman Denizi,Çin - Hindistan - Pakistan,Tibet Platosu,1165
+17,Avrupa,2850,Tuna,Karadeniz,Almanya - Avusturya - Macaristan - Romanya,Kara Orman,817
+18,Asya,2800,Fırat,Basra Körfezi (Şattülarap),Türkiye - Suriye - Irak,Doğu Anadolu,440
+19,Afrika,2574,Zambezi,Hint Okyanusu,Zambiya - Angola - Mozambik,Kuzeybatı Zambiya,1390
+20,Asya,2525,Ganj,Bengal Körfezi,Hindistan - Bangladeş,Gangotri Buzulu,1080
+21,Asya,1900,Dicle,Basra Körfezi (Şattülarap),Türkiye - Irak,Doğu Anadolu,375
+22,Asya,1355,Kızılırmak,Karadeniz,Türkiye,Kızıldağ (Sivas),78
+23,Asya,824,Sakarya,Karadeniz,Türkiye,Çifteler (Eskişehir),58

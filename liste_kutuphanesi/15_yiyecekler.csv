@@ -1,31 +1,35 @@
-No,Kalori (100g),Protein (g),Yiyecek,Lif (g),Kategori
-1,52,0.3,Elma,2.4,Meyve
-2,89,1.1,Muz,2.6,Meyve
-3,47,0.9,Portakal,2.4,Meyve
-4,32,0.7,Çilek,2.0,Meyve
-5,69,0.7,Üzüm,0.9,Meyve
-6,30,0.6,Karpuz,0.4,Meyve
-7,18,0.9,Domates,1.2,Sebze
-8,15,0.7,Salatalık,0.5,Sebze
-9,41,0.9,Havuç,2.8,Sebze
-10,77,2.0,Patates,2.2,Sebze
-11,23,2.9,Ispanak,2.2,Sebze
-12,34,2.8,Brokoli,2.6,Sebze
-13,116,9.0,Mercimek (haşlanmış),7.9,Baklagil
-14,164,8.9,Nohut (haşlanmış),7.6,Baklagil
-15,127,8.7,Kuru Fasulye (haşlanmış),6.4,Baklagil
-16,130,2.7,Pirinç (haşlanmış),0.4,Tahıl
-17,83,3.1,Bulgur (haşlanmış),4.5,Tahıl
-18,265,9.0,Beyaz Ekmek,2.7,Tahıl
-19,389,16.9,Yulaf,10.6,Tahıl
-20,131,5.0,Makarna (haşlanmış),1.8,Tahıl
-21,165,31.0,Tavuk Göğsü (ızgara),0,Et
-22,250,26.0,Dana Eti,0,Et
-23,208,20.0,Somon,0,Balık
-24,155,13.0,Yumurta (haşlanmış),0,Hayvansal Ürün
-25,61,3.2,Süt (tam yağlı),0,Süt Ürünü
-26,61,3.5,Yoğurt,0,Süt Ürünü
-27,264,14.0,Beyaz Peynir,0,Süt Ürünü
-28,654,15.0,Ceviz,6.7,Kuruyemiş
-29,579,21.0,Badem,12.5,Kuruyemiş
-30,628,15.0,Fındık,9.7,Kuruyemiş
+No,Kalori (100g),Protein (g),Yiyecek,Lif (g),Kategori,Karbonhidrat (g),Yağ (g)
+1,52,0.3,Elma,2.4,Meyve,14,0.2
+2,89,1.1,Muz,2.6,Meyve,23,0.3
+3,47,0.9,Portakal,2.4,Meyve,12,0.1
+4,32,0.7,Çilek,2.0,Meyve,8,0.3
+5,69,0.7,Üzüm,0.9,Meyve,18,0.2
+6,30,0.6,Karpuz,0.4,Meyve,8,0.2
+7,18,0.9,Domates,1.2,Sebze,3.9,0.2
+8,15,0.7,Salatalık,0.5,Sebze,3.6,0.1
+9,41,0.9,Havuç,2.8,Sebze,10,0.2
+10,77,2.0,Patates,2.2,Sebze,17,0.1
+11,23,2.9,Ispanak,2.2,Sebze,3.6,0.4
+12,34,2.8,Brokoli,2.6,Sebze,7,0.4
+13,116,9.0,Mercimek (haşlanmış),7.9,Baklagil,20,0.4
+14,164,8.9,Nohut (haşlanmış),7.6,Baklagil,27,2.6
+15,127,8.7,Kuru Fasulye (haşlanmış),6.4,Baklagil,23,0.5
+16,130,2.7,Pirinç (haşlanmış),0.4,Tahıl,28,0.3
+17,83,3.1,Bulgur (haşlanmış),4.5,Tahıl,19,0.2
+18,265,9.0,Beyaz Ekmek,2.7,Tahıl,49,3.2
+19,389,16.9,Yulaf,10.6,Tahıl,66,6.9
+20,131,5.0,Makarna (haşlanmış),1.8,Tahıl,25,1.1
+21,165,31.0,Tavuk Göğsü (ızgara),0,Et,0,3.6
+22,250,26.0,Dana Eti,0,Et,0,15
+23,208,20.0,Somon,0,Balık,0,13
+24,155,13.0,Yumurta (haşlanmış),0,Hayvansal Ürün,1.1,11
+25,61,3.2,Süt (tam yağlı),0,Süt Ürünü,4.8,3.3
+26,61,3.5,Yoğurt,0,Süt Ürünü,4.7,3.3
+27,264,14.0,Beyaz Peynir,0,Süt Ürünü,4,21
+28,654,15.0,Ceviz,6.7,Kuruyemiş,14,65
+29,579,21.0,Badem,12.5,Kuruyemiş,22,50
+30,628,15.0,Fındık,9.7,Kuruyemiş,17,61
+31,304,0.3,Bal,0.2,Tatlandırıcı,82,0
+32,160,2.0,Avokado,6.7,Meyve,9,15
+33,115,0.8,Zeytin,3.2,Meyve,6,11
+34,247,13.0,Tam Buğday Ekmeği,7.0,Tahıl,41,3.4

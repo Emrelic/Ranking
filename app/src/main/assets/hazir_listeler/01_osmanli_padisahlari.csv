@@ -1,37 +1,37 @@
-No,Tahta Çıkış,Saltanat Süresi,Padişah,Tahttan İniş,Yaşadığı Yıllar
-1,1299,yaklaşık 27 yıl,Osman Gazi,1326,1258-1326
-2,1326,yaklaşık 36 yıl,Orhan Gazi,1362,1281-1362
-3,1362,27 yıl,I. Murad (Hüdavendigar),1389,1326-1389
-4,1389,13 yıl,Yıldırım Bayezid,1402,1360-1403
-5,1413,8 yıl,Çelebi Mehmed (I. Mehmed),1421,1389-1421
-6,1421,toplam 28 yıl (2 dönem),II. Murad,1451,1404-1451
-7,1444,toplam 32 yıl (2 dönem),Fatih Sultan Mehmed,1481,1432-1481
-8,1481,31 yıl,II. Bayezid,1512,1447-1512
-9,1512,8 yıl,Yavuz Sultan Selim,1520,1470-1520
-10,1520,46 yıl,Kanuni Sultan Süleyman,1566,1494-1566
-11,1566,8 yıl,II. Selim,1574,1524-1574
-12,1574,20 yıl 11 ay,III. Murad,1595,1546-1595
-13,1595,8 yıl,III. Mehmed,1603,1566-1603
-14,1603,14 yıl,I. Ahmed,1617,1590-1617
-15,1617,toplam 1 yıl 5 ay (2 dönem),I. Mustafa,1623,1591-1639
-16,1618,4 yıl,Genç Osman (II. Osman),1622,1604-1622
-17,1623,16 yıl 8 ay,IV. Murad,1640,1612-1640
-18,1640,8 yıl 6 ay,Sultan İbrahim,1648,1615-1648
-19,1648,39 yıl,IV. Mehmed (Avcı),1687,1642-1693
-20,1687,3 yıl 7 ay,II. Süleyman,1691,1642-1691
-21,1691,3 yıl 7 ay,II. Ahmed,1695,1643-1695
-22,1695,8 yıl 6 ay,II. Mustafa,1703,1664-1703
-23,1703,27 yıl,III. Ahmed,1730,1673-1736
-24,1730,24 yıl,I. Mahmud,1754,1696-1754
-25,1754,3 yıl,III. Osman,1757,1699-1757
-26,1757,16 yıl 2 ay,III. Mustafa,1774,1717-1774
-27,1774,15 yıl,I. Abdülhamid,1789,1725-1789
-28,1789,18 yıl,III. Selim,1807,1761-1808
-29,1807,1 yıl 2 ay,IV. Mustafa,1808,1779-1808
-30,1808,30 yıl 11 ay,II. Mahmud,1839,1785-1839
-31,1839,21 yıl 7 ay,Abdülmecid,1861,1823-1861
-32,1861,15 yıl,Abdülaziz,1876,1830-1876
-33,1876,3 ay,V. Murad,1876,1840-1904
-34,1876,32 yıl 8 ay,II. Abdülhamid,1909,1842-1918
-35,1909,9 yıl 2 ay,V. Mehmed Reşad,1918,1844-1918
-36,1918,4 yıl 4 ay,VI. Mehmed Vahdeddin,1922,1861-1926
+No,Tahta Çıkış,Saltanat Süresi,Padişah,Tahttan İniş,Yaşadığı Yıllar,Lakabı/Ünvanı,Dönemin Önemli Olayı,Ölüm Şekli
+1,1299,yaklaşık 27 yıl,Osman Gazi,1326,1258-1326,Kara Osman,Osmanlı Beyliği kuruldu,Eceliyle
+2,1326,yaklaşık 36 yıl,Orhan Gazi,1362,1281-1362,Gazi,Bursa fethedildi ve ilk teşkilatlanma,Eceliyle
+3,1362,27 yıl,I. Murad (Hüdavendigar),1389,1326-1389,Hüdavendigar,I. Kosova Zaferi,Şehit edildi
+4,1389,13 yıl,Yıldırım Bayezid,1402,1360-1403,Yıldırım,Niğbolu Zaferi ve Ankara yenilgisi,Esarette öldü
+5,1413,8 yıl,Çelebi Mehmed (I. Mehmed),1421,1389-1421,Çelebi,Fetret Devri sona erdi,Eceliyle
+6,1421,toplam 28 yıl (2 dönem),II. Murad,1451,1404-1451,Koca Murad,Varna ve II. Kosova zaferleri,Eceliyle
+7,1444,toplam 32 yıl (2 dönem),Fatih Sultan Mehmed,1481,1432-1481,Fatih,İstanbul'un Fethi,Eceliyle
+8,1481,31 yıl,II. Bayezid,1512,1447-1512,Veli,Cem Sultan olayı,Eceliyle
+9,1512,8 yıl,Yavuz Sultan Selim,1520,1470-1520,Yavuz,Halifeliğin Osmanlı'ya geçişi,Şirpençe hastalığı
+10,1520,46 yıl,Kanuni Sultan Süleyman,1566,1494-1566,Kanuni ve Muhteşem,Devletin en parlak dönemi,Zigetvar seferinde eceliyle
+11,1566,8 yıl,II. Selim,1574,1524-1574,Sarı Selim,Kıbrıs'ın fethi,Eceliyle
+12,1574,20 yıl 11 ay,III. Murad,1595,1546-1595,-,Uzun İran savaşları,Eceliyle
+13,1595,8 yıl,III. Mehmed,1603,1566-1603,Adli,Haçova Meydan Muharebesi,Eceliyle
+14,1603,14 yıl,I. Ahmed,1617,1590-1617,Bahti,Sultanahmet Camii yapıldı,Eceliyle (tifüs)
+15,1617,toplam 1 yıl 5 ay (2 dönem),I. Mustafa,1623,1591-1639,Deli Mustafa,Akıl sağlığı nedeniyle iki kez tahttan indirildi,Eceliyle
+16,1618,4 yıl,Genç Osman (II. Osman),1622,1604-1622,Genç,Hotin Seferi ve yeniçeri isyanı,Katledildi
+17,1623,16 yıl 8 ay,IV. Murad,1640,1612-1640,-,Bağdat'ın fethi,Eceliyle (gut)
+18,1640,8 yıl 6 ay,Sultan İbrahim,1648,1615-1648,Deli İbrahim,Girit'in fethi başladı,Katledildi
+19,1648,39 yıl,IV. Mehmed (Avcı),1687,1642-1693,Avcı,Köprülüler dönemi ve II. Viyana,Eceliyle
+20,1687,3 yıl 7 ay,II. Süleyman,1691,1642-1691,-,Avusturya savaşları,Eceliyle
+21,1691,3 yıl 7 ay,II. Ahmed,1695,1643-1695,-,Salankamen yenilgisi,Eceliyle
+22,1695,8 yıl 6 ay,II. Mustafa,1703,1664-1703,-,Karlofça Antlaşması,Eceliyle
+23,1703,27 yıl,III. Ahmed,1730,1673-1736,-,Lale Devri,Eceliyle
+24,1730,24 yıl,I. Mahmud,1754,1696-1754,-,1739 Belgrad Antlaşması,Eceliyle
+25,1754,3 yıl,III. Osman,1757,1699-1757,-,Kısa süreli saltanat,Eceliyle
+26,1757,16 yıl 2 ay,III. Mustafa,1774,1717-1774,-,1768 Osmanlı-Rus Savaşı,Eceliyle
+27,1774,15 yıl,I. Abdülhamid,1789,1725-1789,-,Küçük Kaynarca Antlaşması,Eceliyle
+28,1789,18 yıl,III. Selim,1807,1761-1808,-,Nizam-ı Cedid reformları,Katledildi
+29,1807,1 yıl 2 ay,IV. Mustafa,1808,1779-1808,-,Alemdar Vakası,Katledildi
+30,1808,30 yıl 11 ay,II. Mahmud,1839,1785-1839,-,Yeniçeri Ocağı kaldırıldı,Eceliyle (verem)
+31,1839,21 yıl 7 ay,Abdülmecid,1861,1823-1861,-,Tanzimat Fermanı ilan edildi,Eceliyle (verem)
+32,1861,15 yıl,Abdülaziz,1876,1830-1876,-,İlk padişah Avrupa gezisi,Şüpheli ölüm
+33,1876,3 ay,V. Murad,1876,1840-1904,-,93 günlük saltanat,Eceliyle
+34,1876,32 yıl 8 ay,II. Abdülhamid,1909,1842-1918,Ulu Hakan,I. Meşrutiyet ilan edildi,Eceliyle
+35,1909,9 yıl 2 ay,V. Mehmed Reşad,1918,1844-1918,-,I. Dünya Savaşı'na girildi,Eceliyle
+36,1918,4 yıl 4 ay,VI. Mehmed Vahdeddin,1922,1861-1926,-,Saltanat kaldırıldı,Eceliyle (sürgünde)

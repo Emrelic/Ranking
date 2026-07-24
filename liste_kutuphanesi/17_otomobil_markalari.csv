@@ -1,26 +1,34 @@
-No,Ülke,Kuruluş Yılı,Marka,Ana Şirket/Grup,Segment
-1,Japonya,1937,Toyota,Toyota Motor Corporation,Genel
-2,Japonya,1948,Honda,Honda Motor,Genel
-3,Japonya,1933,Nissan,Nissan Motor,Genel
-4,Japonya,1920,Mazda,Mazda Motor,Genel
-5,Japonya,1909,Suzuki,Suzuki Motor,Küçük araç
-6,ABD,1903,Ford,Ford Motor Company,Genel
-7,ABD,1911,Chevrolet,General Motors,Genel
-8,ABD,2003,Tesla,Tesla Inc.,Elektrikli
-9,Almanya,1916,BMW,BMW Group,Premium
-10,Almanya,1926,Mercedes-Benz,Mercedes-Benz Group,Premium
-11,Almanya,1909,Audi,Volkswagen Grubu,Premium
-12,Almanya,1937,Volkswagen,Volkswagen Grubu,Genel
-13,Almanya,1931,Porsche,Volkswagen Grubu,Spor
-14,Almanya,1862,Opel,Stellantis,Genel
-15,Fransa,1899,Renault,Renault Group,Genel
-16,Fransa,1810,Peugeot,Stellantis,Genel
-17,Fransa,1919,Citroen,Stellantis,Genel
-18,İtalya,1899,Fiat,Stellantis,Genel
-19,İtalya,1947,Ferrari,Ferrari N.V.,Süper spor
-20,İtalya,1963,Lamborghini,Volkswagen Grubu,Süper spor
-21,İsveç,1927,Volvo,Geely Holding,Premium
-22,Çekya,1895,Skoda,Volkswagen Grubu,Genel
-23,Güney Kore,1967,Hyundai,Hyundai Motor Group,Genel
-24,Güney Kore,1944,Kia,Hyundai Motor Group,Genel
-25,Türkiye,2018,Togg,Togg (konsorsiyum),Elektrikli
+No,Ülke,Kuruluş Yılı,Marka,Ana Şirket/Grup,Segment,Merkez Şehir,Ünlü Modeli
+1,Japonya,1937,Toyota,Toyota Motor Corporation,Genel,Toyota City,Corolla
+2,Japonya,1948,Honda,Honda Motor,Genel,Tokyo,Civic
+3,Japonya,1933,Nissan,Nissan Motor,Genel,Yokohama,GT-R
+4,Japonya,1920,Mazda,Mazda Motor,Genel,Hiroşima,MX-5
+5,Japonya,1909,Suzuki,Suzuki Motor,Küçük araç,Hamamatsu,Jimny
+6,ABD,1903,Ford,Ford Motor Company,Genel,Dearborn,Mustang
+7,ABD,1911,Chevrolet,General Motors,Genel,Detroit,Corvette
+8,ABD,2003,Tesla,Tesla Inc.,Elektrikli,Austin,Model S
+9,Almanya,1916,BMW,BMW Group,Premium,Münih,3 Serisi
+10,Almanya,1926,Mercedes-Benz,Mercedes-Benz Group,Premium,Stuttgart,S-Serisi
+11,Almanya,1909,Audi,Volkswagen Grubu,Premium,Ingolstadt,Quattro
+12,Almanya,1937,Volkswagen,Volkswagen Grubu,Genel,Wolfsburg,Golf
+13,Almanya,1931,Porsche,Volkswagen Grubu,Spor,Stuttgart,911
+14,Almanya,1862,Opel,Stellantis,Genel,Rüsselsheim,Astra
+15,Fransa,1899,Renault,Renault Group,Genel,Boulogne-Billancourt,Clio
+16,Fransa,1810,Peugeot,Stellantis,Genel,Sochaux,205
+17,Fransa,1919,Citroen,Stellantis,Genel,Paris,2CV
+18,İtalya,1899,Fiat,Stellantis,Genel,Torino,500
+19,İtalya,1947,Ferrari,Ferrari N.V.,Süper spor,Maranello,F40
+20,İtalya,1963,Lamborghini,Volkswagen Grubu,Süper spor,Sant'Agata Bolognese,Countach
+21,İsveç,1927,Volvo,Geely Holding,Premium,Göteborg,XC90
+22,Çekya,1895,Skoda,Volkswagen Grubu,Genel,Mlada Boleslav,Octavia
+23,Güney Kore,1967,Hyundai,Hyundai Motor Group,Genel,Seul,Tucson
+24,Güney Kore,1944,Kia,Hyundai Motor Group,Genel,Seul,Sportage
+25,Türkiye,2018,Togg,Togg (konsorsiyum),Elektrikli,Bursa,T10X
+26,İngiltere,1922,Jaguar,Tata Motors,Premium,Coventry,E-Type
+27,İngiltere,1948,Land Rover,Tata Motors,SUV,Coventry,Defender
+28,Japonya,1953,Subaru,Subaru Corporation,Genel,Ota,Impreza
+29,Japonya,1989,Lexus,Toyota Motor Corporation,Premium,Nagoya,LS
+30,İtalya,1910,Alfa Romeo,Stellantis,Spor,Torino,Giulia
+31,İngiltere,1959,Mini,BMW Group,Küçük araç,Oxford,Cooper
+32,Romanya,1966,Dacia,Renault Group,Genel,Mioveni,Duster
+33,Fransa,1909,Bugatti,Volkswagen Grubu,Süper spor,Molsheim,Veyron

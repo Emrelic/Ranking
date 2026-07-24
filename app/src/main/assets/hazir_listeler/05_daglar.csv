@@ -1,26 +1,29 @@
-No,Ülke,Yükseklik (m),Dağ,Sıradağ/Bölge,Kıta
-1,Nepal-Çin,8849,Everest,Himalayalar,Asya
-2,Pakistan-Çin,8611,K2,Karakurum,Asya
-3,Nepal-Hindistan,8586,Kangçencunga,Himalayalar,Asya
-4,Nepal-Çin,8516,Lhotse,Himalayalar,Asya
-5,Nepal-Çin,8485,Makalu,Himalayalar,Asya
-6,Arjantin,6961,Aconcagua,And Dağları,Güney Amerika
-7,ABD,6190,Denali,Alaska Sıradağları,Kuzey Amerika
-8,Tanzanya,5895,Kilimanjaro,Doğu Afrika,Afrika
-9,Rusya,5642,Elbruz,Kafkas Dağları,Avrupa
-10,İran,5610,Demavend,Elburz Dağları,Asya
-11,Kenya,5199,Kenya Dağı,Doğu Afrika,Afrika
-12,Türkiye,5137,Ağrı Dağı,Doğu Anadolu,Asya
-13,Antarktika,4892,Vinson,Ellsworth Dağları,Antarktika
-14,Fransa-İtalya,4809,Mont Blanc,Alpler,Avrupa
-15,İsviçre-İtalya,4478,Matterhorn,Alpler,Avrupa
-16,ABD,4207,Mauna Kea,Hawaii,Okyanusya
-17,Fas,4167,Toubkal,Atlas Dağları,Afrika
-18,Türkiye,4135,Cilo Dağı,Hakkari Dağları,Asya
-19,Türkiye,4058,Süphan Dağı,Doğu Anadolu,Asya
-20,Türkiye,3937,Kaçkar Dağı,Doğu Karadeniz Dağları,Asya
-21,Türkiye,3917,Erciyes Dağı,İç Anadolu,Asya
-22,Japonya,3776,Fuji,Honşu,Asya
-23,Almanya,2962,Zugspitze,Alpler,Avrupa
-24,Yunanistan,2917,Olimpos,Teselya,Avrupa
-25,Türkiye,2543,Uludağ,Marmara Bölgesi,Asya
+No,Ülke,Yükseklik (m),Dağ,Sıradağ/Bölge,Kıta,Dağ Tipi,İlk Tırmanış Yılı,Kalıcı Kar/Buzul
+1,Nepal-Çin,8849,Everest,Himalayalar,Asya,Kıvrım,1953,Var
+2,Pakistan-Çin,8611,K2,Karakurum,Asya,Kıvrım,1954,Var
+3,Nepal-Hindistan,8586,Kangçencunga,Himalayalar,Asya,Kıvrım,1955,Var
+4,Nepal-Çin,8516,Lhotse,Himalayalar,Asya,Kıvrım,1956,Var
+5,Nepal-Çin,8485,Makalu,Himalayalar,Asya,Kıvrım,1955,Var
+6,Arjantin,6961,Aconcagua,And Dağları,Güney Amerika,Kıvrım,1897,Var
+7,Ekvador,6263,Chimborazo,And Dağları,Güney Amerika,Volkanik,1880,Var
+8,ABD,6190,Denali,Alaska Sıradağları,Kuzey Amerika,Kıvrım,1913,Var
+9,Tanzanya,5895,Kilimanjaro,Doğu Afrika,Afrika,Volkanik,1889,Var
+10,Rusya,5642,Elbruz,Kafkas Dağları,Avrupa,Volkanik,1874,Var
+11,İran,5610,Demavend,Elburz Dağları,Asya,Volkanik,1837,Var
+12,Kenya,5199,Kenya Dağı,Doğu Afrika,Afrika,Volkanik,1899,Var
+13,Türkiye,5137,Ağrı Dağı,Doğu Anadolu,Asya,Volkanik,1829,Var
+14,Antarktika,4892,Vinson,Ellsworth Dağları,Antarktika,Kıvrım,1966,Var
+15,Endonezya,4884,Puncak Jaya,Sudirman Dağları,Okyanusya,Kıvrım,1962,Var
+16,Fransa-İtalya,4809,Mont Blanc,Alpler,Avrupa,Kıvrım,1786,Var
+17,İsviçre-İtalya,4478,Matterhorn,Alpler,Avrupa,Kıvrım,1865,Var
+18,ABD,4207,Mauna Kea,Hawaii,Okyanusya,Volkanik,-,Mevsimlik
+19,Fas,4167,Toubkal,Atlas Dağları,Afrika,Kıvrım,1923,Mevsimlik
+20,Türkiye,4135,Cilo Dağı,Hakkari Dağları,Asya,Kıvrım,1937,Var
+21,Türkiye,4058,Süphan Dağı,Doğu Anadolu,Asya,Volkanik,-,Mevsimlik
+22,Türkiye,3937,Kaçkar Dağı,Doğu Karadeniz Dağları,Asya,Kıvrım,-,Var
+23,Türkiye,3917,Erciyes Dağı,İç Anadolu,Asya,Volkanik,-,Mevsimlik
+24,Japonya,3776,Fuji,Honşu,Asya,Volkanik,663,Mevsimlik
+25,Almanya,2962,Zugspitze,Alpler,Avrupa,Kıvrım,1820,Mevsimlik
+26,Yunanistan,2917,Olimpos,Teselya,Avrupa,Kıvrım,1913,Mevsimlik
+27,Türkiye,2543,Uludağ,Marmara Bölgesi,Asya,Kıvrım,-,Mevsimlik
+28,Avustralya,2228,Kosciuszko,Snowy Dağları,Okyanusya,Kıvrım,1840,Mevsimlik

@@ -1,16 +1,19 @@
-No,Bölge,İl,Ova,Sulayan Akarsu,Başlıca Ürünler
-1,Akdeniz,Adana,Çukurova,Seyhan ve Ceyhan,Pamuk ve narenciye
-2,İç Anadolu,Konya,Konya Ovası,Çarşamba Çayı,Buğday ve şekerpancarı
-3,Güneydoğu Anadolu,Şanlıurfa,Harran Ovası,Fırat (GAP sulaması),Pamuk ve mısır
-4,Karadeniz,Samsun,Bafra Ovası,Kızılırmak,Sebze ve çeltik
-5,Karadeniz,Samsun,Çarşamba Ovası,Yeşilırmak,Fındık ve sebze
-6,Ege,Manisa,Gediz Ovası,Gediz,Üzüm ve pamuk
-7,Ege,Aydın,Büyük Menderes Ovası,Büyük Menderes,Pamuk ve incir
-8,Ege,İzmir,Küçük Menderes Ovası,Küçük Menderes,Sebze ve meyve
-9,Ege,İzmir,Bakırçay Ovası,Bakırçay,Tütün ve zeytin
-10,Akdeniz,Hatay,Amik Ovası,Asi,Pamuk ve buğday
-11,Marmara,Tekirdağ,Ergene Ovası,Ergene,Ayçiçeği ve buğday
-12,Marmara,Bursa,Bursa Ovası,Nilüfer Çayı,Meyve ve sebze
-13,Doğu Anadolu,Erzurum,Erzurum Ovası,Karasu,Tahıl ve yem bitkileri
-14,Doğu Anadolu,Muş,Muş Ovası,Murat,Şekerpancarı ve tahıl
-15,Doğu Anadolu,Iğdır,Iğdır Ovası,Aras,Pamuk ve kayısı
+No,Bölge,İl,Ova,Sulayan Akarsu,Başlıca Ürünler,İklim,Tarım Tipi
+1,Akdeniz,Adana,Çukurova,Seyhan ve Ceyhan,Pamuk ve narenciye,Akdeniz iklimi,Sulu tarım
+2,İç Anadolu,Konya,Konya Ovası,Çarşamba Çayı,Buğday ve şekerpancarı,Karasal iklim,Sulu ve kuru tarım
+3,Güneydoğu Anadolu,Şanlıurfa,Harran Ovası,Fırat (GAP sulaması),Pamuk ve mısır,Karasal-kurak,Sulu tarım
+4,Karadeniz,Samsun,Bafra Ovası,Kızılırmak,Sebze ve çeltik,Karadeniz iklimi,Sulu tarım
+5,Karadeniz,Samsun,Çarşamba Ovası,Yeşilırmak,Fındık ve sebze,Karadeniz iklimi,Sulu tarım
+6,Ege,Manisa,Gediz Ovası,Gediz,Üzüm ve pamuk,Akdeniz iklimi,Sulu tarım
+7,Ege,Aydın,Büyük Menderes Ovası,Büyük Menderes,Pamuk ve incir,Akdeniz iklimi,Sulu tarım
+8,Ege,İzmir,Küçük Menderes Ovası,Küçük Menderes,Sebze ve meyve,Akdeniz iklimi,Sulu tarım
+9,Ege,İzmir,Bakırçay Ovası,Bakırçay,Tütün ve zeytin,Akdeniz iklimi,Kuru ve sulu tarım
+10,Akdeniz,Hatay,Amik Ovası,Asi,Pamuk ve buğday,Akdeniz iklimi,Sulu tarım
+11,Marmara,Tekirdağ,Ergene Ovası,Ergene,Ayçiçeği ve buğday,Karasal-geçiş,Kuru tarım
+12,Marmara,Bursa,Bursa Ovası,Nilüfer Çayı,Meyve ve sebze,Marmara geçiş,Sulu tarım
+13,Doğu Anadolu,Erzurum,Erzurum Ovası,Karasu,Tahıl ve yem bitkileri,Karasal-sert,Kuru tarım ve hayvancılık
+14,Doğu Anadolu,Muş,Muş Ovası,Murat,Şekerpancarı ve tahıl,Karasal iklim,Sulu ve kuru tarım
+15,Doğu Anadolu,Iğdır,Iğdır Ovası,Aras,Pamuk ve kayısı,Mikroklima-kurak,Sulu tarım
+16,Akdeniz,Antalya,Antalya Ovası,Aksu ve Düden,Örtü altı sebze ve narenciye,Akdeniz iklimi,Sera tarımı
+17,Ege,Aydın,Söke Ovası,Büyük Menderes,Pamuk ve zeytin,Akdeniz iklimi,Sulu tarım
+18,Akdeniz,Kahramanmaraş,Elbistan Ovası,Ceyhan,Şekerpancarı ve tahıl,Karasal iklim,Sulu tarım

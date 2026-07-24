@@ -1,21 +1,24 @@
-No,Bağlı Okyanus,Yüzölçümü (bin km²),Deniz,Ortalama Derinlik (m),Kıyı Bölgesi
-1,Atlas Okyanusu,2500,Akdeniz,1500,Güney Avrupa - Kuzey Afrika - Anadolu
-2,Atlas Okyanusu,436,Karadeniz,1250,Türkiye - Ukrayna - Rusya - Bulgaristan
-3,Atlas Okyanusu,214,Ege Denizi,350,Türkiye - Yunanistan
-4,Atlas Okyanusu,11,Marmara Denizi,250,Türkiye (iç deniz)
-5,Hint Okyanusu,438,Kızıldeniz,490,Mısır - Suudi Arabistan - Sudan
-6,Hint Okyanusu,3862,Arap Denizi,2700,Hindistan - Umman - Pakistan
-7,Hint Okyanusu,798,Andaman Denizi,1050,Myanmar - Tayland - Hindistan
-8,Atlas Okyanusu,377,Baltık Denizi,55,İsveç - Finlandiya - Polonya - Almanya
-9,Atlas Okyanusu,570,Kuzey Denizi,95,Birleşik Krallık - Norveç - Hollanda
-10,Atlas Okyanusu,1380,Norveç Denizi,1800,Norveç - İzlanda
-11,Kuzey Buz Denizi,1400,Barents Denizi,230,Norveç - Rusya
-12,Büyük Okyanus,2000,Bering Denizi,1550,Rusya - Alaska (ABD)
-13,Büyük Okyanus,1583,Ohotsk Denizi,860,Rusya - Japonya
-14,Büyük Okyanus,978,Japon Denizi,1750,Japonya - Kore - Rusya
-15,Büyük Okyanus,1249,Doğu Çin Denizi,350,Çin - Japonya - Tayvan
-16,Büyük Okyanus,3500,Güney Çin Denizi,1200,Çin - Vietnam - Filipinler - Malezya
-17,Büyük Okyanus,4791,Mercan Denizi,2400,Avustralya - Papua Yeni Gine
-18,Büyük Okyanus,2300,Tasman Denizi,3300,Avustralya - Yeni Zelanda
-19,Atlas Okyanusu,2754,Karayip Denizi,2200,Orta Amerika - Antiller
-20,Atlas Okyanusu,139,Adriyatik Denizi,250,İtalya - Hırvatistan - Arnavutluk
+No,Bağlı Okyanus,Yüzölçümü (bin km²),Deniz,Ortalama Derinlik (m),Kıyı Bölgesi,En Derin Nokta (m),Kıyıdaş Ülke Sayısı,Tuzluluk (binde)
+1,Atlas Okyanusu,2500,Akdeniz,1500,Güney Avrupa - Kuzey Afrika - Anadolu,5267,21,38
+2,Atlas Okyanusu,436,Karadeniz,1250,Türkiye - Ukrayna - Rusya - Bulgaristan,2212,6,18
+3,Atlas Okyanusu,214,Ege Denizi,350,Türkiye - Yunanistan,3543,2,39
+4,Atlas Okyanusu,11,Marmara Denizi,250,Türkiye (iç deniz),1370,1,22
+5,Hint Okyanusu,438,Kızıldeniz,490,Mısır - Suudi Arabistan - Sudan,2850,6,40
+6,Hint Okyanusu,3862,Arap Denizi,2700,Hindistan - Umman - Pakistan,4652,6,36
+7,Hint Okyanusu,798,Andaman Denizi,1050,Myanmar - Tayland - Hindistan,4198,4,32
+8,Atlas Okyanusu,377,Baltık Denizi,55,İsveç - Finlandiya - Polonya - Almanya,459,9,8
+9,Atlas Okyanusu,570,Kuzey Denizi,95,Birleşik Krallık - Norveç - Hollanda,700,7,34
+10,Atlas Okyanusu,1380,Norveç Denizi,1800,Norveç - İzlanda,3970,2,35
+11,Kuzey Buz Denizi,1400,Barents Denizi,230,Norveç - Rusya,600,2,34
+12,Büyük Okyanus,2300,Bering Denizi,1550,Rusya - Alaska (ABD),4097,2,33
+13,Büyük Okyanus,1583,Ohotsk Denizi,860,Rusya - Japonya,3372,2,33
+14,Büyük Okyanus,978,Japon Denizi,1750,Japonya - Kore - Rusya,3742,4,34
+15,Büyük Okyanus,1249,Doğu Çin Denizi,350,Çin - Japonya - Tayvan,2716,4,32
+16,Büyük Okyanus,3500,Güney Çin Denizi,1200,Çin - Vietnam - Filipinler - Malezya,5560,7,34
+17,Büyük Okyanus,4791,Mercan Denizi,2400,Avustralya - Papua Yeni Gine,9140,2,35
+18,Büyük Okyanus,2300,Tasman Denizi,3300,Avustralya - Yeni Zelanda,6015,2,35
+19,Atlas Okyanusu,2754,Karayip Denizi,2200,Orta Amerika - Antiller,7686,25,36
+20,Atlas Okyanusu,139,Adriyatik Denizi,250,İtalya - Hırvatistan - Arnavutluk,1233,6,38
+21,Büyük Okyanus,380,Sarı Deniz,44,Çin - Kuzey Kore - Güney Kore,152,3,30
+22,Hint Okyanusu,251,Basra Körfezi,50,İran - Suudi Arabistan - BAE,90,8,40
+23,Kuzey Buz Denizi,90,Beyaz Deniz,60,Rusya (iç deniz),340,1,25
