@@ -1,0 +1,36 @@
+No,Tür,Çalınış Şekli,Müzik Aleti,Anavatan/Kültür,Tel/Perde Sayısı,Malzeme,Kullanıldığı Müzik,Görsel
+1,Telli,Mızrapla,Bağlama,Anadolu,7 tel,Dut ağacı ve tel,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Tamburasaz-Baglamasaz.jpg/330px-Tamburasaz-Baglamasaz.jpg
+2,Telli,Mızrapla,Ud,Mezopotamya-Anadolu,11 tel,Maun ve ceviz ağacı,Türk sanat müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Oud2.jpg/330px-Oud2.jpg
+3,Telli,Mızrapla,Kanun,Ortadoğu-Anadolu,72-79 tel,Ladin ağacı ve deri,Türk sanat müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Q%C4%81n%C5%ABn_-_MET_89.4.330.jpg/330px-Q%C4%81n%C5%ABn_-_MET_89.4.330.jpg
+4,Üflemeli,Nefesle,Ney,Anadolu-İran,7 delik,Kamış,Tasavvuf müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Boynuz_ba%C5%9Fpareli_k%C4%B1z_ve_y%C4%B1ld%C4%B1z_ney.jpeg/500px-Boynuz_ba%C5%9Fpareli_k%C4%B1z_ve_y%C4%B1ld%C4%B1z_ney.jpeg
+5,Yaylı,Yayla,Kemençe,Karadeniz,3 tel,Erik ağacı ve tel,Karadeniz halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/KemencheFactory.jpg/330px-KemencheFactory.jpg
+6,Üflemeli,Nefesle,Zurna,Anadolu,8 delik,Erik ağacı ve kamış,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Zurna_%28RNMM%29.jpg/500px-Zurna_%28RNMM%29.jpg
+7,Vurmalı,Tokmakla,Davul,Anadolu,-,Ceviz ağacı ve deri,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Chicago_Turkish_Festival_Davul_1.jpg/500px-Chicago_Turkish_Festival_Davul_1.jpg
+8,Vurmalı,Elle,Darbuka,Ortadoğu-Anadolu,-,Toprak ve deri,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Goblet_drum_01.jpg/330px-Goblet_drum_01.jpg
+9,Üflemeli,Nefesle,Kaval,Anadolu,7 delik,Erik ağacı,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/BatuhanAydinKaval.jpg/500px-BatuhanAydinKaval.jpg
+10,Üflemeli,Nefesle,Sipsi,Teke yöresi,5 delik,Kamış,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Sipsi.jpg/500px-Sipsi.jpg
+11,Üflemeli,Nefesle,Tulum,Doğu Karadeniz,5 delik,Oğlak derisi ve şimşir,Karadeniz halk müziği,https://upload.wikimedia.org/wikipedia/commons/5/57/Tulumcu.jpg
+12,Yaylı,Yayla,Kabak Kemane,Anadolu,4 tel,Su kabağı ve deri,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Istanbul_Galata_Mevlevihanesi_Musical_instruments_Kabak_kemane_in_2016_3160.jpg/500px-Istanbul_Galata_Mevlevihanesi_Musical_instruments_Kabak_kemane_in_2016_3160.jpg
+13,Telli,Mızrapla,Tar,Azerbaycan-İran,11 tel,Dut ağacı ve deri,Azerbaycan muğam müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Aserbaidschanische_Volksinstrument_Tar.JPG/500px-Aserbaidschanische_Volksinstrument_Tar.JPG
+14,Vurmalı,Elle,Def,Anadolu-Ortadoğu,-,Ahşap kasnak ve deri,Tasavvuf müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Daf-Khalaj.jpg/500px-Daf-Khalaj.jpg
+15,Vurmalı,Tokmakla,Kudüm,Anadolu,-,Bakır ve deve derisi,Tasavvuf müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Kud%C3%BCm%2C_nakkare.jpg/330px-Kud%C3%BCm%2C_nakkare.jpg
+16,Yaylı,Yayla,Rebap,Ortadoğu-Anadolu,3 tel,Hindistan cevizi ve deri,Tasavvuf müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Turkey.Konya027.jpg/500px-Turkey.Konya027.jpg
+17,Telli,Mızrapla,Cümbüş,İstanbul,12 tel,Alüminyum ve deri,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Cumbus.jpg/330px-Cumbus.jpg
+18,Üflemeli,Nefesle,Mey,Doğu Anadolu,8 delik,Erik ağacı ve kamış,Türk halk müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Balaban_Azerbaijani.JPG/500px-Balaban_Azerbaijani.JPG
+19,Yaylı,Yayla,Keman,İtalya,4 tel,Ladin ve akçaağaç,Klasik batı müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Old_violin.jpg/330px-Old_violin.jpg
+20,Yaylı,Yayla,Viyolonsel,İtalya,4 tel,Ladin ve akçaağaç,Klasik batı müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cello_front_side.jpg/330px-Cello_front_side.jpg
+21,Yaylı,Yayla - Parmakla,Kontrbas,Avrupa,4 tel,Ladin ve akçaağaç,Orkestra ve caz,https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/AGK_bass1_full.jpg/330px-AGK_bass1_full.jpg
+22,Tuşlu,Tuşlarla,Piyano,İtalya,88 tuş,Ahşap ve çelik tel,Klasik batı müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Grand_piano_and_upright_piano.jpg/330px-Grand_piano_and_upright_piano.jpg
+23,Telli,Parmakla,Gitar,İspanya,6 tel,Sedir ve gül ağacı,Rock ve pop müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/GuitareClassique5.png/330px-GuitareClassique5.png
+24,Telli,Parmakla,Arp,Antik Mezopotamya,47 tel,Akçaağaç ve naylon tel,Klasik batı müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Harpe_mus%C3%A9e.jpg/330px-Harpe_mus%C3%A9e.jpg
+25,Üflemeli,Nefesle,Flüt,Avrupa,16 perde,Gümüş ve nikel,Klasik batı müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/Western_concert_flute_%28Yamaha%29.jpg/500px-Western_concert_flute_%28Yamaha%29.jpg
+26,Üflemeli,Nefesle,Klarnet,Almanya,24 perde,Abanoz ağacı ve kamış,Klasik batı müziği ve caz,https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Parts_of_clarinet_3_tr.jpg/330px-Parts_of_clarinet_3_tr.jpg
+27,Üflemeli,Nefesle,Obua,Fransa,23 perde,Abanoz ağacı ve kamış,Klasik batı müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Albrecht_Mayer_04.jpg/330px-Albrecht_Mayer_04.jpg
+28,Üflemeli,Nefesle,Fagot,İtalya,22 perde,Akçaağaç ve kamış,Orkestra müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Bassoon_1870.jpg/330px-Bassoon_1870.jpg
+29,Üflemeli,Nefesle,Trompet,Avrupa,3 piston,Pirinç,Caz ve orkestra müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Trumpet.jpg/330px-Trumpet.jpg
+30,Üflemeli,Nefesle,Trombon,Avrupa,7 pozisyon,Pirinç,Caz ve orkestra müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Yamaha_Tenor_trombone_YSL-891Z_%28re-crop%29.jpg/330px-Yamaha_Tenor_trombone_YSL-891Z_%28re-crop%29.jpg
+31,Üflemeli,Nefesle,Korno,Almanya,4 valf,Pirinç,Orkestra müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/French_horn_front.png/330px-French_horn_front.png
+32,Üflemeli,Nefesle,Saksofon,Belçika,23 perde,Pirinç ve kamış,Caz müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Yamaha_Saxophone_YAS-62.tif/lossy-page1-330px-Yamaha_Saxophone_YAS-62.tif.jpg
+33,Vurmalı,Bagetle,Bateri,ABD,-,Akçaağaç ve deri,Rock ve caz müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/2006-07-06_drum_set.jpg/330px-2006-07-06_drum_set.jpg
+34,Vurmalı,Tokmakla,Ksilofon,Afrika-Asya,44 çubuk,Gül ağacı ve metal,Orkestra müziği,https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Xylophone.jpg/500px-Xylophone.jpg
+35,Tuşlu,Tuşlarla,Akordeon,Avrupa,41 tuş,Ahşap ve metal kamış,Halk müziği ve tango,https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Fisarmonica_nera_a_piano.png/330px-Fisarmonica_nera_a_piano.png

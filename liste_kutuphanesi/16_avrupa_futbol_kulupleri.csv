@@ -1,31 +1,31 @@
-No,Ülke,Kuruluş Yılı,Kulüp,Şehir,Şampiyonlar Ligi Kupası
-1,İspanya,1902,Real Madrid,Madrid,15
-2,İspanya,1899,Barcelona,Barselona,5
-3,İspanya,1903,Atletico Madrid,Madrid,0
-4,İspanya,1890,Sevilla,Sevilla,0
-5,Almanya,1900,Bayern Münih,Münih,6
-6,Almanya,1909,Borussia Dortmund,Dortmund,1
-7,İngiltere,1878,Manchester United,Manchester,3
-8,İngiltere,1892,Liverpool,Liverpool,6
-9,İngiltere,1880,Manchester City,Manchester,1
-10,İngiltere,1905,Chelsea,Londra,2
-11,İngiltere,1886,Arsenal,Londra,0
-12,İngiltere,1882,Tottenham Hotspur,Londra,0
-13,İtalya,1899,Milan,Milano,7
-14,İtalya,1908,Inter,Milano,3
-15,İtalya,1897,Juventus,Torino,2
-16,İtalya,1927,Roma,Roma,0
-17,İtalya,1926,Napoli,Napoli,0
-18,Fransa,1970,Paris Saint-Germain,Paris,1
-19,Fransa,1899,Marsilya,Marsilya,1
-20,Hollanda,1900,Ajax,Amsterdam,4
-21,Hollanda,1913,PSV Eindhoven,Eindhoven,1
-22,Hollanda,1908,Feyenoord,Rotterdam,1
-23,Portekiz,1893,Porto,Porto,2
-24,Portekiz,1904,Benfica,Lizbon,2
-25,Portekiz,1906,Sporting Lizbon,Lizbon,0
-26,İskoçya,1887,Celtic,Glasgow,1
-27,Türkiye,1905,Galatasaray,İstanbul,0
-28,Türkiye,1907,Fenerbahçe,İstanbul,0
-29,Türkiye,1903,Beşiktaş,İstanbul,0
-30,Türkiye,1967,Trabzonspor,Trabzon,0
+No,Ülke,Kuruluş Yılı,Kulüp,Şehir,Şampiyonlar Ligi Kupası,Görsel
+1,İspanya,1902,Real Madrid,Madrid,15,https://flagcdn.com/w320/es.png
+2,İspanya,1899,Barcelona,Barselona,5,https://flagcdn.com/w320/es.png
+3,İspanya,1903,Atletico Madrid,Madrid,0,https://flagcdn.com/w320/es.png
+4,İspanya,1890,Sevilla,Sevilla,0,https://flagcdn.com/w320/es.png
+5,Almanya,1900,Bayern Münih,Münih,6,https://flagcdn.com/w320/de.png
+6,Almanya,1909,Borussia Dortmund,Dortmund,1,https://flagcdn.com/w320/de.png
+7,İngiltere,1878,Manchester United,Manchester,3,https://flagcdn.com/w320/gb-eng.png
+8,İngiltere,1892,Liverpool,Liverpool,6,https://flagcdn.com/w320/gb-eng.png
+9,İngiltere,1880,Manchester City,Manchester,1,https://flagcdn.com/w320/gb-eng.png
+10,İngiltere,1905,Chelsea,Londra,2,https://flagcdn.com/w320/gb-eng.png
+11,İngiltere,1886,Arsenal,Londra,0,https://flagcdn.com/w320/gb-eng.png
+12,İngiltere,1882,Tottenham Hotspur,Londra,0,https://flagcdn.com/w320/gb-eng.png
+13,İtalya,1899,Milan,Milano,7,https://flagcdn.com/w320/it.png
+14,İtalya,1908,Inter,Milano,3,https://flagcdn.com/w320/it.png
+15,İtalya,1897,Juventus,Torino,2,https://flagcdn.com/w320/it.png
+16,İtalya,1927,Roma,Roma,0,https://flagcdn.com/w320/it.png
+17,İtalya,1926,Napoli,Napoli,0,https://flagcdn.com/w320/it.png
+18,Fransa,1970,Paris Saint-Germain,Paris,1,https://flagcdn.com/w320/fr.png
+19,Fransa,1899,Marsilya,Marsilya,1,https://flagcdn.com/w320/fr.png
+20,Hollanda,1900,Ajax,Amsterdam,4,https://flagcdn.com/w320/nl.png
+21,Hollanda,1913,PSV Eindhoven,Eindhoven,1,https://flagcdn.com/w320/nl.png
+22,Hollanda,1908,Feyenoord,Rotterdam,1,https://flagcdn.com/w320/nl.png
+23,Portekiz,1893,Porto,Porto,2,https://flagcdn.com/w320/pt.png
+24,Portekiz,1904,Benfica,Lizbon,2,https://flagcdn.com/w320/pt.png
+25,Portekiz,1906,Sporting Lizbon,Lizbon,0,https://flagcdn.com/w320/pt.png
+26,İskoçya,1887,Celtic,Glasgow,1,https://flagcdn.com/w320/gb-sct.png
+27,Türkiye,1905,Galatasaray,İstanbul,0,https://flagcdn.com/w320/tr.png
+28,Türkiye,1907,Fenerbahçe,İstanbul,0,https://flagcdn.com/w320/tr.png
+29,Türkiye,1903,Beşiktaş,İstanbul,0,https://flagcdn.com/w320/tr.png
+30,Türkiye,1967,Trabzonspor,Trabzon,0,https://flagcdn.com/w320/tr.png

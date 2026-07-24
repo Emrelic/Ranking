@@ -93,7 +93,7 @@ internal fun TeamSelectionPanel(
                 if (csvData != null && csvData.isNotEmpty()) {
                     try {
                         val data = org.json.JSONObject(csvData)
-                        val keys = data.keys().asSequence().toList().filter { it != "name" }
+                        val keys = data.keys().asSequence().toList().filter { it !in HIDDEN_CSV_KEYS }
                         keys.map { key -> key to data.optString(key, "") }
                     } catch (e: Exception) {
                         null
@@ -102,6 +102,7 @@ internal fun TeamSelectionPanel(
                     null
                 }
             }
+            val imageUrl = remember(csvData) { extractImageUrl(csvData) }
 
             LazyColumn(
                 modifier = Modifier
@@ -109,6 +110,15 @@ internal fun TeamSelectionPanel(
                     .padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                if (imageUrl != null) {
+                    item {
+                        ItemImage(
+                            imageUrl = imageUrl,
+                            contentDescription = team.name,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                }
                 if (jsonData != null) {
                     items(jsonData) { (key, value) ->
                         Row(

@@ -18,7 +18,7 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 |---|-------|-------|----------|
 | 1 | 01_osmanli_padisahlari.csv | 36 | No, Tahta Çıkış, Saltanat Süresi, **Padişah**, Tahttan İniş, Yaşadığı Yıllar |
 | 2 | 02_sebnem_ferah_sarkilari.csv | 42 | No, Albüm, Yıl, **Şarkı** |
-| 3 | 03_ulkeler.csv | 40 | No, Kıta, Nüfus (milyon), **Ülke**, Yüzölçümü (bin km²), GSYH (milyar $), Kişi Başı Gelir ($) |
+| 3 | 03_ulkeler.csv | 40 | No, Kıta, Nüfus (milyon), **Ülke**, Yüzölçümü (bin km²), GSYH (milyar $), Kişi Başı Gelir ($), Bağımsızlık Yılı, Bayrak Kabul Yılı, Görsel 🖼 |
 | 4 | 04_denizler.csv | 20 | No, Bağlı Okyanus, Yüzölçümü (bin km²), **Deniz**, Ortalama Derinlik (m), Kıyı Bölgesi |
 | 5 | 05_daglar.csv | 25 | No, Ülke, Yükseklik (m), **Dağ**, Sıradağ/Bölge, Kıta |
 | 6 | 06_sehirler.csv | 30 | No, Ülke, Nüfus (milyon), **Şehir**, Kıta, Bilinen Özelliği |
@@ -31,18 +31,32 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | 13 | 13_elementler.csv | 36 | No (atom numarası), Sembol, Grup, **Element**, Atom Ağırlığı, Oda Sıcaklığındaki Hali, Keşif Yılı |
 | 14 | 14_hayvanlar.csv | 30 | No, Sınıf, Takım, **Hayvan**, Anavatan/Yaşam Alanı, Beslenme, Ortalama Ömür (yıl) |
 | 15 | 15_yiyecekler.csv | 30 | No, Kalori (100g), Protein (g), **Yiyecek**, Lif (g), Kategori |
-| 16 | 16_avrupa_futbol_kulupleri.csv | 30 | No, Ülke, Kuruluş Yılı, **Kulüp**, Şehir, Şampiyonlar Ligi Kupası |
+| 16 | 16_avrupa_futbol_kulupleri.csv | 30 | No, Ülke, Kuruluş Yılı, **Kulüp**, Şehir, Şampiyonlar Ligi Kupası, Görsel 🖼 |
 | 17 | 17_otomobil_markalari.csv | 25 | No, Ülke, Kuruluş Yılı, **Marka**, Ana Şirket/Grup, Segment |
-| 18 | 18_kuslar.csv | 30 | No, Takım, Yaşam Alanı, **Kuş**, Familya, Kanat Açıklığı (cm), Ağırlık (g), Beslenme, Göçmen mi, Anavatan |
+| 18 | 18_kuslar.csv | 30 | No, Takım, Yaşam Alanı, **Kuş**, Familya, Kanat Açıklığı (cm), Ağırlık (g), Beslenme, Göçmen mi, Anavatan, Görsel 🖼 |
 | 19 | 19_baliklar.csv | 30 | No, Sınıf, Su Tipi, **Balık**, Familya, Ortalama Boy (cm), Ağırlık (kg), Beslenme, Yaşam Bölgesi |
-| 20 | 20_bitkiler.csv | 30 | No, Familya, Tip, **Bitki**, Anavatan, Ortalama Boy, Çiçeklenme Mevsimi, Başlıca Kullanım, Ömür |
+| 20 | 20_bitkiler.csv | 30 | No, Familya, Tip, **Bitki**, Anavatan, Ortalama Boy, Çiçeklenme Mevsimi, Başlıca Kullanım, Ömür, Görsel 🖼 |
 | 21 | 21_mikroplar_hastaliklar.csv | 30 | No, Mikrop Tipi, Bulaşma Yolu, **Hastalık**, Etken Mikroorganizma, Etkilediği Sistem, Başlıca Belirtiler, Korunma/Tedavi, Keşif/İlk Tanım Yılı |
 | 22 | 22_imparatorluklar.csv | 30 | No, Kuruluş Yılı, Süre (yıl), **İmparatorluk**, Yıkılış Yılı, Başkent, En Geniş Sınır (milyon km²), Kurucu, Bölge |
 | 23 | 23_savaslar.csv | 30 | No, Yıl, Taraflar, **Savaş**, Kazanan, Yer, Süre, Sonuç/Önemi |
-| 24 | 24_kumandanlar.csv | 30 | No, Yaşadığı Yıllar, Ülke/Devlet, **Kumandan**, Ünlü Zaferi, Askeri Alanı, Önemli Özelliği |
-| 25 | 25_devlet_adamlari.csv | 30 | No, Yaşadığı Yıllar, Ülke, **Devlet Adamı**, Görevi, Dönem, Başlıca İcraatı |
+| 24 | 24_kumandanlar.csv | 30 | No, Yaşadığı Yıllar, Ülke/Devlet, **Kumandan**, Ünlü Zaferi, Askeri Alanı, Önemli Özelliği, Görsel 🖼 |
+| 25 | 25_devlet_adamlari.csv | 30 | No, Yaşadığı Yıllar, Ülke, **Devlet Adamı**, Görevi, Dönem, Başlıca İcraatı, Görsel 🖼 |
+| 26 | 26_filmler.csv | 30 | No, Yıl, Yönetmen, **Film**, Ülke, Tür, Süre (dk), Önemi, Görsel 🖼 |
+| 27 | 27_resimler.csv | 30 | No, Ressam, Yıl, **Tablo**, Akım, Bulunduğu Müze, Teknik, Görsel 🖼 |
+| 28 | 28_fotograflar.csv | 25 | No, Fotoğrafçı, Yıl, **Fotoğraf**, Konu/Olay, Önemi, Görsel 🖼 |
+| 29 | 29_heykeller.csv | 25 | No, Heykeltıraş, Yıl, **Heykel**, Ülke/Şehir, Malzeme, Yükseklik (m), Görsel 🖼 |
+| 30 | 30_yapilar.csv | 40 | No, Yapım Yılı, Şehir, **Yapı**, Ülke, Mimar, Mimari Üslup, Kullanım Amacı, Yükseklik/Ölçü, Görsel 🖼 |
+| 31 | 31_muzik_aletleri.csv | 35 | No, Tür, Çalınış Şekli, **Müzik Aleti**, Anavatan/Kültür, Tel/Perde Sayısı, Malzeme, Kullanıldığı Müzik, Görsel 🖼 |
 
-Toplam **25 liste**, **754 öğe**.
+Toplam **31 liste**, **909 öğe** — bunların **375 tanesi görselli** (🖼 işaretli listeler).
+
+## Görsel Desteği
+
+🖼 işaretli listelerde son sütun `Görsel` adresidir:
+- **Ülkeler ve futbol kulüpleri**: ülke bayrağı (flagcdn.com)
+- **Diğerleri**: Wikimedia Commons fotoğrafı
+
+Uygulama bu sütunu otomatik tanır ve öğe kartında resmi gösterir; görsel yüklemek için internet bağlantısı gerekir. Adres yoksa veya `-` ise kart eskisi gibi sadece metinle görünür. `Görsel` sütunu özellik satırı olarak listelenmez.
 
 Kalın yazılı sütun (4. sütun) her listede **sıralanacak öğedir**.
 

@@ -23,7 +23,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.R
 import com.example.ranking.data.Song
 import com.example.ranking.ui.screens.ranking.CriteriaEvaluationDialog
+import com.example.ranking.ui.screens.ranking.HIDDEN_CSV_KEYS
+import com.example.ranking.ui.screens.ranking.ItemImage
 import com.example.ranking.ui.screens.ranking.InitialRankingContent
+import com.example.ranking.ui.screens.ranking.extractImageUrl
 import com.example.ranking.ui.screens.ranking.MatchingsListContent
 import com.example.ranking.ui.screens.ranking.ScoreInputDialog
 import com.example.ranking.ui.screens.ranking.StandingsDialog
@@ -317,7 +320,7 @@ internal fun TeamCardContent(
         if (csvData != null && csvData.isNotEmpty()) {
             try {
                 val data = org.json.JSONObject(csvData)
-                val keys = data.keys().asSequence().toList().filter { it != "name" }
+                val keys = data.keys().asSequence().toList().filter { it !in HIDDEN_CSV_KEYS }
                 keys.map { key -> key to data.optString(key, "") }
             } catch (e: Exception) {
                 null
@@ -326,6 +329,7 @@ internal fun TeamCardContent(
             null
         }
     }
+    val imageUrl = remember(csvData) { extractImageUrl(csvData) }
 
     if (jsonData != null) {
         // CSV data display - restore original LazyColumn with proper constraint handling
@@ -333,6 +337,15 @@ internal fun TeamCardContent(
             modifier = modifier.heightIn(max = 300.dp), // Add max height to prevent infinite constraint
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            if (imageUrl != null) {
+                item {
+                    ItemImage(
+                        imageUrl = imageUrl,
+                        contentDescription = song.name,
+                        height = 100.dp
+                    )
+                }
+            }
             items(jsonData) { (key, value) ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
