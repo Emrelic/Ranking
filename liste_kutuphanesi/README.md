@@ -33,6 +33,16 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | 15 | 15_yiyecekler.csv | 30 | No, Kalori (100g), Protein (g), **Yiyecek**, Lif (g), Kategori |
 | 16 | 16_avrupa_futbol_kulupleri.csv | 30 | No, Ülke, Kuruluş Yılı, **Kulüp**, Şehir, Şampiyonlar Ligi Kupası |
 | 17 | 17_otomobil_markalari.csv | 25 | No, Ülke, Kuruluş Yılı, **Marka**, Ana Şirket/Grup, Segment |
+| 18 | 18_kuslar.csv | 30 | No, Takım, Yaşam Alanı, **Kuş**, Familya, Kanat Açıklığı (cm), Ağırlık (g), Beslenme, Göçmen mi, Anavatan |
+| 19 | 19_baliklar.csv | 30 | No, Sınıf, Su Tipi, **Balık**, Familya, Ortalama Boy (cm), Ağırlık (kg), Beslenme, Yaşam Bölgesi |
+| 20 | 20_bitkiler.csv | 30 | No, Familya, Tip, **Bitki**, Anavatan, Ortalama Boy, Çiçeklenme Mevsimi, Başlıca Kullanım, Ömür |
+| 21 | 21_mikroplar_hastaliklar.csv | 30 | No, Mikrop Tipi, Bulaşma Yolu, **Hastalık**, Etken Mikroorganizma, Etkilediği Sistem, Başlıca Belirtiler, Korunma/Tedavi, Keşif/İlk Tanım Yılı |
+| 22 | 22_imparatorluklar.csv | 30 | No, Kuruluş Yılı, Süre (yıl), **İmparatorluk**, Yıkılış Yılı, Başkent, En Geniş Sınır (milyon km²), Kurucu, Bölge |
+| 23 | 23_savaslar.csv | 30 | No, Yıl, Taraflar, **Savaş**, Kazanan, Yer, Süre, Sonuç/Önemi |
+| 24 | 24_kumandanlar.csv | 30 | No, Yaşadığı Yıllar, Ülke/Devlet, **Kumandan**, Ünlü Zaferi, Askeri Alanı, Önemli Özelliği |
+| 25 | 25_devlet_adamlari.csv | 30 | No, Yaşadığı Yıllar, Ülke, **Devlet Adamı**, Görevi, Dönem, Başlıca İcraatı |
+
+Toplam **25 liste**, **754 öğe**.
 
 Kalın yazılı sütun (4. sütun) her listede **sıralanacak öğedir**.
 

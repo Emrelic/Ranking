@@ -1,0 +1,31 @@
+No,Takım,Yaşam Alanı,Kuş,Familya,Kanat Açıklığı (cm),Ağırlık (g),Beslenme,Göçmen mi,Anavatan
+1,Ötücü kuşlar,Yerleşim alanları,Serçe,Serçegiller,24,30,Tohum ve böcek,Yerli,Avrupa ve Asya
+2,Leyleksiler,Sulak alanlar,Leylek,Leylekgiller,200,3500,Kurbağa ve böcek,Göçmen,Avrupa ve Afrika
+3,Kartalsılar,Dağlık alanlar,Kızıl Akbaba,Kartalgiller,265,8000,Leş yiyici,Yerli,Avrupa ve Asya
+4,Ötücü kuşlar,Kırsal ve kentsel alanlar,Saksağan,Kargagiller,55,220,Hepçil,Yerli,Avrasya
+5,Ötücü kuşlar,Çalılık ve bahçeler,Bülbül,Sinekkapangiller,22,20,Böcek ve solucan,Göçmen,Avrupa ve Asya
+6,Kartalsılar,Dağlık alanlar,Kaya Kartalı,Kartalgiller,220,4500,Etçil,Yerli,Kuzey Yarımküre
+7,Baykuşsular,Ormanlık alanlar,Baykuş,Baykuşgiller,100,500,Kemirgen ve böcek,Yerli,Dünya geneli
+8,Flamingosular,Tuz gölleri,Flamingo,Flamingogiller,150,3000,Karides ve yosun,Kısmi göçmen,Afrika ve Avrasya
+9,Ötücü kuşlar,Tarım alanları,Sığırcık,Sığırcıkgiller,40,80,Hepçil,Kısmi göçmen,Avrasya
+10,Penguensiler,Kutup bölgesi,İmparator Penguen,Penguengiller,90,30000,Balık ve kalamar,Yerli,Antarktika
+11,Devekuşusular,Savan ve bozkır,Devekuşu,Devekuşugiller,200,110000,Hepçil,Yerli,Afrika
+12,Yelkovansılar,Açık okyanus,Albatros,Albatrosgiller,350,9000,Balık ve kalamar,Göçmen,Güney Okyanusu
+13,Sağanlar,Tropik ormanlar,Kolibri,Kolibrigiller,11,4,Çiçek nektarı,Kısmi göçmen,Amerika
+14,Ağaçkakansılar,Tropik ormanlar,Tukan,Tukangiller,60,600,Meyve ve böcek,Yerli,Güney Amerika
+15,Kazsılar,Göl ve nehirler,Kuğu,Ördekgiller,220,10000,Su bitkileri,Kısmi göçmen,Avrasya
+16,Turnamsılar,Sulak alanlar,Turna,Turnagiller,220,5500,Hepçil,Göçmen,Avrasya
+17,Pelikansılar,Göl ve deltalar,Pelikan,Pelikangiller,300,10000,Balık,Göçmen,Avrupa ve Asya
+18,Yağmurkuşusular,Kıyı ve limanlar,Martı,Martıgiller,130,900,Hepçil,Kısmi göçmen,Kuzey Yarımküre
+19,Ötücü kuşlar,Orman ve şehirler,Karga,Kargagiller,100,500,Hepçil,Yerli,Kuzey Yarımküre
+20,Ötücü kuşlar,Açık araziler,Kırlangıç,Kırlangıçgiller,33,20,Uçan böcek,Göçmen,Avrupa ve Afrika
+21,Gugukkuşusular,Ormanlık alanlar,Guguk Kuşu,Gugukgiller,58,110,Böcek ve tırtıl,Göçmen,Avrasya
+22,Ağaçkakansılar,Ormanlar,Ağaçkakan,Ağaçkakangiller,38,90,Böcek ve larva,Yerli,Avrasya
+23,Papağansılar,Tropik ormanlar,Amazon Papağanı,Papağangiller,90,1000,Tohum ve meyve,Yerli,Güney Amerika
+24,Kartalsılar,Açık araziler,Şahin,Kartalgiller,120,900,Kemirgen ve kuş,Kısmi göçmen,Kuzey Yarımküre
+25,Doğansılar,Kayalık alanlar,Gökdoğan,Doğangiller,110,900,Kuş avcısı,Kısmi göçmen,Dünya geneli
+26,Tavuksular,Ormanlık alanlar,Tavus Kuşu,Sülüngiller,160,5000,Hepçil,Yerli,Hindistan
+27,Tavuksular,Çalılık ve tarlalar,Sülün,Sülüngiller,80,1200,Tohum ve böcek,Yerli,Asya
+28,Kazsılar,Sulak alanlar,Yaban Kazı,Ördekgiller,165,3500,Otçul,Göçmen,Avrasya
+29,Kazsılar,Göl ve bataklıklar,Yeşilbaş Ördek,Ördekgiller,90,1100,Hepçil,Kısmi göçmen,Kuzey Yarımküre
+30,İbibiksiler,Açık araziler,İbibik,İbibikgiller,46,60,Böcek ve larva,Göçmen,Avrasya ve Afrika
