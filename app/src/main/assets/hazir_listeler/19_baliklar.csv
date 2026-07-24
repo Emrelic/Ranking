@@ -1,0 +1,31 @@
+No,Sınıf,Su Tipi,Balık,Familya,Ortalama Boy (cm),Ağırlık (kg),Beslenme,Yaşam Bölgesi
+1,Kemikli balık,Tuzlu su,Hamsi,Hamsigiller,15,0.02,Plankton,Karadeniz
+2,Kemikli balık,Tuzlu su,Palamut,Uskumrugiller,45,2.5,Küçük balık,Karadeniz ve Marmara
+3,Kemikli balık,Her ikisi,Levrek,Levrekgiller,50,3,Balık ve kabuklu,Ege ve Akdeniz
+4,Kemikli balık,Tuzlu su,Çipura,Mercangiller,40,1.5,Kabuklu ve yumuşakça,Ege ve Akdeniz
+5,Kemikli balık,Her ikisi,Somon,Alabalıkgiller,80,5,Balık ve kabuklu,Kuzey Atlantik
+6,Kemikli balık,Tatlı su,Alabalık,Alabalıkgiller,35,1,Böcek ve küçük balık,Akarsu ve göller
+7,Kemikli balık,Tatlı su,Sazan,Sazangiller,50,3,Hepçil,Göl ve nehirler
+8,Kemikli balık,Tuzlu su,Ton Balığı,Uskumrugiller,200,250,Balık ve kalamar,Açık okyanus
+9,Kıkırdaklı balık,Tuzlu su,Köpekbalığı,Köpekbalığıgiller,400,500,Etçil,Okyanuslar
+10,Kemikli balık,Tuzlu su,Kılıçbalığı,Kılıçbalığıgiller,300,150,Balık ve kalamar,Açık denizler
+11,Kemikli balık,Tuzlu su,Lüfer,Lüfergiller,40,1.5,Küçük balık,Boğazlar ve Marmara
+12,Kemikli balık,Tuzlu su,Uskumru,Uskumrugiller,30,0.5,Plankton ve küçük balık,Kuzey Atlantik
+13,Kemikli balık,Tuzlu su,İstavrit,İstavritgiller,25,0.2,Plankton ve küçük balık,Karadeniz ve Ege
+14,Kemikli balık,Tuzlu su,Barbunya,Tekirgiller,20,0.15,Dip canlıları,Ege ve Akdeniz
+15,Kemikli balık,Tuzlu su,Mezgit,Morinagiller,25,0.2,Küçük balık ve karides,Karadeniz
+16,Kemikli balık,Tuzlu su,Kalkan,Kalkangiller,50,5,Dipteki balıklar,Karadeniz
+17,Kemikli balık,Tuzlu su,Sardalya,Ringagiller,20,0.1,Plankton,Akdeniz ve Atlantik
+18,Kemikli balık,Tatlı su,Turna Balığı,Turnabalığıgiller,80,6,Balık ve kurbağa,Göl ve nehirler
+19,Kemikli balık,Tatlı su,Yayın Balığı,Yayıngiller,150,40,Balık ve kabuklu,Nehir ve barajlar
+20,Kemikli balık,Her ikisi,Yılan Balığı,Yılanbalığıgiller,70,2,Balık ve kabuklu,Nehir ve denizler
+21,Kemikli balık,Her ikisi,Mersin Balığı,Mersinbalığıgiller,200,60,Dip canlıları,Hazar ve Karadeniz
+22,Kıkırdaklı balık,Tuzlu su,Vatoz,Vatozgiller,60,5,Yumuşakça ve kabuklu,Deniz tabanı
+23,Kıkırdaklı balık,Tuzlu su,Manta Vatozu,Vatozgiller,500,1400,Plankton,Tropik okyanuslar
+24,Kemikli balık,Tuzlu su,Fener Balığı,Fenerbalığıgiller,60,20,Balık,Derin deniz
+25,Kemikli balık,Tatlı su,Japon Balığı,Sazangiller,15,0.2,Hepçil,Akvaryum ve göletler
+26,Kemikli balık,Tatlı su,Piraya,Pirayagiller,25,1,Etçil,Amazon Nehri
+27,Kemikli balık,Tuzlu su,Morina,Morinagiller,100,25,Balık ve kabuklu,Kuzey Atlantik
+28,Kemikli balık,Tuzlu su,Dil Balığı,Dilbalığıgiller,35,0.5,Dip canlıları,Akdeniz ve Atlantik
+29,Kemikli balık,Her ikisi,Kefal,Kefalgiller,40,1.5,Yosun ve organik artık,Kıyı ve haliçler
+30,Kemikli balık,Tuzlu su,Sinarit,Mercangiller,60,5,Balık ve kalamar,Ege ve Akdeniz

@@ -25,7 +25,17 @@ fun RankingNavigation(
                 onNavigateToArchive = { navController.navigate("archive") },
                 onNavigateToNewTournament = { navController.navigate("new_tournament_direct") },
                 onNavigateToAbout = { navController.navigate("about") },
-                onNavigateToYouTubeAnalysis = { navController.navigate("youtube_analysis") }
+                onNavigateToYouTubeAnalysis = { navController.navigate("youtube_analysis") },
+                onNavigateToHazirListeler = { navController.navigate("hazir_listeler") }
+            )
+        }
+
+        composable("hazir_listeler") {
+            HazirListelerScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onListImported = { listId ->
+                    navController.navigate("list_view/$listId")
+                }
             )
         }
         

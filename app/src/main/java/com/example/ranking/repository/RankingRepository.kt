@@ -99,6 +99,46 @@ class RankingRepository(
     suspend fun importSongsFromCsv(context: Context, listId: Long, uri: Uri) {
         importSongsFromCsvWithDisplayMode(context, listId, uri, "cards")
     }
+
+    /**
+     * Uygulamaya gömülü hazır listeyi içe aktarır (assets/hazir_listeler/).
+     * CsvReader ile doğru biçimde ayrıştırılır: öğe adı 4. sütundan alınır,
+     * tüm sütunlar tablo görünümü için csvData JSON'una yazılır.
+     * Yeni bir liste oluşturur ve oluşturulan listenin id'sini döner.
+     */
+    suspend fun importPreparedList(context: Context, assetFileName: String, listName: String): Long {
+        val text = context.assets.open("hazir_listeler/$assetFileName").use { input ->
+            input.readBytes().toString(Charsets.UTF_8)
+        }
+        val csvSongs = csvReader.parseText(text)
+        if (csvSongs.isEmpty()) throw Exception("Hazır liste boş veya okunamadı: $assetFileName")
+
+        val listId = createSongList(listName)
+        database.withTransaction {
+            csvSongs.forEach { csvSong ->
+                // Tablo görünümü için _displayMode ekle
+                val csvData = csvSong.csvData?.let { raw ->
+                    try {
+                        org.json.JSONObject(raw).put("_displayMode", "table").toString()
+                    } catch (e: Exception) {
+                        raw
+                    }
+                }
+                songDao.insertSong(
+                    Song(
+                        name = csvSong.name,
+                        artist = csvSong.artist,
+                        album = csvSong.album,
+                        trackNumber = csvSong.trackNumber,
+                        listId = listId,
+                        csvData = csvData
+                    )
+                )
+            }
+            updateSongCount(listId)
+        }
+        return listId
+    }
     
     suspend fun importSongsFromCsvWithDisplayMode(context: Context, listId: Long, uri: Uri, displayMode: String = "cards") {
         val csvSongs = csvReader.readCsvFromUri(context, uri)

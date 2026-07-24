@@ -1,6 +1,8 @@
 package com.example.ranking.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -27,6 +29,7 @@ fun MainMenuScreen(
     onNavigateToNewTournament: () -> Unit,
     onNavigateToAbout: () -> Unit,
     onNavigateToYouTubeAnalysis: () -> Unit = {},
+    onNavigateToHazirListeler: () -> Unit = {},
     viewModel: MainMenuViewModel = viewModel()
 ) {
     val activeTournamentsCount by viewModel.activeTournamentsCount.collectAsState()
@@ -42,10 +45,11 @@ fun MainMenuScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         
         // Header
         Text(
@@ -150,14 +154,20 @@ fun MainMenuScreen(
                     onClick = onNavigateToAbout,
                     modifier = Modifier.weight(1f)
                 )
-                
-                // Empty space for symmetry
-                Spacer(modifier = Modifier.weight(1f))
+
+                MenuCard(
+                    title = "Hazır Listeler",
+                    description = "${com.example.ranking.data.HazirListeler.toplamListe} eğitici hazır liste",
+                    icon = Icons.Default.Star,
+                    onClick = onNavigateToHazirListeler,
+                    modifier = Modifier.weight(1f),
+                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+                )
             }
         }
         
-        Spacer(modifier = Modifier.weight(1f))
-        
+        Spacer(modifier = Modifier.height(24.dp))
+
         // Footer info
         Text(
             text = stringResource(R.string.main_menu_footer),
