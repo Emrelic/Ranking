@@ -71,6 +71,7 @@ import com.example.ranking.R
 import com.example.ranking.data.Match
 import com.example.ranking.data.Song
 import com.example.ranking.ui.viewmodel.RankingViewModel
+import kotlin.math.roundToInt
 
 @Composable
 internal fun CriteriaEvaluationDialog(
@@ -188,6 +189,7 @@ internal fun CriteriaEvaluationDialog(
                             song2Name = song2?.name,
                             criteriaScores = criteriaScores,
                             hasAnyExpanded = hasAnyExpanded,
+                            criteriaSettings = criteriaSettings,
                             onDismiss = onDismiss,
                             onSave = onSave
                         )
@@ -307,6 +309,7 @@ private fun CriteriaEvaluationFooter(
     song2Name: String?,
     criteriaScores: SnapshotStateMap<String, Pair<Double?, Double?>>,
     hasAnyExpanded: Boolean,
+    criteriaSettings: Map<String, Any>? = null,
     onDismiss: () -> Unit,
     onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit
 ) {
@@ -316,6 +319,16 @@ private fun CriteriaEvaluationFooter(
     val team2Total = if (hasAnyExpanded) {
         criteriaScores.values.sumOf { it.second ?: 0.0 }
     } else 0.0
+
+    // "Kriterlerden otomatik kazanan belirle" ayarı + beraberlik eşiği bandı.
+    // Eşik, kazanan tarafın toplam içindeki yüzdesi bu bandın içindeyse
+    // sonucun "çok yakın" sayılıp beraberlik ilan edilmesini sağlar
+    // (örn. 40-60: %55-%45'lik sonuç beraberliktir).
+    val autoWinnerEnabled = criteriaSettings?.get("autoWinnerFromCriteria") as? Boolean ?: false
+    val thresholds = (criteriaSettings?.get("drawThresholdPercent") as? List<*>)
+        ?.mapNotNull { (it as? Number)?.toInt() }
+    val drawMin = thresholds?.getOrNull(0) ?: 51
+    val drawMax = thresholds?.getOrNull(1) ?: 51
 
     Surface(
         modifier = Modifier
@@ -408,6 +421,44 @@ private fun CriteriaEvaluationFooter(
             }
 
             Spacer(modifier = Modifier.height(12.dp))
+
+            // Otomatik kazanan: kriter toplamlarına göre sonucu hesaplar.
+            // Kazanan payı beraberlik eşiği bandındaysa beraberlik yazılır.
+            if (autoWinnerEnabled) {
+                val totalSum = team1Total + team2Total
+                Button(
+                    onClick = {
+                        val result = if (totalSum <= 0.0) {
+                            "draw"
+                        } else {
+                            val team1Percent = team1Total / totalSum * 100.0
+                            when {
+                                team1Percent >= drawMin && team1Percent <= drawMax -> "draw"
+                                team1Total > team2Total -> "team1_wins"
+                                team1Total < team2Total -> "team2_wins"
+                                else -> "draw"
+                            }
+                        }
+                        onSave(criteriaScores.toMap(), result)
+                    },
+                    enabled = totalSum > 0.0,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.criteria_dialog_auto_result),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
             Row(
                 modifier = Modifier
@@ -573,11 +624,14 @@ private fun CriterionBox(
 
             // Açılır pencerecik - Ayarlara göre değişken
             if (isExpanded) {
+                // Puanlama tipi sihirbazda seçilen turnuva ayarından gelir.
+                // (Eski kod hiç yazılmayan "useSeparateScoring" anahtarına
+                // bakıyordu; varsayılan true olduğundan kıyaslamalı slider
+                // hiçbir zaman devreye girmiyordu.)
                 val scoringType = criteriaSettings?.get("scoringType") as? String ?: "separate"
                 val scoreScale = (criteriaSettings?.get("scoreScale") as? Number)?.toInt() ?: 10
-                val useSeparateScoring = criteriaSettings?.get("useSeparateScoring") as? Boolean ?: true
 
-                if (useSeparateScoring || scoringType == "separate") {
+                if (scoringType != "comparative") {
                     // AYRI AYRI DEĞERLENDİRME - Dropdown'lar
                     Row(modifier = Modifier.fillMaxWidth()) {
                         // Sol yarı - Takım 1
@@ -664,7 +718,12 @@ private fun ComparativeSlider(
     currentScores: Pair<Double?, Double?>,
     onScoresChanged: (Double?, Double?) -> Unit
 ) {
-    var sliderValue by remember { mutableStateOf(50f) } // Başlangıç 50% (5-5 dağılım)
+    // Daha önce puan verildiyse slider oradan başlar; yoksa 50% (eşit bölüşüm)
+    var sliderValue by remember {
+        mutableStateOf(
+            currentScores.first?.let { (it * 100f / scoreScale).toFloat().coerceIn(0f, 100f) } ?: 50f
+        )
+    }
 
     Card(
         modifier = Modifier
@@ -682,8 +741,9 @@ private fun ComparativeSlider(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                val team1Score = (sliderValue * scoreScale / 100f).toInt()
-                val team2Score = ((100f - sliderValue) * scoreScale / 100f).toInt()
+                // Toplam her zaman skalaya eşit kalır (örn. 10 puan -> 3-7)
+                val team1Score = (sliderValue * scoreScale / 100f).roundToInt()
+                val team2Score = scoreScale - team1Score
 
                 Text(
                     text = "$team1Name: $team1Score",
@@ -701,16 +761,17 @@ private fun ComparativeSlider(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Çubuk
+            // Çubuk - tam puan adımlarıyla (0..skala arası bölüşüm)
             Slider(
                 value = sliderValue,
                 onValueChange = { newValue ->
                     sliderValue = newValue
-                    val team1Score = (newValue * scoreScale / 100f).toDouble()
-                    val team2Score = ((100f - newValue) * scoreScale / 100f).toDouble()
-                    onScoresChanged(team1Score, team2Score)
+                    val team1Score = (newValue * scoreScale / 100f).roundToInt()
+                    val team2Score = scoreScale - team1Score
+                    onScoresChanged(team1Score.toDouble(), team2Score.toDouble())
                 },
                 valueRange = 0f..100f,
+                steps = (scoreScale - 1).coerceAtLeast(0),
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.primary,
                     activeTrackColor = MaterialTheme.colorScheme.primary,

@@ -56,6 +56,24 @@ fun RankingScreen(
     var showScoreDialog by remember { mutableStateOf(false) }
     var showResetConfirmDialog by remember { mutableStateOf(false) }
 
+    // Turnuvanın kriter ayarları (panel otomatik açılış + zorunlu kriter için)
+    var criteriaSettingsMap by remember { mutableStateOf<Map<String, Any>?>(null) }
+    LaunchedEffect(uiState.activeTournamentId) {
+        criteriaSettingsMap = uiState.activeTournamentId
+            ?.let { viewModel.getCriteriaSettingsForTournament(it) }
+    }
+    val autoOpenCriteriaPanel = criteriaSettingsMap?.get("autoOpenCriteriaPanel") as? Boolean ?: false
+    val mandatoryCriteria = criteriaSettingsMap?.get("mandatoryCriteria") as? Boolean ?: false
+
+    // "Kriter panelini otomatik aç": yeni maç ekrana gelince dialog kendiliğinden açılır
+    LaunchedEffect(uiState.currentMatch?.id, autoOpenCriteriaPanel) {
+        if (autoOpenCriteriaPanel && uiState.currentMatch != null && !uiState.isComplete &&
+            method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT")
+        ) {
+            showCriteriaDialog = true
+        }
+    }
+
     // Sıfırlama onayı - tek dokunuşla turnuva silinmesini engeller
     if (showResetConfirmDialog) {
         AlertDialog(
@@ -193,7 +211,8 @@ fun RankingScreen(
                 showScoreDialog = showScoreDialog,
                 onShowScoreDialog = { showScoreDialog = it },
                 onPauseSession = { viewModel.pauseSession() },
-                onResetRequest = { showResetConfirmDialog = true }
+                onResetRequest = { showResetConfirmDialog = true },
+                mandatoryCriteria = mandatoryCriteria
             )
             "ELIMINATION" -> EliminationContent(
                 uiState = uiState,
@@ -610,7 +629,10 @@ private fun MatchBasedContent(
     showScoreDialog: Boolean = false,
     onShowScoreDialog: (Boolean) -> Unit = {},
     onPauseSession: () -> Unit = {},
-    onResetRequest: () -> Unit = {}
+    onResetRequest: () -> Unit = {},
+    // "Kriter değerlendirmesi zorunlu" ayarı: sonuç girişleri (takım seçimi,
+    // beraberlik) doğrudan işlenmez, kriter dialoguna yönlendirilir
+    mandatoryCriteria: Boolean = false
 ) {
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
@@ -719,7 +741,10 @@ private fun MatchBasedContent(
                 emreState = uiState.emreState,
                 borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                 onClick = {
-                    if (!useScores) {
+                    if (mandatoryCriteria) {
+                        // Zorunlu kriter: sonuç kriter dialogu üzerinden verilir
+                        onShowCriteriaDialog(true)
+                    } else if (!useScores) {
                         uiState.song1?.id?.let { songId ->
                             onMatchResult(match.id, songId)
                         }
@@ -743,7 +768,14 @@ private fun MatchBasedContent(
                 // İkili karşılaştırmada beraberlik yok: her soruda kazanan seçilmeli
                 if (method != "MERGE_SORT") {
                     Button(
-                        onClick = { onMatchResult(match.id, null) }, // null = beraberlik
+                        onClick = {
+                            if (mandatoryCriteria) {
+                                // Zorunlu kriter: beraberlik de dialog üzerinden verilir
+                                onShowCriteriaDialog(true)
+                            } else {
+                                onMatchResult(match.id, null) // null = beraberlik
+                            }
+                        },
                         modifier = Modifier
                             .weight(2f)
                             .fillMaxHeight(),
@@ -899,7 +931,10 @@ private fun MatchBasedContent(
                 emreState = uiState.emreState,
                 borderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
                 onClick = {
-                    if (!useScores) {
+                    if (mandatoryCriteria) {
+                        // Zorunlu kriter: sonuç kriter dialogu üzerinden verilir
+                        onShowCriteriaDialog(true)
+                    } else if (!useScores) {
                         uiState.song2?.id?.let { songId ->
                             onMatchResult(match.id, songId)
                         }

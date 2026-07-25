@@ -135,6 +135,7 @@
     <string name="ranking_cancel">Vazgeç</string>
     <string name="ranking_pause">Duraklat</string>
     <string name="ranking_vs">VS</string>
+    <string name="criteria_dialog_auto_result">KRİTERLERDEN SONUCU İŞLE</string>
     <string name="ranking_standings_menu">Puan Durumu</string>
     <string name="ranking_fixture">Fikstür</string>
     <string name="ranking_matches">Maçlar</string>
