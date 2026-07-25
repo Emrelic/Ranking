@@ -1,9 +1,11 @@
 package com.example.ranking.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.NewTournamentViewModel
@@ -39,7 +42,7 @@ fun NewTournamentScreen(
     var currentStep by remember { mutableStateOf(1) }
     var selectedSongList by remember { mutableStateOf<com.example.ranking.data.SongList?>(null) }
     var tournamentName by remember { mutableStateOf("") }
-    var selectedSystemType by remember { mutableStateOf("SWISS") }
+    var selectedSystemType by remember { mutableStateOf("MERGE_SORT") }
     var selectedCriterionList by remember { mutableStateOf<com.example.ranking.data.CriterionList?>(null) }
     
     // Criteria settings
@@ -347,59 +350,201 @@ private fun SystemTypeSelectionStep(
     selectedSystemType: String,
     onSystemTypeSelected: (String) -> Unit
 ) {
+    // SINGLE_ELIMINATION ve DOUBLE_ELIMINATION algoritmaları tamamlanana
+    // kadar listeden çıkarıldı (yarım özellik kırık deneyim yaratıyordu)
     val systemTypes = listOf(
-        "DIRECT_SCORING" to stringResource(R.string.new_tournament_system_direct_scoring),
-        "MERGE_SORT" to stringResource(R.string.new_tournament_system_merge_sort),
-        "LEAGUE" to stringResource(R.string.new_tournament_system_league),
-        "SWISS" to stringResource(R.string.new_tournament_system_swiss),
-        "EMRE_CORRECT" to stringResource(R.string.new_tournament_system_emre),
-        "ELIMINATION" to stringResource(R.string.new_tournament_system_elimination),
-        "FULL_ELIMINATION" to stringResource(R.string.new_tournament_system_full_elimination)
-        // SINGLE_ELIMINATION ve DOUBLE_ELIMINATION algoritmaları tamamlanana
-        // kadar listeden çıkarıldı (yarım özellik kırık deneyim yaratıyordu)
+        "MERGE_SORT",
+        "EMRE_CORRECT",
+        "SWISS",
+        "LEAGUE",
+        "DIRECT_SCORING",
+        "ELIMINATION",
+        "FULL_ELIMINATION"
     )
-    
-    Column {
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Text(
             text = stringResource(R.string.new_tournament_system_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Text(
+            text = stringResource(R.string.new_tournament_system_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
         LazyColumn(
-            modifier = Modifier.heightIn(max = 400.dp), // MAX HEIGHT - SCROLL İÇİN
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 600.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(systemTypes) { (type, description) ->
-                Card(
-                    onClick = { onSystemTypeSelected(type) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (selectedSystemType == type) 
-                            MaterialTheme.colorScheme.primaryContainer 
-                        else 
-                            MaterialTheme.colorScheme.surface
+            itemsIndexed(systemTypes) { index, type ->
+                SystemTypeCard(
+                    orderNumber = index + 1,
+                    type = type,
+                    isSelected = selectedSystemType == type,
+                    onClick = { onSystemTypeSelected(type) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SystemTypeCard(
+    orderNumber: Int,
+    type: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    val isRecommended = type in setOf("MERGE_SORT", "EMRE_CORRECT")
+
+    val title = stringResource(
+        when (type) {
+            "MERGE_SORT" -> R.string.new_tournament_system_merge_sort_title
+            "EMRE_CORRECT" -> R.string.new_tournament_system_emre_title
+            "SWISS" -> R.string.new_tournament_system_swiss_title
+            "LEAGUE" -> R.string.new_tournament_system_league_title
+            "DIRECT_SCORING" -> R.string.new_tournament_system_direct_scoring_title
+            "ELIMINATION" -> R.string.new_tournament_system_elimination_title
+            else -> R.string.new_tournament_system_full_elimination_title
+        }
+    )
+    val description = stringResource(
+        when (type) {
+            "MERGE_SORT" -> R.string.new_tournament_system_merge_sort
+            "EMRE_CORRECT" -> R.string.new_tournament_system_emre
+            "SWISS" -> R.string.new_tournament_system_swiss
+            "LEAGUE" -> R.string.new_tournament_system_league
+            "DIRECT_SCORING" -> R.string.new_tournament_system_direct_scoring
+            "ELIMINATION" -> R.string.new_tournament_system_elimination
+            else -> R.string.new_tournament_system_full_elimination
+        }
+    )
+    val detailInfo = stringResource(
+        when (type) {
+            "MERGE_SORT" -> R.string.new_tournament_system_merge_sort_detail
+            "EMRE_CORRECT" -> R.string.new_tournament_system_emre_detail
+            "SWISS" -> R.string.new_tournament_system_swiss_detail
+            "LEAGUE" -> R.string.new_tournament_system_league_detail
+            "DIRECT_SCORING" -> R.string.new_tournament_system_direct_scoring_detail
+            "ELIMINATION" -> R.string.new_tournament_system_elimination_detail
+            else -> R.string.new_tournament_system_full_elimination_detail
+        }
+    )
+
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (isSelected)
+                    Modifier.border(
+                        width = 3.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(12.dp)
                     )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        val parts = description.split(" - ")
-                        Text(
-                            text = parts[0],
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        if (parts.size > 1) {
+                else
+                    Modifier
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+            else
+                MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 8.dp else 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "$orderNumber. $title",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isSelected)
+                            MaterialTheme.colorScheme.primary
+                        else
+                            MaterialTheme.colorScheme.onSurface
+                    )
+
+                    if (isRecommended) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f),
+                            shape = RoundedCornerShape(4.dp),
+                            modifier = Modifier.padding(top = 4.dp)
+                        ) {
                             Text(
-                                text = parts[1],
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = stringResource(R.string.new_tournament_recommended_badge),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onTertiary,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
                 }
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { isExpanded = !isExpanded },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                            contentDescription = stringResource(R.string.new_tournament_detail_toggle),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    if (isSelected) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = stringResource(R.string.new_tournament_selected),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 1.4.em
+            )
+
+            if (isExpanded && detailInfo.isNotEmpty()) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+                Text(
+                    text = detailInfo,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    lineHeight = 1.5.em,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
             }
         }
     }
