@@ -863,7 +863,15 @@ private fun MatchBasedContent(
 
                 // SKOR GİR - sağda, yeşil
                 Button(
-                    onClick = { onShowScoreDialog(true) },
+                    onClick = {
+                        if (mandatoryCriteria) {
+                            // Zorunlu kriter: skorla sonuç girişi de kriter
+                            // dialoguna yönlendirilir (kriter atlanamaz)
+                            onShowCriteriaDialog(true)
+                        } else {
+                            onShowScoreDialog(true)
+                        }
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
