@@ -94,8 +94,9 @@ fun NewTournamentScreen(
     var useCriteria by rememberSaveable { mutableStateOf(false) }
     var scoringType by rememberSaveable { mutableStateOf("comparative") }
     var scoreScale by rememberSaveable { mutableStateOf(10) }
-    var drawThresholdMin by rememberSaveable { mutableStateOf(51) }
-    var drawThresholdMax by rememberSaveable { mutableStateOf(51) }
+    // Beraberlik bandı simetriktir: min = 100 - max (50-50 = band kapalı)
+    var drawThresholdMin by rememberSaveable { mutableStateOf(50) }
+    var drawThresholdMax by rememberSaveable { mutableStateOf(50) }
     var autoWinnerFromCriteria by rememberSaveable { mutableStateOf(false) }
     var autoOpenCriteriaPanel by rememberSaveable { mutableStateOf(false) }
     var mandatoryCriteria by rememberSaveable { mutableStateOf(false) }
@@ -823,7 +824,9 @@ private fun CriteriaSettingsStep(
                 }
             }
             
-            // Draw Threshold
+            // Draw Threshold - TEK simetrik slider: 50-50 / 40-60 / 30-70 / 20-80
+            // (Eski tasarım iki ayrı min-max slider'dı ve 45-55 aralığına
+            // kilitliydi; 40-60 gibi bantlar hiç ayarlanamıyordu)
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
@@ -831,26 +834,22 @@ private fun CriteriaSettingsStep(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
-                    
-                    Row {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.new_tournament_min_percent))
-                            Slider(
-                                value = drawThresholdMin.toFloat(),
-                                onValueChange = { onDrawThresholdMinChanged(it.toInt()) },
-                                valueRange = 45f..55f
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(R.string.new_tournament_max_percent))
-                            Slider(
-                                value = drawThresholdMax.toFloat(),
-                                onValueChange = { onDrawThresholdMaxChanged(it.toInt()) },
-                                valueRange = 45f..55f
-                            )
-                        }
-                    }
+                    Text(
+                        text = stringResource(R.string.new_tournament_draw_threshold_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Slider(
+                        value = drawThresholdMax.toFloat().coerceIn(50f, 80f),
+                        onValueChange = {
+                            val upper = it.toInt()
+                            onDrawThresholdMaxChanged(upper)
+                            onDrawThresholdMinChanged(100 - upper)
+                        },
+                        valueRange = 50f..80f,
+                        steps = 29
+                    )
                 }
             }
             

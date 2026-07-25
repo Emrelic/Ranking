@@ -327,8 +327,8 @@ private fun CriteriaEvaluationFooter(
     val autoWinnerEnabled = criteriaSettings?.get("autoWinnerFromCriteria") as? Boolean ?: false
     val thresholds = (criteriaSettings?.get("drawThresholdPercent") as? List<*>)
         ?.mapNotNull { (it as? Number)?.toInt() }
-    val drawMin = thresholds?.getOrNull(0) ?: 51
-    val drawMax = thresholds?.getOrNull(1) ?: 51
+    val drawMin = thresholds?.getOrNull(0) ?: 50
+    val drawMax = thresholds?.getOrNull(1) ?: 50
 
     Surface(
         modifier = Modifier
@@ -477,11 +477,12 @@ private fun CriteriaEvaluationFooter(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "VI. Mehme",
+                            text = song1Name ?: stringResource(R.string.common_team1),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            maxLines = 1
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = stringResource(R.string.criteria_dialog_won),
@@ -517,11 +518,12 @@ private fun CriteriaEvaluationFooter(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "V. Mehme",
+                            text = song2Name ?: stringResource(R.string.common_team2),
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center,
-                            maxLines = 1
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = stringResource(R.string.criteria_dialog_won),
@@ -723,6 +725,15 @@ private fun ComparativeSlider(
         mutableStateOf(
             currentScores.first?.let { (it * 100f / scoreScale).toFloat().coerceIn(0f, 100f) } ?: 50f
         )
+    }
+
+    // Kriter açılır açılmaz başlangıç bölüşümü (örn. 5-5) toplama yazılır;
+    // aksi halde slider'a hiç dokunulmazsa bu kriter toplamda görünmüyordu
+    LaunchedEffect(Unit) {
+        if (currentScores.first == null && currentScores.second == null) {
+            val team1Score = (sliderValue * scoreScale / 100f).roundToInt()
+            onScoresChanged(team1Score.toDouble(), (scoreScale - team1Score).toDouble())
+        }
     }
 
     Card(

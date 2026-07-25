@@ -86,6 +86,7 @@
     <string name="new_tournament_scoring_separate">Ayrı ayrı (her takıma puan)</string>
     <string name="new_tournament_score_scale">Puan Skalası: %1$d</string>
     <string name="new_tournament_draw_threshold">Beraberlik Eşiği: %%%1$d - %%%2$d</string>
+    <string name="new_tournament_draw_threshold_hint">Otomatik kazanan hesaplanırken kriter toplamı bu bandın içinde kalırsa sonuç beraberlik sayılır. 50-50 = band kapalı; sağa çektikçe genişler (40-60, 30-70...)</string>
     <string name="new_tournament_min_percent" formatted="false">Min %</string>
     <string name="new_tournament_max_percent" formatted="false">Max %</string>
     <string name="new_tournament_extra_settings">Ek Ayarlar</string>
