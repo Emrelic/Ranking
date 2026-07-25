@@ -23,8 +23,10 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.TournamentRankingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,10 +69,17 @@ fun TournamentRankingScreen(
         TopAppBar(
             title = { 
                 Column {
-                    Text(tournament?.name ?: "Turnuva")
+                    Text(tournament?.name ?: stringResource(R.string.tournament_ranking_fallback_title))
                     if (tournament != null) {
                         Text(
-                            text = "${tournament.systemType} - ${if (tournament.criterionListId != null) "Kriterli" else "Kritersiz"}",
+                            text = stringResource(
+                                R.string.tournament_ranking_type_format,
+                                tournament.systemType,
+                                stringResource(
+                                    if (tournament.criterionListId != null) R.string.tournament_ranking_with_criteria
+                                    else R.string.tournament_ranking_without_criteria
+                                )
+                            ),
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -78,7 +87,7 @@ fun TournamentRankingScreen(
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             },
             actions = {
@@ -86,7 +95,7 @@ fun TournamentRankingScreen(
                     TextButton(onClick = {
                         tournament?.let { onNavigateToResults(it.songListId, it.systemType) }
                     }) {
-                        Text("Sonuçlar")
+                        Text(stringResource(R.string.tournament_ranking_results))
                     }
                 }
             }
@@ -117,7 +126,7 @@ fun TournamentRankingScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Hata",
+                        text = stringResource(R.string.common_error),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -127,7 +136,7 @@ fun TournamentRankingScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.initializeTournament(tournamentId) }) {
-                        Text("Tekrar Dene")
+                        Text(stringResource(R.string.tournament_ranking_retry))
                     }
                 }
             }
@@ -164,7 +173,7 @@ fun TournamentRankingScreen(
                 if (standings.isNotEmpty()) {
                     item {
                         Text(
-                            text = "Sıralama",
+                            text = stringResource(R.string.tournament_ranking_standings),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
@@ -213,7 +222,7 @@ private fun CurrentMatchCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Şu Anki Maç",
+                text = stringResource(R.string.tournament_ranking_current_match),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -223,7 +232,7 @@ private fun CurrentMatchCard(
             
             // Match teams display would go here
             Text(
-                text = "Takım A vs Takım B", // Placeholder
+                text = stringResource(R.string.tournament_ranking_match_placeholder), // Placeholder
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -239,27 +248,27 @@ private fun CurrentMatchCard(
                     onClick = onTeam1Win,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Takım A")
+                    Text(stringResource(R.string.tournament_ranking_team_a))
                 }
-                
+
                 Spacer(modifier = Modifier.width(8.dp))
-                
+
                 Button(
                     onClick = onDraw,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary
                     )
                 ) {
-                    Text("Berabere")
+                    Text(stringResource(R.string.common_draw))
                 }
-                
+
                 Spacer(modifier = Modifier.width(8.dp))
-                
+
                 Button(
                     onClick = onTeam2Win,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Takım B")
+                    Text(stringResource(R.string.tournament_ranking_team_b))
                 }
             }
             
@@ -273,7 +282,7 @@ private fun CurrentMatchCard(
                 ) {
                     Icon(Icons.Default.Star, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Kriterler ile Değerlendir")
+                    Text(stringResource(R.string.tournament_ranking_evaluate_with_criteria))
                 }
             }
         }
@@ -302,15 +311,15 @@ private fun CompletionCard(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "🎉 Turnuva Tamamlandı!",
+                text = stringResource(R.string.tournament_ranking_completed),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Button(onClick = onViewResults) {
-                Text("Sonuçları Görüntüle")
+                Text(stringResource(R.string.ranking_view_results))
             }
         }
     }
@@ -335,7 +344,7 @@ private fun StandingCard(
             )
             
             Text(
-                text = "0 puan", // Will show actual points
+                text = stringResource(R.string.tournament_ranking_points_placeholder), // Will show actual points
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -377,7 +386,7 @@ private fun CriteriaEvaluationDialog(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "Kriter Değerlendirmesi",
+                        text = stringResource(R.string.criteria_dialog_title),
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -393,7 +402,7 @@ private fun CriteriaEvaluationDialog(
                     ) {
                         Icon(
                             Icons.Default.Close,
-                            contentDescription = "Kapat",
+                            contentDescription = stringResource(R.string.common_close),
                             tint = MaterialTheme.colorScheme.onPrimary,
                             modifier = Modifier.size(16.dp)
                         )
@@ -415,7 +424,7 @@ private fun CriteriaEvaluationDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "TAKIM A",
+                            text = stringResource(R.string.tournament_ranking_team_a_upper),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -431,7 +440,7 @@ private fun CriteriaEvaluationDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "TAKIM B",
+                            text = stringResource(R.string.tournament_ranking_team_b_upper),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -454,7 +463,7 @@ private fun CriteriaEvaluationDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     
                     Text(
-                        text = "Kriter değerlendirme çerçevelerini göster",
+                        text = stringResource(R.string.tournament_ranking_show_criteria_frames),
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
@@ -470,7 +479,7 @@ private fun CriteriaEvaluationDialog(
                     if (showCriteriaEvaluation) {
                         items(5) { index ->
                             CriterionRow(
-                                criterionName = "Kriter ${index + 1}",
+                                criterionName = stringResource(R.string.tournament_ranking_criterion_n, index + 1),
                                 team1Score = null,
                                 team2Score = null,
                                 onTeam1ScoreChange = { },
@@ -486,7 +495,7 @@ private fun CriteriaEvaluationDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Kriter değerlendirme çerçevelerini görmek için yukarıdaki kutucuğu işaretleyin",
+                                    text = stringResource(R.string.tournament_ranking_check_hint),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     textAlign = TextAlign.Center
@@ -526,7 +535,7 @@ private fun CriteriaEvaluationDialog(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        text = "Takım A",
+                                        text = stringResource(R.string.tournament_ranking_team_a),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
@@ -554,7 +563,7 @@ private fun CriteriaEvaluationDialog(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        text = "Takım B",
+                                        text = stringResource(R.string.tournament_ranking_team_b),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
@@ -593,14 +602,14 @@ private fun CriteriaEvaluationDialog(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "Takım A",
+                                text = stringResource(R.string.tournament_ranking_team_a),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Kazandı",
+                                text = stringResource(R.string.criteria_dialog_won),
                                 style = MaterialTheme.typography.labelMedium,
                                 textAlign = TextAlign.Center
                             )
@@ -618,14 +627,14 @@ private fun CriteriaEvaluationDialog(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "Berabere",
+                                text = stringResource(R.string.common_draw),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Skor eşit",
+                                text = stringResource(R.string.tournament_ranking_score_equal),
                                 style = MaterialTheme.typography.labelMedium,
                                 textAlign = TextAlign.Center
                             )
@@ -643,14 +652,14 @@ private fun CriteriaEvaluationDialog(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "Takım B",
+                                text = stringResource(R.string.tournament_ranking_team_b),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "Kazandı",
+                                text = stringResource(R.string.criteria_dialog_won),
                                 style = MaterialTheme.typography.labelMedium,
                                 textAlign = TextAlign.Center
                             )
@@ -671,7 +680,7 @@ private fun CriteriaEvaluationDialog(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("İptal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                     
                     Button(
@@ -681,7 +690,7 @@ private fun CriteriaEvaluationDialog(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Kaydet")
+                        Text(stringResource(R.string.common_save))
                     }
                 }
             }
@@ -721,7 +730,7 @@ private fun CriterionRow(
                 // Takım A skoru
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Takım A",
+                        text = stringResource(R.string.tournament_ranking_team_a),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -735,7 +744,7 @@ private fun CriterionRow(
                             onTeam1ScoreChange(it.toDoubleOrNull())
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Puan") },
+                        placeholder = { Text(stringResource(R.string.ranking_points)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                 }
@@ -743,7 +752,7 @@ private fun CriterionRow(
                 // Takım B skoru
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Takım B",
+                        text = stringResource(R.string.tournament_ranking_team_b),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -757,7 +766,7 @@ private fun CriterionRow(
                             onTeam2ScoreChange(it.toDoubleOrNull())
                         },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Puan") },
+                        placeholder = { Text(stringResource(R.string.ranking_points)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
                     )
                 }

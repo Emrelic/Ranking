@@ -150,8 +150,8 @@ fun MainMenuScreen(
                 )
 
                 MenuCard(
-                    title = "Hazır Listeler",
-                    description = "${com.example.ranking.data.HazirListeler.toplamListe} eğitici hazır liste",
+                    title = stringResource(R.string.main_menu_hazir_listeler),
+                    description = stringResource(R.string.main_menu_hazir_listeler_desc, com.example.ranking.data.HazirListeler.toplamListe),
                     icon = Icons.Default.Star,
                     onClick = onNavigateToHazirListeler,
                     modifier = Modifier.weight(1f),

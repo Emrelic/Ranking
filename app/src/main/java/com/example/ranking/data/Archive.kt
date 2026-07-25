@@ -3,7 +3,10 @@ package com.example.ranking.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "archives")
+@Entity(
+    tableName = "archives",
+    indices = [androidx.room.Index("method")]
+)
 data class Archive(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

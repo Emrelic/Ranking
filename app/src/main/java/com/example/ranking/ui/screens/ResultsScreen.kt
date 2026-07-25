@@ -41,7 +41,7 @@ fun ResultsScreen(
     ) {
         TopAppBar(
             title = {
-                Text(stringResource(R.string.results_title, getMethodTitle(method)))
+                Text(stringResource(R.string.results_title, com.example.ranking.ui.screens.ranking.methodTitle(method)))
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
@@ -657,16 +657,4 @@ private fun ArchiveDialog(
             }
         }
     )
-}
-
-private fun getMethodTitle(method: String): String {
-    return when (method) {
-        "DIRECT_SCORING" -> "Direkt Puanlama"
-        "LEAGUE" -> "Lig Sistemi"
-        "ELIMINATION" -> "Eleme Sistemi"
-        "SWISS" -> "İsviçre Sistemi"
-        "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
-        "MERGE_SORT" -> "İkili Karşılaştırma"
-        else -> "Sıralama"
-    }
 }

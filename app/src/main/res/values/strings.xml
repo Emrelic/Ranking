@@ -7,6 +7,17 @@
     <string name="common_delete">Sil</string>
     <string name="common_ok">Tamam</string>
     <string name="common_item_count">%1$d öğe</string>
+    <string name="common_save">Kaydet</string>
+    <string name="common_close">Kapat</string>
+    <string name="common_add">Ekle</string>
+    <string name="common_edit">Düzenle</string>
+    <string name="common_error">Hata</string>
+    <string name="common_draw">Berabere</string>
+    <string name="common_team1">Takım 1</string>
+    <string name="common_team2">Takım 2</string>
+
+    <!-- Method Titles -->
+    <string name="method_title_fallback">Sıralama</string>
 
     <!-- Main Menu -->
     <string name="main_menu_title">Ranking Sistemi</string>
@@ -26,6 +37,8 @@
     <string name="main_menu_about">Hakkında</string>
     <string name="main_menu_about_desc">Uygulama bilgileri</string>
     <string name="main_menu_footer">Geliştirilmiş İsviçre Sistemi v2.0\nKriterler Sistemi Aktif</string>
+    <string name="main_menu_hazir_listeler">Hazır Listeler</string>
+    <string name="main_menu_hazir_listeler_desc">%1$d eğitici hazır liste</string>
 
     <!-- New Tournament -->
     <string name="new_tournament_title">Yeni Turnuva</string>
@@ -217,4 +230,143 @@
     <string name="criteria_delete_dialog_title">Kriter Listesi Silme</string>
     <string name="criteria_delete_dialog_text">\'%1$s\' kriter listesini silmek istediğinizden emin misiniz?</string>
     <string name="criteria_edit">Düzenle</string>
+    <string name="criteria_preview">Kriterler: %1$s</string>
+
+    <!-- Results (score labels) -->
+    <string name="results_score_out_of_100">%1$d/100</string>
+    <string name="results_score_points_format">%1$d puan</string>
+    <string name="results_score_label_points">puan</string>
+    <string name="results_score_label_league">lig puanı</string>
+    <string name="results_score_label_swiss">turnuva puanı</string>
+    <string name="results_score_label_rank">sıra puanı</string>
+    <string name="results_h2h_format">H2H: %1$d/%2$d</string>
+
+    <!-- About -->
+    <string name="about_title">Hakkında</string>
+    <string name="about_app_name">Ranking Pro</string>
+    <string name="about_subtitle">Gelişmiş Sıralama ve Değerlendirme Sistemi</string>
+    <string name="about_what_title">Ranking Sistemi Nedir?</string>
+    <string name="about_what_text">Liste şeklinde içeri atılmış veya teker teker girilmiş çeşitli öğeleri sıralamak, puanlamak, birbiri arasında kıyaslamak veya turnuva şeklinde eşleşmelerini ve karşılaşmalarını sağlamak, puan durumlarını, eşleştirmelerini yönetmek, kriterlere göre değerlendirilmesini sağlamak üzere oluşturulmuş bir sistemdir.</string>
+    <string name="about_purposes_title">Kullanım Amaçları</string>
+    <string name="about_purpose_1">1. Sportif Karşılaşma - Turnuva ve lig yönetimi</string>
+    <string name="about_purpose_2">2. Sübjektif Değerlendirme - Kişisel tercih sıralamaları</string>
+    <string name="about_purpose_3">3. Kriter Değerlendirmesi - Çok kriterli karar verme</string>
+    <string name="about_purpose_4">4. Farkındalık - Öz farkındalık geliştirme</string>
+    <string name="about_purpose_5">5. Eğitim - Eğitim amaçlı sıralama ve karşılaştırma</string>
+    <string name="about_purpose_6">6. Hafıza Tazeleme - Bilgi pekiştirme</string>
+    <string name="about_purpose_7">7. Matematiksel Sıralama - Sayısal veri analizi</string>
+    <string name="about_purpose_8">8. Dikkat ve Odaklanma - Konsantrasyon geliştirme</string>
+    <string name="about_purpose_9">9. Eğlence - Eğlenceli aktiviteler</string>
+    <string name="about_examples_title">Örnek Kullanımlar</string>
+    <string name="about_example_1">🏆 Sportif: 18 takımın turnuva eşleşmeleri ve puan durumları</string>
+    <string name="about_example_2">🎵 Müzik: Şarkıcının 80 şarkısını en iyiden kötüye sıralama</string>
+    <string name="about_example_3">👑 Tarih: Padişahları belirli kriterlere göre değerlendirme</string>
+    <string name="about_example_4">🔢 Matematik: Rastgele sayıları sıralama ve tutarlılık testi</string>
+    <string name="about_example_5">🌍 Eğitim: Ülkeleri ekonomik göstergelere göre sıralama</string>
+    <string name="about_example_6">⭐ Estetik: Artistleri güzellik sıralamasına sokma</string>
+    <string name="about_example_7">⚽ Spor: Futbolcu preferanslarını kıyaslama</string>
+    <string name="about_example_8">💰 Finans: BIST 100 hisselerini analiz etme</string>
+    <string name="about_example_9">🏪 Ticaret: Ürün tercihlerini kriter bazlı değerlendirme</string>
+    <string name="about_footer">Bu uygulama çeşitli sıralama ve değerlendirme ihtiyaçlarınız için tasarlanmıştır.</string>
+
+    <!-- Tournament Ranking -->
+    <string name="tournament_ranking_fallback_title">Turnuva</string>
+    <string name="tournament_ranking_type_format">%1$s - %2$s</string>
+    <string name="tournament_ranking_with_criteria">Kriterli</string>
+    <string name="tournament_ranking_without_criteria">Kritersiz</string>
+    <string name="tournament_ranking_results">Sonuçlar</string>
+    <string name="tournament_ranking_retry">Tekrar Dene</string>
+    <string name="tournament_ranking_standings">Sıralama</string>
+    <string name="tournament_ranking_current_match">Şu Anki Maç</string>
+    <string name="tournament_ranking_match_placeholder">Takım A vs Takım B</string>
+    <string name="tournament_ranking_team_a">Takım A</string>
+    <string name="tournament_ranking_team_b">Takım B</string>
+    <string name="tournament_ranking_evaluate_with_criteria">Kriterler ile Değerlendir</string>
+    <string name="tournament_ranking_completed">🎉 Turnuva Tamamlandı!</string>
+    <string name="tournament_ranking_points_placeholder">0 puan</string>
+    <string name="tournament_ranking_team_a_upper">TAKIM A</string>
+    <string name="tournament_ranking_team_b_upper">TAKIM B</string>
+    <string name="tournament_ranking_show_criteria_frames">Kriter değerlendirme çerçevelerini göster</string>
+    <string name="tournament_ranking_criterion_n">Kriter %1$d</string>
+    <string name="tournament_ranking_check_hint">Kriter değerlendirme çerçevelerini görmek için yukarıdaki kutucuğu işaretleyin</string>
+    <string name="tournament_ranking_score_equal">Skor eşit</string>
+
+    <!-- List Edit -->
+    <string name="list_edit_title">Liste Rötuşlama</string>
+    <string name="list_edit_add_header">Başlık Ekle</string>
+    <string name="list_edit_add_column">Sütun Ekle</string>
+    <string name="list_edit_add_row">Satır Ekle</string>
+    <string name="list_edit_saving">Kaydediyor...</string>
+    <string name="list_edit_loading">Liste yükleniyor...</string>
+    <string name="list_edit_new_column_before">Yeni Sütun Ekle (%1$s sütunundan önce)</string>
+    <string name="list_edit_new_column_end">Yeni Sütun Ekle (En sağa)</string>
+    <string name="list_edit_column_name">Sütun Adı</string>
+    <string name="list_edit_new_row_after">Yeni Satır Ekle (%1$d. satırın altına)</string>
+    <string name="list_edit_new_row_end">Yeni Satır Ekle (En alta)</string>
+    <string name="list_edit_header_design_title">Başlık Dizayn Et</string>
+    <string name="list_edit_header_design_hint">Her sütun için başlık belirleyin:</string>
+    <string name="list_edit_column_header_label">%1$s Sütun Başlığı</string>
+    <string name="list_edit_header_placeholder">Başlık girin...</string>
+    <string name="list_edit_apply">Uygula</string>
+
+    <!-- Hazir Listeler -->
+    <string name="hazir_title">Hazır Listeler</string>
+    <string name="hazir_importing_title">İçe Aktarılıyor</string>
+    <string name="hazir_importing_text">%1$s hazırlanıyor...</string>
+    <string name="hazir_success_title">Liste Eklendi</string>
+    <string name="hazir_success_text">\"%1$s\" (%2$d öğe) listelerinize eklendi. Şimdi turnuva başlatabilir veya listeyi görüntüleyebilirsiniz.</string>
+    <string name="hazir_open_list">Listeyi Aç</string>
+    <string name="hazir_info">%1$d hazır liste. Dokunduğunuz liste tek adımda listelerinize eklenir; 🖼 işaretlilerde görseller internetten yüklenir.</string>
+
+    <!-- Create Criteria -->
+    <string name="create_criteria_csv_error">CSV dosyası okunamadı: %1$s</string>
+    <string name="create_criteria_edit_title">Kriter Listesi Düzenle</string>
+    <string name="create_criteria_update">Güncelle</string>
+    <string name="create_criteria_create">Oluştur</string>
+    <string name="create_criteria_name_placeholder">Örn: Müzik Değerlendirme Kriterleri</string>
+    <string name="create_criteria_import_csv">CSV\'den İçe Aktar</string>
+    <string name="create_criteria_load_sample">Örnek Yükle</string>
+    <string name="create_criteria_new_criterion">Yeni Kriter</string>
+    <string name="create_criteria_criterion_placeholder">Kriter adını girin</string>
+    <string name="create_criteria_add_criterion">Kriter Ekle</string>
+    <string name="create_criteria_count">Kriterler (%1$d)</string>
+    <string name="create_criteria_empty">Henüz kriter eklenmedi</string>
+
+    <!-- List View -->
+    <string name="list_view_tab_cards">Takım Kartları</string>
+    <string name="list_view_tab_table">Tablo Formatı</string>
+    <string name="list_view_title_fallback">Liste İçeriği</string>
+    <string name="list_view_list_fallback">Liste</string>
+    <string name="list_view_empty">Liste boş</string>
+    <string name="list_view_total_items">Toplam %1$d öğe</string>
+    <string name="list_view_no_table_data">Tablo verisi bulunamadı</string>
+
+    <!-- Matchings List -->
+    <string name="matchings_header">Eşleştirmeler - %1$d. Tur</string>
+    <string name="matchings_simple">Basit</string>
+    <string name="matchings_advanced">Komplike</string>
+    <string name="matchings_count">%1$d Eşleştirme</string>
+    <string name="matchings_empty">Henüz eşleştirme yok</string>
+    <string name="matchings_go_scoring">▶ Puanlama Ekranına Geç</string>
+    <string name="matchings_match_number">%1$d. Eşleşme</string>
+    <string name="matchings_label_name">Ad</string>
+    <string name="matchings_label_artist">Sanatçı</string>
+
+    <!-- Criteria Evaluation Dialog -->
+    <string name="criteria_dialog_title">Kriter Değerlendirmesi</string>
+    <string name="criteria_dialog_won">Kazandı</string>
+    <string name="criteria_dialog_select">Seç</string>
+    <string name="criteria_dialog_default_criterion_1">Teknik Yetenek</string>
+    <string name="criteria_dialog_default_criterion_2">Yaratıcılık</string>
+    <string name="criteria_dialog_default_criterion_3">Performans</string>
+    <string name="criteria_dialog_default_criterion_4">Orijinallik</string>
+    <string name="criteria_dialog_default_criterion_5">Sahne Hâkimiyeti</string>
+
+    <!-- Score Input Dialog -->
+    <string name="score_dialog_title">Skor Girişi</string>
+    <string name="score_dialog_team_score_label">%1$s Skoru</string>
+
+    <!-- Standings Dialog -->
+    <string name="standings_dialog_title">Puan Durumu</string>
+    <string name="standings_dialog_placeholder">Puan durumu burada gösterilecek</string>
 </resources>

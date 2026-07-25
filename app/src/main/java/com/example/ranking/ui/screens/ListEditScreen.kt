@@ -21,11 +21,13 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.ListEditViewModel
 import com.example.ranking.data.Song
 import org.json.JSONObject
@@ -174,13 +176,13 @@ fun ListEditScreen(
             IconButton(onClick = onNavigateBack) {
                 Icon(
                     Icons.Default.ArrowBack,
-                    contentDescription = "Geri",
+                    contentDescription = stringResource(R.string.common_back),
                     tint = Color.White
                 )
             }
-            
+
             Text(
-                "Liste Rötuşlama",
+                stringResource(R.string.list_edit_title),
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
@@ -218,7 +220,7 @@ fun ListEditScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
-                        Text("Başlık Ekle", fontSize = 9.sp, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.list_edit_add_header), fontSize = 9.sp, textAlign = TextAlign.Center)
                     }
                 }
 
@@ -242,7 +244,7 @@ fun ListEditScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(Icons.Default.AddCircle, contentDescription = null, modifier = Modifier.size(14.dp))
-                        Text("Sütun Ekle", fontSize = 9.sp, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.list_edit_add_column), fontSize = 9.sp, textAlign = TextAlign.Center)
                     }
                 }
                 
@@ -265,7 +267,7 @@ fun ListEditScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
-                        Text("Satır Ekle", fontSize = 9.sp, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.list_edit_add_row), fontSize = 9.sp, textAlign = TextAlign.Center)
                     }
                 }
                 
@@ -296,7 +298,7 @@ fun ListEditScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(14.dp))
-                        Text("Sil", fontSize = 9.sp, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.common_delete), fontSize = 9.sp, textAlign = TextAlign.Center)
                     }
                 }
                 
@@ -352,7 +354,7 @@ fun ListEditScreen(
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                         }
                         Text(
-                            text = if (isSaving) "Kaydediyor..." else "Kaydet",
+                            text = stringResource(if (isSaving) R.string.list_edit_saving else R.string.common_save),
                             fontSize = 9.sp,
                             textAlign = TextAlign.Center
                         )
@@ -641,7 +643,7 @@ fun ListEditScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Liste yükleniyor...")
+                        Text(stringResource(R.string.list_edit_loading))
                     }
                 }
             }
@@ -773,9 +775,9 @@ fun AddColumnDialog(
             ) {
                 Text(
                     if (selectedColumnIndex != null) {
-                        "Yeni Sütun Ekle (${('A' + selectedColumnIndex).toString()} sütunundan önce)"
+                        stringResource(R.string.list_edit_new_column_before, ('A' + selectedColumnIndex).toString())
                     } else {
-                        "Yeni Sütun Ekle (En sağa)"
+                        stringResource(R.string.list_edit_new_column_end)
                     },
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -784,7 +786,7 @@ fun AddColumnDialog(
                 OutlinedTextField(
                     value = columnName,
                     onValueChange = { columnName = it },
-                    label = { Text("Sütun Adı") },
+                    label = { Text(stringResource(R.string.list_edit_column_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -795,18 +797,18 @@ fun AddColumnDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("İptal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
-                        onClick = { 
+                        onClick = {
                             if (columnName.isNotBlank()) {
                                 onAddColumn(columnName.trim())
                             }
                         },
                         enabled = columnName.isNotBlank()
                     ) {
-                        Text("Ekle")
+                        Text(stringResource(R.string.common_add))
                     }
                 }
             }
@@ -834,9 +836,9 @@ fun AddRowDialog(
             ) {
                 Text(
                     if (selectedRowIndex != null) {
-                        "Yeni Satır Ekle (${selectedRowIndex + 1}. satırın altına)"
+                        stringResource(R.string.list_edit_new_row_after, selectedRowIndex + 1)
                     } else {
-                        "Yeni Satır Ekle (En alta)"
+                        stringResource(R.string.list_edit_new_row_end)
                     },
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
@@ -865,13 +867,13 @@ fun AddRowDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("İptal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = { onAddRow(rowData) }
                     ) {
-                        Text("Ekle")
+                        Text(stringResource(R.string.common_add))
                     }
                 }
             }
@@ -901,13 +903,13 @@ fun HeaderDesignDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    "Başlık Dizayn Et",
+                    stringResource(R.string.list_edit_header_design_title),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    "Her sütun için başlık belirleyin:",
+                    stringResource(R.string.list_edit_header_design_hint),
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -949,10 +951,10 @@ fun HeaderDesignDialog(
                                 onValueChange = { newValue ->
                                     headerInputs = headerInputs + (columnLetter to newValue)
                                 },
-                                label = { Text("$columnLetter Sütun Başlığı") },
+                                label = { Text(stringResource(R.string.list_edit_column_header_label, columnLetter)) },
                                 modifier = Modifier.weight(1f),
                                 singleLine = true,
-                                placeholder = { Text("Başlık girin...") }
+                                placeholder = { Text(stringResource(R.string.list_edit_header_placeholder)) }
                             )
                         }
                     }
@@ -964,7 +966,7 @@ fun HeaderDesignDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("İptal")
+                        Text(stringResource(R.string.common_cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -976,7 +978,7 @@ fun HeaderDesignDialog(
                             onHeadersUpdated(newHeaders)
                         }
                     ) {
-                        Text("Uygula")
+                        Text(stringResource(R.string.list_edit_apply))
                     }
                 }
             }

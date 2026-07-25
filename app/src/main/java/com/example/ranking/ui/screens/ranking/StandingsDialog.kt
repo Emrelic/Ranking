@@ -8,7 +8,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.RankingViewModel
 
 @Composable
@@ -21,10 +23,10 @@ internal fun StandingsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Puan Durumu") },
+        title = { Text(stringResource(R.string.standings_dialog_title)) },
         text = {
             Column {
-                Text("Puan durumu burada gösterilecek")
+                Text(stringResource(R.string.standings_dialog_placeholder))
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -33,7 +35,7 @@ internal fun StandingsDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Kapat")
+                Text(stringResource(R.string.common_close))
             }
         }
     )

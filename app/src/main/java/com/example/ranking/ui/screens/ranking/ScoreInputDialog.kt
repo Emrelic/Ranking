@@ -37,12 +37,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.ranking.R
 import com.example.ranking.data.Match
 import com.example.ranking.data.Song
 
@@ -96,7 +98,7 @@ internal fun ScoreInputDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Skor Girişi",
+                        text = stringResource(R.string.score_dialog_title),
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -112,7 +114,7 @@ internal fun ScoreInputDialog(
                 ) {
                     Icon(
                         Icons.Default.Close,
-                        contentDescription = "Kapat",
+                        contentDescription = stringResource(R.string.common_close),
                         tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
@@ -127,7 +129,7 @@ internal fun ScoreInputDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = song1?.name?.uppercase() ?: "TAKIM 1",
+                            text = song1?.name?.uppercase() ?: stringResource(R.string.ranking_team1_fallback),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -143,7 +145,7 @@ internal fun ScoreInputDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = song2?.name?.uppercase() ?: "TAKIM 2",
+                            text = song2?.name?.uppercase() ?: stringResource(R.string.ranking_team2_fallback),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onTertiary,
@@ -166,7 +168,7 @@ internal fun ScoreInputDialog(
                     OutlinedTextField(
                         value = team1Score,
                         onValueChange = { team1Score = it },
-                        label = { Text("${song1?.name ?: "Takım 1"} Skoru") },
+                        label = { Text(stringResource(R.string.score_dialog_team_score_label, song1?.name ?: stringResource(R.string.common_team1))) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -189,7 +191,7 @@ internal fun ScoreInputDialog(
                     OutlinedTextField(
                         value = team2Score,
                         onValueChange = { team2Score = it },
-                        label = { Text("${song2?.name ?: "Takım 2"} Skoru") },
+                        label = { Text(stringResource(R.string.score_dialog_team_score_label, song2?.name ?: stringResource(R.string.common_team2))) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.weight(1f),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -221,7 +223,7 @@ internal fun ScoreInputDialog(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("İptal")
+                            Text(stringResource(R.string.common_cancel))
                         }
 
                         Button(
@@ -233,7 +235,7 @@ internal fun ScoreInputDialog(
                             modifier = Modifier.weight(1f),
                             enabled = team1Score.isNotBlank() && team2Score.isNotBlank()
                         ) {
-                            Text("Kaydet")
+                            Text(stringResource(R.string.common_save))
                         }
                     }
                 }

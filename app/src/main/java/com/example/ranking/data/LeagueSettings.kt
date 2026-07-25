@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "league_settings",
-    indices = [Index("listId")]
+    indices = [Index("listId"), Index("listId", "rankingMethod")]
 )
 data class LeagueSettings(
     @PrimaryKey(autoGenerate = true)

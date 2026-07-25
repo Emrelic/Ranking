@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "matches",
-    indices = [Index("listId"), Index("tournamentId")]
+    indices = [Index("listId"), Index("tournamentId"), Index("listId", "rankingMethod")]
 )
 data class Match(
     @PrimaryKey(autoGenerate = true)

@@ -3,7 +3,10 @@ package com.example.ranking.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "criterion_lists")
+@Entity(
+    tableName = "criterion_lists",
+    indices = [androidx.room.Index("isActive")]
+)
 data class CriterionList(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

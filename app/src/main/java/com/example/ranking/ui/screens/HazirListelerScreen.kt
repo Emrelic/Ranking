@@ -12,9 +12,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.data.HazirListe
 import com.example.ranking.data.HazirListeler
 import com.example.ranking.ui.viewmodel.HazirListelerViewModel
@@ -33,14 +35,14 @@ fun HazirListelerScreen(
         is HazirListelerViewModel.ImportState.Importing -> {
             AlertDialog(
                 onDismissRequest = { },
-                title = { Text("İçe Aktarılıyor") },
+                title = { Text(stringResource(R.string.hazir_importing_title)) },
                 text = {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         CircularProgressIndicator()
-                        Text("${state.ad} hazırlanıyor...")
+                        Text(stringResource(R.string.hazir_importing_text, state.ad))
                     }
                 },
                 confirmButton = { }
@@ -50,27 +52,27 @@ fun HazirListelerScreen(
             AlertDialog(
                 onDismissRequest = { viewModel.clearState() },
                 icon = { Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary) },
-                title = { Text("Liste Eklendi") },
-                text = { Text("\"${state.ad}\" (${state.ogeSayisi} öğe) listelerinize eklendi. Şimdi turnuva başlatabilir veya listeyi görüntüleyebilirsiniz.") },
+                title = { Text(stringResource(R.string.hazir_success_title)) },
+                text = { Text(stringResource(R.string.hazir_success_text, state.ad, state.ogeSayisi)) },
                 confirmButton = {
                     TextButton(onClick = {
                         val id = state.listId
                         viewModel.clearState()
                         onListImported(id)
-                    }) { Text("Listeyi Aç") }
+                    }) { Text(stringResource(R.string.hazir_open_list)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { viewModel.clearState() }) { Text("Kapat") }
+                    TextButton(onClick = { viewModel.clearState() }) { Text(stringResource(R.string.common_close)) }
                 }
             )
         }
         is HazirListelerViewModel.ImportState.Error -> {
             AlertDialog(
                 onDismissRequest = { viewModel.clearState() },
-                title = { Text("Hata") },
+                title = { Text(stringResource(R.string.common_error)) },
                 text = { Text(state.mesaj) },
                 confirmButton = {
-                    TextButton(onClick = { viewModel.clearState() }) { Text("Tamam") }
+                    TextButton(onClick = { viewModel.clearState() }) { Text(stringResource(R.string.common_ok)) }
                 }
             )
         }
@@ -79,10 +81,10 @@ fun HazirListelerScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text("Hazır Listeler") },
+            title = { Text(stringResource(R.string.hazir_title)) },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             }
         )
@@ -104,7 +106,7 @@ fun HazirListelerScreen(
                     ) {
                         Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
                         Text(
-                            text = "${HazirListeler.toplamListe} hazır liste. Dokunduğunuz liste tek adımda listelerinize eklenir; 🖼 işaretlilerde görseller internetten yüklenir.",
+                            text = stringResource(R.string.hazir_info, HazirListeler.toplamListe),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSecondaryContainer
                         )
@@ -174,7 +176,7 @@ private fun HazirListeCard(
                 color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Text(
-                    text = "${liste.ogeSayisi} öğe",
+                    text = stringResource(R.string.common_item_count, liste.ogeSayisi),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,

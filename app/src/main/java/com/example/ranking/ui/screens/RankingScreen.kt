@@ -27,6 +27,7 @@ import com.example.ranking.ui.screens.ranking.HIDDEN_CSV_KEYS
 import com.example.ranking.ui.screens.ranking.ItemImage
 import com.example.ranking.ui.screens.ranking.extractImageUrl
 import com.example.ranking.ui.screens.ranking.MatchingsListContent
+import com.example.ranking.ui.screens.ranking.methodTitle
 import com.example.ranking.ui.screens.ranking.ScoreInputDialog
 import com.example.ranking.ui.screens.ranking.StandingsDialog
 import com.example.ranking.ui.screens.ranking.TeamSelectionPanel
@@ -91,7 +92,7 @@ fun RankingScreen(
             ) {
         TopAppBar(
             title = {
-                Text(getMethodTitle(method))
+                Text(methodTitle(method))
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
@@ -275,19 +276,6 @@ fun RankingScreen(
 }
 
 // YENİ 6 KATMANLI TASARIM TAMAMLANDI - Eksik fonksiyonlar ekleniyor
-
-private fun getMethodTitle(method: String): String {
-    return when (method) {
-        "DIRECT_SCORING" -> "Direkt Puanlama"
-        "LEAGUE" -> "Lig Sistemi"
-        "SWISS" -> "İsviçre Sistemi"
-        "EMRE_CORRECT" -> "Geliştirilmiş İsviçre Sistemi"
-        "ELIMINATION" -> "Eleme Sistemi"
-        "FULL_ELIMINATION" -> "Tam Eleme"
-        "MERGE_SORT" -> "İkili Karşılaştırma"
-        else -> "Ranking Sistemi"
-    }
-}
 
 @Composable
 internal fun TeamCardContent(

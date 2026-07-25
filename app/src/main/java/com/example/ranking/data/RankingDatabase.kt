@@ -10,7 +10,7 @@ import com.example.ranking.data.dao.*
 
 @Database(
     entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class, Tournament::class, CriterionList::class, CriterionScore::class, YouTubeTrack::class, YouTubePlaylist::class, PlaylistTrack::class],
-    version = 17,
+    version = 18,
     exportSchema = true
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -462,6 +462,25 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Sorgu desenleriyle eşleşen eksik indeksler: en sık kullanılan
+         * WHERE listId AND rankingMethod filtreleri bileşik indekse,
+         * isCompleted/method/isActive filtreleri tekil indekse bağlanır.
+         * Entity anotasyonlarıyla birebir aynı adlar kullanılır.
+         */
+        private val MIGRATION_17_18 = object : Migration(17, 18) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_matches_listId_rankingMethod ON matches (listId, rankingMethod)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_ranking_results_listId_rankingMethod ON ranking_results (listId, rankingMethod)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_voting_sessions_listId_rankingMethod ON voting_sessions (listId, rankingMethod)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_voting_sessions_isCompleted ON voting_sessions (isCompleted)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_league_settings_listId_rankingMethod ON league_settings (listId, rankingMethod)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_archives_method ON archives (method)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_criterion_lists_isActive ON criterion_lists (isActive)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_tournaments_isCompleted ON tournaments (isCompleted)")
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -469,7 +488,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18)
                 // fallbackToDestructiveMigration KALDIRILDI:
                 // Kapsanmayan bir sürüm geçişinde tüm kullanıcı verisini sessizce
                 // siliyordu. Artık tüm geçişler explicit migration ile yapılır;

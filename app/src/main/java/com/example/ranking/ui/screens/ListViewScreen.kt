@@ -17,9 +17,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.SongListViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,24 +51,27 @@ fun ListViewScreen(
 
     // Tab state
     var selectedTabIndex by remember { mutableStateOf(0) }
-    val tabs = listOf("Takım Kartları", "Tablo Formatı")
+    val tabs = listOf(
+        stringResource(R.string.list_view_tab_cards),
+        stringResource(R.string.list_view_tab_table)
+    )
 
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         TopAppBar(
             title = {
-                Text(songList?.name ?: "Liste İçeriği")
+                Text(songList?.name ?: stringResource(R.string.list_view_title_fallback))
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             },
             actions = {
                 if (onNavigateToEdit != null && songs.isNotEmpty()) {
                     IconButton(onClick = onNavigateToEdit) {
-                        Icon(Icons.Default.Edit, contentDescription = "Düzenle")
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.common_edit))
                     }
                 }
             }
@@ -78,7 +83,7 @@ fun ListViewScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Liste boş",
+                    text = stringResource(R.string.list_view_empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -92,13 +97,13 @@ fun ListViewScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Text(
-                    text = songList?.name ?: "Liste",
+                    text = songList?.name ?: stringResource(R.string.list_view_list_fallback),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 Text(
-                    text = "Toplam ${songs.size} öğe",
+                    text = stringResource(R.string.list_view_total_items, songs.size),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                 )
@@ -163,7 +168,7 @@ fun ListViewScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Tablo verisi bulunamadı")
+                        Text(stringResource(R.string.list_view_no_table_data))
                     }
                 }
             }

@@ -21,7 +21,7 @@ import androidx.room.ForeignKey
             onDelete = ForeignKey.SET_NULL
         )
     ],
-    indices = [Index("songListId"), Index("criterionListId")]
+    indices = [Index("songListId"), Index("criterionListId"), Index("isCompleted")]
 )
 data class Tournament(
     @PrimaryKey(autoGenerate = true)

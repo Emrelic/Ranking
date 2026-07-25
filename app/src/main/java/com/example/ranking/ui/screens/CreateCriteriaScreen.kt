@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.ui.viewmodel.CreateCriteriaViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -52,7 +54,7 @@ fun CreateCriteriaScreen(
                     errorMessage = null
                 },
                 onError = { error ->
-                    errorMessage = "CSV dosyası okunamadı: $error"
+                    errorMessage = context.getString(R.string.create_criteria_csv_error, error)
                 }
             )
         }
@@ -80,10 +82,10 @@ fun CreateCriteriaScreen(
             .padding(16.dp)
     ) {
         TopAppBar(
-            title = { Text(if (isEditMode) "Kriter Listesi Düzenle" else "Yeni Kriter Listesi") },
+            title = { Text(stringResource(if (isEditMode) R.string.create_criteria_edit_title else R.string.criteria_new_list)) },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             },
             actions = {
@@ -129,7 +131,7 @@ fun CreateCriteriaScreen(
                     if (isLoading) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp))
                     } else {
-                        Text(if (isEditMode) "Güncelle" else "Oluştur")
+                        Text(stringResource(if (isEditMode) R.string.create_criteria_update else R.string.create_criteria_create))
                     }
                 }
             }
@@ -155,8 +157,8 @@ fun CreateCriteriaScreen(
         OutlinedTextField(
             value = listName,
             onValueChange = { listName = it },
-            label = { Text("Liste Adı") },
-            placeholder = { Text("Örn: Müzik Değerlendirme Kriterleri") },
+            label = { Text(stringResource(R.string.create_list_name_label)) },
+            placeholder = { Text(stringResource(R.string.create_criteria_name_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
@@ -173,7 +175,7 @@ fun CreateCriteriaScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("CSV'den İçe Aktar")
+                Text(stringResource(R.string.create_criteria_import_csv))
             }
             
             OutlinedButton(
@@ -194,7 +196,7 @@ fun CreateCriteriaScreen(
             ) {
                 Icon(Icons.Default.List, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Örnek Yükle")
+                Text(stringResource(R.string.create_criteria_load_sample))
             }
         }
 
@@ -208,8 +210,8 @@ fun CreateCriteriaScreen(
             OutlinedTextField(
                 value = newCriterion,
                 onValueChange = { newCriterion = it },
-                label = { Text("Yeni Kriter") },
-                placeholder = { Text("Kriter adını girin") },
+                label = { Text(stringResource(R.string.create_criteria_new_criterion)) },
+                placeholder = { Text(stringResource(R.string.create_criteria_criterion_placeholder)) },
                 modifier = Modifier.weight(1f),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
@@ -224,7 +226,7 @@ fun CreateCriteriaScreen(
                 },
                 enabled = newCriterion.isNotBlank()
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Kriter Ekle")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.create_criteria_add_criterion))
             }
         }
 
@@ -232,7 +234,7 @@ fun CreateCriteriaScreen(
 
         // Criteria list
         Text(
-            text = "Kriterler (${criteria.size})",
+            text = stringResource(R.string.create_criteria_count, criteria.size),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
@@ -260,7 +262,7 @@ fun CreateCriteriaScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Henüz kriter eklenmedi",
+                            text = stringResource(R.string.create_criteria_empty),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -293,7 +295,7 @@ fun CreateCriteriaScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Delete,
-                                    contentDescription = "Sil",
+                                    contentDescription = stringResource(R.string.common_delete),
                                     tint = MaterialTheme.colorScheme.error
                                 )
                             }

@@ -9,9 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.ranking.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,10 +24,10 @@ fun AboutScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         TopAppBar(
-            title = { Text("Hakkında") },
+            title = { Text(stringResource(R.string.about_title)) },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Geri")
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.common_back))
                 }
             }
         )
@@ -39,7 +41,7 @@ fun AboutScreen(
         ) {
             // Başlık
             Text(
-                text = "Ranking Pro",
+                text = stringResource(R.string.about_app_name),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -49,7 +51,7 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(8.dp))
             
             Text(
-                text = "Gelişmiş Sıralama ve Değerlendirme Sistemi",
+                text = stringResource(R.string.about_subtitle),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -66,7 +68,7 @@ fun AboutScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Ranking Sistemi Nedir?",
+                        text = stringResource(R.string.about_what_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -75,7 +77,7 @@ fun AboutScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     Text(
-                        text = "Liste şeklinde içeri atılmış veya teker teker girilmiş çeşitli öğeleri sıralamak, puanlamak, birbiri arasında kıyaslamak veya turnuva şeklinde eşleşmelerini ve karşılaşmalarını sağlamak, puan durumlarını, eşleştirmelerini yönetmek, kriterlere göre değerlendirilmesini sağlamak üzere oluşturulmuş bir sistemdir.",
+                        text = stringResource(R.string.about_what_text),
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Justify
                     )
@@ -93,7 +95,7 @@ fun AboutScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Kullanım Amaçları",
+                        text = stringResource(R.string.about_purposes_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -102,15 +104,15 @@ fun AboutScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     val purposes = listOf(
-                        "1. Sportif Karşılaşma - Turnuva ve lig yönetimi",
-                        "2. Sübjektif Değerlendirme - Kişisel tercih sıralamaları", 
-                        "3. Kriter Değerlendirmesi - Çok kriterli karar verme",
-                        "4. Farkındalık - Öz farkındalık geliştirme",
-                        "5. Eğitim - Eğitim amaçlı sıralama ve karşılaştırma",
-                        "6. Hafıza Tazeleme - Bilgi pekiştirme",
-                        "7. Matematiksel Sıralama - Sayısal veri analizi",
-                        "8. Dikkat ve Odaklanma - Konsantrasyon geliştirme",
-                        "9. Eğlence - Eğlenceli aktiviteler"
+                        stringResource(R.string.about_purpose_1),
+                        stringResource(R.string.about_purpose_2),
+                        stringResource(R.string.about_purpose_3),
+                        stringResource(R.string.about_purpose_4),
+                        stringResource(R.string.about_purpose_5),
+                        stringResource(R.string.about_purpose_6),
+                        stringResource(R.string.about_purpose_7),
+                        stringResource(R.string.about_purpose_8),
+                        stringResource(R.string.about_purpose_9)
                     )
                     
                     purposes.forEach { purpose ->
@@ -134,7 +136,7 @@ fun AboutScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "Örnek Kullanımlar",
+                        text = stringResource(R.string.about_examples_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -143,15 +145,15 @@ fun AboutScreen(
                     Spacer(modifier = Modifier.height(12.dp))
                     
                     val examples = listOf(
-                        "🏆 Sportif: 18 takımın turnuva eşleşmeleri ve puan durumları",
-                        "🎵 Müzik: Şarkıcının 80 şarkısını en iyiden kötüye sıralama",
-                        "👑 Tarih: Padişahları belirli kriterlere göre değerlendirme",
-                        "🔢 Matematik: Rastgele sayıları sıralama ve tutarlılık testi",
-                        "🌍 Eğitim: Ülkeleri ekonomik göstergelere göre sıralama",
-                        "⭐ Estetik: Artistleri güzellik sıralamasına sokma",
-                        "⚽ Spor: Futbolcu preferanslarını kıyaslama",
-                        "💰 Finans: BIST 100 hisselerini analiz etme",
-                        "🏪 Ticaret: Ürün tercihlerini kriter bazlı değerlendirme"
+                        stringResource(R.string.about_example_1),
+                        stringResource(R.string.about_example_2),
+                        stringResource(R.string.about_example_3),
+                        stringResource(R.string.about_example_4),
+                        stringResource(R.string.about_example_5),
+                        stringResource(R.string.about_example_6),
+                        stringResource(R.string.about_example_7),
+                        stringResource(R.string.about_example_8),
+                        stringResource(R.string.about_example_9)
                     )
                     
                     examples.forEach { example ->
@@ -168,7 +170,7 @@ fun AboutScreen(
             
             // Footer
             Text(
-                text = "Bu uygulama çeşitli sıralama ve değerlendirme ihtiyaçlarınız için tasarlanmıştır.",
+                text = stringResource(R.string.about_footer),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center

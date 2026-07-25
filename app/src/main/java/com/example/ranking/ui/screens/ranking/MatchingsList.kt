@@ -33,9 +33,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.ranking.R
 import com.example.ranking.data.Match
 import com.example.ranking.data.Song
 import com.example.ranking.ui.viewmodel.RankingViewModel
@@ -55,7 +57,7 @@ internal fun MatchingsListContent(
     ) {
         // Header
         Text(
-            text = "Eşleştirmeler - ${uiState.currentRound}. Tur",
+            text = stringResource(R.string.matchings_header, uiState.currentRound),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -77,7 +79,7 @@ internal fun MatchingsListContent(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Basit",
+                    text = stringResource(R.string.matchings_simple),
                     color = if (!isAdvancedView) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -93,7 +95,7 @@ internal fun MatchingsListContent(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "Komplike",
+                    text = stringResource(R.string.matchings_advanced),
                     color = if (isAdvancedView) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -101,7 +103,7 @@ internal fun MatchingsListContent(
 
         // Sayaç bilgisi
         Text(
-            text = "${uiState.matchingsList.size} Eşleştirme",
+            text = stringResource(R.string.matchings_count, uiState.matchingsList.size),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -110,7 +112,7 @@ internal fun MatchingsListContent(
         // Eşleştirmeler listesi
         if (uiState.matchingsList.isEmpty()) {
             Text(
-                text = "Henüz eşleştirme yok",
+                text = stringResource(R.string.matchings_empty),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
@@ -160,7 +162,7 @@ internal fun MatchingsListContent(
                 )
             ) {
                 Text(
-                    text = "▶ Puanlama Ekranına Geç",
+                    text = stringResource(R.string.matchings_go_scoring),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -259,7 +261,7 @@ internal fun SimpleMatchCard(
         ) {
             // Maç numarası
             Text(
-                text = "${match.matchNumber}. Eşleşme",
+                text = stringResource(R.string.matchings_match_number, match.matchNumber),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -274,7 +276,7 @@ internal fun SimpleMatchCard(
             ) {
                 // Takım 1
                 Text(
-                    text = song1?.name ?: "Takım 1",
+                    text = song1?.name ?: stringResource(R.string.common_team1),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary,
@@ -292,7 +294,7 @@ internal fun SimpleMatchCard(
 
                 // Takım 2
                 Text(
-                    text = song2?.name ?: "Takım 2",
+                    text = song2?.name ?: stringResource(R.string.common_team2),
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xFF388E3C),
@@ -329,7 +331,7 @@ internal fun AdvancedMatchCard(
         ) {
             // Maç numarası başlığı
             Text(
-                text = "${match.matchNumber}. Eşleşme",
+                text = stringResource(R.string.matchings_match_number, match.matchNumber),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -442,9 +444,9 @@ private fun MatchTeamCard(
                 } else if (song != null) {
                     // CSV verisi yoksa temel bilgiler gösterilir
                     Column(modifier = Modifier.padding(8.dp)) {
-                        TableRow("Ad", song.name)
+                        TableRow(stringResource(R.string.matchings_label_name), song.name)
                         if (song.artist.isNotBlank()) {
-                            TableRow("Sanatçı", song.artist)
+                            TableRow(stringResource(R.string.matchings_label_artist), song.artist)
                         }
                     }
                 }

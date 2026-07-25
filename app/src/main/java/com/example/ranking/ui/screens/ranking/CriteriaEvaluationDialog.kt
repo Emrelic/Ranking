@@ -56,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,6 +67,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ranking.R
 import com.example.ranking.data.Match
 import com.example.ranking.data.Song
 import com.example.ranking.ui.viewmodel.RankingViewModel
@@ -149,11 +151,11 @@ internal fun CriteriaEvaluationDialog(
             }
 
             val finalCriteria = if (criteria.isNotEmpty()) criteria else listOf(
-                "Teknik Yetenek",
-                "Yaratıcılık",
-                "Performans",
-                "Orijinallik",
-                "Sahne Hâkimiyeti"
+                stringResource(R.string.criteria_dialog_default_criterion_1),
+                stringResource(R.string.criteria_dialog_default_criterion_2),
+                stringResource(R.string.criteria_dialog_default_criterion_3),
+                stringResource(R.string.criteria_dialog_default_criterion_4),
+                stringResource(R.string.criteria_dialog_default_criterion_5)
             )
 
             val hasAnyExpanded by remember {
@@ -206,7 +208,7 @@ internal fun CriteriaEvaluationDialog(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Kriter Değerlendirmesi",
+                                text = stringResource(R.string.criteria_dialog_title),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
@@ -216,7 +218,7 @@ internal fun CriteriaEvaluationDialog(
                             ) {
                                 Icon(
                                     Icons.Default.Close,
-                                    contentDescription = "Kapat",
+                                    contentDescription = stringResource(R.string.common_close),
                                     tint = MaterialTheme.colorScheme.onBackground
                                 )
                             }
@@ -237,7 +239,7 @@ internal fun CriteriaEvaluationDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = song1?.name?.uppercase() ?: "TAKIM 1",
+                                    text = song1?.name?.uppercase() ?: stringResource(R.string.ranking_team1_fallback),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -255,7 +257,7 @@ internal fun CriteriaEvaluationDialog(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = song2?.name?.uppercase() ?: "TAKIM 2",
+                                    text = song2?.name?.uppercase() ?: stringResource(R.string.ranking_team2_fallback),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -278,8 +280,8 @@ internal fun CriteriaEvaluationDialog(
                             items(finalCriteria) { criterion ->
                                 CriterionBox(
                                     criterionName = criterion,
-                                    team1Name = song1?.name ?: "Takım 1",
-                                    team2Name = song2?.name ?: "Takım 2",
+                                    team1Name = song1?.name ?: stringResource(R.string.common_team1),
+                                    team2Name = song2?.name ?: stringResource(R.string.common_team2),
                                     isExpanded = expandedCriteria[criterion] ?: false,
                                     currentScores = criteriaScores[criterion] ?: Pair(null, null),
                                     criteriaSettings = criteriaSettings,
@@ -352,7 +354,7 @@ private fun CriteriaEvaluationFooter(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = song1Name ?: "Takım 1",
+                            text = song1Name ?: stringResource(R.string.common_team1),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.85f),
@@ -387,7 +389,7 @@ private fun CriteriaEvaluationFooter(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = song2Name ?: "Takım 2",
+                            text = song2Name ?: stringResource(R.string.common_team2),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f),
@@ -431,7 +433,7 @@ private fun CriteriaEvaluationFooter(
                             maxLines = 1
                         )
                         Text(
-                            text = "Kazandı",
+                            text = stringResource(R.string.criteria_dialog_won),
                             style = MaterialTheme.typography.labelSmall,
                             textAlign = TextAlign.Center
                         )
@@ -447,7 +449,7 @@ private fun CriteriaEvaluationFooter(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Berabere",
+                        text = stringResource(R.string.common_draw),
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
@@ -471,7 +473,7 @@ private fun CriteriaEvaluationFooter(
                             maxLines = 1
                         )
                         Text(
-                            text = "Kazandı",
+                            text = stringResource(R.string.criteria_dialog_won),
                             style = MaterialTheme.typography.labelSmall,
                             textAlign = TextAlign.Center
                         )
@@ -489,13 +491,13 @@ private fun CriteriaEvaluationFooter(
                     onClick = onDismiss,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("İptal")
+                    Text(stringResource(R.string.common_cancel))
                 }
                 Button(
                     onClick = { onSave(criteriaScores.toMap(), "save_only") },
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Kaydet")
+                    Text(stringResource(R.string.common_save))
                 }
             }
         }
@@ -735,7 +737,7 @@ private fun ScoreDropdown(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = score?.toInt()?.toString() ?: "Seç",
+                text = score?.toInt()?.toString() ?: stringResource(R.string.criteria_dialog_select),
                 style = MaterialTheme.typography.bodyLarge, // BÜYÜK FONT
                 fontWeight = FontWeight.Bold // BOLD FONT
             )
