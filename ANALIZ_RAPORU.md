@@ -1,4 +1,11 @@
 # RANKING PRO — KAPSAMLI SİSTEM ANALİZ RAPORU
+
+> **DURUM GÜNCELLEMESİ (2026-07-25, aynı gün):** Bölüm 10'daki Faz 0-4 yol
+> haritası UYGULANDI (commit'ler: `002eccb`..HEAD). Derleme + tüm birim
+> testleri yeşil. Rapordaki bulgular denetim anının (HEAD `f70ea02`)
+> fotoğrafıdır; çözülenler için git log'a, artakalan işler için
+> YAPILACAKLAR.md "Teknik Borç" bölümüne bakın.
+
 Tarih: 2026-07-25 · Branch: `ileri-tusu-asagida-crash-fix` · HEAD: `f70ea02`
 Kapsam: Algoritma, veri (Room), UI/navigasyon, CSV kütüphanesi, dokümantasyon, git durumu.
 

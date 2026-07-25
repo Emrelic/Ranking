@@ -1,19 +1,29 @@
 # ARŞİVLENMİŞ NOT DEFTERLERİ
 
-## 📦 TAMAMLANMIŞ PROJELER (Artık okumasın)
+Güncelleme: 2026-07-25 (Faz 4 doküman temizliği)
 
-Bu dosyalar proje tamamlandığı için arşivlendi. `*mo` komutu bu dosyaları okumayacak.
+## 📦 SİLİNMİŞ DOSYALAR
 
-### ✅ TAMAMLANMIŞ:
-- KRITERLER_ISTISARE.md (16KB) - Kriter sistemi %100 tamamlandı
-- SWISS_PERSISTENCE_READY.md (4KB) - Persistence implementasyonu tamamlandı
-- PERSISTENCE_TEST_RESULTS.md (4KB) - Test sonuçları kayıtlı
-- FIXED_COMPREHENSIVE_PERSISTENCE.md (4KB) - Problem çözümü tamamlandı
-- FIXED_APP_TEST.md (2KB) - Uygulama fix'i tamamlandı
-- COMPREHENSIVE_PERSISTENCE_TEST.md (6KB) - Test detayları arşivlendi
+Aşağıdaki not defterleri projeden tamamen silindi — içerikleri git geçmişinde
+duruyor, güncel duruma dair bilgi İÇERMİYORLAR (örn. "Swiss persistence
+tamamlandı" iddiası kodla hiç örtüşmedi; SWISS 2026-07'de UI'dan kaldırıldı):
 
-### 📋 NOT:
-Bu dosyalar `*arş` komutu ile okunabilir ancak günlük çalışmada token tasarrufu için dahil edilmedi.
+- SWISS_PERSISTENCE_READY.md
+- PERSISTENCE_TEST_RESULTS.md
+- FIXED_COMPREHENSIVE_PERSISTENCE.md
+- FIXED_APP_TEST.md
+- COMPREHENSIVE_PERSISTENCE_TEST.md
 
-## 💾 TOPLAM TASARRUF:
-Bu dosyalar arşivlenerek **~38KB** token tasarrufu sağlandı.
+## 🗃️ DONMUŞ DOSYALAR (güncellenmiyor, silinmedi)
+
+- **KRITERLER_ISTISARE.md** — kriter sistemi tasarım istişaresi; sistem
+  implemente edildi (kayıt akışı 2026-07 Faz 2'de tamamlandı), dosya tarihsel kayıt
+- **PROMPT_GUNLUGU.md** — son kayıt 2025-09-29; "son 7 gün" kuralı fiilen
+  terk edildi. Yeniden canlandırılana kadar arşiv say
+- **EKRAN_GORUNTULERI.md** — Image #1-#5 tamamlandı; Image #6 hâlâ açık
+  (YAPILACAKLAR.md madde 7)
+
+## 📌 GÜNCEL KAYNAKLAR
+
+Günlük çalışmada geçerli üç dosya: **CLAUDE.md** (proje rehberi),
+**YAPILACAKLAR.md** (açık işler), **ANALIZ_RAPORU.md** (denetim + Faz 0-4 kaydı).
