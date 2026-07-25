@@ -220,7 +220,13 @@ fun RankingScreen(
                     match = match,
                     song1 = uiState.song1,
                     song2 = uiState.song2,
-                    tournamentId = match.tournamentId ?: match.listId, // Fallback: listId'yi tournament olarak kullan
+                    // Kriterler turnuva kaydından okunur. Maçlarda tournamentId
+                    // olmadığı için asıl kaynak uiState.activeTournamentId'dir;
+                    // eski listId fallback'i yanlış kayda bakıp kullanıcının
+                    // kriterleri yerine varsayılan kriterleri gösteriyordu.
+                    tournamentId = uiState.activeTournamentId
+                        ?: match.tournamentId
+                        ?: match.listId,
                     onDismiss = { showCriteriaDialog = false },
                     onSave = { criteriaScores, winner ->
                         showCriteriaDialog = false

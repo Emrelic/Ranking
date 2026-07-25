@@ -64,7 +64,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val showMatchingsList: Boolean = false, // Eşleştirmeler listesini göster
         val matchingsList: List<Match> = emptyList(), // Oluşturulan eşleştirmeler
         val method: String = "", // Ranking metodu
-        val canUndo: Boolean = false // Son maç sonucu geri alınabilir mi
+        val canUndo: Boolean = false, // Son maç sonucu geri alınabilir mi
+        // Bu liste+yöntem için aktif turnuva kaydı (kriter dialogu bununla
+        // kriterleri bulur; maçlarda tournamentId tutulmadığı için gerekli)
+        val activeTournamentId: Long? = null
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -137,7 +140,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 val settings = if (method == "LEAGUE") {
                     repository.getLeagueSettings(listId, method)
                 } else null
-                
+
+                // Sihirbazdan oluşturulan turnuva kaydı (kriter listesi bilgisi
+                // burada; maçlar tournamentId taşımadığından ayrıca çözülür)
+                val activeTournament = database.tournamentDao()
+                    .getActiveTournamentForList(listId, method)
+
                 repository.getSongsByListId(listId).collect { songList ->
                     songs = songList
                     if (songs.isNotEmpty()) {
@@ -155,7 +163,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             hasActiveSession = activeSession != null,
                             completedScores = completedScores,
                             allSongs = songList,
-                            method = method
+                            method = method,
+                            activeTournamentId = activeTournament?.id
                         )
                         
                         if (activeSession != null) {
