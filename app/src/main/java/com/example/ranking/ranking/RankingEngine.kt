@@ -93,35 +93,54 @@ object RankingEngine {
     }
     
     fun calculateLeagueResults(songs: List<Song>, matches: List<Match>): List<RankingResult> {
+        // Standart lig puanlaması: galibiyet 3, beraberlik 1, mağlubiyet 0
+        // (ResultsViewModel'deki puan tablosu varsayılanlarıyla aynı ölçek)
         val points = mutableMapOf<Long, Double>()
-        
+        val goalsFor = mutableMapOf<Long, Int>()
+        val goalsAgainst = mutableMapOf<Long, Int>()
+
         songs.forEach { song ->
             points[song.id] = 0.0
+            goalsFor[song.id] = 0
+            goalsAgainst[song.id] = 0
         }
-        
+
         matches.filter { it.isCompleted }.forEach { match ->
             when (match.winnerId) {
-                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 2.0
-                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 2.0
+                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 3.0
+                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 3.0
                 null -> { // Draw
                     points[match.songId1] = points[match.songId1]!! + 1.0
                     points[match.songId2] = points[match.songId2]!! + 1.0
                 }
             }
+            // Skor girildiyse averaj için biriktir
+            val s1 = match.score1
+            val s2 = match.score2
+            if (s1 != null && s2 != null) {
+                goalsFor[match.songId1] = goalsFor[match.songId1]!! + s1
+                goalsAgainst[match.songId1] = goalsAgainst[match.songId1]!! + s2
+                goalsFor[match.songId2] = goalsFor[match.songId2]!! + s2
+                goalsAgainst[match.songId2] = goalsAgainst[match.songId2]!! + s1
+            }
         }
-        
-        return songs.map { song ->
+
+        // Sıralama: puan > averaj > atılan gol
+        val sortedSongs = songs.sortedWith(
+            compareByDescending<Song> { points[it.id] ?: 0.0 }
+                .thenByDescending { (goalsFor[it.id] ?: 0) - (goalsAgainst[it.id] ?: 0) }
+                .thenByDescending { goalsFor[it.id] ?: 0 }
+        )
+
+        return sortedSongs.mapIndexed { index, song ->
             RankingResult(
                 songId = song.id,
                 listId = song.listId,
                 rankingMethod = "LEAGUE",
                 score = points[song.id] ?: 0.0,
-                position = 1
+                position = index + 1
             )
-        }.sortedByDescending { it.score }
-            .mapIndexed { index, result ->
-                result.copy(position = index + 1)
-            }
+        }
     }
     
     fun createEliminationMatches(songs: List<Song>): List<Match> {
@@ -709,11 +728,12 @@ object RankingEngine {
      * Doğru Emre sistemi için sonuçları işle
      */
     fun processCorrectEmreResults(
-        state: EmreSystemCorrect.EmreState, 
+        state: EmreSystemCorrect.EmreState,
         completedMatches: List<Match>,
-        byeTeam: EmreSystemCorrect.EmreTeam?
+        byeTeam: EmreSystemCorrect.EmreTeam?,
+        allCompletedMatches: List<Match> = completedMatches
     ): EmreSystemCorrect.EmreState {
-        return EmreSystemCorrect.processRoundResults(state, completedMatches, byeTeam)
+        return EmreSystemCorrect.processRoundResults(state, completedMatches, byeTeam, allCompletedMatches)
     }
     
     /**

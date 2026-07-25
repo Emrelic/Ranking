@@ -350,16 +350,18 @@ private fun SystemTypeSelectionStep(
     selectedSystemType: String,
     onSystemTypeSelected: (String) -> Unit
 ) {
-    // SINGLE_ELIMINATION ve DOUBLE_ELIMINATION algoritmaları tamamlanana
-    // kadar listeden çıkarıldı (yarım özellik kırık deneyim yaratıyordu)
+    // Yarım/kırık sistemler tamamlanana kadar listeden çıkarıldı
+    // (yarım özellik kırık deneyim yaratıyordu):
+    // - SINGLE_ELIMINATION, DOUBLE_ELIMINATION: algoritma tamamlanmadı
+    // - SWISS: kural ihlalleri var (bye yok, tekrar eşleşme, persistence);
+    //   Geliştirilmiş İsviçre (EMRE_CORRECT) bu ihtiyacı karşılıyor
+    // - ELIMINATION, FULL_ELIMINATION: puanlama ekranı stub, grup dağılımı
+    //   rastgele; ANALIZ_RAPORU.md Faz 2 kararı
     val systemTypes = listOf(
         "MERGE_SORT",
         "EMRE_CORRECT",
-        "SWISS",
         "LEAGUE",
-        "DIRECT_SCORING",
-        "ELIMINATION",
-        "FULL_ELIMINATION"
+        "DIRECT_SCORING"
     )
 
     Column(

@@ -669,9 +669,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             if (completedMatches.isNotEmpty()) {
                 // Bye geçen takımı bul (varsa)
                 val byeTeam = findByeTeam(currentState, completedMatches)
-                
-                // State'i güncelle
-                emreState = RankingEngine.processCorrectEmreResults(currentState, completedMatches, byeTeam)
+
+                // State'i güncelle (tiebreaker tüm maç geçmişini görmeli)
+                emreState = RankingEngine.processCorrectEmreResults(
+                    currentState,
+                    completedMatches,
+                    byeTeam,
+                    allCompletedMatches = allMatches.filter { it.isCompleted }
+                )
             }
             
             // Sonraki tur için eşleştirme oluştur - YENİ HİBRİT SİSTEM
@@ -1408,14 +1413,17 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val completedMatches = allMatches.filter { it.isCompleted }
             
             if (currentMethod == "EMRE_CORRECT") {
-                // Emre sistemi için puan hesaplama
+                // Emre sistemi için puan hesaplama.
+                // Maçlardan canlı hesaplanır (tur ortasında da güncel);
+                // bye puanı maç kaydı üretmediği için emreState'ten eklenir.
+                val stateTeams = emreState?.teams?.associateBy { it.song.id }
                 val standings = songs.map { song ->
                     var points = 0.0
                     var played = 0
                     var won = 0
                     var drawn = 0
                     var lost = 0
-                    
+
                     completedMatches.forEach { match ->
                         if (match.songId1 == song.id || match.songId2 == song.id) {
                             played++
@@ -1434,7 +1442,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             }
                         }
                     }
-                    
+
+                    // Bye geçen turların +1 puanı (kapanmış turlar için state'te tutulur)
+                    points += (stateTeams?.get(song.id)?.byeCount ?: 0) * 1.0
+
                     StandingEntry(
                         position = 0, // Will be set after sorting
                         song = song,
@@ -1446,7 +1457,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     )
                 }.sortedWith(
                     compareByDescending<StandingEntry> { it.points }
-                        .thenBy { songs.indexOf(it.song) } // Original position as tiebreaker
+                        // Algoritmanın kendi sıralaması (tiebreaker zinciri işlenmiş) esas alınır
+                        .thenBy { stateTeams?.get(it.song.id)?.currentPosition ?: songs.indexOf(it.song) }
                 ).mapIndexed { index, entry ->
                     entry.copy(position = index + 1)
                 }
@@ -1495,7 +1507,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 // Tur kapandıktan sonra maç geri alınamaz (yeni tur eşleştirmeleri bu sonuçlara dayanır)
                 lastCompletedMatchId = null
                 val byeTeam = findByeTeam(currentState, currentRoundMatches)
-                emreState = RankingEngine.processCorrectEmreResults(currentState, currentRoundMatches, byeTeam)
+                emreState = RankingEngine.processCorrectEmreResults(
+                    currentState,
+                    currentRoundMatches,
+                    byeTeam,
+                    allCompletedMatches = allMatches.filter { it.isCompleted }
+                )
 
                 // Sonraki tur için eşleştirme oluştur - YENİ HİBRİT SİSTEM
                 val pairingResult = EmreSystemCorrect.createHybridPairingSystem(emreState!!)
@@ -1598,6 +1615,39 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         )
     }
     
+    /**
+     * Kriter dialogundan gelen puanları criterion_scores tablosuna yazar.
+     * Klasik ranking akışında maçlarda tournamentId olmayabilir; o durumda
+     * liste+yöntem için aktif turnuva kaydı bulunur. Turnuva kaydı yoksa
+     * FK ihlali yaşamamak için skorlar kaydedilmez.
+     */
+    fun saveCriteriaScores(match: Match, scores: Map<String, Pair<Double?, Double?>>) {
+        viewModelScope.launch {
+            try {
+                val tournamentId = match.tournamentId
+                    ?: database.tournamentDao()
+                        .getActiveTournamentForList(currentListId, currentMethod)?.id
+                    ?: return@launch
+
+                val entries = scores.mapNotNull { (criterionName, pair) ->
+                    if (pair.first == null && pair.second == null) null
+                    else com.example.ranking.data.CriterionScore(
+                        matchId = match.id,
+                        tournamentId = tournamentId,
+                        criterionName = criterionName,
+                        team1Score = pair.first,
+                        team2Score = pair.second
+                    )
+                }
+                if (entries.isNotEmpty()) {
+                    database.criterionScoreDao().insertCriterionScores(entries)
+                }
+            } catch (e: Exception) {
+                Log.e("RankingViewModel", "Kriter skorları kaydedilemedi: ${e.message}", e)
+            }
+        }
+    }
+
     suspend fun getCriteriaForTournament(tournamentId: Long): List<String> {
         return withContext(Dispatchers.IO) {
             try {

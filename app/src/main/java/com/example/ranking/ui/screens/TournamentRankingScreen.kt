@@ -99,6 +99,15 @@ fun TournamentRankingScreen(
             ) {
                 CircularProgressIndicator()
             }
+        } else if (uiState.errorMessage?.startsWith("REDIRECT_TO_RANKING_SCREEN") == true) {
+            // Yönlendirme mesajı kullanıcıya hata olarak gösterilmez;
+            // LaunchedEffect navigasyonu yapana kadar yükleme göstergesi kalır
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         } else if (uiState.errorMessage != null) {
             Box(
                 modifier = Modifier.fillMaxSize(),

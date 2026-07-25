@@ -119,20 +119,14 @@ fun MainMenuScreen(
                 )
             }
             
-            // Third Row - YouTube Music Analysis  
+            // Third Row
+            // YouTube Analizi kartı gizlendi: özellik yarım (API anahtarı yok,
+            // playlist oluşturma bozuk, veriler geri okunmuyor) - ANALIZ_RAPORU.md
+            // Faz 2 kararı. Tamamlanınca geri eklenebilir.
             Row(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                MenuCard(
-                    title = stringResource(R.string.main_menu_youtube_analysis),
-                    description = stringResource(R.string.main_menu_youtube_analysis_desc),
-                    icon = Icons.Default.PlayArrow,
-                    onClick = onNavigateToYouTubeAnalysis,
-                    modifier = Modifier.weight(1f),
-                    backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
-                )
-                
                 MenuCard(
                     title = stringResource(R.string.main_menu_archive),
                     description = stringResource(R.string.main_menu_archive_desc, completedTournamentsCount),

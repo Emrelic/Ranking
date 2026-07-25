@@ -116,9 +116,12 @@ class TournamentRankingViewModel(application: Application) : AndroidViewModel(ap
                     )
                 }
                 else -> {
+                    // Not: EMRE dışındaki sistemlerde RankingScreen'e otomatik
+                    // yönlendirme YAPILMAZ - bu sistemlerde oturum kaydı olmadığı
+                    // için yönlendirme mevcut maçları silip turnuvayı sıfırlar.
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        errorMessage = "System type ${tournament.systemType} not yet implemented in tournament mode"
+                        errorMessage = "Bu sistem türü (${tournament.systemType}) turnuva ekranından devam ettirilemiyor. Turnuvaya kaldığınız yerden devam etmek için Yeni Turnuva ekranını kullanın."
                     )
                 }
             }

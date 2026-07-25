@@ -215,11 +215,14 @@ object EmreSystemCorrect {
             }
         }
 
-        // Tüm takımlar bye geçmiş - en alttakini seç (olağanüstü durum)
-        val byeTeam = sortedTeams.last().deepCopy().apply {
+        // Tüm takımlar en az bir kez bye geçmiş - adil rotasyon için
+        // en az bye geçmiş takımlardan en alttakini seç
+        val minByeCount = sortedTeams.minOf { it.byeCount }
+        val candidate = sortedTeams.last { it.byeCount == minByeCount }
+        val byeTeam = candidate.deepCopy().apply {
             byeCount += 1
         }
-        return Pair(sortedTeams.dropLast(1), byeTeam)
+        return Pair(sortedTeams.filterNot { it.teamId == candidate.teamId }, byeTeam)
     }
 
     data class HybridPairingState(
@@ -283,7 +286,9 @@ object EmreSystemCorrect {
                         team2 = partner,
                         isAsymmetricPoints = (keat.points != partner.points)
                     )
-                    addToAEGWithHybridOrdering(state.AEG, candidateMatch, state.keatSelectionFromTop, totalMatches)
+                    // selectNextKEAT bayrağı seçimden SONRA çevirir; KEAT'in gerçek
+                    // yönü çevrilmiş bayrağın tersidir (TOP KEAT -> 1,2,3...)
+                    addToAEGWithHybridOrdering(state.AEG, candidateMatch, !state.keatSelectionFromTop, totalMatches)
                     state.EBTG.removeAll { it.teamId == partner.teamId }
                 }
 
@@ -403,7 +408,7 @@ object EmreSystemCorrect {
                         isAsymmetricPoints = (keat.points != ebt.points)
                     )
                     state.stolenPartners[pct.teamId] = ebt.teamId
-                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, !state.keatSelectionFromTop, totalMatches)
                     insertTeamBackToEBTG(pct, state)
                     return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(pct))
                 }
@@ -415,7 +420,7 @@ object EmreSystemCorrect {
                         isAsymmetricPoints = (keat.points != pct.points)
                     )
                     state.stolenPartners[ebt.teamId] = pct.teamId
-                    addToAEGWithHybridOrdering(state.AEG, newMatch, state.keatSelectionFromTop, totalMatches)
+                    addToAEGWithHybridOrdering(state.AEG, newMatch, !state.keatSelectionFromTop, totalMatches)
                     insertTeamBackToEBTG(ebt, state)
                     return BacktrackChainResult(isSuccess = true, newPairing = newMatch, displacedTeams = listOf(ebt))
                 }
@@ -605,14 +610,24 @@ object EmreSystemCorrect {
 
     /**
      * Tur sonuçlarını işle ve sıralamayı yenile
+     *
+     * @param completedMatches SADECE bu turun tamamlanmış maçları (puanlar bunlardan eklenir)
+     * @param allCompletedMatches Turnuvanın TÜM tamamlanmış maçları — tiebreaker zinciri
+     * (head-to-head, direkt maç, mağlubiyet sayısı) tüm geçmişe bakmalıdır.
+     * Verilmezse geriye dönük uyumluluk için bu turun maçları kullanılır.
      */
     fun processRoundResults(
         state: EmreState,
         completedMatches: List<Match>,
-        byeTeam: EmreTeam? = null
+        byeTeam: EmreTeam? = null,
+        allCompletedMatches: List<Match> = completedMatches
     ): EmreState {
         val updatedTeams = state.teams.map { it.deepCopy() }.toMutableList()
         val newMatchHistory = state.matchHistory.toMutableSet()
+
+        // Tur öncesi sıralamayı tiebreaker için sabitle (4. kriter):
+        // pozisyonlar aşağıda yeniden atanmadan önceki hali "tur öncesi" halidir
+        updatedTeams.forEach { it.preRoundPosition = it.currentPosition }
 
         // Song ID → sabit team ID eşlemesi (match history sabit ID'lerle tutulur)
         val songToTeamMap = state.teams.associate { team -> team.song.id to team.teamId }
@@ -639,6 +654,13 @@ object EmreSystemCorrect {
             }
             processedMatchIds.add(match.id)
 
+            // Tamamlanmamış/iptal edilmiş maç ne match history'ye girer ne puan
+            // üretir; aksi halde hiç oynanmamış ikili "oynadı" sayılıp ileride
+            // geçerli eşleştirmeler gereksiz yasaklanır
+            if (!match.isCompleted) {
+                return@forEach
+            }
+
             val teamId1 = songToTeamMap[match.songId1]
             val teamId2 = songToTeamMap[match.songId2]
 
@@ -651,7 +673,7 @@ object EmreSystemCorrect {
                 newMatchHistory.add(normalizedPair)
             }
 
-            // Puanları güncelle (sadece tamamlanmış maçlar)
+            // Puanları güncelle
             if (match.isCompleted) {
                 when (match.winnerId) {
                     match.songId1 -> {
@@ -690,8 +712,8 @@ object EmreSystemCorrect {
             }
         }
 
-        // Emre usulü sıralamayı yenile
-        val reorderedTeams = reorderTeamsEmreStyle(updatedTeams, completedMatches)
+        // Emre usulü sıralamayı yenile (tiebreaker TÜM maç geçmişine bakar)
+        val reorderedTeams = reorderTeamsEmreStyle(updatedTeams, allCompletedMatches)
 
         return EmreState(
             teams = reorderedTeams,

@@ -17,6 +17,9 @@ interface TournamentDao {
     
     @Query("SELECT * FROM tournaments WHERE id = :id")
     suspend fun getTournamentById(id: Long): Tournament?
+
+    @Query("SELECT * FROM tournaments WHERE songListId = :listId AND systemType = :systemType AND isCompleted = 0 ORDER BY createdAt DESC LIMIT 1")
+    suspend fun getActiveTournamentForList(listId: Long, systemType: String): Tournament?
     
     @Query("SELECT * FROM tournaments WHERE criterionListId = :criterionListId")
     suspend fun getTournamentsByCriterionList(criterionListId: Long): List<Tournament>

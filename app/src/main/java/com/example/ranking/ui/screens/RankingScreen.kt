@@ -220,22 +220,17 @@ fun RankingScreen(
                     tournamentId = match.tournamentId ?: match.listId, // Fallback: listId'yi tournament olarak kullan
                     onDismiss = { showCriteriaDialog = false },
                     onSave = { criteriaScores, winner ->
-                        // Kriter skorlarını kaydet ve maç sonucunu belirle
                         showCriteriaDialog = false
-                        // Kazanan bilgisine göre arka sayfadaki butona basılmış gibi işle
+                        // Kriter puanlarını kalıcı kaydet
+                        viewModel.saveCriteriaScores(match, criteriaScores)
+                        // Kazanan seçimine göre maç sonucunu işle
+                        // (dialog "team1_wins" / "team2_wins" / "draw" / "save_only" yayar)
                         when (winner) {
-                            "team1" -> {
-                                // İlk takım kazandı - arka sayfadaki sol butonu işle
-                            }
-                            "team2" -> {
-                                // İkinci takım kazandı - arka sayfadaki sağ butonu işle
-                            }
-                            "draw" -> {
-                                // Beraberlik - arka sayfadaki beraberlik butonu işle
-                            }
-                            "save_only" -> {
-                                // Sadece kaydet - kazanan belirlenmedi
-                            }
+                            "team1_wins" -> viewModel.submitMatchResult(match.id, match.songId1)
+                            "team2_wins" -> viewModel.submitMatchResult(match.id, match.songId2)
+                            "draw" -> viewModel.submitMatchResult(match.id, null)
+                            // "save_only": sonuç girilmez, kullanıcı puanlama
+                            // ekranından kazananı ayrıca seçer
                         }
                     }
                 )

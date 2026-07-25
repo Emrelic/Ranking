@@ -12,7 +12,9 @@ interface MatchDao {
     @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method ORDER BY round ASC, matchNumber ASC, id ASC")
     suspend fun getMatchesByListAndMethodSync(listId: Long, method: String): List<Match>
 
-    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method AND isCompleted = 0 ORDER BY round ASC, matchNumber DESC, id ASC LIMIT 1")
+    // Oylama sırası maç numarasıyla aynı yönde ilerler (1 -> 2 -> 3 ...):
+    // liste görünümü de ASC sıralı olduğundan iki görünüm tutarlıdır
+    @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method AND isCompleted = 0 ORDER BY round ASC, matchNumber ASC, id ASC LIMIT 1")
     suspend fun getNextUncompletedMatch(listId: Long, method: String): Match?
 
     @Query("SELECT * FROM matches WHERE listId = :listId AND rankingMethod = :method AND round = :round")
