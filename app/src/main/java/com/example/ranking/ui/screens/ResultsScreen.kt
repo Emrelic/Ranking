@@ -24,7 +24,6 @@ fun ResultsScreen(
     listId: Long,
     method: String,
     onNavigateBack: () -> Unit,
-    onNavigateToFixture: (Long, String) -> Unit = { _, _ -> },
     viewModel: ResultsViewModel = viewModel()
 ) {
     LaunchedEffect(listId, method) {
@@ -50,14 +49,6 @@ fun ResultsScreen(
                 }
             },
             actions = {
-                if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "ELIMINATION")) {
-                    TextButton(
-                        onClick = { onNavigateToFixture(listId, method) }
-                    ) {
-                        Text(stringResource(R.string.ranking_fixture))
-                    }
-                }
-                
                 var showArchiveDialog by remember { mutableStateOf(false) }
                 TextButton(
                     onClick = { showArchiveDialog = true }

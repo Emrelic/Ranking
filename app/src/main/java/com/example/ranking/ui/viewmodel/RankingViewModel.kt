@@ -576,7 +576,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             
             if (newMatches.isNotEmpty()) {
                 repository.createMatches(newMatches)
-                
+
                 // Save updated Swiss state
                 currentVotingSession?.let { session ->
                     val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
@@ -589,9 +589,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         roundHistory = swissStandings.roundHistory
                     )
                 }
+
+                loadNextMatch()
+            } else {
+                // Yeni eşleştirme üretilemedi: loadNextMatch aynı turu tekrar
+                // istemesin diye turnuva burada bitirilir (sonsuz döngü koruması)
+                completeRanking()
             }
-            
-            loadNextMatch()
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
                 error = "Swiss round oluşturma hatası: ${e.message}"
@@ -802,7 +806,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
 
                 // Update Emre state if this is an Emre tournament
                 if (currentMethod == "EMRE_CORRECT") {
-                    updateEmreCorrectStateAfterMatch(updatedMatch)
+                    val roundClosed = updateEmreCorrectStateAfterMatch(updatedMatch)
+                    // Tur kapandıysa loadNextMatch çağrılmaz: aynı tur ikinci kez
+                    // işlenmesin (çift puanlama) ve yeni turun eşleştirme listesi
+                    // ekranda kalsın
+                    if (roundClosed) return@let
                 }
 
                 loadNextMatch()
@@ -876,12 +884,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 if (currentMethod == "SWISS") {
                     updateSwissStateAfterMatch(updatedMatch)
                 }
-                
+
                 // Update Emre state if this is an Emre tournament
                 if (currentMethod == "EMRE_CORRECT") {
-                    updateEmreCorrectStateAfterMatch(updatedMatch)
+                    val roundClosed = updateEmreCorrectStateAfterMatch(updatedMatch)
+                    // Tur kapandıysa loadNextMatch çağrılmaz (çift puanlama koruması)
+                    if (roundClosed) return@let
                 }
-                
+
                 loadNextMatch()
             }
         }
@@ -904,7 +914,17 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     repository.updateMatch(updatedMatch)
                     if (undoSupported()) lastCompletedMatchId = updatedMatch.id
                     Log.d("RankingViewModel", "✅ Skor güncellendi: ${match.songId1} vs ${match.songId2}")
-                    
+
+                    // Beraberlik girişi de diğer sonuç yollarıyla aynı state
+                    // güncellemesinden geçmeli (tur kapanışı tek koddan yürüsün)
+                    if (currentMethod == "SWISS") {
+                        updateSwissStateAfterMatch(updatedMatch)
+                    }
+                    if (currentMethod == "EMRE_CORRECT") {
+                        val roundClosed = updateEmreCorrectStateAfterMatch(updatedMatch)
+                        if (roundClosed) return@let
+                    }
+
                     loadNextMatch()
                 } catch (e: Exception) {
                     Log.e("RankingViewModel", "Error updating score result", e)
@@ -1442,64 +1462,66 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
-    private suspend fun updateEmreCorrectStateAfterMatch(completedMatch: Match) {
+    /**
+     * Emre state'ini tamamlanan maça göre günceller.
+     *
+     * @return true ise tur burada kapatıldı (puanlar işlendi, yeni tur üretildi
+     * veya turnuva tamamlandı) — çağıran loadNextMatch() ÇAĞIRMAMALIDIR; aksi
+     * halde aynı turun sonuçları createNextEmreRound üzerinden ikinci kez
+     * işlenip puanlar bozulur.
+     */
+    private suspend fun updateEmreCorrectStateAfterMatch(completedMatch: Match): Boolean {
         try {
-            val currentState = emreState ?: return
+            val currentState = emreState ?: return false
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
-            
+
             // Bu turda tamamlanan tüm maçları al - matchNumber sıralaması ile
-            val currentRoundMatches = allMatches.filter { 
-                it.isCompleted && it.round == completedMatch.round 
+            val currentRoundMatches = allMatches.filter {
+                it.isCompleted && it.round == completedMatch.round
             }.sortedBy { it.matchNumber }
-            
-            
-            // Tur tamamlandı mı kontrol et  
+
+
+            // Tur tamamlandı mı kontrol et
             // ⚠️ KRİTİK: Expected matches sayısı takım sayısına göre sabittir
             val expectedMatchesInRound = if (songs.size % 2 == 0) {
                 songs.size / 2  // Çift takım = tam eşleştirme
             } else {
                 (songs.size - 1) / 2  // Tek takım = 1 bye + eşleştirmeler
             }
-            
-            
+
+
             if (currentRoundMatches.size >= expectedMatchesInRound) {
                 // Tur tamamlandı, sonuçları işle
                 // Tur kapandıktan sonra maç geri alınamaz (yeni tur eşleştirmeleri bu sonuçlara dayanır)
                 lastCompletedMatchId = null
                 val byeTeam = findByeTeam(currentState, currentRoundMatches)
                 emreState = RankingEngine.processCorrectEmreResults(currentState, currentRoundMatches, byeTeam)
-                
-                // Tamamlanan turu fikstürde göster
+
+                // Sonraki tur için eşleştirme oluştur - YENİ HİBRİT SİSTEM
+                val pairingResult = EmreSystemCorrect.createHybridPairingSystem(emreState!!)
+
+                if (!pairingResult.canContinue || pairingResult.matches.isEmpty()) {
+                    // Turnuva tamamlandı
+                    completeRanking()
+                    calculateCurrentStandings()
+                    return true
+                }
+
+                repository.createMatches(pairingResult.matches)
+
+                // Yeni turun eşleştirmeler listesini göster
+                // (currentMatch=null olmalı ki liste ekranı görünsün)
                 _uiState.value = _uiState.value.copy(
                     showInitialRanking = false,
                     showMatchingsList = true,
-                    matchingsList = currentRoundMatches,
+                    currentMatch = null,
+                    matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
                     emreState = emreState
                 )
-                
-                // Sonraki tur için eşleştirme oluştur - YENİ HİBRİT SİSTEM
-                val pairingResult = EmreSystemCorrect.createHybridPairingSystem(emreState!!)
-                
-                if (!pairingResult.canContinue) {
-                    // Turnuva tamamlandı - tamamlanan tur maçları zaten gösterildi
-                    completeRanking()
-                    return
-                }
-                
-                if (pairingResult.matches.isNotEmpty()) {
-                    repository.createMatches(pairingResult.matches)
-                    
-                    // Sonraki tur için eşleştirmeler listesini göster
-                    val nextRoundNumber = emreState?.currentRound
-                    _uiState.value = _uiState.value.copy(
-                        showInitialRanking = false,
-                        showMatchingsList = true,
-                        matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
-                        emreState = emreState
-                    )
-                }
+                calculateCurrentStandings()
+                return true
             }
-            
+
             // Standings'i güncelle
             calculateCurrentStandings()
         } catch (e: Exception) {
@@ -1507,6 +1529,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 error = "Emre durumu güncelleme hatası: ${e.message}"
             )
         }
+        return false
     }
     
     // Test Protocol Functions

@@ -140,12 +140,13 @@ fun RankingNavigation(
             TournamentRankingScreen(
                 tournamentId = tournamentId,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { tId ->
-                    navController.navigate("tournament_results/$tId")
+                onNavigateToResults = { listId, method ->
+                    navController.navigate("results/$listId/$method")
                 },
                 onNavigateToRanking = { listId, systemType ->
-                    // Redirect to working RankingScreen system
-                    navController.navigate("ranking/$listId/$systemType") {
+                    // Devam eden turnuva: RankingScreen'e resume modunda yönlendir
+                    // (isResuming=false olursa mevcut maçlar silinip turnuva sıfırlanıyor)
+                    navController.navigate("ranking/$listId/$systemType?isResuming=true") {
                         popUpTo("main_menu")
                     }
                 }
@@ -186,25 +187,19 @@ fun RankingNavigation(
                 pairingMethodName = pairingMethodName,
                 isResuming = isResuming,
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToResults = { id, m -> 
+                onNavigateToResults = { id, m ->
                     navController.navigate("results/$id/$m")
-                },
-                onNavigateToFixture = { id, m ->
-                    navController.navigate("fixture/$id/$m")
                 }
             )
         }
-        
+
         composable("results/{listId}/{method}") { backStackEntry ->
             val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
             val method = backStackEntry.arguments?.getString("method") ?: ""
             ResultsScreen(
                 listId = listId,
                 method = method,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToFixture = { id, m ->
-                    navController.navigate("fixture/$id/$m")
-                }
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         

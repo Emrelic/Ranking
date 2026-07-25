@@ -32,7 +32,7 @@ import com.example.ranking.ui.viewmodel.TournamentRankingViewModel
 fun TournamentRankingScreen(
     tournamentId: Long,
     onNavigateBack: () -> Unit,
-    onNavigateToResults: (Long) -> Unit,
+    onNavigateToResults: (Long, String) -> Unit,
     onNavigateToRanking: (Long, String) -> Unit = { _, _ -> },
     viewModel: TournamentRankingViewModel = viewModel()
 ) {
@@ -83,7 +83,9 @@ fun TournamentRankingScreen(
             },
             actions = {
                 if (uiState.isCompleted) {
-                    TextButton(onClick = { tournament?.id?.let(onNavigateToResults) }) {
+                    TextButton(onClick = {
+                        tournament?.let { onNavigateToResults(it.songListId, it.systemType) }
+                    }) {
                         Text("Sonuçlar")
                     }
                 }
@@ -142,7 +144,9 @@ fun TournamentRankingScreen(
                 } else if (uiState.isCompleted) {
                     item {
                         CompletionCard(
-                            onViewResults = { tournament?.id?.let(onNavigateToResults) }
+                            onViewResults = {
+                                tournament?.let { onNavigateToResults(it.songListId, it.systemType) }
+                            }
                         )
                     }
                 }

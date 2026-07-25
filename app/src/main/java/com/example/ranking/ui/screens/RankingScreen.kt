@@ -42,7 +42,6 @@ fun RankingScreen(
     isResuming: Boolean = false, // DEVAM EDEN TURNUVA: false = yeni, true = devam eden
     onNavigateBack: () -> Unit,
     onNavigateToResults: (Long, String) -> Unit,
-    onNavigateToFixture: (Long, String) -> Unit = { _, _ -> },
     viewModel: RankingViewModel = viewModel()
 ) {
     LaunchedEffect(listId, method, pairingMethodName, isResuming) {
@@ -130,18 +129,6 @@ fun RankingScreen(
                         }
                     }
 
-                    if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "ELIMINATION", "FULL_ELIMINATION")) {
-                        Button(
-                            onClick = { onNavigateToFixture(listId, method) },
-                            shape = RoundedCornerShape(6.dp),
-                            modifier = Modifier.height(32.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer
-                            )
-                        ) {
-                            Text(stringResource(R.string.ranking_fixture), fontSize = 10.sp)
-                        }
-                    }
                     if (method == "LEAGUE" || method == "EMRE_CORRECT") {
                         var showStandings by remember { mutableStateOf(false) }
                         Button(

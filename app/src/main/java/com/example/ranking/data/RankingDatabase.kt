@@ -10,7 +10,7 @@ import com.example.ranking.data.dao.*
 
 @Database(
     entities = [Song::class, SongList::class, RankingResult::class, Match::class, LeagueSettings::class, Archive::class, VotingSession::class, VotingScore::class, SwissState::class, SwissMatchState::class, SwissFixture::class, Tournament::class, CriterionList::class, CriterionScore::class, YouTubeTrack::class, YouTubePlaylist::class, PlaylistTrack::class],
-    version = 16,
+    version = 17,
     exportSchema = true
 )
 abstract class RankingDatabase : RoomDatabase() {
@@ -416,6 +416,52 @@ abstract class RankingDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * v14->15 geçişi songs.viewCount'u NULLABLE eklemişti; entity ise
+         * NOT NULL bekler. Eski sürümden yükseltilen cihazlarda Room'un şema
+         * doğrulaması açılışta "Migration didn't properly handle: songs"
+         * hatasıyla çöküyordu. SQLite ALTER COLUMN desteklemediği için tablo
+         * yeniden kurulup veriler kopyalanır (fresh kurulumlarda da zararsız).
+         * Ayrıca youtube_tracks.videoId, migration ile kurulan (kolon UNIQUE)
+         * ve taze kurulum (unique olmayan index) popülasyonları arasında
+         * ayrışmıştı; tekilleştirilip unique index'e bağlanır.
+         */
+        private val MIGRATION_16_17 = object : Migration(16, 17) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // songs tablosunu entity ile birebir aynı şemayla yeniden kur
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS songs_new (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        name TEXT NOT NULL,
+                        artist TEXT NOT NULL,
+                        album TEXT NOT NULL,
+                        trackNumber INTEGER NOT NULL,
+                        listId INTEGER NOT NULL,
+                        csvData TEXT,
+                        youtubeVideoId TEXT,
+                        viewCount INTEGER NOT NULL
+                    )
+                """)
+                db.execSQL("""
+                    INSERT INTO songs_new (id, name, artist, album, trackNumber, listId, csvData, youtubeVideoId, viewCount)
+                    SELECT id, name, artist, album, trackNumber, listId, csvData, youtubeVideoId, COALESCE(viewCount, 0)
+                    FROM songs
+                """)
+                db.execSQL("DROP TABLE songs")
+                db.execSQL("ALTER TABLE songs_new RENAME TO songs")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_songs_listId ON songs (listId)")
+
+                // videoId tekilleştir (taze kurulumlarda unique kısıt yoktu,
+                // aynı video tekrar tekrar eklenmiş olabilir) ve unique index kur
+                db.execSQL("""
+                    DELETE FROM youtube_tracks
+                    WHERE id NOT IN (SELECT MIN(id) FROM youtube_tracks GROUP BY videoId)
+                """)
+                db.execSQL("DROP INDEX IF EXISTS index_youtube_tracks_videoId")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_youtube_tracks_videoId ON youtube_tracks (videoId)")
+            }
+        }
+
         fun getDatabase(context: Context): RankingDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -423,7 +469,7 @@ abstract class RankingDatabase : RoomDatabase() {
                     RankingDatabase::class.java,
                     "ranking_database"
                 )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13, MIGRATION_13_14, MIGRATION_14_15, MIGRATION_15_16, MIGRATION_16_17)
                 // fallbackToDestructiveMigration KALDIRILDI:
                 // Kapsanmayan bir sürüm geçişinde tüm kullanıcı verisini sessizce
                 // siliyordu. Artık tüm geçişler explicit migration ile yapılır;

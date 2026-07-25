@@ -137,8 +137,9 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
                     
                     // Process completed matches
                     matches.filter { it.isCompleted }.forEach { match ->
-                        val team1Entry = tableEntries[match.songId1]!!
-                        val team2Entry = tableEntries[match.songId2]!!
+                        // Silinmiş öğeye ait yetim maç kayıtları tabloyu çökertmesin
+                        val team1Entry = tableEntries[match.songId1] ?: return@forEach
+                        val team2Entry = tableEntries[match.songId2] ?: return@forEach
                         
                         val score1 = match.score1 ?: 0
                         val score2 = match.score2 ?: 0
@@ -352,8 +353,9 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
         
         // Process completed matches
         matches.filter { it.isCompleted }.forEach { match ->
-            val team1Entry = tableEntries[match.songId1]!!
-            val team2Entry = tableEntries[match.songId2]!!
+            // Silinmiş öğeye ait yetim maç kayıtları tabloyu çökertmesin
+            val team1Entry = tableEntries[match.songId1] ?: return@forEach
+            val team2Entry = tableEntries[match.songId2] ?: return@forEach
             
             val score1 = match.score1 ?: 0
             val score2 = match.score2 ?: 0

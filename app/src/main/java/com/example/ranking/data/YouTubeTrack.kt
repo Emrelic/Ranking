@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "youtube_tracks",
     indices = [
-        Index("videoId"),
+        Index(value = ["videoId"], unique = true),
         Index("artist"),
         Index(value = ["viewCount"], orders = [Index.Order.DESC])
     ]
