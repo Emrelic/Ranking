@@ -35,17 +35,60 @@ import com.google.gson.reflect.TypeToken
 fun NewTournamentScreen(
     onNavigateBack: () -> Unit,
     onTournamentCreated: (Long) -> Unit, // Navigate to RankingScreen with tournamentId
+    // Sihirbaz kısayolları: süreçten çıkmadan yeni liste / kriter listesi oluşturma
+    onNavigateToCreateList: () -> Unit = {},
+    onNavigateToCreateCriteria: () -> Unit = {},
+    // Kısayoldan dönüşte yeni oluşturulan kaydın id'si (otomatik seçim için)
+    newlyCreatedListId: Long? = null,
+    newlyCreatedCriteriaId: Long? = null,
+    onNewListConsumed: () -> Unit = {},
+    onNewCriteriaConsumed: () -> Unit = {},
     viewModel: NewTournamentViewModel = viewModel()
 ) {
     val songLists by viewModel.songLists.collectAsState()
     val criterionLists by viewModel.criterionLists.collectAsState()
-    
+
     // rememberSaveable: ekran döndürme / process death sihirbaz ilerlemesini sıfırlamasın
     var currentStep by rememberSaveable { mutableStateOf(1) }
     var selectedSongList by remember { mutableStateOf<com.example.ranking.data.SongList?>(null) }
     var tournamentName by rememberSaveable { mutableStateOf("") }
     var selectedSystemType by rememberSaveable { mutableStateOf("MERGE_SORT") }
     var selectedCriterionList by remember { mutableStateOf<com.example.ranking.data.CriterionList?>(null) }
+
+    // Seçim nesneleri Saveable değil; kısayola gidip dönünce veya ekran
+    // döndürülünce kaybolmasınlar diye id'leri saklanıp geri yüklenir
+    var selectedSongListId by rememberSaveable { mutableStateOf(-1L) }
+    var selectedCriterionListId by rememberSaveable { mutableStateOf(-1L) }
+    LaunchedEffect(songLists) {
+        if (selectedSongList == null && selectedSongListId > 0) {
+            selectedSongList = songLists.firstOrNull { it.id == selectedSongListId }
+        }
+    }
+    LaunchedEffect(criterionLists) {
+        if (selectedCriterionList == null && selectedCriterionListId > 0) {
+            selectedCriterionList = criterionLists.firstOrNull { it.id == selectedCriterionListId }
+        }
+    }
+
+    // Kısayoldan dönüş: yeni oluşturulan kayıt yüklenince otomatik seç
+    LaunchedEffect(newlyCreatedListId, songLists) {
+        if (newlyCreatedListId != null) {
+            songLists.firstOrNull { it.id == newlyCreatedListId }?.let {
+                selectedSongList = it
+                selectedSongListId = it.id
+                onNewListConsumed()
+            }
+        }
+    }
+    LaunchedEffect(newlyCreatedCriteriaId, criterionLists) {
+        if (newlyCreatedCriteriaId != null) {
+            criterionLists.firstOrNull { it.id == newlyCreatedCriteriaId }?.let {
+                selectedCriterionList = it
+                selectedCriterionListId = it.id
+                onNewCriteriaConsumed()
+            }
+        }
+    }
 
     // Criteria settings
     var useCriteria by rememberSaveable { mutableStateOf(false) }
@@ -137,7 +180,11 @@ fun NewTournamentScreen(
                         1 -> SongListSelectionStep(
                             songLists = songLists,
                             selectedSongList = selectedSongList,
-                            onSongListSelected = { selectedSongList = it }
+                            onSongListSelected = {
+                                selectedSongList = it
+                                selectedSongListId = it.id
+                            },
+                            onCreateNewList = onNavigateToCreateList
                         )
                         2 -> SystemTypeSelectionStep(
                             selectedSystemType = selectedSystemType,
@@ -148,7 +195,11 @@ fun NewTournamentScreen(
                             useCriteria = useCriteria,
                             selectedCriterionList = selectedCriterionList,
                             onUseCriteriaChanged = { useCriteria = it },
-                            onCriterionListSelected = { selectedCriterionList = it }
+                            onCriterionListSelected = {
+                                selectedCriterionList = it
+                                selectedCriterionListId = it.id
+                            },
+                            onCreateNewCriteria = onNavigateToCreateCriteria
                         )
                         4 -> CriteriaSettingsStep(
                             enabled = useCriteria,
@@ -279,7 +330,8 @@ fun NewTournamentScreen(
 private fun SongListSelectionStep(
     songLists: List<com.example.ranking.data.SongList>,
     selectedSongList: com.example.ranking.data.SongList?,
-    onSongListSelected: (com.example.ranking.data.SongList) -> Unit
+    onSongListSelected: (com.example.ranking.data.SongList) -> Unit,
+    onCreateNewList: () -> Unit = {}
 ) {
     Column {
         Text(
@@ -288,7 +340,19 @@ private fun SongListSelectionStep(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        
+
+        // Kısayol: süreçten çıkmadan yeni liste oluştur (dönüşte otomatik seçilir)
+        OutlinedButton(
+            onClick = onCreateNewList,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(stringResource(R.string.new_tournament_create_new_list))
+        }
+
         LazyColumn(
             modifier = Modifier.heightIn(max = 400.dp), // MAX HEIGHT - SCROLL İÇİN
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -560,7 +624,8 @@ private fun CriteriaSelectionStep(
     useCriteria: Boolean,
     selectedCriterionList: com.example.ranking.data.CriterionList?,
     onUseCriteriaChanged: (Boolean) -> Unit,
-    onCriterionListSelected: (com.example.ranking.data.CriterionList) -> Unit
+    onCriterionListSelected: (com.example.ranking.data.CriterionList) -> Unit,
+    onCreateNewCriteria: () -> Unit = {}
 ) {
     Column {
         Text(
@@ -594,7 +659,20 @@ private fun CriteriaSelectionStep(
         AnimatedVisibility(visible = useCriteria) {
             Column {
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
+                // Kısayol: süreçten çıkmadan yeni kriter listesi oluştur
+                // (dönüşte otomatik seçilir)
+                OutlinedButton(
+                    onClick = onCreateNewCriteria,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.new_tournament_create_new_criteria))
+                }
+
                 LazyColumn(
                     modifier = Modifier.heightIn(max = 300.dp), // MAX HEIGHT - SCROLL İÇİN
                     verticalArrangement = Arrangement.spacedBy(8.dp)

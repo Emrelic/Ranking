@@ -1,6 +1,8 @@
 package com.example.ranking.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -92,7 +94,14 @@ fun RankingNavigation(
         }
         
         // Direct tournament creation from main menu
-        composable("new_tournament_direct") {
+        composable("new_tournament_direct") { backStackEntry ->
+            // Sihirbaz kısayollarından dönen yeni kayıt id'leri
+            // (wizard_create_list / wizard_create_criteria savedStateHandle'a yazar)
+            val newListId by backStackEntry.savedStateHandle
+                .getStateFlow("newListId", -1L).collectAsState()
+            val newCriteriaId by backStackEntry.savedStateHandle
+                .getStateFlow("newCriterionListId", -1L).collectAsState()
+
             NewTournamentScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onTournamentCreated = { tournamentId ->
@@ -100,6 +109,36 @@ fun RankingNavigation(
                     navController.navigate("tournament_routing/$tournamentId") {
                         popUpTo("main_menu")
                     }
+                },
+                onNavigateToCreateList = { navController.navigate("wizard_create_list") },
+                onNavigateToCreateCriteria = { navController.navigate("wizard_create_criteria") },
+                newlyCreatedListId = newListId.takeIf { it > 0 },
+                newlyCreatedCriteriaId = newCriteriaId.takeIf { it > 0 },
+                onNewListConsumed = { backStackEntry.savedStateHandle["newListId"] = -1L },
+                onNewCriteriaConsumed = { backStackEntry.savedStateHandle["newCriterionListId"] = -1L }
+            )
+        }
+
+        // Sihirbaz kısayolu: yeni liste oluştur, id'yi sihirbaza bildirip geri dön
+        composable("wizard_create_list") {
+            CreateListScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onListCreated = { listId ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle?.set("newListId", listId)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // Sihirbaz kısayolu: yeni kriter listesi oluştur, id'yi sihirbaza bildirip geri dön
+        composable("wizard_create_criteria") {
+            CreateCriteriaScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onCriteriaCreated = { criteriaId ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle?.set("newCriterionListId", criteriaId)
+                    navController.popBackStack()
                 }
             )
         }

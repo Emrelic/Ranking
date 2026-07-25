@@ -5,16 +5,12 @@ Kapsamlı denetim bulguları ve yapılan işlerin kaydı: **ANALIZ_RAPORU.md**
 
 ## 🔴 AÇIK MADDELER
 
-### Yeni Turnuva Süreci Kısayolları — 2025-09-18'den beri açık
-1. **Yeni Liste Ekle kısayolu**: Sihirbazın liste adımından CreateListScreen'e geçiş + dönüşte yeni listenin otomatik seçili gelmesi
-2. **Yeni Kriter Listesi Ekle kısayolu**: Kriter adımından CreateCriteriaScreen'e geçiş + dönüşte otomatik seçim
-3. **Navigation/State altyapısı** (1-2 için): yeni kayıt ID'sinin navigation argument olarak taşınması, "+" FAB butonları
-
 ### Oylama Ekranı
-4. **EKRAN_GORUNTULERI.md Image #6** (2025-09-23): 5/6 bölümlü sabit oylama layout'u — "implementasyon gerekli" durumunda bekliyor
+1. **EKRAN_GORUNTULERI.md Image #6** (2025-09-23): 5/6 bölümlü sabit oylama layout'u — "implementasyon gerekli" durumunda bekliyor
 
-### Tablo Rötuşu — doğrulama bekliyor
-5. **Cihazda test**: 2026-07-25'te düzeltilen sütun/satır drag-drop ve Kaydet akışı gerçek cihazda doğrulanmalı (özellikle: sütun E→B taşıma, satır taşıyıp kaydetme, kayıt sonrası öğe adlarının bozulmaması)
+### Cihazda doğrulama bekleyenler (2026-07-25 düzeltmeleri)
+2. **Tablo Rötuşu**: sütun E→B taşıma, satır taşıyıp kaydetme, kayıt sonrası öğe adlarının bozulmaması
+3. **Sihirbaz kısayolları**: liste adımında "Yeni Liste Oluştur" → oluştur → dönüşte otomatik seçim; kriter adımında aynı akış; sihirbaz ilerlemesinin dönüşte korunması
 
 ## 🟡 TEKNİK BORÇ (ANALIZ_RAPORU.md Faz 0-4'ten artan)
 
@@ -37,6 +33,11 @@ Kapsamlı denetim bulguları ve yapılan işlerin kaydı: **ANALIZ_RAPORU.md**
 - **"ynd" komutu**: Yeni madde ekle (Format: [Madde açıklaması] → ynd; tarih damgası otomatik)
 
 ## ✅ ARŞIV — TAMAMLANANLAR
+- **[2026-07-25] Sihirbaz kısayolları** (2025-09-18'den beri açıktı):
+  liste ve kriter adımlarına "Yeni ... Oluştur" butonları; oluşturma
+  ekranından savedStateHandle ile id dönüşü ve otomatik seçim; seçimlerin
+  id'si rememberSaveable'da — kısayola gidip dönünce ve ekran döndürmede
+  seçim kaybolmuyor
 - **[2026-07-25] Tablo Rötuşu üçlüsü** (2025-09-16'dan beri açıktı):
   sütun/satır drag-drop hedef hesabı düzeltildi (yerel koordinat + dp/px
   karışıklığı + scroll'un jesti çalması), Kaydet satır-şarkı kimlik

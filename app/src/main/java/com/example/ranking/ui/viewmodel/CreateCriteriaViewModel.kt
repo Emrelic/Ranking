@@ -23,7 +23,7 @@ class CreateCriteriaViewModel(application: Application) : AndroidViewModel(appli
         name: String,
         criteria: List<String>,
         createdDate: String,
-        onSuccess: () -> Unit,
+        onSuccess: (Long) -> Unit, // yeni listenin id'si (sihirbaz kısayolu otomatik seçim için)
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
@@ -34,9 +34,9 @@ class CreateCriteriaViewModel(application: Application) : AndroidViewModel(appli
                     createdDate = createdDate,
                     isActive = true
                 )
-                
-                database.criterionListDao().insertCriterionList(criterionList)
-                onSuccess()
+
+                val newId = database.criterionListDao().insertCriterionList(criterionList)
+                onSuccess(newId)
             } catch (e: Exception) {
                 onError("Kriter listesi oluşturulamadı: ${e.message}")
             }

@@ -46,6 +46,8 @@
     <string name="new_tournament_start">Başlat</string>
     <string name="new_tournament_creating">Oluşturuluyor...</string>
     <string name="new_tournament_select_list">Liste Seçin</string>
+    <string name="new_tournament_create_new_list">Yeni Liste Oluştur</string>
+    <string name="new_tournament_create_new_criteria">Yeni Kriter Listesi Oluştur</string>
     <string name="new_tournament_name_title">Turnuva Adı</string>
     <string name="new_tournament_name_label">Turnuva adı girin</string>
     <string name="new_tournament_system_title">Turnuva Sistemi</string>

@@ -30,6 +30,9 @@ import java.util.*
 fun CreateCriteriaScreen(
     onNavigateBack: () -> Unit,
     criteriaListId: Long? = null, // null = create new, not null = edit existing
+    // Sihirbaz kısayolu: verilirse yeni listenin id'si geri bildirilir
+    // (onNavigateBack yerine bu çağrılır)
+    onCriteriaCreated: ((Long) -> Unit)? = null,
     viewModel: CreateCriteriaViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -114,9 +117,9 @@ fun CreateCriteriaScreen(
                                     name = listName,
                                     criteria = criteria,
                                     createdDate = currentDate,
-                                    onSuccess = {
+                                    onSuccess = { newId ->
                                         isLoading = false
-                                        onNavigateBack()
+                                        onCriteriaCreated?.invoke(newId) ?: onNavigateBack()
                                     },
                                     onError = { error ->
                                         isLoading = false
