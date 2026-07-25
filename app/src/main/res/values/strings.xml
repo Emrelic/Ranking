@@ -134,6 +134,8 @@
     <string name="ranking_reset">Sıfırla</string>
     <string name="ranking_cancel">Vazgeç</string>
     <string name="ranking_pause">Duraklat</string>
+    <string name="ranking_vs">VS</string>
+    <string name="ranking_standings_menu">Puan Durumu</string>
     <string name="ranking_fixture">Fikstür</string>
     <string name="ranking_matches">Maçlar</string>
     <string name="ranking_points">Puan</string>

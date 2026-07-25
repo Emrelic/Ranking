@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -190,7 +191,9 @@ fun RankingScreen(
                 onShowCriteriaDialog = { showCriteriaDialog = it },
                 onShowStandingsDialog = { showStandingsDialog = it },
                 showScoreDialog = showScoreDialog,
-                onShowScoreDialog = { showScoreDialog = it }
+                onShowScoreDialog = { showScoreDialog = it },
+                onPauseSession = { viewModel.pauseSession() },
+                onResetRequest = { showResetConfirmDialog = true }
             )
             "ELIMINATION" -> EliminationContent(
                 uiState = uiState,
@@ -599,7 +602,9 @@ private fun MatchBasedContent(
     onShowCriteriaDialog: (Boolean) -> Unit = {},
     onShowStandingsDialog: (Boolean) -> Unit = {},
     showScoreDialog: Boolean = false,
-    onShowScoreDialog: (Boolean) -> Unit = {}
+    onShowScoreDialog: (Boolean) -> Unit = {},
+    onPauseSession: () -> Unit = {},
+    onResetRequest: () -> Unit = {}
 ) {
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
@@ -631,11 +636,12 @@ private fun MatchBasedContent(
     }
 
     uiState.currentMatch?.let { match ->
-        var score1Text by remember { mutableStateOf("") }
-        var score2Text by remember { mutableStateOf("") }
         val useScores = uiState.leagueSettings?.useScores ?: false
+        var showVsMenu by remember { mutableStateOf(false) }
 
-        // YENİ TAM EKRAN 6 KATMANLI SCROLL PENCERELİ LAYOUT
+        // IMAGE #6: 6 KATMANLI SABİT LAYOUT
+        // progress / Takım1 başlık / Takım1 scroll / orta buton çubuğu (ekran
+        // ortasında) / Takım2 başlık / Takım2 scroll (ekran dibine kadar)
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -680,39 +686,13 @@ private fun MatchBasedContent(
                 }
             }
 
-            // 2. SABİT: "HANGİSİ DAHA İYİ?" YAZISI - ANA SAYFA TEMASIYLA UYUMLU
-            Card(
+            // 2. SABİT: İLK TAKIM BAŞLIĞI - mavi, sıkıştırılmış
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                shape = RoundedCornerShape(12.dp), // ANA SAYFA KÖŞE YUVARLAKLIGI
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), // ANA SAYFA ELEVATION
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Text(
-                    text = stringResource(if (useScores) R.string.ranking_enter_match_score else R.string.ranking_which_better),
-                    style = MaterialTheme.typography.headlineSmall, // ANA SAYFA FONT STİLİ
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp), // ANA SAYFA PADDİNG
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer // ANA SAYFA RENK UYUMU
-                )
-            }
-
-            // 3. SABİT: İLK TAKIM ETİKETİ - ANA TEMA İLE UYUMLU
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Text(
                     text = uiState.song1?.name?.uppercase() ?: stringResource(R.string.ranking_team1_fallback),
@@ -721,12 +701,12 @@ private fun MatchBasedContent(
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     textAlign = TextAlign.Center
                 )
             }
 
-            // 4. SCROLL PENCERESİ: İLK TAKIM TABLOSU - Çerçeveli ve yuvarlak
+            // 3. SCROLL PENCERESİ: İLK TAKIM TABLOSU (her yöne kaydırılabilir)
             TeamSelectionPanel(
                 song = uiState.song1,
                 method = method,
@@ -744,105 +724,169 @@ private fun MatchBasedContent(
                     .weight(1f) // Available space'in yarısını al
             )
 
-            // 5. SABİT: 3 BUTON SATIRI - TAM YAY VE BİTİŞİK
+            // 4. SABİT: ORTA BUTON ÇUBUĞU (Image #6) - tam ekran ortasında
+            // BERABERLIK (büyük, yeşil) | VS (sarı, popup) | SKOR GİR + KRİTER (yeşil)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp)
-                    .padding(vertical = 8.dp), // Sadece vertical padding
-                horizontalArrangement = Arrangement.Start // Bitişik olmak için
+                    .height(52.dp)
+                    .padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.Start
             ) {
-                // Beraberlik butonu - Sol köşe yuvarlak
+                // BERABERLIK - sol, büyük, yeşil
                 // İkili karşılaştırmada beraberlik yok: her soruda kazanan seçilmeli
                 if (method != "MERGE_SORT") {
-                Button(
-                    onClick = {
-                        onMatchResult(match.id, null) // null means draw
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    ),
-                    shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.ranking_draw_button),
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
+                    Button(
+                        onClick = { onMatchResult(match.id, null) }, // null = beraberlik
+                        modifier = Modifier
+                            .weight(2f)
+                            .fillMaxHeight(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF388E3C),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.ranking_draw_button),
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
-                // Skor İşle butonu - Ortada köşesiz
+                // VS - ortada, sarı; üst işlemler popup menüde
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    Button(
+                        onClick = { showVsMenu = true },
+                        modifier = Modifier.fillMaxSize(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFC107),
+                            contentColor = Color.Black
+                        ),
+                        shape = if (method == "MERGE_SORT")
+                            RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
+                        else
+                            RectangleShape,
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.ranking_vs),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = showVsMenu,
+                        onDismissRequest = { showVsMenu = false }
+                    ) {
+                        if (uiState.hasActiveSession) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.ranking_pause)) },
+                                onClick = {
+                                    showVsMenu = false
+                                    onPauseSession()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.ranking_reset)) },
+                                onClick = {
+                                    showVsMenu = false
+                                    onResetRequest()
+                                }
+                            )
+                        }
+                        if (method == "LEAGUE" || method == "EMRE_CORRECT") {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.ranking_standings_menu)) },
+                                onClick = {
+                                    showVsMenu = false
+                                    onShowStandingsDialog(true)
+                                }
+                            )
+                        }
+                        if (uiState.canUndo) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.ranking_undo_last_match)) },
+                                onClick = {
+                                    showVsMenu = false
+                                    viewModel.undoLastMatch()
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // SKOR GİR - sağda, yeşil
                 Button(
-                    onClick = {
-                        onShowScoreDialog(true)
-                    },
+                    onClick = { onShowScoreDialog(true) },
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                        containerColor = Color(0xFF388E3C),
+                        contentColor = Color.White
                     ),
-                    shape = RectangleShape // Köşesiz, bitişik
+                    shape = RectangleShape,
+                    contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.ranking_process_score),
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        textAlign = TextAlign.Center
                     )
                 }
 
-                // Kriter Değerlendirmesi butonu - Sağ köşe yuvarlak
+                // KRİTER - sağ uç, yeşil
                 Button(
-                    onClick = {
-                        onShowCriteriaDialog(true)
-                    },
+                    onClick = { onShowCriteriaDialog(true) },
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxHeight(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                        containerColor = Color(0xFF388E3C),
+                        contentColor = Color.White
                     ),
-                    shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp)
+                    shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 4.dp)
                 ) {
                     Text(
                         text = stringResource(R.string.ranking_criteria_button),
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        textAlign = TextAlign.Center
                     )
                 }
             }
 
-            // 6. SABİT: İKİNCİ TAKIM ETİKETİ - ANA TEMA İLE UYUMLU
-            Card(
+            // 5. SABİT: İKİNCİ TAKIM BAŞLIĞI - mavi, sıkıştırılmış
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-                shape = RoundedCornerShape(12.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
+                    .padding(horizontal = 16.dp, vertical = 2.dp),
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Text(
                     text = uiState.song2?.name?.uppercase() ?: stringResource(R.string.ranking_team2_fallback),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     textAlign = TextAlign.Center
                 )
             }
 
-            // 7. SCROLL PENCERESİ: İKİNCİ TAKIM TABLOSU - Çerçeveli ve yuvarlak
+            // 6. SCROLL PENCERESİ: İKİNCİ TAKIM TABLOSU - ekran dibine kadar
             TeamSelectionPanel(
                 song = uiState.song2,
                 method = method,

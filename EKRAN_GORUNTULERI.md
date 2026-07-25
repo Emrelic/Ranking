@@ -87,19 +87,21 @@ Claude: EKRAN_GORUNTULERI.md'ye kaydedildi ve analiz edildi!
 
 #### [Image #5] - Oylama Ekranı Layout ✅ TAMAMLANDI (Detaylar ARCHIVED_NOTES.md'de)
 
-#### [Image #6] - Oylama Ekranı Final Tasarım Hedefi (2025-09-23)
+#### [Image #6] - Oylama Ekranı Final Tasarım Hedefi (2025-09-23) ✅ TAMAMLANDI (2026-07-25)
 **Tarih**: 2025-09-23
-**Açıklama**: Afganistan vs Arnavutluk oylama ekranı - 5 bölümlü sabit layout sistemi
-**Gereksinimler**:
-- **Tur ilerleme çubuğu**: En tepede minimal padding (sıkıştırılmış)
-- **Takım 1 başlığı**: AFGANİSTAN - sabit, mavi arkaplan
-- **Takım 1 scroll penceresi**: Tablo verisi içinde scroll edilebilir (sağa/sola/yukarı/aşağı)
-- **Orta buton çubuğu**: BERABERLIK (büyük) | VS (ortada) | SKOR GİR + KRİTER (sağda 2 buton)
-- **Takım 2 başlığı**: ARNAVUTLUK - sabit, mavi arkaplan
-- **Takım 2 scroll penceresi**: Tablo verisi içinde scroll edilebilir - ekran dibine kadar
-- **VS popup sistemi**: VS butonuna tıklayınca üst butonlar (Duraklar/Sıfırla/Fikstür/Puan) popup ile açılır
-- **Layout**: 6 katmanlı fixed layout - VS buton çubuğu tam ekran ortasında
-- **Renk sistemi**: Takım başlıkları mavi, buton çubuğu yeşil/sarı/yeşil
+**Açıklama**: Afganistan vs Arnavutluk oylama ekranı - 6 katmanlı sabit layout sistemi
+**Gereksinimler** ✅:
+- **Tur ilerleme çubuğu**: En tepede minimal padding (sıkıştırılmış) ✅
+- **Takım 1 başlığı**: sabit, mavi arkaplan (primaryContainer, sıkıştırılmış) ✅
+- **Takım 1 scroll penceresi**: Tablo verisi içinde scroll edilebilir (TeamSelectionPanel) ✅
+- **Orta buton çubuğu**: BERABERLIK (2x genişlik) | VS (ortada) | SKOR GİR + KRİTER (sağda 2 buton) ✅
+- **Takım 2 başlığı**: sabit, mavi arkaplan ✅
+- **Takım 2 scroll penceresi**: ekran dibine kadar (weight 1f) ✅
+- **VS popup sistemi**: VS butonuna tıklayınca DropdownMenu: Duraklat / Sıfırla / Puan Durumu / Geri Al ✅
+  (Fikstür maddesi çıkarıldı: fixture ekranı Faz 1'de kaldırılmıştı; Geri Al eklendi)
+- **Layout**: 6 katmanlı fixed layout - buton çubuğu tam ekran ortasında ✅
+- **Renk sistemi**: Takım başlıkları mavi, buton çubuğu yeşil (#388E3C) / sarı (#FFC107) / yeşil ✅
+- Not: "Hangisi daha iyi?" başlık kartı kaldırıldı (Image #6'da yok; tablolara daha çok dikey alan)
+- Not: MERGE_SORT'ta BERABERLIK gizli kalır (ikili karşılaştırmada beraberlik yok)
 
-**Implementation Status**: Yeni talep - implementasyon gerekli
-**Technical Location**: RankingScreen.kt MatchBasedContent function - tam yeniden yapılandırma
+**Implementation**: RankingScreen.kt MatchBasedContent (2026-07-25, commit geçmişine bakın)
