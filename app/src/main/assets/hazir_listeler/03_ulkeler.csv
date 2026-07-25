@@ -1,44 +1,196 @@
 No,Kıta,Nüfus (milyon),Ülke,Yüzölçümü (bin km²),GSYH (milyar $),Kişi Başı Gelir ($),Bağımsızlık Yılı,Bayrak Kabul Yılı,Başkent,Para Birimi,Resmi Dil,Görsel
-1,Asya,1425,Çin,9597,17900,12600,1949,1949,Pekin,Yuan,Çince,https://flagcdn.com/w320/cn.png
-2,Asya,1428,Hindistan,3287,3700,2600,1947,1947,Yeni Delhi,Rupi,Hintçe ve İngilizce,https://flagcdn.com/w320/in.png
+1,Asya,1428,Hindistan,3287,3700,2600,1947,1947,Yeni Delhi,Rupi,Hintçe ve İngilizce,https://flagcdn.com/w320/in.png
+2,Asya,1410,Çin,9597,17900,12600,1949,1949,Pekin,Yuan,Çince,https://flagcdn.com/w320/cn.png
 3,Kuzey Amerika,335,ABD,9834,27000,80000,1776,1960,Washington DC,Dolar,İngilizce,https://flagcdn.com/w320/us.png
 4,Asya,277,Endonezya,1905,1400,5000,1945,1945,Cakarta,Rupiah,Endonezce,https://flagcdn.com/w320/id.png
 5,Asya,240,Pakistan,881,340,1500,1947,1947,İslamabad,Rupi,Urduca ve İngilizce,https://flagcdn.com/w320/pk.png
-6,Güney Amerika,216,Brezilya,8516,2170,10000,1822,1889,Brasilia,Real,Portekizce,https://flagcdn.com/w320/br.png
-7,Afrika,223,Nijerya,924,390,1750,1960,1960,Abuja,Nayra,İngilizce,https://flagcdn.com/w320/ng.png
+6,Afrika,223,Nijerya,924,390,1750,1960,1960,Abuja,Nayra,İngilizce,https://flagcdn.com/w320/ng.png
+7,Güney Amerika,216,Brezilya,8516,2170,10000,1822,1889,Brasilia,Real,Portekizce,https://flagcdn.com/w320/br.png
 8,Asya,171,Bangladeş,148,460,2700,1971,1972,Dakka,Taka,Bengalce,https://flagcdn.com/w320/bd.png
-9,Avrupa-Asya,144,Rusya,17098,2200,15300,1991,1991,Moskova,Ruble,Rusça,https://flagcdn.com/w320/ru.png
+9,Avrupa,144,Rusya,17098,2200,15300,1991,1991,Moskova,Ruble,Rusça,https://flagcdn.com/w320/ru.png
 10,Kuzey Amerika,128,Meksika,1964,1800,14000,1821,1968,Meksiko,Peso,İspanyolca,https://flagcdn.com/w320/mx.png
-11,Asya,125,Japonya,378,4200,33500,MÖ 660,1870,Tokyo,Yen,Japonca,https://flagcdn.com/w320/jp.png
-12,Afrika,123,Etiyopya,1104,160,1400,MÖ 980,1996,Addis Ababa,Birr,Amharca,https://flagcdn.com/w320/et.png
-13,Afrika,110,Mısır,1001,395,3600,1922,1984,Kahire,Mısır Lirası,Arapça,https://flagcdn.com/w320/eg.png
+11,Afrika,126,Etiyopya,1104,160,1400,MÖ 980,1996,Addis Ababa,Birr,Amharca,https://flagcdn.com/w320/et.png
+12,Asya,125,Japonya,378,4200,33500,MÖ 660,1870,Tokyo,Yen,Japonca,https://flagcdn.com/w320/jp.png
+13,Afrika,117,Mısır,1001,395,3600,1922,1984,Kahire,Mısır Lirası,Arapça,https://flagcdn.com/w320/eg.png
 14,Asya,117,Filipinler,300,440,3800,1898,1898,Manila,Peso,Filipince ve İngilizce,https://flagcdn.com/w320/ph.png
-15,Asya,98,Vietnam,331,430,4350,1945,1955,Hanoi,Dong,Vietnamca,https://flagcdn.com/w320/vn.png
-16,Avrupa-Asya,85,Türkiye,784,1100,13000,1923,1936,Ankara,Türk Lirası,Türkçe,https://flagcdn.com/w320/tr.png
+15,Afrika,105,Kongo Demokratik Cumhuriyeti,2345,70,650,1960,2006,Kinşasa,Kongo Frangı,Fransızca,https://flagcdn.com/w320/cd.png
+16,Asya,98,Vietnam,331,430,4350,1945,1955,Hanoi,Dong,Vietnamca,https://flagcdn.com/w320/vn.png
 17,Asya,89,İran,1648,400,4500,MÖ 550,1980,Tahran,Riyal,Farsça,https://flagcdn.com/w320/ir.png
-18,Avrupa,84,Almanya,357,4450,53000,1871,1949,Berlin,Euro,Almanca,https://flagcdn.com/w320/de.png
-19,Asya,36,Suudi Arabistan,2150,1070,30000,1932,1973,Riyad,Riyal,Arapça,https://flagcdn.com/w320/sa.png
-20,Avrupa,68,Fransa,644,3000,44500,843,1794,Paris,Euro,Fransızca,https://flagcdn.com/w320/fr.png
+18,Asya,85,Türkiye,784,1100,13000,1923,1936,Ankara,Türk Lirası,Türkçe,https://flagcdn.com/w320/tr.png
+19,Avrupa,84,Almanya,357,4450,53000,1871,1949,Berlin,Euro,Almanca,https://flagcdn.com/w320/de.png
+20,Asya,73,Tayland,513,515,7300,1238,1917,Bangkok,Baht,Tayca,https://flagcdn.com/w320/th.png
 21,Avrupa,68,Birleşik Krallık,244,3350,49000,1707,1801,Londra,Sterlin,İngilizce,https://flagcdn.com/w320/gb.png
-22,Avrupa,59,İtalya,301,2250,38000,1861,1946,Roma,Euro,İtalyanca,https://flagcdn.com/w320/it.png
-23,Afrika,60,Güney Afrika,1221,380,6300,1910,1994,Pretoria,Rand,İngilizce ve Afrikaanca,https://flagcdn.com/w320/za.png
-24,Asya,52,Güney Kore,100,1710,33000,1948,1948,Seul,Won,Korece,https://flagcdn.com/w320/kr.png
-25,Güney Amerika,46,Arjantin,2780,640,13900,1816,1818,Buenos Aires,Peso,İspanyolca,https://flagcdn.com/w320/ar.png
-26,Avrupa,48,İspanya,506,1580,33000,1492,1981,Madrid,Euro,İspanyolca,https://flagcdn.com/w320/es.png
-27,Avrupa,38,Polonya,313,810,21000,1918,1919,Varşova,Zloti,Lehçe,https://flagcdn.com/w320/pl.png
-28,Kuzey Amerika,39,Kanada,9985,2140,55000,1867,1965,Ottawa,Dolar,İngilizce ve Fransızca,https://flagcdn.com/w320/ca.png
-29,Okyanusya,26,Avustralya,7692,1720,65000,1901,1908,Kanberra,Dolar,İngilizce,https://flagcdn.com/w320/au.png
-30,Asya,10,Birleşik Arap Emirlikleri,84,510,50000,1971,1971,Abu Dabi,Dirhem,Arapça,https://flagcdn.com/w320/ae.png
-31,Avrupa,17,Hollanda,42,1090,63000,1581,1937,Amsterdam,Euro,Felemenkçe,https://flagcdn.com/w320/nl.png
-32,Avrupa,10,İsveç,450,590,56000,1523,1906,Stokholm,Kron,İsveççe,https://flagcdn.com/w320/se.png
-33,Avrupa,9,İsviçre,41,885,99000,1291,1889,Bern,Frank,Almanca ve Fransızca,https://flagcdn.com/w320/ch.png
-34,Avrupa,10,Yunanistan,132,240,22500,1830,1978,Atina,Euro,Yunanca,https://flagcdn.com/w320/gr.png
-35,Asya,6,Singapur,0.7,500,84000,1965,1959,Singapur,Dolar,İngilizce ve Malayca,https://flagcdn.com/w320/sg.png
-36,Asya,10,Azerbaycan,87,78,7700,1991,1991,Bakü,Manat,Azerice,https://flagcdn.com/w320/az.png
-37,Asya,20,Kazakistan,2725,260,13000,1991,1992,Astana,Tenge,Kazakça,https://flagcdn.com/w320/kz.png
-38,Afrika,37,Fas,447,140,3800,1956,1915,Rabat,Dirhem,Arapça,https://flagcdn.com/w320/ma.png
-39,Güney Amerika,52,Kolombiya,1142,360,6900,1810,1861,Bogota,Peso,İspanyolca,https://flagcdn.com/w320/co.png
-40,Asya,71,Tayland,513,515,7300,1238,1917,Bangkok,Baht,Tayca,https://flagcdn.com/w320/th.png
-41,Avrupa,5.5,Norveç,385,580,87000,1905,1821,Oslo,Kron,Norveççe,https://flagcdn.com/w320/no.png
-42,Avrupa,38,Ukrayna,604,180,4500,1991,1992,Kiev,Grivna,Ukraynaca,https://flagcdn.com/w320/ua.png
-43,Avrupa,10,Portekiz,92,290,27000,1143,1911,Lizbon,Euro,Portekizce,https://flagcdn.com/w320/pt.png
+22,Avrupa,68,Fransa,644,3000,44500,843,1794,Paris,Euro,Fransızca,https://flagcdn.com/w320/fr.png
+23,Afrika,67,Tanzanya,947,80,1250,1961,1964,Dodoma,Şilin,Svahili ve İngilizce,https://flagcdn.com/w320/tz.png
+24,Afrika,60,Güney Afrika,1221,380,6300,1910,1994,Pretoria,Rand,İngilizce ve Afrikaanca,https://flagcdn.com/w320/za.png
+25,Avrupa,59,İtalya,301,2250,38000,1861,1946,Roma,Euro,İtalyanca,https://flagcdn.com/w320/it.png
+26,Afrika,55,Kenya,580,115,2200,1963,1963,Nairobi,Şilin,Svahili ve İngilizce,https://flagcdn.com/w320/ke.png
+27,Asya,54,Myanmar,677,65,1100,1948,2010,Naypyidaw,Kyat,Birmanca,https://flagcdn.com/w320/mm.png
+28,Asya,52,Güney Kore,100,1710,33000,1948,1948,Seul,Won,Korece,https://flagcdn.com/w320/kr.png
+29,Güney Amerika,52,Kolombiya,1142,360,6900,1810,1861,Bogota,Peso,İspanyolca,https://flagcdn.com/w320/co.png
+30,Afrika,49,Uganda,241,50,1050,1962,1962,Kampala,Şilin,İngilizce ve Svahili,https://flagcdn.com/w320/ug.png
+31,Afrika,48,Sudan,1886,35,750,1956,1970,Hartum,Sudan Lirası,Arapça ve İngilizce,https://flagcdn.com/w320/sd.png
+32,Avrupa,48,İspanya,506,1580,33000,1492,1981,Madrid,Euro,İspanyolca,https://flagcdn.com/w320/es.png
+33,Güney Amerika,46,Arjantin,2780,640,13900,1816,1818,Buenos Aires,Peso,İspanyolca,https://flagcdn.com/w320/ar.png
+34,Afrika,46,Cezayir,2382,240,5000,1962,1962,Cezayir,Dinar,Arapça,https://flagcdn.com/w320/dz.png
+35,Asya,45,Irak,438,265,5900,1932,2008,Bağdat,Dinar,Arapça ve Kürtçe,https://flagcdn.com/w320/iq.png
+36,Asya,41,Afganistan,653,15,400,1919,2021,Kabil,Afgani,Peştuca ve Darice,https://flagcdn.com/w320/af.png
+37,Kuzey Amerika,39,Kanada,9985,2140,55000,1867,1965,Ottawa,Dolar,İngilizce ve Fransızca,https://flagcdn.com/w320/ca.png
+38,Avrupa,38,Polonya,313,810,21000,1918,1919,Varşova,Zloti,Lehçe,https://flagcdn.com/w320/pl.png
+39,Asya,38,Suudi Arabistan,2150,1070,30000,1932,1973,Riyad,Riyal,Arapça,https://flagcdn.com/w320/sa.png
+40,Avrupa,38,Ukrayna,604,180,4500,1991,1992,Kiev,Grivna,Ukraynaca,https://flagcdn.com/w320/ua.png
+41,Afrika,37,Fas,447,140,3800,1956,1915,Rabat,Dirhem,Arapça,https://flagcdn.com/w320/ma.png
+42,Asya,37,Özbekistan,447,90,2400,1991,1991,Taşkent,Som,Özbekçe,https://flagcdn.com/w320/uz.png
+43,Afrika,36,Angola,1247,95,2600,1975,1975,Luanda,Kvanza,Portekizce,https://flagcdn.com/w320/ao.png
+44,Asya,34,Malezya,330,430,12500,1957,1963,Kuala Lumpur,Ringit,Malayca,https://flagcdn.com/w320/my.png
+45,Afrika,34,Gana,239,75,2100,1957,1957,Akra,Cedi,İngilizce,https://flagcdn.com/w320/gh.png
+46,Asya,34,Yemen,528,20,650,1990,1990,Sana,Riyal,Arapça,https://flagcdn.com/w320/ye.png
+47,Güney Amerika,34,Peru,1285,265,7500,1821,1825,Lima,Sol,İspanyolca,https://flagcdn.com/w320/pe.png
+48,Afrika,33,Mozambik,799,20,550,1975,1983,Maputo,Metical,Portekizce,https://flagcdn.com/w320/mz.png
+49,Asya,30,Nepal,147,40,1350,1768,2008,Katmandu,Rupi,Nepalce,https://flagcdn.com/w320/np.png
+50,Afrika,30,Madagaskar,587,15,500,1960,1958,Antananarivo,Ariary,Malgaşça ve Fransızca,https://flagcdn.com/w320/mg.png
+51,Güney Amerika,28,Venezuela,916,100,3500,1811,2006,Karakas,Bolivar,İspanyolca,https://flagcdn.com/w320/ve.png
+52,Afrika,28,Fildişi Sahili,322,80,2500,1960,1959,Yamusukro,Frank,Fransızca,https://flagcdn.com/w320/ci.png
+53,Afrika,28,Kamerun,476,45,1500,1960,1975,Yaunde,Frank,Fransızca ve İngilizce,https://flagcdn.com/w320/cm.png
+54,Asya,26,Kuzey Kore,121,30,1200,1948,1948,Pyongyang,Won,Korece,https://flagcdn.com/w320/kp.png
+55,Okyanusya,26,Avustralya,7692,1720,65000,1901,1908,Kanberra,Dolar,İngilizce,https://flagcdn.com/w320/au.png
+56,Afrika,26,Nijer,1267,17,600,1960,1959,Niamey,Frank,Fransızca,https://flagcdn.com/w320/ne.png
+57,Afrika,23,Burkina Faso,273,20,850,1960,1984,Vagadugu,Frank,Fransızca,https://flagcdn.com/w320/bf.png
+58,Asya,23,Suriye,185,20,900,1946,1980,Şam,Suriye Lirası,Arapça,https://flagcdn.com/w320/sy.png
+59,Asya,22,Sri Lanka,66,85,3800,1948,1972,Kolombo,Rupi,Sinhalaca ve Tamilce,https://flagcdn.com/w320/lk.png
+60,Afrika,22,Mali,1240,20,850,1960,1961,Bamako,Frank,Fransızca,https://flagcdn.com/w320/ml.png
+61,Afrika,20,Malavi,118,13,550,1964,2012,Lilongve,Kvaça,İngilizce ve Çeva,https://flagcdn.com/w320/mw.png
+62,Asya,20,Kazakistan,2725,260,13000,1991,1992,Astana,Tenge,Kazakça,https://flagcdn.com/w320/kz.png
+63,Güney Amerika,20,Şili,756,335,17000,1810,1817,Santiago,Peso,İspanyolca,https://flagcdn.com/w320/cl.png
+64,Afrika,20,Zambiya,753,30,1400,1964,1964,Lusaka,Kvaça,İngilizce,https://flagcdn.com/w320/zm.png
+65,Avrupa,19,Romanya,238,350,18000,1877,1989,Bükreş,Ley,Romence,https://flagcdn.com/w320/ro.png
+66,Kuzey Amerika,18,Guatemala,109,100,5500,1821,1871,Guatemala,Ketzal,İspanyolca,https://flagcdn.com/w320/gt.png
+67,Afrika,18,Çad,1284,18,700,1960,1959,Encemine,Frank,Fransızca ve Arapça,https://flagcdn.com/w320/td.png
+68,Afrika,18,Senegal,197,30,1600,1960,1960,Dakar,Frank,Fransızca,https://flagcdn.com/w320/sn.png
+69,Afrika,18,Somali,638,12,650,1960,1954,Mogadişu,Şilin,Somalice ve Arapça,https://flagcdn.com/w320/so.png
+70,Avrupa,18,Hollanda,42,1090,63000,1581,1937,Amsterdam,Euro,Felemenkçe,https://flagcdn.com/w320/nl.png
+71,Güney Amerika,17,Ekvador,257,120,6600,1830,1900,Kito,Dolar,İspanyolca,https://flagcdn.com/w320/ec.png
+72,Asya,17,Kamboçya,181,32,1900,1953,1948,Pnom Penh,Riel,Kmerce,https://flagcdn.com/w320/kh.png
+73,Afrika,16,Zimbabve,391,30,1600,1980,1980,Harare,Dolar,İngilizce ve Şona,https://flagcdn.com/w320/zw.png
+74,Afrika,14,Gine,246,22,1300,1958,1958,Konakri,Frank,Fransızca,https://flagcdn.com/w320/gn.png
+75,Afrika,14,Ruanda,26,14,1000,1962,2001,Kigali,Frank,Kinyaruanda ve Fransızca,https://flagcdn.com/w320/rw.png
+76,Afrika,13,Benin,115,20,1250,1960,1959,Porto Novo,Frank,Fransızca,https://flagcdn.com/w320/bj.png
+77,Afrika,13,Burundi,28,3,250,1962,1967,Gitega,Frank,Kirundi ve Fransızca,https://flagcdn.com/w320/bi.png
+78,Avrupa,12,Belçika,31,620,53000,1830,1831,Brüksel,Euro,Felemenkçe ve Fransızca,https://flagcdn.com/w320/be.png
+79,Afrika,12,Tunus,164,50,4000,1956,1959,Tunus,Dinar,Arapça,https://flagcdn.com/w320/tn.png
+80,Kuzey Amerika,12,Haiti,28,20,1750,1804,1986,Port o Prens,Gurd,Fransızca ve Kreyol,https://flagcdn.com/w320/ht.png
+81,Güney Amerika,12,Bolivya,1099,45,3600,1825,1851,La Paz,Boliviano,İspanyolca,https://flagcdn.com/w320/bo.png
+82,Afrika,11,Güney Sudan,619,5,400,2011,2011,Cuba,Sudan Lirası,İngilizce,https://flagcdn.com/w320/ss.png
+83,Asya,11,Ürdün,89,50,4200,1946,1928,Amman,Dinar,Arapça,https://flagcdn.com/w320/jo.png
+84,Kuzey Amerika,11,Küba,110,110,9500,1902,1902,Havana,Peso,İspanyolca,https://flagcdn.com/w320/cu.png
+85,Asya,10,Azerbaycan,87,78,7700,1991,1991,Bakü,Manat,Azerice,https://flagcdn.com/w320/az.png
+86,Kuzey Amerika,10,Honduras,112,35,3000,1821,1866,Tegucigalpa,Lempira,İspanyolca,https://flagcdn.com/w320/hn.png
+87,Avrupa,10,Çekya,79,340,32000,1993,1920,Prag,Kron,Çekçe,https://flagcdn.com/w320/cz.png
+88,Avrupa,10,İsveç,450,590,56000,1523,1906,Stokholm,Kron,İsveççe,https://flagcdn.com/w320/se.png
+89,Asya,10,Birleşik Arap Emirlikleri,84,510,50000,1971,1971,Abu Dabi,Dirhem,Arapça,https://flagcdn.com/w320/ae.png
+90,Avrupa,10,Portekiz,92,290,27000,1143,1911,Lizbon,Euro,Portekizce,https://flagcdn.com/w320/pt.png
+91,Avrupa,10,Yunanistan,132,240,22500,1830,1978,Atina,Euro,Yunanca,https://flagcdn.com/w320/gr.png
+92,Avrupa,10,Macaristan,93,220,22000,1918,1957,Budapeşte,Forint,Macarca,https://flagcdn.com/w320/hu.png
+93,Kuzey Amerika,10,Dominik Cumhuriyeti,49,120,11000,1844,1863,Santo Domingo,Peso,İspanyolca,https://flagcdn.com/w320/do.png
+94,Asya,10,Tacikistan,143,12,1200,1991,1991,Duşanbe,Somoni,Tacikçe,https://flagcdn.com/w320/tj.png
+95,Okyanusya,10,Papua Yeni Gine,463,30,3000,1975,1975,Port Moresby,Kina,İngilizce ve Tok Pisin,https://flagcdn.com/w320/pg.png
+96,Afrika,9,Togo,57,9,950,1960,1960,Lome,Frank,Fransızca,https://flagcdn.com/w320/tg.png
+97,Avrupa,9,Belarus,208,75,8000,1991,1995,Minsk,Ruble,Belarusça ve Rusça,https://flagcdn.com/w320/by.png
+98,Avrupa,9,Avusturya,84,520,57000,1918,1945,Viyana,Euro,Almanca,https://flagcdn.com/w320/at.png
+99,Avrupa,9,İsviçre,41,885,99000,1291,1889,Bern,Frank,Almanca ve Fransızca,https://flagcdn.com/w320/ch.png
+100,Asya,9,İsrail,22,525,55000,1948,1948,Kudüs,Şekel,İbranice ve Arapça,https://flagcdn.com/w320/il.png
+101,Afrika,8,Sierra Leone,72,4,500,1961,1961,Freetown,Leone,İngilizce,https://flagcdn.com/w320/sl.png
+102,Afrika,7,Libya,1760,45,6500,1951,2011,Trablus,Dinar,Arapça,https://flagcdn.com/w320/ly.png
+103,Asya,7,Laos,237,16,2100,1953,1975,Vientiane,Kip,Laoca,https://flagcdn.com/w320/la.png
+104,Avrupa,7,Sırbistan,88,75,10500,2006,2010,Belgrad,Dinar,Sırpça,https://flagcdn.com/w320/rs.png
+105,Asya,7,Türkmenistan,488,75,12000,1991,2001,Aşkabat,Manat,Türkmence,https://flagcdn.com/w320/tm.png
+106,Avrupa,7,Bulgaristan,111,100,15000,1908,1991,Sofya,Leva,Bulgarca,https://flagcdn.com/w320/bg.png
+107,Asya,7,Kırgızistan,200,12,1400,1991,1992,Bişkek,Som,Kırgızca ve Rusça,https://flagcdn.com/w320/kg.png
+108,Kuzey Amerika,6.9,Nikaragua,130,17,2400,1821,1971,Managua,Kordoba,İspanyolca,https://flagcdn.com/w320/ni.png
+109,Güney Amerika,6.9,Paraguay,407,45,6300,1811,2013,Asuncion,Guarani,İspanyolca ve Guaranice,https://flagcdn.com/w320/py.png
+110,Kuzey Amerika,6.3,El Salvador,21,32,5000,1821,1912,San Salvador,Dolar,İspanyolca,https://flagcdn.com/w320/sv.png
+111,Afrika,6,Kongo Cumhuriyeti,342,15,2500,1960,1970,Brazavil,Frank,Fransızca,https://flagcdn.com/w320/cg.png
+112,Avrupa,5.9,Danimarka,43,400,68000,965,1625,Kopenhag,Kron,Danca,https://flagcdn.com/w320/dk.png
+113,Asya,5.9,Singapur,1,500,84000,1965,1959,Singapur,Dolar,İngilizce ve Malayca,https://flagcdn.com/w320/sg.png
+114,Avrupa,5.5,Norveç,385,580,87000,1905,1821,Oslo,Kron,Norveççe,https://flagcdn.com/w320/no.png
+115,Avrupa,5.5,Finlandiya,338,300,54000,1917,1918,Helsinki,Euro,Fince ve İsveççe,https://flagcdn.com/w320/fi.png
+116,Asya,5.5,Lübnan,10,20,3500,1943,1943,Beyrut,Lübnan Lirası,Arapça,https://flagcdn.com/w320/lb.png
+117,Avrupa,5.4,Slovakya,49,130,24000,1993,1992,Bratislava,Euro,Slovakça,https://flagcdn.com/w320/sk.png
+118,Afrika,5.4,Liberya,111,4,800,1847,1847,Monrovia,Dolar,İngilizce,https://flagcdn.com/w320/lr.png
+119,Asya,5.4,Filistin,6,20,3500,1988,1964,Ramallah,Şekel,Arapça,https://flagcdn.com/w320/ps.png
+120,Avrupa,5.2,İrlanda,70,550,106000,1922,1922,Dublin,Euro,İrlandaca ve İngilizce,https://flagcdn.com/w320/ie.png
+121,Kuzey Amerika,5.2,Kosta Rika,51,85,16500,1821,1906,San Jose,Kolon,İspanyolca,https://flagcdn.com/w320/cr.png
+122,Okyanusya,5.2,Yeni Zelanda,268,250,48000,1907,1902,Wellington,Dolar,İngilizce ve Maorice,https://flagcdn.com/w320/nz.png
+123,Afrika,5,Orta Afrika Cumhuriyeti,623,3,450,1960,1958,Bangui,Frank,Fransızca ve Sango,https://flagcdn.com/w320/cf.png
+124,Asya,5,Umman,310,110,21000,1650,1970,Maskat,Riyal,Arapça,https://flagcdn.com/w320/om.png
+125,Afrika,4.8,Moritanya,1031,10,2100,1960,1959,Nuakşot,Ugiya,Arapça,https://flagcdn.com/w320/mr.png
+126,Kuzey Amerika,4.4,Panama,75,80,18500,1903,1925,Panama,Balboa,İspanyolca,https://flagcdn.com/w320/pa.png
+127,Asya,4.3,Kuveyt,18,165,38000,1961,1961,Kuveyt,Dinar,Arapça,https://flagcdn.com/w320/kw.png
+128,Afrika,4,Eritre,118,2,600,1993,1995,Asmara,Nakfa,Tigrinya ve Arapça,https://flagcdn.com/w320/er.png
+129,Avrupa,3.9,Hırvatistan,57,80,20000,1991,1990,Zagreb,Euro,Hırvatça,https://flagcdn.com/w320/hr.png
+130,Asya,3.7,Gürcistan,70,30,8000,1991,2004,Tiflis,Lari,Gürcüce,https://flagcdn.com/w320/ge.png
+131,Asya,3.4,Moğolistan,1564,20,5500,1921,1992,Ulan Batur,Tugrik,Moğolca,https://flagcdn.com/w320/mn.png
+132,Güney Amerika,3.4,Uruguay,176,80,22000,1825,1830,Montevideo,Peso,İspanyolca,https://flagcdn.com/w320/uy.png
+133,Avrupa,3.2,Bosna-Hersek,51,25,8000,1992,1998,Saraybosna,Marka,Boşnakça ve Sırpça ve Hırvatça,https://flagcdn.com/w320/ba.png
+134,Asya,3,Ermenistan,30,24,8000,1991,1990,Erivan,Dram,Ermenice,https://flagcdn.com/w320/am.png
+135,Avrupa,2.8,Litvanya,65,78,27000,1990,1918,Vilnius,Euro,Litvanca,https://flagcdn.com/w320/lt.png
+136,Kuzey Amerika,2.8,Jamaika,11,20,7000,1962,1962,Kingston,Dolar,İngilizce,https://flagcdn.com/w320/jm.png
+137,Asya,2.7,Katar,12,235,82000,1971,1971,Doha,Riyal,Arapça,https://flagcdn.com/w320/qa.png
+138,Avrupa,2.7,Arnavutluk,29,23,8000,1912,1992,Tiran,Lek,Arnavutça,https://flagcdn.com/w320/al.png
+139,Afrika,2.7,Gambiya,11,2,850,1965,1965,Banjul,Dalasi,İngilizce,https://flagcdn.com/w320/gm.png
+140,Afrika,2.6,Namibya,825,13,5000,1990,1990,Windhoek,Dolar,İngilizce,https://flagcdn.com/w320/na.png
+141,Afrika,2.6,Botsvana,582,20,7800,1966,1966,Gaborone,Pula,İngilizce ve Setsvana,https://flagcdn.com/w320/bw.png
+142,Avrupa,2.5,Moldova,34,16,6000,1991,1990,Kişinev,Ley,Rumence,https://flagcdn.com/w320/md.png
+143,Afrika,2.4,Gabon,268,20,8500,1960,1960,Librevil,Frank,Fransızca,https://flagcdn.com/w320/ga.png
+144,Afrika,2.3,Lesoto,30,2,1100,1966,2006,Maseru,Loti,Sesotho ve İngilizce,https://flagcdn.com/w320/ls.png
+145,Avrupa,2.1,Kuzey Makedonya,26,15,7000,1991,1995,Üsküp,Denar,Makedonca ve Arnavutça,https://flagcdn.com/w320/mk.png
+146,Afrika,2.1,Gine-Bissau,36,2,900,1974,1974,Bissau,Frank,Portekizce,https://flagcdn.com/w320/gw.png
+147,Avrupa,2.1,Slovenya,20,68,32000,1991,1991,Ljubljana,Euro,Slovence,https://flagcdn.com/w320/si.png
+148,Avrupa,1.9,Letonya,65,45,24000,1990,1918,Riga,Euro,Letonca,https://flagcdn.com/w320/lv.png
+149,Afrika,1.7,Ekvator Ginesi,28,12,8000,1968,1968,Malabo,Frank,İspanyolca ve Fransızca,https://flagcdn.com/w320/gq.png
+150,Asya,1.5,Bahreyn,1,45,30000,1971,2002,Manama,Dinar,Arapça,https://flagcdn.com/w320/bh.png
+151,Kuzey Amerika,1.5,Trinidad ve Tobago,5,28,18500,1962,1962,Port of Spain,Dolar,İngilizce,https://flagcdn.com/w320/tt.png
+152,Asya,1.4,Doğu Timor,15,3,2500,2002,2002,Dili,Dolar,Portekizce ve Tetumca,https://flagcdn.com/w320/tl.png
+153,Avrupa,1.4,Estonya,45,40,30000,1991,1918,Tallinn,Euro,Estonca,https://flagcdn.com/w320/ee.png
+154,Avrupa,1.3,Kıbrıs,9,30,33000,1960,2006,Lefkoşa,Euro,Rumca ve Türkçe,https://flagcdn.com/w320/cy.png
+155,Afrika,1.3,Moritius,2,15,11500,1968,1968,Port Louis,Rupi,İngilizce ve Fransızca,https://flagcdn.com/w320/mu.png
+156,Afrika,1.2,Esvatini,17,5,4000,1968,1968,Mbabane,Lilangeni,İngilizce ve Sisvati,https://flagcdn.com/w320/sz.png
+157,Afrika,1.1,Cibuti,23,4,3500,1977,1977,Cibuti,Frank,Fransızca ve Arapça,https://flagcdn.com/w320/dj.png
+158,Okyanusya,0.9,Fiji,18,5,5500,1970,1970,Suva,Dolar,İngilizce ve Fiji,https://flagcdn.com/w320/fj.png
+159,Afrika,0.9,Komorlar,2,1,1500,1975,2002,Moroni,Frank,Komorca ve Arapça,https://flagcdn.com/w320/km.png
+160,Asya,0.8,Bhutan,38,3,3800,1907,1969,Timbu,Ngultrum,Zonka,https://flagcdn.com/w320/bt.png
+161,Güney Amerika,0.8,Guyana,215,16,20000,1966,1966,Georgetown,Dolar,İngilizce,https://flagcdn.com/w320/gy.png
+162,Avrupa,0.7,Lüksemburg,3,90,135000,1839,1972,Lüksemburg,Euro,Lüksemburgca ve Fransızca,https://flagcdn.com/w320/lu.png
+163,Okyanusya,0.7,Solomon Adaları,29,2,2300,1978,1977,Honiara,Dolar,İngilizce,https://flagcdn.com/w320/sb.png
+164,Avrupa,0.6,Karadağ,14,7,11000,2006,2004,Podgorica,Euro,Karadağca,https://flagcdn.com/w320/me.png
+165,Güney Amerika,0.6,Surinam,164,4,6500,1975,1975,Paramaribo,Dolar,Felemenkçe,https://flagcdn.com/w320/sr.png
+166,Afrika,0.6,Yeşil Burun Adaları,4,2,4000,1975,1992,Praia,Eskudo,Portekizce,https://flagcdn.com/w320/cv.png
+167,Asya,0.5,Brunei,6,15,33000,1984,1959,Bandar Seri Begavan,Dolar,Malayca,https://flagcdn.com/w320/bn.png
+168,Avrupa,0.5,Malta,0.3,20,38000,1964,1964,Valletta,Euro,Maltaca ve İngilizce,https://flagcdn.com/w320/mt.png
+169,Asya,0.5,Maldivler,0.3,6,15000,1965,1965,Male,Rufiyaa,Divehi,https://flagcdn.com/w320/mv.png
+170,Kuzey Amerika,0.4,Belize,23,3,6500,1981,1981,Belmopan,Dolar,İngilizce,https://flagcdn.com/w320/bz.png
+171,Kuzey Amerika,0.4,Bahamalar,14,14,34000,1973,1973,Nassau,Dolar,İngilizce,https://flagcdn.com/w320/bs.png
+172,Avrupa,0.4,İzlanda,103,30,78000,1944,1944,Reykjavik,Kron,İzlandaca,https://flagcdn.com/w320/is.png
+173,Okyanusya,0.3,Vanuatu,12,1,3200,1980,1980,Port Vila,Vatu,Bislama ve İngilizce,https://flagcdn.com/w320/vu.png
+174,Kuzey Amerika,0.3,Barbados,0.4,6,20000,1966,1966,Bridgetown,Dolar,İngilizce,https://flagcdn.com/w320/bb.png
+175,Afrika,0.2,Sao Tome ve Principe,1,1,2500,1975,1975,Sao Tome,Dobra,Portekizce,https://flagcdn.com/w320/st.png
+176,Okyanusya,0.2,Samoa,3,1,4200,1962,1962,Apia,Tala,Samoaca ve İngilizce,https://flagcdn.com/w320/ws.png
+177,Kuzey Amerika,0.2,Saint Lucia,0.6,2,12000,1979,1979,Castries,Dolar,İngilizce,https://flagcdn.com/w320/lc.png
+178,Okyanusya,0.1,Mikronezya,0.7,0.4,3600,1986,1978,Palikir,Dolar,İngilizce,https://flagcdn.com/w320/fm.png
+179,Okyanusya,0.1,Kiribati,0.8,0.3,2200,1979,1979,Tarava,Dolar,İngilizce ve Kiribati,https://flagcdn.com/w320/ki.png
+180,Okyanusya,0.1,Tonga,0.7,0.5,5000,1970,1875,Nukualofa,Panga,Tongaca ve İngilizce,https://flagcdn.com/w320/to.png
+181,Kuzey Amerika,0.1,Grenada,0.3,1,10000,1974,1974,Saint George,Dolar,İngilizce,https://flagcdn.com/w320/gd.png
+182,Kuzey Amerika,0.1,Saint Vincent ve Grenadinler,0.4,1,9000,1979,1985,Kingstown,Dolar,İngilizce,https://flagcdn.com/w320/vc.png
+183,Kuzey Amerika,0.1,Antigua ve Barbuda,0.4,2,20000,1981,1967,Saint Johns,Dolar,İngilizce,https://flagcdn.com/w320/ag.png
+184,Afrika,0.1,Seyşeller,0.5,2,17000,1976,1996,Victoria,Rupi,İngilizce ve Fransızca,https://flagcdn.com/w320/sc.png
+185,Avrupa,0.08,Andorra,0.5,3,42000,1278,1866,Andorra la Vella,Euro,Katalanca,https://flagcdn.com/w320/ad.png
+186,Kuzey Amerika,0.07,Dominika,0.8,0.6,8500,1978,1990,Roseau,Dolar,İngilizce,https://flagcdn.com/w320/dm.png
+187,Kuzey Amerika,0.05,Saint Kitts ve Nevis,0.3,1,20000,1983,1983,Basseterre,Dolar,İngilizce,https://flagcdn.com/w320/kn.png
+188,Avrupa,0.04,Lihtenştayn,0.2,7,180000,1806,1937,Vaduz,Frank,Almanca,https://flagcdn.com/w320/li.png
+189,Okyanusya,0.04,Marshall Adaları,0.2,0.3,6000,1986,1979,Majuro,Dolar,İngilizce ve Marshallca,https://flagcdn.com/w320/mh.png
+190,Avrupa,0.04,Monako,0.002,8,240000,1297,1881,Monako,Euro,Fransızca,https://flagcdn.com/w320/mc.png
+191,Avrupa,0.03,San Marino,0.06,2,52000,301,1862,San Marino,Euro,İtalyanca,https://flagcdn.com/w320/sm.png
+192,Okyanusya,0.02,Palau,0.5,0.3,15000,1994,1981,Ngerulmud,Dolar,İngilizce ve Palauca,https://flagcdn.com/w320/pw.png
+193,Okyanusya,0.01,Nauru,0.02,0.15,12000,1968,1968,Yaren,Dolar,Naurca ve İngilizce,https://flagcdn.com/w320/nr.png
+194,Okyanusya,0.01,Tuvalu,0.03,0.06,5000,1978,1978,Funafuti,Dolar,Tuvaluca ve İngilizce,https://flagcdn.com/w320/tv.png
+195,Avrupa,0.001,Vatikan,0.0004,0.02,22000,1929,1929,Vatikan,Euro,İtalyanca ve Latince,https://flagcdn.com/w320/va.png

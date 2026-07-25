@@ -1,0 +1,5 @@
+# CSV listeleri her platformda LF kalmalı (README'deki biçim garantisi)
+*.csv text eol=lf
+*.md text
+*.kt text
+*.xml text

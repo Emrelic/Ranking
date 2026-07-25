@@ -10,15 +10,37 @@ No,Ülke/Bölge,Yüzölçümü (km²),Göl,Tür,Maks Derinlik (m),Yükseklik (m)
 9,Malavi-Mozambik,29500,Malavi Gölü,Tatlı su,706,500,Ruhuhu Nehri
 10,Kanada,27200,Büyük Köle Gölü,Tatlı su,614,156,Slave Nehri
 11,ABD-Kanada,25700,Erie Gölü,Tatlı su,64,174,Detroit Nehri
-12,ABD-Kanada,18960,Ontario Gölü,Tatlı su,244,75,Niagara Nehri
-13,Rusya,17700,Ladoga Gölü,Tatlı su,230,5,Svir ve Volhov nehirleri
-14,Kazakistan-Özbekistan,17000,Aral Gölü,Tuzlu su,42,42,Amuderya ve Siriderya
-15,Kazakistan,16400,Balkaş Gölü,Yarı tuzlu,26,341,İli Nehri
-16,Peru-Bolivya,8372,Titicaca Gölü,Tatlı su,281,3812,Yağış ve buzul suları
-17,Türkiye,3713,Van Gölü,Sodalı,451,1640,Yağış ve akarsular
-18,Türkiye,1500,Tuz Gölü,Tuzlu su,2,905,Yağış ve yer altı suyu
-19,Çad-Nijer-Nijerya,1350,Çad Gölü,Tatlı su,11,240,Şari Nehri
-20,Türkiye,656,Beyşehir Gölü,Tatlı su,10,1116,Akarsular ve kaynaklar
-21,Türkiye,482,Eğirdir Gölü,Tatlı su,14,917,Akarsular ve kaynaklar
-22,Türkiye,298,İznik Gölü,Tatlı su,80,85,Akarsular ve yağış
-23,Türkiye,45,Sapanca Gölü,Tatlı su,52,31,Akarsular ve yağış
+12,Kanada,24514,Winnipeg Gölü,Tatlı su,36,217,Saskatchewan ve Winnipeg nehirleri
+13,ABD-Kanada,18960,Ontario Gölü,Tatlı su,244,75,Niagara Nehri
+14,Rusya,17700,Ladoga Gölü,Tatlı su,230,5,Svir ve Volhov nehirleri
+15,Kazakistan-Özbekistan,17000,Aral Gölü,Tuzlu su,42,42,Amuderya ve Siriderya
+16,Kazakistan,16400,Balkaş Gölü,Yarı tuzlu,26,341,İli Nehri
+17,Venezuela,13210,Maracaibo Gölü,Yarı tuzlu,60,0,Catatumbo Nehri
+18,Antarktika,12500,Vostok Gölü,Tatlı su,900,-500,Buzul altı sular
+19,Rusya,9700,Onega Gölü,Tatlı su,127,33,Akarsular ve yağış
+20,Avustralya,9500,Eyre Gölü,Tuzlu su,6,-15,Mevsimsel akarsular
+21,Peru-Bolivya,8372,Titicaca Gölü,Tatlı su,281,3812,Yağış ve buzul suları
+22,Nikaragua,8264,Nikaragua Gölü,Tatlı su,26,33,Tipitapa Nehri
+23,Kanada,7935,Athabasca Gölü,Tatlı su,124,213,Athabasca Nehri
+24,Kanada,6650,Reindeer Gölü,Tatlı su,337,337,Akarsular ve yağış
+25,Kenya-Etiyopya,6405,Turkana Gölü,Tuzlu su,109,360,Omo Nehri
+26,Kırgızistan,6236,Issık Göl,Yarı tuzlu,668,1607,Dağ akarsuları
+27,İsveç,5650,Vänern Gölü,Tatlı su,106,44,Klarälven Nehri
+28,İran,5200,Urmiye Gölü,Tuzlu su,16,1275,Akarsular ve yağış
+29,Kanada,4848,Nipigon Gölü,Tatlı su,165,260,Akarsular ve yağış
+30,ABD,4400,Büyük Tuz Gölü,Tuzlu su,10,1280,Bear ve Jordan nehirleri
+31,Türkiye,3713,Van Gölü,Sodalı,451,1640,Yağış ve akarsular
+32,Türkiye,1500,Tuz Gölü,Tuzlu su,2,905,Yağış ve yer altı suyu
+33,Çad-Nijer-Nijerya,1350,Çad Gölü,Tatlı su,11,240,Şari Nehri
+34,Türkiye,656,Beyşehir Gölü,Tatlı su,10,1116,Akarsular ve kaynaklar
+35,Türkiye,482,Eğirdir Gölü,Tatlı su,14,917,Akarsular ve kaynaklar
+36,Türkiye,350,Akşehir Gölü,Tuzlu su,3,958,Akarsular ve yağış
+37,Türkiye,298,İznik Gölü,Tatlı su,80,85,Akarsular ve yağış
+38,Türkiye,200,Burdur Gölü,Tuzlu su,60,854,Yağış ve yer altı suyu
+39,Türkiye,166,Manyas Gölü,Tatlı su,5,15,Akarsular ve yağış
+40,Türkiye,153,Acıgöl,Tuzlu su,2,836,Yağış ve akarsular
+41,Türkiye,134,Uluabat Gölü,Tatlı su,3,5,Mustafakemalpaşa Çayı
+42,Türkiye,126,Eber Gölü,Tatlı su,3,967,Akarsular ve yağış
+43,Türkiye,115,Çıldır Gölü,Tatlı su,42,1959,Akarsular ve yağış
+44,Türkiye,86,Hazar Gölü (Elazığ),Tatlı su,216,1248,Akarsular ve kaynaklar
+45,Türkiye,45,Sapanca Gölü,Tatlı su,52,31,Akarsular ve yağış

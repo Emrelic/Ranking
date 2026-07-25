@@ -29,3 +29,23 @@ No,Sınıf,Su Tipi,Balık,Familya,Ortalama Boy (cm),Ağırlık (kg),Beslenme,Ya�
 28,Kemikli balık,Tuzlu su,Dil Balığı,Dilbalığıgiller,35,0.5,Dip canlıları,Akdeniz ve Atlantik,Solea solea,25,Yüksek
 29,Kemikli balık,Her ikisi,Kefal,Kefalgiller,40,1.5,Yosun ve organik artık,Kıyı ve haliçler,Mugil cephalus,15,Orta
 30,Kemikli balık,Tuzlu su,Sinarit,Mercangiller,60,5,Balık ve kalamar,Ege ve Akdeniz,Dentex dentex,30,Yüksek
+31,Kemikli balık,Tuzlu su,Ringa,Ringagiller,30,0.5,Plankton,Kuzey Atlantik,Clupea harengus,12,Yüksek
+32,Kemikli balık,Tatlı su,Tilapya,Çiklitgiller,35,1,Hepçil,Sıcak göller,Oreochromis niloticus,10,Orta
+33,Kemikli balık,Tuzlu su,İskorpit,İskorpitgiller,30,1.5,Balık ve kabuklu,Kayalık dipler,Scorpaena scrofa,15,Orta
+34,Kemikli balık,Tuzlu su,Mırmır,Mercangiller,30,0.8,Dip canlıları,Ege ve Akdeniz,Lithognathus mormyrus,12,Orta
+35,Kemikli balık,Tuzlu su,Karagöz,Mercangiller,30,1,Kabuklu ve yosun,Kayalık kıyılar,Diplodus vulgaris,10,Yüksek
+36,Kemikli balık,Tuzlu su,Melanur,Mercangiller,20,0.3,Yosun ve plankton,Kıyı suları,Oblada melanura,8,Orta
+37,Kemikli balık,Tuzlu su,Kupez,Mercangiller,20,0.2,Plankton,Ege ve Akdeniz,Boops boops,6,Düşük
+38,Kemikli balık,Tuzlu su,Zargana,Zarganagiller,60,0.5,Küçük balık,Yüzey suları,Belone belone,7,Orta
+39,Kemikli balık,Tuzlu su,Kolyoz,Uskumrugiller,30,0.4,Plankton ve küçük balık,Akdeniz ve Ege,Scomber colias,10,Orta
+40,Kemikli balık,Her ikisi,Gümüş Balığı,Gümüşgiller,12,0.02,Plankton,Kıyı ve haliçler,Atherina boyeri,4,Düşük
+41,Kemikli balık,Tuzlu su,Isparoz,Mercangiller,20,0.2,Kabuklu ve yosun,Kayalık kıyılar,Diplodus annularis,9,Düşük
+42,Kemikli balık,Tuzlu su,Trança,Mercangiller,70,8,Balık ve kabuklu,Ege ve Akdeniz,Pagrus pagrus,15,Yüksek
+43,Kemikli balık,Tuzlu su,Fangri,Mercangiller,60,6,Kabuklu ve balık,Derin kayalıklar,Pagellus erythrinus,14,Yüksek
+44,Kemikli balık,Tuzlu su,Tekir,Tekirgiller,25,0.3,Dip canlıları,Ege ve Akdeniz,Mullus surmuletus,11,Yüksek
+45,Kemikli balık,Tuzlu su,Akya,Sarıkuyrukgiller,100,25,Balık,Açık sular,Lichia amia,15,Yüksek
+46,Kemikli balık,Tuzlu su,Kırlangıç Balığı,Kırlangıçgiller,40,2,Dip canlıları,Kumluk dipler,Chelidonichthys lucerna,15,Orta
+47,Kemikli balık,Tuzlu su,Berlam,Berlamgiller,40,1,Küçük balık,Kuzey Atlantik,Merluccius merluccius,20,Yüksek
+48,Kemikli balık,Tuzlu su,Orfoz,Orfozgiller,100,30,Balık ve ahtapot,Kayalık dipler,Epinephelus marginatus,50,Çok yüksek
+49,Kemikli balık,Tuzlu su,Lipsoz,İskorpitgiller,40,3,Balık ve kabuklu,Kayalık dipler,Scorpaena porcus,15,Orta
+50,Kemikli balık,Tuzlu su,Sarıağız,Sarıağızgiller,150,40,Balık ve kabuklu,Kıyı suları,Argyrosomus regius,30,Yüksek

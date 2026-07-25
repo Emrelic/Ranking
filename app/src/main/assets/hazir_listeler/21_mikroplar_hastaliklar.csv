@@ -29,3 +29,18 @@ No,Mikrop Tipi,Bulaşma Yolu,Hastalık,Etken Mikroorganizma,Etkilediği Sistem,B
 28,Parazit,Yakın temas,Uyuz,Sarcoptes scabiei,Deri,Şiddetli kaşıntı - deride tünel izi,Uyuz losyonu - hijyen,1687,2-6 hafta,Yok
 29,Parazit,Köpek teması ve çiğ sebze,Kist Hidatik,Echinococcus granulosus,Karaciğer ve akciğer,Kist oluşumu - karın ağrısı,Hijyen - cerrahi tedavi,1808,Aylar-yıllar,Yok
 30,Mantar,Temas ve bağışıklık düşüklüğü,Pamukçuk,Candida albicans,Ağız ve sindirim,Ağızda beyaz plak - yanma,Antifungal ilaç - ağız hijyeni,1839,2-5 gün,Yok
+31,Virüs,Sivrisinek ısırığı,Sarıhumma,Sarıhumma virüsü,Karaciğer ve kan,Ateş - sarılık - kanama,Aşı - sivrisinek kontrolü,1927,3-6 gün,Var
+32,Virüs,Sivrisinek ısırığı,Dang Humması,Dang virüsü,Kan ve bağışıklık,Yüksek ateş - eklem ağrısı,Sivrisinek kontrolü - destek tedavi,1943,4-10 gün,Var (sınırlı)
+33,Bakteri,Cinsel yol,Bel Soğukluğu,Neisseria gonorrhoeae,Üreme sistemi,Akıntı - yanma - ağrı,Antibiyotik - korunma,1879,2-7 gün,Yok
+34,Bakteri,Kene ısırığı,Lyme Hastalığı,Borrelia burgdorferi,Deri ve eklem,Halka döküntü - eklem ağrısı,Antibiyotik - kene korunması,1982,3-30 gün,Yok
+35,Parazit,Çeçe sineği ısırığı,Uyku Hastalığı,Trypanosoma brucei,Sinir sistemi,Ateş - uyku bozukluğu,İlaç tedavisi - sinek kontrolü,1902,1-3 hafta,Yok
+36,Parazit,Tatarcık ısırığı,Şark Çıbanı,Leishmania türleri,Deri,Deride kabuklu yara,İlaç tedavisi - sinek kontrolü,1898,2-8 hafta,Yok
+37,Bakteri,Solunum yolu,Menenjit,Neisseria meningitidis,Beyin zarı,Ateş - ense sertliği - baş ağrısı,Aşı - antibiyotik,1887,1-10 gün,Var
+38,Parazit,Kirli su teması,Şistozomiyaz,Schistosoma türleri,Karaciğer ve mesane,Karın ağrısı - kanlı idrar,İlaç tedavisi - temiz su,1851,4-8 hafta,Yok
+39,Virüs,Sivrisinek ısırığı,Chikungunya,Chikungunya virüsü,Eklem ve kas,Ateş - şiddetli eklem ağrısı,Sivrisinek kontrolü - destek tedavi,1952,2-12 gün,Var
+40,Virüs,Kirli su ve gıda,Hepatit A,Hepatit A virüsü,Karaciğer,Sarılık - bulantı - halsizlik,Aşı - hijyen,1973,2-6 hafta,Var
+41,Virüs,Kan ve vücut sıvıları,Hepatit C,Hepatit C virüsü,Karaciğer,Halsizlik - karaciğer hasarı,Antiviral tedavi - korunma,1989,2 hafta-6 ay,Yok
+42,Virüs,Kirli el ve gıda,Rotavirüs İshali,Rotavirüs,Sindirim sistemi,İshal - kusma - ateş,Aşı - hijyen,1973,1-3 gün,Var
+43,Virüs,Virüs yeniden aktivasyonu,Zona,Varicella zoster virüsü,Sinir ve deri,Bantlı ağrılı döküntü,Aşı - antiviral ilaç,1900,Değişken,Var
+44,Bakteri,Solunum yolu,Kızıl,Streptococcus pyogenes,Boğaz ve deri,Kırmızı döküntü - boğaz ağrısı,Antibiyotik tedavisi,1924,1-4 gün,Yok
+45,Parazit,Kirli gıda ve toprak,Bağırsak Solucanı,Ascaris lumbricoides,Sindirim sistemi,Karın ağrısı - kilo kaybı,İlaç tedavisi - hijyen,1758,2-3 ay,Yok

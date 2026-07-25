@@ -53,3 +53,67 @@ No,Sembol,Grup,Element,Atom Ağırlığı,Oda Sıcaklığındaki Hali,Keşif Yı
 52,Te,6A,Tellür,127.60,Katı,1782,5,Güneş paneli ve alaşım,Latince dünya tellus
 53,I,7A,İyot,126.904,Katı,1811,5,Antiseptik ve tuz katkısı,Yunanca menekşe iodes
 54,Xe,8A,Ksenon,131.293,Gaz,1898,5,Projeksiyon lambası ve anestezi,Yunanca yabancı xenos
+55,Cs,1A,Sezyum,132.905,Katı,1860,6,Atom saati ve fotosel,Latince gök mavisi caesius
+56,Ba,2A,Baryum,137.327,Katı,1808,6,Röntgen ve sondaj çamuru,Yunanca ağır barys
+57,La,3B,Lantan,138.905,Katı,1839,6,Kamera lensi ve pil,Yunanca gizlenmek lanthanein
+58,Ce,3B,Seryum,140.116,Katı,1803,6,Cam parlatma ve katalizör,Ceres cüce gezegeni
+59,Pr,3B,Praseodim,140.908,Katı,1885,6,Mıknatıs ve cam boyama,Yunanca yeşil ikiz
+60,Nd,3B,Neodim,144.242,Katı,1885,6,Güçlü mıknatıs ve lazer,Yunanca yeni ikiz
+61,Pm,3B,Prometyum,145,Katı,1945,6,Nükleer pil ve boya,Mitolojik Prometheus
+62,Sm,3B,Samaryum,150.36,Katı,1879,6,Mıknatıs ve nükleer reaktör,Samarskit minerali
+63,Eu,3B,Evropiyum,151.964,Katı,1901,6,Ekran fosforu ve banknot,Avrupa kıtası
+64,Gd,3B,Gadolinyum,157.25,Katı,1880,6,MR kontrast ve reaktör,Kimyager Gadolin
+65,Tb,3B,Terbiyum,158.925,Katı,1843,6,Yeşil fosfor ve mıknatıs,İsveç Ytterby köyü
+66,Dy,3B,Disprosyum,162.500,Katı,1886,6,Mıknatıs ve lazer,Yunanca ulaşması zor
+67,Ho,3B,Holmiyum,164.930,Katı,1878,6,Lazer ve mıknatıs,Latince Stockholm Holmia
+68,Er,3B,Erbiyum,167.259,Katı,1843,6,Fiber optik ve lazer,İsveç Ytterby köyü
+69,Tm,3B,Tulyum,168.934,Katı,1879,6,Taşınabilir röntgen,Efsanevi Thule ülkesi
+70,Yb,3B,İterbiyum,173.045,Katı,1878,6,Atom saati ve lazer,İsveç Ytterby köyü
+71,Lu,3B,Lutesyum,174.967,Katı,1907,6,Kanser tedavisi ve katalizör,Latince Paris Lutetia
+72,Hf,4B,Hafniyum,178.49,Katı,1923,6,Nükleer kontrol çubuğu,Latince Kopenhag Hafnia
+73,Ta,5B,Tantal,180.948,Katı,1802,6,Elektronik kapasitör,Mitolojik Tantalos
+74,W,6B,Tungsten,183.84,Katı,1783,6,Ampul teli ve matkap ucu,İsveç ağır taş tung sten
+75,Re,7B,Renyum,186.207,Katı,1925,6,Jet motoru alaşımı,Ren nehri Rhenus
+76,Os,8B,Osmiyum,190.23,Katı,1803,6,Dolma kalem ucu ve pivot,Yunanca koku osme
+77,Ir,8B,İridyum,192.217,Katı,1803,6,Buji ve sertleştirme,Yunanca gökkuşağı iris
+78,Pt,8B,Platin,195.084,Katı,1735,6,Katalizör ve mücevher,İspanyolca gümüşçük platina
+79,Au,1B,Altın,196.967,Katı,Antik çağ,6,Takı ve elektronik,Latince aurum
+80,Hg,2B,Cıva,200.592,Sıvı,Antik çağ,6,Termometre ve lamba,Roma tanrısı Merkür
+81,Tl,3A,Talyum,204.38,Katı,1861,6,Elektronik ve tıp,Yunanca yeşil filiz thallos
+82,Pb,4A,Kurşun,207.2,Katı,Antik çağ,6,Akü ve radyasyon kalkanı,Latince plumbum
+83,Bi,5A,Bizmut,208.980,Katı,Orta çağ,6,İlaç ve alaşım,Almanca weisse masse
+84,Po,6A,Polonyum,209,Katı,1898,6,Antistatik ve ısı kaynağı,Polonya ülkesi
+85,At,7A,Astatin,210,Katı,1940,6,Kanser araştırması,Yunanca kararsız astatos
+86,Rn,8A,Radon,222,Gaz,1900,6,Radyoterapi ve jeoloji,Radyum elementinden
+87,Fr,1A,Fransiyum,223,Katı,1939,7,Bilimsel araştırma,Fransa ülkesi
+88,Ra,2A,Radyum,226,Katı,1898,7,Eski saat kadranı,Latince ışın radius
+89,Ac,3B,Aktinyum,227,Katı,1899,7,Nötron kaynağı ve tıp,Yunanca ışın aktis
+90,Th,3B,Toryum,232.038,Katı,1829,7,Nükleer yakıt adayı,İskandinav tanrı Thor
+91,Pa,3B,Protaktinyum,231.036,Katı,1913,7,Bilimsel araştırma,Yunanca aktinyum öncüsü
+92,U,3B,Uranyum,238.029,Katı,1789,7,Nükleer yakıt ve silah,Uranüs gezegeni
+93,Np,3B,Neptünyum,237,Sentetik,1940,7,Nötron dedektörü,Neptün gezegeni
+94,Pu,3B,Plütonyum,244,Sentetik,1940,7,Nükleer yakıt ve silah,Plüton cüce gezegeni
+95,Am,3B,Amerikyum,243,Sentetik,1944,7,Duman dedektörü,Amerika kıtası
+96,Cm,3B,Küriyum,247,Sentetik,1944,7,Uzay aracı güç kaynağı,Bilim insanı Curie
+97,Bk,3B,Berkelyum,247,Sentetik,1949,7,Bilimsel araştırma,Berkeley şehri
+98,Cf,3B,Kaliforniyum,251,Sentetik,1950,7,Nötron kaynağı,Kaliforniya eyaleti
+99,Es,3B,Aynştaynyum,252,Sentetik,1952,7,Bilimsel araştırma,Fizikçi Einstein
+100,Fm,3B,Fermiyum,257,Sentetik,1952,7,Bilimsel araştırma,Fizikçi Fermi
+101,Md,3B,Mendelevyum,258,Sentetik,1955,7,Bilimsel araştırma,Kimyager Mendeleyev
+102,No,3B,Nobelyum,259,Sentetik,1958,7,Bilimsel araştırma,Bilim insanı Nobel
+103,Lr,3B,Lavrensiyum,262,Sentetik,1961,7,Bilimsel araştırma,Fizikçi Lawrence
+104,Rf,4B,Rutherfordyum,267,Sentetik,1964,7,Bilimsel araştırma,Fizikçi Rutherford
+105,Db,5B,Dubniyum,268,Sentetik,1967,7,Bilimsel araştırma,Rusya Dubna şehri
+106,Sg,6B,Seaborgiyum,269,Sentetik,1974,7,Bilimsel araştırma,Kimyager Seaborg
+107,Bh,7B,Bohriyum,270,Sentetik,1981,7,Bilimsel araştırma,Fizikçi Bohr
+108,Hs,8B,Hassiyum,269,Sentetik,1984,7,Bilimsel araştırma,Almanya Hessen eyaleti
+109,Mt,8B,Meitneriyum,278,Sentetik,1982,7,Bilimsel araştırma,Fizikçi Meitner
+110,Ds,8B,Darmstadtiyum,281,Sentetik,1994,7,Bilimsel araştırma,Almanya Darmstadt şehri
+111,Rg,1B,Röntgenyum,282,Sentetik,1994,7,Bilimsel araştırma,Fizikçi Röntgen
+112,Cn,2B,Kopernikyum,285,Sentetik,1996,7,Bilimsel araştırma,Astronom Kopernik
+113,Nh,3A,Nihonyum,286,Sentetik,2004,7,Bilimsel araştırma,Japonca Japonya Nihon
+114,Fl,4A,Fleroviyum,289,Sentetik,1998,7,Bilimsel araştırma,Fizikçi Flerov
+115,Mc,5A,Moskovyum,290,Sentetik,2003,7,Bilimsel araştırma,Rusya Moskova şehri
+116,Lv,6A,Livermoryum,293,Sentetik,2000,7,Bilimsel araştırma,Livermore laboratuvarı
+117,Ts,7A,Tennessin,294,Sentetik,2010,7,Bilimsel araştırma,Tennessee eyaleti
+118,Og,8A,Oganesson,294,Sentetik,2002,7,Bilimsel araştırma,Fizikçi Oganesyan

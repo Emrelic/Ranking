@@ -27,47 +27,47 @@ object HazirListeler {
             "Tarih",
             listOf(
                 HazirListe("01_osmanli_padisahlari.csv", "Osmanlı Padişahları", 36, false, "Tahta çıkış ve saltanat süreleriyle 36 padişah"),
-                HazirListe("22_imparatorluklar.csv", "İmparatorluklar", 38, false, "Kuruluş, başkent ve sınırlarıyla imparatorluklar"),
-                HazirListe("23_savaslar.csv", "Savaşlar", 38, false, "Taraflar ve sonuçlarıyla önemli savaşlar"),
-                HazirListe("24_kumandanlar.csv", "Kumandanlar", 35, true, "Ünlü zaferleriyle askeri komutanlar"),
-                HazirListe("25_devlet_adamlari.csv", "Devlet Adamları", 35, true, "Görev ve icraatlarıyla devlet adamları")
+                HazirListe("22_imparatorluklar.csv", "İmparatorluklar", 52, false, "Kuruluş, başkent ve sınırlarıyla imparatorluklar"),
+                HazirListe("23_savaslar.csv", "Savaşlar", 55, false, "Taraflar ve sonuçlarıyla önemli savaşlar"),
+                HazirListe("24_kumandanlar.csv", "Kumandanlar", 50, true, "Ünlü zaferleriyle askeri komutanlar"),
+                HazirListe("25_devlet_adamlari.csv", "Devlet Adamları", 50, true, "Görev ve icraatlarıyla devlet adamları")
             )
         ),
         HazirListeKategorisi(
             "Coğrafya",
             listOf(
-                HazirListe("03_ulkeler.csv", "Ülkeler", 43, true, "Bayrak, nüfus, ekonomi ve tarihleriyle ülkeler"),
-                HazirListe("04_denizler.csv", "Denizler", 23, false, "Yüzölçümü ve derinlikleriyle denizler"),
-                HazirListe("05_daglar.csv", "Dağlar", 28, false, "Yükseklik ve konumlarıyla dağlar"),
-                HazirListe("06_sehirler.csv", "Şehirler", 33, false, "Nüfus ve özellikleriyle dünya şehirleri"),
-                HazirListe("07_goller.csv", "Göller", 23, false, "Yüzölçümü ve derinlikleriyle göller"),
-                HazirListe("08_nehirler.csv", "Nehirler", 23, false, "Uzunluk ve güzergâhlarıyla nehirler"),
-                HazirListe("09_ovalar.csv", "Ovalar", 18, false, "Türkiye'nin önemli ovaları")
+                HazirListe("03_ulkeler.csv", "Ülkeler", 195, true, "Bayrak, nüfus, ekonomi ve tarihleriyle ülkeler"),
+                HazirListe("04_denizler.csv", "Denizler", 44, false, "Yüzölçümü ve derinlikleriyle denizler"),
+                HazirListe("05_daglar.csv", "Dağlar", 55, false, "Yükseklik ve konumlarıyla dağlar"),
+                HazirListe("06_sehirler.csv", "Şehirler", 90, false, "Nüfus ve özellikleriyle dünya şehirleri"),
+                HazirListe("07_goller.csv", "Göller", 45, false, "Yüzölçümü ve derinlikleriyle göller"),
+                HazirListe("08_nehirler.csv", "Nehirler", 55, false, "Uzunluk ve güzergâhlarıyla nehirler"),
+                HazirListe("09_ovalar.csv", "Ovalar", 30, false, "Türkiye'nin önemli ovaları")
             )
         ),
         HazirListeKategorisi(
             "Bilim ve Doğa",
             listOf(
-                HazirListe("10_bilim_insanlari.csv", "Bilim İnsanları", 34, false, "Alan ve katkılarıyla bilim insanları"),
-                HazirListe("13_elementler.csv", "Elementler", 54, false, "Periyodik tablonun ilk 54 elementi"),
-                HazirListe("14_hayvanlar.csv", "Hayvanlar", 34, false, "Sınıf, takım ve yaşam alanlarıyla hayvanlar"),
-                HazirListe("18_kuslar.csv", "Kuşlar", 30, true, "Familya, kanat açıklığı ve beslenmeleriyle kuşlar"),
-                HazirListe("19_baliklar.csv", "Balıklar", 30, false, "Su tipi, boy ve beslenmeleriyle balıklar"),
-                HazirListe("20_bitkiler.csv", "Bitkiler", 30, true, "Familya, tip ve kullanımlarıyla bitkiler"),
-                HazirListe("21_mikroplar_hastaliklar.csv", "Mikroplar ve Hastalıklar", 30, false, "Etken, bulaşma ve belirtileriyle hastalıklar"),
-                HazirListe("15_yiyecekler.csv", "Yiyecekler", 34, false, "Kalori, protein ve lif değerleriyle yiyecekler")
+                HazirListe("10_bilim_insanlari.csv", "Bilim İnsanları", 65, false, "Alan ve katkılarıyla bilim insanları"),
+                HazirListe("13_elementler.csv", "Elementler", 118, false, "Periyodik tablonun 118 elementi"),
+                HazirListe("14_hayvanlar.csv", "Hayvanlar", 65, false, "Sınıf, takım ve yaşam alanlarıyla hayvanlar"),
+                HazirListe("18_kuslar.csv", "Kuşlar", 60, true, "Familya, kanat açıklığı ve beslenmeleriyle kuşlar"),
+                HazirListe("19_baliklar.csv", "Balıklar", 50, false, "Su tipi, boy ve beslenmeleriyle balıklar"),
+                HazirListe("20_bitkiler.csv", "Bitkiler", 55, true, "Familya, tip ve kullanımlarıyla bitkiler"),
+                HazirListe("21_mikroplar_hastaliklar.csv", "Mikroplar ve Hastalıklar", 45, false, "Etken, bulaşma ve belirtileriyle hastalıklar"),
+                HazirListe("15_yiyecekler.csv", "Yiyecekler", 60, false, "Kalori, protein ve lif değerleriyle yiyecekler")
             )
         ),
         HazirListeKategorisi(
             "Sanat ve Kültür",
             listOf(
-                HazirListe("11_ressamlar.csv", "Ressamlar", 32, false, "Akım ve eserleriyle ressamlar"),
-                HazirListe("12_filozoflar.csv", "Filozoflar", 35, false, "Akım ve eserleriyle filozoflar"),
-                HazirListe("26_filmler.csv", "Filmler", 33, true, "Sinema tarihinin önemli filmleri"),
-                HazirListe("27_resimler.csv", "Tablolar", 32, true, "Dünyaca ünlü tablolar"),
-                HazirListe("28_fotograflar.csv", "Fotoğraflar", 25, true, "Tarihe geçen fotoğraflar"),
+                HazirListe("11_ressamlar.csv", "Ressamlar", 56, false, "Akım ve eserleriyle ressamlar"),
+                HazirListe("12_filozoflar.csv", "Filozoflar", 56, false, "Akım ve eserleriyle filozoflar"),
+                HazirListe("26_filmler.csv", "Filmler", 55, true, "Sinema tarihinin önemli filmleri"),
+                HazirListe("27_resimler.csv", "Tablolar", 50, true, "Dünyaca ünlü tablolar"),
+                HazirListe("28_fotograflar.csv", "Fotoğraflar", 40, true, "Tarihe geçen fotoğraflar"),
                 HazirListe("29_heykeller.csv", "Heykeller", 27, true, "Ünlü heykeller ve anıtlar"),
-                HazirListe("30_yapilar.csv", "Yapılar", 42, true, "Mimari açıdan önemli yapılar"),
+                HazirListe("30_yapilar.csv", "Yapılar", 70, true, "Mimari açıdan önemli yapılar"),
                 HazirListe("31_muzik_aletleri.csv", "Müzik Aletleri", 35, true, "Türk ve dünya müzik aletleri"),
                 HazirListe("02_sebnem_ferah_sarkilari.csv", "Şebnem Ferah Şarkıları", 42, false, "Albümleriyle Şebnem Ferah şarkıları")
             )
@@ -75,8 +75,8 @@ object HazirListeler {
         HazirListeKategorisi(
             "Teknoloji ve Spor",
             listOf(
-                HazirListe("17_otomobil_markalari.csv", "Otomobil Markaları", 33, false, "Kuruluş ve grup bilgileriyle markalar"),
-                HazirListe("16_avrupa_futbol_kulupleri.csv", "Avrupa Futbol Kulüpleri", 34, true, "Kuruluş ve kupalarıyla kulüpler")
+                HazirListe("17_otomobil_markalari.csv", "Otomobil Markaları", 50, false, "Kuruluş ve grup bilgileriyle markalar"),
+                HazirListe("16_avrupa_futbol_kulupleri.csv", "Avrupa Futbol Kulüpleri", 55, true, "Kuruluş ve kupalarıyla kulüpler")
             )
         )
     )

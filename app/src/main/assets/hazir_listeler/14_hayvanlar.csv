@@ -33,3 +33,34 @@ No,Sınıf,Takım,Hayvan,Anavatan/Yaşam Alanı,Beslenme,Ortalama Ömür (yıl),
 32,Memeli,Çift toynaklılar,Kızıl Geyik,Avrupa ve Asya,Otçul,15,Cervus elaphus,200 kg,Asgari endişe
 33,Memeli,Yarasalar,Yarasa,Dünya geneli,Böcekçil,20,Chiroptera,0.03 kg,Asgari endişe
 34,Memeli,Primatlar,Şempanze,Orta ve Batı Afrika,Hepçil,50,Pan troglodytes,50 kg,Tehlikede
+35,Memeli,Tek toynaklılar,Zebra,Afrika savanları,Otçul,25,Equus quagga,350 kg,Yakın tehdit
+36,Memeli,Tek toynaklılar,Beyaz Gergedan,Afrika savanları,Otçul,45,Ceratotherium simum,2300 kg,Yakın tehdit
+37,Memeli,Çift toynaklılar,Su Aygırı,Afrika nehirleri,Otçul,45,Hippopotamus amphibius,1500 kg,Hassas
+38,Memeli,Keseliler,Koala,Avustralya ormanları,Otçul (okaliptüs),15,Phascolarctos cinereus,12 kg,Hassas
+39,Memeli,Etçiller,Kutup Ayısı,Kuzey Kutbu,Etçil,25,Ursus maritimus,450 kg,Hassas
+40,Memeli,Etçiller,Çita,Afrika savanları,Etçil,12,Acinonyx jubatus,55 kg,Hassas
+41,Memeli,Etçiller,Leopar,Afrika ve Asya,Etçil,15,Panthera pardus,60 kg,Hassas
+42,Memeli,Etçiller,Jaguar,Güney Amerika ormanları,Etçil,15,Panthera onca,90 kg,Yakın tehdit
+43,Memeli,Etçiller,Vaşak,Avrupa ve Asya ormanları,Etçil,15,Lynx lynx,25 kg,Asgari endişe
+44,Memeli,Primatlar,Orangutan,Borneo ve Sumatra,Otçul (meyve),40,Pongo pygmaeus,75 kg,Kritik tehlike
+45,Memeli,Etçiller,Fok,Kutup denizleri,Etçil (balık),30,Phoca vitulina,100 kg,Asgari endişe
+46,Memeli,Çift toynaklılar,Karaca,Avrupa ve Asya ormanları,Otçul,12,Capreolus capreolus,30 kg,Asgari endişe
+47,Memeli,Çift toynaklılar,Yaban Domuzu,Avrasya ormanları,Hepçil,12,Sus scrofa,90 kg,Asgari endişe
+48,Memeli,Çift toynaklılar,Bizon,Kuzey Amerika çayırları,Otçul,20,Bison bison,900 kg,Yakın tehdit
+49,Memeli,Etçiller,Benekli Sırtlan,Afrika savanları,Etçil (leş),22,Crocuta crocuta,60 kg,Asgari endişe
+50,Memeli,Etçiller,Rakun,Kuzey Amerika,Hepçil,5,Procyon lotor,8 kg,Asgari endişe
+51,Memeli,Kemirgenler,Sincap,Kuzey Yarımküre ormanları,Otçul (fındık),7,Sciurus vulgaris,0.3 kg,Asgari endişe
+52,Memeli,Tavşanlar,Tavşan,Dünya geneli,Otçul,9,Oryctolagus cuniculus,2 kg,Asgari endişe
+53,Kuş,Yırtıcı kuşlar,Şahin,Dünya geneli,Etçil,15,Falco peregrinus,1 kg,Asgari endişe
+54,Kuş,Leylekler,Leylek,Avrupa ve Afrika,Etçil (kurbağa),30,Ciconia ciconia,3.5 kg,Asgari endişe
+55,Kuş,Flamingolar,Flamingo,Sığ göller,Filtre besleyici,40,Phoenicopterus roseus,3 kg,Asgari endişe
+56,Sürüngen,Pullular,Kobra,Asya ve Afrika,Etçil,20,Naja naja,6 kg,Asgari endişe
+57,Sürüngen,Pullular,Kertenkele,Dünya geneli,Böcekçil,5,Lacertidae,0.05 kg,Asgari endişe
+58,Sürüngen,Pullular,Bukalemun,Afrika ve Madagaskar,Böcekçil,6,Chamaeleonidae,0.15 kg,Asgari endişe
+59,Sürüngen,Kaplumbağalar,Deniz Kaplumbağası,Tropik okyanuslar,Hepçil,80,Chelonia mydas,160 kg,Tehlikede
+60,Kafadanbacaklı,Mürekkepbalıkları,Mürekkep Balığı,Okyanuslar,Etçil,2,Sepia officinalis,4 kg,Asgari endişe
+61,Derisidikenli,Deniz yıldızları,Deniz Yıldızı,Deniz tabanı,Etçil,35,Asterias rubens,0.5 kg,Asgari endişe
+62,Böcek,Zar kanatlılar,Karınca,Dünya geneli,Hepçil,1,Formicidae,0.00001 kg,Asgari endişe
+63,Örümcekgil,Örümcekler,Örümcek,Dünya geneli,Etçil (böcek),2,Araneae,0.001 kg,Asgari endişe
+64,Örümcekgil,Akrepler,Akrep,Çöl ve sıcak bölgeler,Etçil,6,Scorpiones,0.03 kg,Asgari endişe
+65,Böcek,Kın kanatlılar,Uğur Böceği,Dünya geneli,Etçil (yaprak biti),2,Coccinella septempunctata,0.00003 kg,Asgari endişe

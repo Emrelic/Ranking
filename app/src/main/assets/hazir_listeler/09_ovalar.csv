@@ -17,3 +17,15 @@ No,Bölge,İl,Ova,Sulayan Akarsu,Başlıca Ürünler,İklim,Tarım Tipi
 16,Akdeniz,Antalya,Antalya Ovası,Aksu ve Düden,Örtü altı sebze ve narenciye,Akdeniz iklimi,Sera tarımı
 17,Ege,Aydın,Söke Ovası,Büyük Menderes,Pamuk ve zeytin,Akdeniz iklimi,Sulu tarım
 18,Akdeniz,Kahramanmaraş,Elbistan Ovası,Ceyhan,Şekerpancarı ve tahıl,Karasal iklim,Sulu tarım
+19,Akdeniz,Mersin,Silifke Ovası,Göksu,Muz ve çilek,Akdeniz iklimi,Sulu tarım
+20,Akdeniz,Mersin,Tarsus Ovası,Berdan (Tarsus Çayı),Narenciye ve sebze,Akdeniz iklimi,Sulu tarım
+21,Güneydoğu Anadolu,Diyarbakır,Diyarbakır Ovası,Dicle,Buğday ve mercimek,Karasal-kurak,Kuru ve sulu tarım
+22,Doğu Anadolu,Erzincan,Erzincan Ovası,Fırat (Karasu),Şekerpancarı ve meyve,Karasal iklim,Sulu tarım
+23,Doğu Anadolu,Malatya,Malatya Ovası,Tohma ve Fırat,Kayısı ve meyve,Karasal iklim,Sulu tarım
+24,Marmara,Sakarya,Adapazarı Ovası,Sakarya,Mısır ve sebze,Marmara geçiş,Sulu tarım
+25,Marmara,Balıkesir,Balıkesir Ovası,Susurluk (Simav),Tahıl ve sebze,Marmara geçiş,Sulu ve kuru tarım
+26,Ege,İzmir,Menemen Ovası,Gediz,Sebze ve pamuk,Akdeniz iklimi,Sulu tarım
+27,Doğu Anadolu,Erzurum,Pasinler Ovası,Aras,Şekerpancarı ve yem bitkileri,Karasal-sert,Sulu tarım
+28,Doğu Anadolu,Elazığ,Uluova,Fırat kolları,Şekerpancarı ve tahıl,Karasal iklim,Sulu tarım
+29,İç Anadolu,Kayseri,Develi Ovası,Zamantı ve kaynaklar,Şekerpancarı ve tahıl,Karasal iklim,Sulu tarım
+30,İç Anadolu,Eskişehir,Eskişehir Ovası,Porsuk,Şekerpancarı ve buğday,Karasal iklim,Sulu ve kuru tarım

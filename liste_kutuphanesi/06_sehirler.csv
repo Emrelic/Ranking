@@ -1,34 +1,91 @@
 No,Ülke,Nüfus (milyon),Şehir,Kıta,Bilinen Özelliği,Ülkenin Başkenti mi,Öne Çıkan Sektör
-1,Türkiye,15.8,İstanbul,Avrupa-Asya,İki kıtayı birleştiren boğaz şehri,Hayır,Ticaret ve Turizm
-2,Türkiye,5.7,Ankara,Asya,Türkiye'nin başkenti,Evet,Kamu Yönetimi
-3,Türkiye,4.4,İzmir,Asya,Ege'nin incisi liman şehri,Hayır,Liman ve Ticaret
-4,Japonya,37,Tokyo,Asya,Dünyanın en büyük metropol alanı,Evet,Teknoloji ve Finans
-5,Hindistan,32,Delhi,Asya,Hindistan'ın başkent bölgesi,Evet,Kamu ve Hizmet
-6,Çin,28,Şanghay,Asya,Çin'in finans ve liman merkezi,Hayır,Finans ve Sanayi
-7,Çin,21,Pekin,Asya,Çin'in başkenti ve Yasak Şehir,Evet,Kamu ve Teknoloji
-8,Hindistan,21,Mumbai,Asya,Bollywood ve finans merkezi,Hayır,Finans ve Sinema
-9,Mısır,22,Kahire,Afrika,Piramitlere komşu Nil şehri,Evet,Turizm ve Hizmet
-10,Meksika,22,Meksiko,Kuzey Amerika,Aztek başkenti üzerine kurulu,Evet,Sanayi ve Hizmet
-11,Brezilya,22,Sao Paulo,Güney Amerika,Güney yarımkürenin en büyük şehri,Hayır,Finans ve Sanayi
-12,ABD,19,New York,Kuzey Amerika,Özgürlük Heykeli ve finans merkezi,Hayır,Finans ve Medya
-13,ABD,12,Los Angeles,Kuzey Amerika,Hollywood ve film endüstrisi,Hayır,Sinema ve Teknoloji
-14,Birleşik Krallık,9,Londra,Avrupa,Big Ben ve küresel finans merkezi,Evet,Finans ve Turizm
-15,Fransa,11,Paris,Avrupa,Eyfel Kulesi ve sanat şehri,Evet,Turizm ve Moda
-16,Rusya,12.6,Moskova,Avrupa,Kızıl Meydan ve Kremlin,Evet,Enerji ve Kamu
-17,Almanya,3.8,Berlin,Avrupa,Berlin Duvarı'nın şehri,Evet,Kamu ve Teknoloji
-18,İspanya,6.7,Madrid,Avrupa,İspanya'nın başkenti,Evet,Kamu ve Turizm
-19,İtalya,4.3,Roma,Avrupa,Kolezyum ve antik imparatorluk merkezi,Evet,Turizm ve Kamu
-20,Yunanistan,3.1,Atina,Avrupa,Demokrasinin doğduğu antik şehir,Evet,Turizm ve Denizcilik
-21,Birleşik Arap Emirlikleri,3.6,Dubai,Asya,Burj Khalifa ve lüks turizm,Hayır,Turizm ve Ticaret
-22,Singapur,5.9,Singapur,Asya,Şehir devleti ve ticaret limanı,Evet,Finans ve Liman
-23,Güney Kore,9.7,Seul,Asya,Teknoloji ve K-pop merkezi,Evet,Teknoloji ve Sanayi
-24,Tayland,11,Bangkok,Asya,Tapınaklar ve turizm başkenti,Evet,Turizm ve Ticaret
-25,Endonezya,11,Cakarta,Asya,Endonezya'nın başkenti,Evet,Ticaret ve Sanayi
-26,Nijerya,15,Lagos,Afrika,Afrika'nın en kalabalık şehirlerinden,Hayır,Ticaret ve Petrol
-27,Arjantin,15,Buenos Aires,Güney Amerika,Tango'nun doğduğu şehir,Evet,Tarım ve Hizmet
-28,Kanada,6.3,Toronto,Kuzey Amerika,CN Kulesi ve çok kültürlü yapı,Hayır,Finans ve Teknoloji
-29,Avustralya,5.3,Sidney,Okyanusya,Opera Binası ile ünlü liman şehri,Hayır,Finans ve Turizm
-30,İran,9.5,Tahran,Asya,İran'ın başkenti,Evet,Kamu ve Sanayi
-31,Türkiye,3.2,Bursa,Asya,Osmanlı'nın ilk başkenti,Hayır,Sanayi ve Otomotiv
-32,Türkiye,2.7,Antalya,Asya,Akdeniz turizm başkenti,Hayır,Turizm ve Tarım
-33,Brezilya,13,Rio de Janeiro,Güney Amerika,Kurtarıcı İsa heykeli ve karnaval,Hayır,Turizm ve Enerji
+1,Japonya,37,Tokyo,Asya,Dünyanın en büyük metropol alanı,Evet,Teknoloji ve Finans
+2,Hindistan,33,Delhi,Asya,Hindistan'ın başkent bölgesi,Evet,Kamu ve Hizmet
+3,Çin,29,Şanghay,Asya,Çin'in finans ve liman merkezi,Hayır,Finans ve Sanayi
+4,Bangladeş,23,Dakka,Asya,Dünyanın en yoğun nüfuslu şehirlerinden,Evet,Tekstil ve Ticaret
+5,Brezilya,22,Sao Paulo,Güney Amerika,Güney yarımkürenin en büyük şehri,Hayır,Finans ve Sanayi
+6,Mısır,22,Kahire,Afrika,Piramitlere komşu Nil şehri,Evet,Turizm ve Hizmet
+7,Meksika,22,Meksiko,Kuzey Amerika,Aztek başkenti üzerine kurulu,Evet,Sanayi ve Hizmet
+8,Hindistan,22,Mumbai,Asya,Bollywood ve finans merkezi,Hayır,Finans ve Sinema
+9,Çin,21,Pekin,Asya,Çin'in başkenti ve Yasak Şehir,Evet,Kamu ve Teknoloji
+10,Japonya,19,Osaka,Asya,Ticaret ve mutfak kültürü merkezi,Hayır,Sanayi ve Ticaret
+11,ABD,19,New York,Kuzey Amerika,Özgürlük Heykeli ve finans merkezi,Hayır,Finans ve Medya
+12,Pakistan,17,Karaçi,Asya,Pakistan'ın en büyük liman şehri,Hayır,Liman ve Sanayi
+13,Türkiye,15.8,İstanbul,Avrupa-Asya,İki kıtayı birleştiren boğaz şehri,Hayır,Ticaret ve Turizm
+14,Hindistan,15,Kolkata,Asya,Sömürge dönemi kültür başkenti,Hayır,Ticaret ve Kültür
+15,Nijerya,15,Lagos,Afrika,Afrika'nın en kalabalık şehirlerinden,Hayır,Ticaret ve Petrol
+16,Arjantin,15,Buenos Aires,Güney Amerika,Tango'nun doğduğu şehir,Evet,Tarım ve Hizmet
+17,Filipinler,14,Manila,Asya,Yoğun ada başkenti liman şehri,Evet,Hizmet ve Liman
+18,Çin,14,Guangzhou,Asya,Güney Çin'in ticaret merkezi,Hayır,Sanayi ve Ticaret
+19,Çin,14,Shenzhen,Asya,Çin'in teknoloji ve üretim üssü,Hayır,Teknoloji ve Sanayi
+20,Brezilya,13,Rio de Janeiro,Güney Amerika,Kurtarıcı İsa heykeli ve karnaval,Hayır,Turizm ve Enerji
+21,Fransa,11,Paris,Avrupa,Eyfel Kulesi ve sanat şehri,Evet,Turizm ve Moda
+22,Endonezya,11,Cakarta,Asya,Endonezya'nın başkenti,Evet,Ticaret ve Sanayi
+23,Tayland,11,Bangkok,Asya,Tapınaklar ve turizm başkenti,Evet,Turizm ve Ticaret
+24,Hindistan,11,Bengaluru,Asya,Hindistan'ın silikon vadisi,Hayır,Teknoloji ve Yazılım
+25,Güney Kore,9.7,Seul,Asya,Teknoloji ve K-pop merkezi,Evet,Teknoloji ve Sanayi
+26,İran,9.5,Tahran,Asya,İran'ın başkenti,Evet,Kamu ve Sanayi
+27,Kolombiya,11,Bogota,Güney Amerika,And Dağları'ndaki yüksek başkent,Evet,Hizmet ve Kamu
+28,Peru,11,Lima,Güney Amerika,Pasifik kıyısındaki başkent,Evet,Hizmet ve Liman
+29,Vietnam,9,Ho Chi Minh,Asya,Vietnam'ın ekonomi merkezi,Hayır,Sanayi ve Ticaret
+30,Birleşik Krallık,9,Londra,Avrupa,Big Ben ve küresel finans merkezi,Evet,Finans ve Turizm
+31,Çin,7.5,Hong Kong,Asya,Uluslararası finans ve liman merkezi,Hayır,Finans ve Liman
+32,Rusya,12.6,Moskova,Avrupa,Kızıl Meydan ve Kremlin,Evet,Enerji ve Kamu
+33,ABD,12,Los Angeles,Kuzey Amerika,Hollywood ve film endüstrisi,Hayır,Sinema ve Teknoloji
+34,İspanya,6.7,Madrid,Avrupa,İspanya'nın başkenti,Evet,Kamu ve Turizm
+35,Türkiye,5.7,Ankara,Asya,Türkiye'nin başkenti,Evet,Kamu Yönetimi
+36,Singapur,5.9,Singapur,Asya,Şehir devleti ve ticaret limanı,Evet,Finans ve Liman
+37,Avustralya,5.3,Sidney,Okyanusya,Opera Binası ile ünlü liman şehri,Hayır,Finans ve Turizm
+38,Kanada,6.3,Toronto,Kuzey Amerika,CN Kulesi ve çok kültürlü yapı,Hayır,Finans ve Teknoloji
+39,Türkiye,4.4,İzmir,Asya,Ege'nin incisi liman şehri,Hayır,Liman ve Ticaret
+40,Rusya,5.4,Sankt Petersburg,Avrupa,Çarlık dönemi kültür başkenti,Hayır,Turizm ve Kültür
+41,İtalya,4.3,Roma,Avrupa,Kolezyum ve antik imparatorluk merkezi,Evet,Turizm ve Kamu
+42,ABD,5.5,Chicago,Kuzey Amerika,Gökdelenlerin doğduğu göl şehri,Hayır,Finans ve Sanayi
+43,Almanya,3.8,Berlin,Avrupa,Berlin Duvarı'nın şehri,Evet,Kamu ve Teknoloji
+44,Türkiye,3.2,Bursa,Asya,Osmanlı'nın ilk başkenti,Hayır,Sanayi ve Otomotiv
+45,Yunanistan,3.1,Atina,Avrupa,Demokrasinin doğduğu antik şehir,Evet,Turizm ve Denizcilik
+46,Birleşik Arap Emirlikleri,3.6,Dubai,Asya,Burj Khalifa ve lüks turizm,Hayır,Turizm ve Ticaret
+47,Türkiye,2.7,Antalya,Asya,Akdeniz turizm başkenti,Hayır,Turizm ve Tarım
+48,Türkiye,2.3,Adana,Asya,Çukurova'nın tarım ve sanayi kenti,Hayır,Tarım ve Sanayi
+49,Türkiye,2.3,Konya,Asya,Mevlana'nın şehri ve tahıl ambarı,Hayır,Tarım ve Sanayi
+50,Türkiye,2.2,Gaziantep,Asya,Mutfağı ve sanayisiyle ünlü kent,Hayır,Sanayi ve Gastronomi
+51,Türkiye,2.2,Şanlıurfa,Asya,Göbeklitepe'nin peygamberler şehri,Hayır,Tarım ve Turizm
+52,Türkiye,1.4,Kayseri,Asya,İç Anadolu'nun ticaret ve sanayi kenti,Hayır,Sanayi ve Ticaret
+53,Türkiye,1.9,Mersin,Asya,Akdeniz'in büyük liman kenti,Hayır,Liman ve Tarım
+54,Türkiye,1.8,Diyarbakır,Asya,Surları ile ünlü tarihi kent,Hayır,Tarım ve Ticaret
+55,Türkiye,0.8,Trabzon,Asya,Karadeniz'in liman ve turizm kenti,Hayır,Liman ve Turizm
+56,Türkiye,0.9,Eskişehir,Asya,Öğrenci kenti ve raylı sistem merkezi,Hayır,Sanayi ve Eğitim
+57,Türkiye,1.4,Samsun,Asya,Karadeniz'in büyük liman şehri,Hayır,Liman ve Tarım
+58,İtalya,1.4,Milano,Avrupa,İtalya'nın moda ve finans başkenti,Hayır,Moda ve Finans
+59,İspanya,5.6,Barselona,Avrupa,Gaudi mimarisi ve Akdeniz limanı,Hayır,Turizm ve Liman
+60,Hollanda,2.5,Amsterdam,Avrupa,Kanalları ve müzeleriyle ünlü kent,Evet,Turizm ve Ticaret
+61,Çekya,1.3,Prag,Avrupa,Orta Avrupa'nın masalsı kenti,Evet,Turizm ve Kültür
+62,Avusturya,1.9,Viyana,Avrupa,Klasik müzik ve saray şehri,Evet,Kültür ve Turizm
+63,İtalya,0.26,Venedik,Avrupa,Kanalları ile ünlü tarihi liman kenti,Hayır,Turizm ve Denizcilik
+64,İsrail-Filistin,0.9,Kudüs,Asya,Üç semavi dinin kutsal şehri,Evet,Turizm ve Din
+65,Suudi Arabistan,2,Mekke,Asya,İslam'ın en kutsal şehri,Hayır,Din ve Turizm
+66,Vatikan,0.001,Vatikan,Avrupa,Dünyanın en küçük devleti ve dini merkez,Evet,Din ve Turizm
+67,Almanya,1.9,Hamburg,Avrupa,Almanya'nın en büyük limanı,Hayır,Liman ve Ticaret
+68,Almanya,1.5,Münih,Avrupa,Bavyera'nın sanayi ve bira kenti,Hayır,Sanayi ve Turizm
+69,Rusya,1.6,Novosibirsk,Asya,Sibirya'nın en büyük şehri,Hayır,Sanayi ve Bilim
+70,Çin,32,Çongçing,Asya,Nüfusuyla dev bir belediye alanı,Hayır,Sanayi ve Ticaret
+71,Çin,13,Tianjin,Asya,Kuzey Çin'in liman kenti,Hayır,Liman ve Sanayi
+72,Suudi Arabistan,7.7,Riyad,Asya,Suudi Arabistan'ın başkenti,Evet,Kamu ve Enerji
+73,Irak,8,Bağdat,Asya,Tarihi Abbasi başkenti,Evet,Kamu ve Petrol
+74,Güney Afrika,6,Johannesburg,Afrika,Altın madenleri üzerine kurulu kent,Hayır,Madencilik ve Finans
+75,Güney Afrika,4.8,Cape Town,Afrika,Masa Dağı eteğindeki liman kenti,Hayır,Turizm ve Liman
+76,Kenya,5.1,Nairobi,Afrika,Doğu Afrika'nın iş merkezi,Evet,Hizmet ve Turizm
+77,Etiyopya,5.2,Addis Ababa,Afrika,Afrika Birliği'nin merkezi,Evet,Kamu ve Ticaret
+78,Fas,3.8,Kazablanka,Afrika,Fas'ın ekonomi ve liman merkezi,Hayır,Liman ve Sanayi
+79,ABD,2.1,Washington,Kuzey Amerika,ABD'nin başkenti ve Beyaz Saray,Evet,Kamu ve Yönetim
+80,ABD,2.3,Houston,Kuzey Amerika,Petrol ve uzay endüstrisi merkezi,Hayır,Enerji ve Uzay
+81,Kanada,4.3,Montreal,Kuzey Amerika,Fransızca konuşan kültür kenti,Hayır,Teknoloji ve Kültür
+82,Kanada,1.5,Vancouver,Kuzey Amerika,Pasifik kıyısı liman ve doğa kenti,Hayır,Liman ve Turizm
+83,Şili,6.9,Santiago,Güney Amerika,And Dağları eteğindeki başkent,Evet,Madencilik ve Finans
+84,Venezuela,2.9,Karakas,Güney Amerika,Petrol zengini başkent,Evet,Enerji ve Kamu
+85,Avustralya,5,Melbourne,Okyanusya,Kültür ve spor etkinlikleri kenti,Hayır,Kültür ve Finans
+86,Yeni Zelanda,1.7,Auckland,Okyanusya,Yelkenler şehri liman kenti,Hayır,Liman ve Turizm
+87,Malezya,8,Kuala Lumpur,Asya,Petronas kuleleri ve modern başkent,Evet,Finans ve Turizm
+88,Vietnam,8.4,Hanoi,Asya,Vietnam'ın tarihi başkenti,Evet,Kamu ve Sanayi
+89,Portekiz,2.9,Lizbon,Avrupa,Atlantik kıyısındaki tarihi başkent,Evet,Turizm ve Liman
+90,İsveç,1.7,Stockholm,Avrupa,Adalar üzerine kurulu başkent,Evet,Teknoloji ve Tasarım

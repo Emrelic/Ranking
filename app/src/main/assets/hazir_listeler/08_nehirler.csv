@@ -13,12 +13,44 @@ No,Kıta,Uzunluk (km),Nehir,Döküldüğü Yer,Geçtiği Ülkeler,Kaynağı,Havz
 12,Asya,4350,Mekong,Güney Çin Denizi,Çin - Laos - Kamboçya - Vietnam,Tibet Platosu,810
 13,Kuzey Amerika,4241,Mackenzie,Kuzey Buz Denizi,Kanada,Kayalık Dağlar,1790
 14,Afrika,4200,Nijer,Gine Körfezi,Gine - Mali - Nijer - Nijerya,Gine Yaylası,2090
-15,Avrupa,3531,Volga,Hazar Denizi,Rusya,Valday Tepeleri,1360
-16,Asya,3180,İndus,Umman Denizi,Çin - Hindistan - Pakistan,Tibet Platosu,1165
-17,Avrupa,2850,Tuna,Karadeniz,Almanya - Avusturya - Macaristan - Romanya,Kara Orman,817
-18,Asya,2800,Fırat,Basra Körfezi (Şattülarap),Türkiye - Suriye - Irak,Doğu Anadolu,440
-19,Afrika,2574,Zambezi,Hint Okyanusu,Zambiya - Angola - Mozambik,Kuzeybatı Zambiya,1390
-20,Asya,2525,Ganj,Bengal Körfezi,Hindistan - Bangladeş,Gangotri Buzulu,1080
-21,Asya,1900,Dicle,Basra Körfezi (Şattülarap),Türkiye - Irak,Doğu Anadolu,375
-22,Asya,1355,Kızılırmak,Karadeniz,Türkiye,Kızıldağ (Sivas),78
-23,Asya,824,Sakarya,Karadeniz,Türkiye,Çifteler (Eskişehir),58
+15,Avustralya,3672,Murray-Darling,Güney Okyanusu,Avustralya,Doğu Avustralya Dağları,1061
+16,Avrupa,3531,Volga,Hazar Denizi,Rusya,Valday Tepeleri,1360
+17,Güney Amerika,3250,Madeira,Amazon Nehri,Bolivya - Brezilya,And Dağları,1420
+18,Güney Amerika,3211,Purus,Amazon Nehri,Peru - Brezilya,And Dağları,375
+19,Kuzey Amerika,3190,Yukon,Bering Denizi,Kanada - ABD,Britanya Kolumbiyası,850
+20,Asya,3180,İndus,Umman Denizi,Çin - Hindistan - Pakistan,Tibet Platosu,1165
+21,Kuzey Amerika,3057,Rio Grande,Meksika Körfezi,ABD - Meksika,Kayalık Dağlar,870
+22,Asya,2900,Brahmaputra,Bengal Körfezi,Çin - Hindistan - Bangladeş,Tibet Platosu,651
+23,Avrupa,2850,Tuna,Karadeniz,Almanya - Avusturya - Macaristan - Romanya,Kara Orman,817
+24,Güney Amerika,2830,São Francisco,Atlas Okyanusu,Brezilya,Minas Gerais,610
+25,Asya,2815,Salween,Andaman Denizi,Çin - Myanmar - Tayland,Tibet Platosu,324
+26,Asya,2800,Fırat,Basra Körfezi (Şattülarap),Türkiye - Suriye - Irak,Doğu Anadolu,440
+27,Afrika,2574,Zambezi,Hint Okyanusu,Zambiya - Angola - Mozambik,Kuzeybatı Zambiya,1390
+28,Asya,2540,Amuderya,Aral Gölü,Tacikistan - Türkmenistan - Özbekistan,Pamir Dağları,534
+29,Asya,2525,Ganj,Bengal Körfezi,Hindistan - Bangladeş,Gangotri Buzulu,1080
+30,Güney Amerika,2450,Tocantins,Atlas Okyanusu,Brezilya,Goiás Yaylası,764
+31,Asya-Avrupa,2428,Ural,Hazar Denizi,Rusya - Kazakistan,Ural Dağları,231
+32,Kuzey Amerika,2330,Colorado,Kaliforniya Körfezi,ABD - Meksika,Kayalık Dağlar,640
+33,Asya,2212,Sırderya,Aral Gölü,Kırgızistan - Özbekistan - Kazakistan,Tanrı Dağları,219
+34,Afrika,2200,Orange,Atlas Okyanusu,Lesotho - Güney Afrika - Namibya,Drakensberg Dağları,973
+35,Güney Amerika,2140,Orinoco,Atlas Okyanusu,Venezuela - Kolombiya,Guyana Yaylası,880
+36,Kuzey Amerika,2000,Columbia,Büyük Okyanus,Kanada - ABD,Kayalık Dağlar,670
+37,Asya,1927,Sungari,Amur Nehri,Çin,Changbai Dağları,557
+38,Asya,1900,Dicle,Basra Körfezi (Şattülarap),Türkiye - Irak,Doğu Anadolu,375
+39,Avrupa,1870,Don,Azak Denizi,Rusya,Orta Rusya Yaylası,425
+40,Afrika,1800,Limpopo,Hint Okyanusu,Güney Afrika - Mozambik,Witwatersrand,415
+41,Asya,1355,Kızılırmak,Karadeniz,Türkiye,Kızıldağ (Sivas),78
+42,Avrupa,1233,Ren,Kuzey Denizi,İsviçre - Almanya - Hollanda,Alpler,198
+43,Avrupa,1094,Elbe,Kuzey Denizi,Çekya - Almanya,Karkonosze Dağları,148
+44,Asya,1072,Aras,Hazar Denizi,Türkiye - Ermenistan - Azerbaycan - İran,Bingöl Dağları,102
+45,Avrupa,1012,Loire,Atlas Okyanusu,Fransa,Massif Central,117
+46,Asya,824,Sakarya,Karadeniz,Türkiye,Çifteler (Eskişehir),58
+47,Avrupa,813,Rhône,Akdeniz,İsviçre - Fransa,Alpler (Rhône Buzulu),98
+48,Avrupa,776,Sena,Manş Denizi,Fransa,Burgonya,79
+49,Asya,584,Büyük Menderes,Ege Denizi,Türkiye,Dinar (Afyon),25
+50,Asya,560,Seyhan,Akdeniz,Türkiye,Uzunyayla (Sivas),20
+51,Asya,519,Yeşilırmak,Karadeniz,Türkiye,Köse Dağı (Sivas),39
+52,Asya,509,Ceyhan,Akdeniz,Türkiye,Elbistan (Maraş),21
+53,Avrupa,480,Meriç,Ege Denizi,Bulgaristan - Yunanistan - Türkiye,Rila Dağları,53
+54,Asya,401,Gediz,Ege Denizi,Türkiye,Murat Dağı (Kütahya),18
+55,Asya,376,Çoruh,Karadeniz,Türkiye - Gürcistan,Mescit Dağları,20
