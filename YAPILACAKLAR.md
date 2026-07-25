@@ -5,18 +5,16 @@ Kapsamlı denetim bulguları ve yapılan işlerin kaydı: **ANALIZ_RAPORU.md**
 
 ## 🔴 AÇIK MADDELER
 
-### Tablo Rötuşu (ListEditScreen) — 2025-09-16'dan beri açık
-1. **Sütun drag-drop bozuk**: E sütunu B'nin yanına sürüklenince yer değiştirmeli; çalışmıyor (önceden çalışıyordu, regresyon)
-2. **Kaydet butonu**: potansiyel olarak çalışmıyor, test edilmeli
-3. **Buton etiketleri**: +Sütun / +Satır / -Sütun / Kaydet butonlarına açıklayıcı küçük yazı
-
 ### Yeni Turnuva Süreci Kısayolları — 2025-09-18'den beri açık
-4. **Yeni Liste Ekle kısayolu**: Sihirbazın liste adımından CreateListScreen'e geçiş + dönüşte yeni listenin otomatik seçili gelmesi
-5. **Yeni Kriter Listesi Ekle kısayolu**: Kriter adımından CreateCriteriaScreen'e geçiş + dönüşte otomatik seçim
-6. **Navigation/State altyapısı** (4-5 için): yeni kayıt ID'sinin navigation argument olarak taşınması, "+" FAB butonları
+1. **Yeni Liste Ekle kısayolu**: Sihirbazın liste adımından CreateListScreen'e geçiş + dönüşte yeni listenin otomatik seçili gelmesi
+2. **Yeni Kriter Listesi Ekle kısayolu**: Kriter adımından CreateCriteriaScreen'e geçiş + dönüşte otomatik seçim
+3. **Navigation/State altyapısı** (1-2 için): yeni kayıt ID'sinin navigation argument olarak taşınması, "+" FAB butonları
 
 ### Oylama Ekranı
-7. **EKRAN_GORUNTULERI.md Image #6** (2025-09-23): 5/6 bölümlü sabit oylama layout'u — "implementasyon gerekli" durumunda bekliyor
+4. **EKRAN_GORUNTULERI.md Image #6** (2025-09-23): 5/6 bölümlü sabit oylama layout'u — "implementasyon gerekli" durumunda bekliyor
+
+### Tablo Rötuşu — doğrulama bekliyor
+5. **Cihazda test**: 2026-07-25'te düzeltilen sütun/satır drag-drop ve Kaydet akışı gerçek cihazda doğrulanmalı (özellikle: sütun E→B taşıma, satır taşıyıp kaydetme, kayıt sonrası öğe adlarının bozulmaması)
 
 ## 🟡 TEKNİK BORÇ (ANALIZ_RAPORU.md Faz 0-4'ten artan)
 
@@ -39,6 +37,12 @@ Kapsamlı denetim bulguları ve yapılan işlerin kaydı: **ANALIZ_RAPORU.md**
 - **"ynd" komutu**: Yeni madde ekle (Format: [Madde açıklaması] → ynd; tarih damgası otomatik)
 
 ## ✅ ARŞIV — TAMAMLANANLAR
+- **[2026-07-25] Tablo Rötuşu üçlüsü** (2025-09-16'dan beri açıktı):
+  sütun/satır drag-drop hedef hesabı düzeltildi (yerel koordinat + dp/px
+  karışıklığı + scroll'un jesti çalması), Kaydet satır-şarkı kimlik
+  eşlemesiyle güvenli hale getirildi (satır taşıma sonrası yanlış kayda
+  yazma + adların "No" sütunuyla ezilmesi giderildi, yeni satırlar artık
+  gerçekten kaydediliyor), buton etiketleri i18n turunda eklendi
 - **[2026-07-25] Faz 0-4 toparlama turu** (ayrıntı: ANALIZ_RAPORU.md ve git log `002eccb..`):
   derleme düzeltmesi, CSV kütüphane senkronu (1811 öğe) + kulüp armaları,
   crash rotaları + DB v17/v18 migration'ları, isResuming, Emre çift puanlama +

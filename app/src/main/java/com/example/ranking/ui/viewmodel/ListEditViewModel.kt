@@ -27,96 +27,6 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
         }
     }
     
-    fun updateSongData(
-        songId: Long,
-        updatedData: Map<String, String>,
-        displayMode: String = "table",
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                
-                // Create JSON from updated data
-                val csvDataMap = updatedData.toMutableMap()
-                csvDataMap["_displayMode"] = displayMode
-                
-                val jsonEntries = csvDataMap.map { 
-                    "\"${it.key.replace("\"", "\\\"")}\": \"${it.value.replace("\"", "\\\"")}\""
-                }
-                val csvDataJson = "{${jsonEntries.joinToString(", ")}}"
-                
-                // Extract basic fields
-                val songName = updatedData["Name"] ?: updatedData["Song"] ?: updatedData.values.firstOrNull() ?: "Unknown"
-                val artist = listOf("Artist", "artist", "Sanatçı", "sanatçı", "Sanatci")
-                    .firstNotNullOfOrNull { updatedData[it] } ?: ""
-                val album = listOf("Album", "album", "Albüm", "albüm")
-                    .firstNotNullOfOrNull { updatedData[it] } ?: ""
-                
-                // Update song in database
-                repository.updateSongWithCsvData(songId, songName, artist, album, csvDataJson)
-                
-                onSuccess()
-                
-            } catch (e: Exception) {
-                onError("Şarkı güncellenemedi: ${e.message}")
-            }
-        }
-    }
-    
-    fun addNewSong(
-        listId: Long,
-        songData: Map<String, String>,
-        displayMode: String = "table",
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                
-                // Create JSON from song data
-                val csvDataMap = songData.toMutableMap()
-                csvDataMap["_displayMode"] = displayMode
-                
-                val jsonEntries = csvDataMap.map { 
-                    "\"${it.key.replace("\"", "\\\"")}\": \"${it.value.replace("\"", "\\\"")}\""
-                }
-                val csvDataJson = "{${jsonEntries.joinToString(", ")}}"
-                
-                // Extract basic fields
-                val songName = songData["Name"] ?: songData["Song"] ?: songData.values.firstOrNull() ?: "New Song"
-                val artist = listOf("Artist", "artist", "Sanatçı", "sanatçı", "Sanatci")
-                    .firstNotNullOfOrNull { songData[it] } ?: ""
-                val album = listOf("Album", "album", "Albüm", "albüm")
-                    .firstNotNullOfOrNull { songData[it] } ?: ""
-                
-                // Add song to database
-                repository.addSongWithCsvData(listId, songName, artist, album, csvDataJson)
-                
-                onSuccess()
-                
-            } catch (e: Exception) {
-                onError("Şarkı eklenemedi: ${e.message}")
-            }
-        }
-    }
-    
-    fun deleteSong(
-        songId: Long,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                repository.deleteSong(songId)
-                onSuccess()
-                
-            } catch (e: Exception) {
-                onError("Şarkı silinemedi: ${e.message}")
-            }
-        }
-    }
-    
     fun saveListChanges(
         listId: Long,
         updatedSongs: List<Pair<Long, Map<String, String>>>, // (songId, data) pairs
@@ -146,18 +56,33 @@ class ListEditViewModel(application: Application) : AndroidViewModel(application
                         }
                     }
                     val csvDataJson = "{${jsonEntries.joinToString(", ")}}"
-                    
-                    // Extract basic fields
-                    val songName = songData["Name"] ?: songData["Song"] ?: songData.values.firstOrNull() ?: "Unknown"
+
+                    // Öğe adı yalnızca AÇIK ad sütunundan alınır. Eski davranış
+                    // values.firstOrNull()'a düşüyordu; hazır listelerde ilk
+                    // sütun "No" olduğu için kayıt sonrası tüm öğe adları sıra
+                    // numarasına dönüşüyordu ("Kaydet çalışmıyor" algısının kaynağı).
+                    val explicitName = listOf("Name", "Song", "Şarkı", "İsim", "Ad")
+                        .firstNotNullOfOrNull { songData[it] }
+                        ?.takeIf { it.isNotBlank() }
                     val artist = listOf("Artist", "artist", "Sanatçı", "sanatçı", "Sanatci")
                         .firstNotNullOfOrNull { songData[it] } ?: ""
                     val album = listOf("Album", "album", "Albüm", "albüm")
                         .firstNotNullOfOrNull { songData[it] } ?: ""
-                    
-                    // Update song in database
-                    repository.updateSongWithCsvData(songId, songName, artist, album, csvDataJson)
+
+                    if (songId > 0) {
+                        // Mevcut kayıt: açık ad sütunu yoksa mevcut ad korunur
+                        repository.updateSongWithCsvData(songId, explicitName, artist, album, csvDataJson)
+                    } else {
+                        // Yeni satır (+Satır ile eklendi): yeni kayıt oluştur.
+                        // Ad: açık ad sütunu > CSV sözleşmesindeki 4. sütun > ilk dolu hücre
+                        val newName = explicitName
+                            ?: headers.getOrNull(3)?.let { songData[it] }?.takeIf { it.isNotBlank() }
+                            ?: songData.values.firstOrNull { it.isNotBlank() }
+                            ?: "Yeni Öğe"
+                        repository.addSongWithCsvData(listId, newName, artist, album, csvDataJson)
+                    }
                 }
-                
+
                 onSuccess()
                 
             } catch (e: Exception) {

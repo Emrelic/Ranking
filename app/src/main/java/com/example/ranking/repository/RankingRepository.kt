@@ -75,12 +75,16 @@ class RankingRepository(
         }
     }
 
-    suspend fun updateSongWithCsvData(songId: Long, name: String, artist: String = "", album: String = "", csvData: String? = null) {
+    /**
+     * @param name null ise mevcut ad korunur (tablo düzenlemede açık ad sütunu
+     * bulunamadığında adın "No" gibi alakasız bir sütunla ezilmemesi için)
+     */
+    suspend fun updateSongWithCsvData(songId: Long, name: String?, artist: String = "", album: String = "", csvData: String? = null) {
         val existingSong = songDao.getSongById(songId)
             ?: throw IllegalArgumentException("Güncellenecek öğe bulunamadı (id=$songId)")
         songDao.updateSong(
             existingSong.copy(
-                name = name,
+                name = name ?: existingSong.name,
                 artist = artist,
                 album = album,
                 csvData = csvData

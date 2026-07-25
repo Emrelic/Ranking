@@ -54,15 +54,18 @@ fun ListEditScreen(
     var editingText by remember { mutableStateOf("") }
     var selectedColumn by remember { mutableStateOf<Int?>(null) }
     var draggedColumn by remember { mutableStateOf<Int?>(null) }
-    var dragOffset by remember { mutableStateOf(Offset.Zero) }
     var draggedOverColumn by remember { mutableStateOf<Int?>(null) }
     var originalSongs by remember { mutableStateOf<List<Song>>(emptyList()) }
+    // Her tablo satırının hangi şarkı kaydına ait olduğu (satır sırasıyla senkron).
+    // -1 = henüz kaydedilmemiş yeni satır. Kayıt bu eşlemeyle yapılır; önceden
+    // indekse göre originalSongs ile eşlenince satır taşıma sonrası veriler
+    // yanlış kayıtlara yazılıyordu.
+    var rowSongIds by remember { mutableStateOf<List<Long>>(emptyList()) }
     var hasUnsavedChanges by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
     var selectedRow by remember { mutableStateOf<Int?>(null) }
     var draggedRow by remember { mutableStateOf<Int?>(null) }
     var draggedOverRow by remember { mutableStateOf<Int?>(null) }
-    var rowDragOffset by remember { mutableStateOf(Offset.Zero) }
     var showHeaderDesignDialog by remember { mutableStateOf(false) }
     
     // UNIFIED SCROLL STATE - TÜM TABLO İÇİN TEK SCROLL
@@ -72,13 +75,18 @@ fun ListEditScreen(
     fun reorderRows(fromIndex: Int, toIndex: Int) {
         if (fromIndex != toIndex && fromIndex in listData.indices && toIndex in listData.indices) {
             val newListData = listData.toMutableList()
-            val draggedRow = newListData.removeAt(fromIndex)
-            newListData.add(toIndex, draggedRow)
+            val draggedRowData = newListData.removeAt(fromIndex)
+            newListData.add(toIndex, draggedRowData)
             listData = newListData
-            hasUnsavedChanges = true
 
-            // Reset drag states
-            // Note: State resets handled in UI layer
+            // Satır-şarkı eşlemesi satırla birlikte taşınmalı
+            val newIds = rowSongIds.toMutableList()
+            if (fromIndex in newIds.indices) {
+                val draggedId = newIds.removeAt(fromIndex)
+                newIds.add(toIndex.coerceAtMost(newIds.size), draggedId)
+                rowSongIds = newIds
+            }
+            hasUnsavedChanges = true
         }
     }
 
@@ -134,6 +142,7 @@ fun ListEditScreen(
                             }
                             songData
                         }
+                        rowSongIds = songs.map { it.id }
                         listName = songs[0].name // Temporary, should get from list name
                     } catch (e: Exception) {
                         // Fallback to simple structure
@@ -145,6 +154,7 @@ fun ListEditScreen(
                                 "Album" to song.album
                             )
                         }
+                        rowSongIds = songs.map { it.id }
                     }
                 } else {
                     headers = listOf("Name", "Artist", "Album")
@@ -155,6 +165,7 @@ fun ListEditScreen(
                             "Album" to song.album
                         )
                     }
+                    rowSongIds = songs.map { it.id }
                 }
             } else {
             }
@@ -228,8 +239,9 @@ fun ListEditScreen(
                 Button(
                     onClick = {
                         if (selectedColumn != null) {
+                            // hasUnsavedChanges dialog onaylanınca işaretlenir
+                            // (iptal edilirse değişiklik yok)
                             showAddColumnDialog = true
-                            hasUnsavedChanges = true
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
@@ -252,8 +264,8 @@ fun ListEditScreen(
                 Button(
                     onClick = {
                         if (selectedRow != null || listData.isNotEmpty()) {
+                            // hasUnsavedChanges dialog onaylanınca işaretlenir
                             showAddRowDialog = true
-                            hasUnsavedChanges = true
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3)),
@@ -307,13 +319,11 @@ fun ListEditScreen(
                     onClick = {
                         if (hasUnsavedChanges) {
                             isSaving = true
-                            val updatedSongs = originalSongs.mapIndexed { index, song ->
-                                if (index < listData.size) {
-                                    val rowData = listData[index]
-                                    Pair(song.id, rowData)
-                                } else {
-                                    Pair(song.id, mapOf<String, String>())
-                                }
+                            // Satırlar şarkı kimliğiyle eşlenir (indeks değil):
+                            // satır taşındıysa veri doğru kayda yazılır,
+                            // yeni satırlar (-1) yeni kayıt olarak eklenir
+                            val updatedSongs = listData.mapIndexed { index, rowData ->
+                                Pair(rowSongIds.getOrNull(index) ?: -1L, rowData)
                             }
 
                             viewModel.saveListChanges(
@@ -433,14 +443,21 @@ fun ListEditScreen(
                                                             }
                                                             draggedColumn = null
                                                             draggedOverColumn = null
-                                                            dragOffset = Offset.Zero
                                                         },
-                                                        onDrag = { change, offset ->
-                                                            dragOffset += offset
-                                                            val columnWidth = 121f
-                                                            val scrollOffset = tableScrollState.value
-                                                            val totalX = scrollOffset + change.position.x
-                                                            val targetColumn = (totalX / columnWidth).toInt()
+                                                        onDragCancel = {
+                                                            draggedColumn = null
+                                                            draggedOverColumn = null
+                                                        },
+                                                        onDrag = { change, _ ->
+                                                            // Jest scroll konteynerine kaçmasın
+                                                            change.consume()
+                                                            // change.position sürüklenen hücreye GÖRE yereldir;
+                                                            // satır içi konum = başlangıç sütunu ofseti + yerel x.
+                                                            // (Eski hata: ofset yok sayılıyor ve 121 dp piksel
+                                                            // sanılıyordu -> hedef hep A sütununa çıkıyordu)
+                                                            val columnWidthPx = 121.dp.toPx() // 120dp hücre + 1dp boşluk
+                                                            val positionInRow = columnIndex * columnWidthPx + change.position.x
+                                                            val targetColumn = (positionInRow / columnWidthPx).toInt()
                                                                 .coerceIn(0, headers.size - 1)
                                                             if (targetColumn != draggedOverColumn) {
                                                                 draggedOverColumn = targetColumn
@@ -533,12 +550,19 @@ fun ListEditScreen(
                                                         }
                                                         draggedRow = null
                                                         draggedOverRow = null
-                                                        rowDragOffset = Offset.Zero
                                                     },
-                                                    onDrag = { change, offset ->
-                                                        rowDragOffset += offset
-                                                        val rowHeight = 41f
-                                                        val targetRow = ((change.position.y) / rowHeight).toInt()
+                                                    onDragCancel = {
+                                                        draggedRow = null
+                                                        draggedOverRow = null
+                                                    },
+                                                    onDrag = { change, _ ->
+                                                        // Jest liste kaydırmasına kaçmasın
+                                                        change.consume()
+                                                        // change.position sürüklenen satır hücresine göre yereldir;
+                                                        // liste içi konum = başlangıç satırı ofseti + yerel y
+                                                        val rowHeightPx = 49.dp.toPx() // 48dp hücre + 1dp boşluk
+                                                        val positionInList = rowIndex * rowHeightPx + change.position.y
+                                                        val targetRow = (positionInList / rowHeightPx).toInt()
                                                             .coerceIn(0, listData.size - 1)
                                                         if (targetRow != draggedOverRow) {
                                                             draggedOverRow = targetRow
@@ -696,28 +720,12 @@ fun ListEditScreen(
                 val newListData = listData.toMutableList()
                 newListData.add(insertIndex, newRowData)
                 listData = newListData
-                hasUnsavedChanges = true
-                showAddRowDialog = false
-            }
-        )
-    }
-    
-    // Add Row Dialog
-    if (showAddRowDialog) {
-        AddRowDialog(
-            headers = headers,
-            selectedRowIndex = selectedRow,
-            onDismiss = { showAddRowDialog = false },
-            onAddRow = { newRowData ->
-                val insertIndex = if (selectedRow != null) {
-                    selectedRow!! + 1 // Insert after selected row
-                } else {
-                    listData.size // Insert at end if no row selected
-                }
 
-                val newListData = listData.toMutableList()
-                newListData.add(insertIndex, newRowData)
-                listData = newListData
+                // Yeni satır: henüz DB kaydı yok (-1), kayıtta insert edilir
+                val newIds = rowSongIds.toMutableList()
+                newIds.add(insertIndex.coerceAtMost(newIds.size), -1L)
+                rowSongIds = newIds
+
                 hasUnsavedChanges = true
                 showAddRowDialog = false
             }
