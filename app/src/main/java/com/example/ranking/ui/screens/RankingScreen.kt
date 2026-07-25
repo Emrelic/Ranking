@@ -25,7 +25,6 @@ import com.example.ranking.data.Song
 import com.example.ranking.ui.screens.ranking.CriteriaEvaluationDialog
 import com.example.ranking.ui.screens.ranking.HIDDEN_CSV_KEYS
 import com.example.ranking.ui.screens.ranking.ItemImage
-import com.example.ranking.ui.screens.ranking.InitialRankingContent
 import com.example.ranking.ui.screens.ranking.extractImageUrl
 import com.example.ranking.ui.screens.ranking.MatchingsListContent
 import com.example.ranking.ui.screens.ranking.ScoreInputDialog
@@ -614,21 +613,8 @@ private fun MatchBasedContent(
     showScoreDialog: Boolean = false,
     onShowScoreDialog: (Boolean) -> Unit = {}
 ) {
-    android.util.Log.d("MatchBasedContent", "🎯 Method: $method, showInitialRanking: ${uiState.showInitialRanking}, showMatchingsList: ${uiState.showMatchingsList}, isComplete: ${uiState.isComplete}, currentMatch: ${uiState.currentMatch?.id}")
-
-    // İlk sıralama tablosunu göster (EMRE_CORRECT için)
-    if (method == "EMRE_CORRECT" && uiState.showInitialRanking) {
-        InitialRankingContent(
-            uiState = uiState,
-            method = method,
-            viewModel = viewModel
-        )
-        return
-    }
-
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
-        android.util.Log.d("MatchBasedContent", "🎯 Showing MatchingsList for EMRE_CORRECT")
         MatchingsListContent(
             uiState = uiState,
             viewModel = viewModel,

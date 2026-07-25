@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -39,21 +40,22 @@ fun NewTournamentScreen(
     val songLists by viewModel.songLists.collectAsState()
     val criterionLists by viewModel.criterionLists.collectAsState()
     
-    var currentStep by remember { mutableStateOf(1) }
+    // rememberSaveable: ekran döndürme / process death sihirbaz ilerlemesini sıfırlamasın
+    var currentStep by rememberSaveable { mutableStateOf(1) }
     var selectedSongList by remember { mutableStateOf<com.example.ranking.data.SongList?>(null) }
-    var tournamentName by remember { mutableStateOf("") }
-    var selectedSystemType by remember { mutableStateOf("MERGE_SORT") }
+    var tournamentName by rememberSaveable { mutableStateOf("") }
+    var selectedSystemType by rememberSaveable { mutableStateOf("MERGE_SORT") }
     var selectedCriterionList by remember { mutableStateOf<com.example.ranking.data.CriterionList?>(null) }
-    
+
     // Criteria settings
-    var useCriteria by remember { mutableStateOf(false) }
-    var scoringType by remember { mutableStateOf("comparative") }
-    var scoreScale by remember { mutableStateOf(10) }
-    var drawThresholdMin by remember { mutableStateOf(51) }
-    var drawThresholdMax by remember { mutableStateOf(51) }
-    var autoWinnerFromCriteria by remember { mutableStateOf(false) }
-    var autoOpenCriteriaPanel by remember { mutableStateOf(false) }
-    var mandatoryCriteria by remember { mutableStateOf(false) }
+    var useCriteria by rememberSaveable { mutableStateOf(false) }
+    var scoringType by rememberSaveable { mutableStateOf("comparative") }
+    var scoreScale by rememberSaveable { mutableStateOf(10) }
+    var drawThresholdMin by rememberSaveable { mutableStateOf(51) }
+    var drawThresholdMax by rememberSaveable { mutableStateOf(51) }
+    var autoWinnerFromCriteria by rememberSaveable { mutableStateOf(false) }
+    var autoOpenCriteriaPanel by rememberSaveable { mutableStateOf(false) }
+    var mandatoryCriteria by rememberSaveable { mutableStateOf(false) }
     
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }

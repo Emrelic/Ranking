@@ -6,7 +6,9 @@ import androidx.room.withTransaction
 import com.example.ranking.data.*
 import com.example.ranking.data.dao.*
 import com.example.ranking.utils.CsvReader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.withContext
 
 class RankingRepository(
     private val database: RankingDatabase,
@@ -90,9 +92,25 @@ class RankingRepository(
         database.withTransaction {
             val song = songDao.getSongById(songId)
             if (song != null) {
+                // FK olmadığı için öğenin maçları elle silinir; silinmezse
+                // songId1/songId2 ölü id'ye işaret eden yetim kayıtlar kalır
+                matchDao.deleteMatchesBySongId(songId)
                 songDao.deleteSongById(songId)
                 updateSongCount(song.listId)
             }
+        }
+    }
+
+    /**
+     * Çok sayıda öğeyi TEK transaction'da ekler.
+     * (Öğe başına ayrı transaction + sayaç güncellemesi, büyük CSV
+     * içe aktarımlarında yüzlerce gereksiz sorgu üretiyordu.)
+     */
+    suspend fun addSongsBulk(listId: Long, songs: List<Song>) {
+        if (songs.isEmpty()) return
+        database.withTransaction {
+            songs.forEach { songDao.insertSong(it) }
+            updateSongCount(listId)
         }
     }
     
@@ -107,10 +125,13 @@ class RankingRepository(
      * Yeni bir liste oluşturur ve oluşturulan listenin id'sini döner.
      */
     suspend fun importPreparedList(context: Context, assetFileName: String, listName: String): Long {
-        val text = context.assets.open("hazir_listeler/$assetFileName").use { input ->
-            input.readBytes().toString(Charsets.UTF_8)
+        // Asset okuma + CSV ayrıştırma ana thread'de yapılmamalı (ANR riski)
+        val csvSongs = withContext(Dispatchers.IO) {
+            val text = context.assets.open("hazir_listeler/$assetFileName").use { input ->
+                input.readBytes().toString(Charsets.UTF_8)
+            }
+            csvReader.parseText(text)
         }
-        val csvSongs = csvReader.parseText(text)
         if (csvSongs.isEmpty()) throw Exception("Hazır liste boş veya okunamadı: $assetFileName")
 
         val listId = createSongList(listName)

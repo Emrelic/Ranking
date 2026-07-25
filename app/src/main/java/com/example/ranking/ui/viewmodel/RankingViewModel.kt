@@ -9,7 +9,6 @@ import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
 import com.example.ranking.ranking.EmreSystemCorrect
 import com.example.ranking.ranking.PairwiseComparisonSort
-import com.example.ranking.ranking.TournamentTestProtocol
 import com.example.ranking.repository.RankingRepository
 import com.example.ranking.utils.CsvReader
 import com.google.gson.Gson
@@ -62,13 +61,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val allSongs: List<Song> = emptyList(),
         val currentStandings: List<StandingEntry> = emptyList(),
         val emreState: EmreSystemCorrect.EmreState? = null,
-        val showInitialRanking: Boolean = false, // İlk sıralama tablosunu göster
         val showMatchingsList: Boolean = false, // Eşleştirmeler listesini göster
         val matchingsList: List<Match> = emptyList(), // Oluşturulan eşleştirmeler
         val method: String = "", // Ranking metodu
-        val showTestReport: Boolean = false, // Test raporu dialog'unu göster
-        val testReportData: String = "", // Test raporu içeriği
-        val testReportTitle: String = "", // Test raporu başlığı
         val canUndo: Boolean = false // Son maç sonucu geri alınabilir mi
     )
     
@@ -98,7 +93,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private var lastCompletedMatchId: Long? = null
 
     private fun undoSupported(): Boolean = currentMethod in setOf("LEAGUE", "EMRE_CORRECT", "MERGE_SORT")
-    private var currentPairingMethod: com.example.ranking.data.EmrePairingMethod = com.example.ranking.data.EmrePairingMethod.SEQUENTIAL
     
     private fun resetState() {
         // Tüm state'i sıfırla
@@ -114,15 +108,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         )
     }
     
-    fun initializeRanking(listId: Long, method: String, pairingMethodName: String = "SEQUENTIAL", forceNew: Boolean = true) {
+    fun initializeRanking(listId: Long, method: String, @Suppress("UNUSED_PARAMETER") pairingMethodName: String = "SEQUENTIAL", forceNew: Boolean = true) {
         currentListId = listId
         currentMethod = method
-        currentPairingMethod = try {
-            com.example.ranking.data.EmrePairingMethod.valueOf(pairingMethodName)
-        } catch (e: Exception) {
-            com.example.ranking.data.EmrePairingMethod.SEQUENTIAL
-        }
-        
+
         viewModelScope.launch {
             try {
                 // YENİ TURNUVA: Eski session'ları temizle
@@ -196,13 +185,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "MERGE_SORT" -> {
                                     initializePairwiseSort()
                                 }
-                                "SINGLE_ELIMINATION" -> {
-                                    initializeSingleElimination()
-                                }
-                                "DOUBLE_ELIMINATION" -> {
-                                    initializeDoubleElimination()
-                                }
+                                // SINGLE/DOUBLE_ELIMINATION kaldırıldı: algoritmaları
+                                // tamamlanmadı ve UI'dan seçilemiyorlar
                                 else -> {
+                                    _uiState.value = _uiState.value.copy(
+                                        isLoading = false,
+                                        error = "Bilinmeyen sıralama yöntemi: $method"
+                                    )
                                 }
                             }
                         }
@@ -363,7 +352,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 // Doğrudan turnuvayı başlat - ara ekran gösterme
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    showInitialRanking = false,
                     emreState = emreState,
                     allSongs = safeSongs,
                     currentMatch = null
@@ -400,63 +388,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
-    private fun initializeSingleElimination() {
-        viewModelScope.launch {
-            repository.clearMatches(currentListId, currentMethod)
-            val matches = RankingEngine.createDirectEliminationMatches(songs, 1)
-            repository.createMatches(matches)
-            loadNextMatch()
-        }
-    }
-    
-    private fun initializeDoubleElimination() {
-        viewModelScope.launch {
-            repository.clearMatches(currentListId, currentMethod)
-            val matches = RankingEngine.createDoubleEliminationMatches(songs)
-            repository.createMatches(matches)
-            loadNextMatch()
-        }
-    }
-    
-    fun startScoring() {
-        viewModelScope.launch {
-            // EMRE_CORRECT sistemi için logic
-
-            if (currentMethod == "EMRE_CORRECT") {
-
-                // EMRE_CORRECT için önce eşleştirmeler listesini oluştur ve göster
-                createNextEmreRound(1)
-            } else {
-                // Diğer sistemler için eşleştirmeler listesini gizle
-                _uiState.value = _uiState.value.copy(showMatchingsList = false)
-                loadNextMatch()
-            }
-
-        }
-    }
-    
     fun selectMatch(match: Match) {
-        android.util.Log.d("RANKING_DEBUG", "selectMatch() çağırıldı - Match ID: ${match.id}")
-        
         viewModelScope.launch {
             try {
                 // Takım bilgilerini yükle
                 val song1 = songs.find { it.id == match.songId1 }
                 val song2 = songs.find { it.id == match.songId2 }
-                
-                // Seçilen maçı current match olarak ayarla - showMatchingsList'i FALSE YAPMA!
+
+                // Seçilen maçı current match olarak ayarla
                 _uiState.value = _uiState.value.copy(
                     currentMatch = match,
                     song1 = song1,
-                    song2 = song2,
-                    showInitialRanking = false
-                    // showMatchingsList = false, // BUNU KALDIRDIM! 
+                    song2 = song2
                 )
-                
-                android.util.Log.d("RANKING_DEBUG", "selectMatch() tamamlandı - Takım 1: ${song1?.name}, Takım 2: ${song2?.name}")
-                
             } catch (e: Exception) {
-                android.util.Log.e("RANKING_DEBUG", "selectMatch() hatası: ${e.message}", e)
+                _uiState.value = _uiState.value.copy(error = "Maç seçme hatası: ${e.message}")
             }
         }
     }
@@ -558,7 +504,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             progress = if (displayTotal > 0) completed.toFloat() / displayTotal else 0f,
             emreState = if (currentMethod == "EMRE_CORRECT") emreState else null,
             showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
-            showInitialRanking = false,  // İlk sıralama tablosunu da gizle
             canUndo = undoSupported() && lastCompletedMatchId != null
         )
     }
@@ -605,57 +550,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     // Doğru Emre usulü state
     private var emreState: EmreSystemCorrect.EmreState? = null
-    
-    /**
-     * İlk eşleştirmeleri yap - Kullanıcı butona bastığında çağrılır
-     */
-    fun createFirstRoundMatches() {
-        android.util.Log.d("CRASH_DEBUG", "createFirstRoundMatches() BAŞLADI")
-        viewModelScope.launch {
-            try {
-                android.util.Log.d("CRASH_DEBUG", "createFirstRoundMatches() viewModelScope içinde")
-                // Critical safety checks
-                val safeSongs = getSafeSongs()
-                if (safeSongs.isEmpty()) {
-                    _uiState.value = _uiState.value.copy(error = "Takım listesi henüz yüklenmedi")
-                    return@launch
-                }
-                
-                val currentState = emreState
-                if (currentState == null) {
-                    _uiState.value = _uiState.value.copy(error = "EmreState bulunamadı")
-                    return@launch
-                }
-                
-                
-                // İlk tur eşleştirmesini yap - YENİ HİBRİT SİSTEM kullan
-                val pairingResult = EmreSystemCorrect.createHybridPairingSystem(currentState)
-                
-                
-                
-                if (pairingResult.matches.isNotEmpty()) {
-                    repository.createMatches(pairingResult.matches)
-                    
-                    // Eşleştirmeler listesini göster
-                    _uiState.value = _uiState.value.copy(
-                        showInitialRanking = false,
-                        showMatchingsList = true,
-                        matchingsList = pairingResult.matches.sortedBy { it.matchNumber }
-                    )
-                } else {
-                    _uiState.value = _uiState.value.copy(
-                        error = "Eşleştirme oluşturulamadı"
-                    )
-                }
-                
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = "Eşleştirme hatası: ${e.message}"
-                )
-            }
-        }
-    }
-    
+
     private suspend fun createNextEmreRound(round: Int) {
         try {
             val currentState = emreState ?: run {
@@ -694,9 +589,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 // Her turda eşleştirmeler listesini göster
                 
                 _uiState.value = _uiState.value.copy(
-                    showInitialRanking = false,
                     showMatchingsList = true,
-                    currentMatch = null, // ⚠️ KRİTİK FİX: currentMatch'i null yap ki liste görülebilsin
+                    currentMatch = null, // currentMatch null olmalı ki liste görülebilsin
                     matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
                     emreState = emreState,
                     currentRound = round
@@ -859,8 +753,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     progress = if (total > 0) completed.toFloat() / total else 0f,
                     isComplete = false,
                     canUndo = false,
-                    showMatchingsList = false,
-                    showInitialRanking = false
+                    showMatchingsList = false
                 )
 
                 if (currentMethod == "EMRE_CORRECT") {
@@ -1192,7 +1085,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     if (incompleteMatches.isNotEmpty()) {
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            showInitialRanking = false,
                             showMatchingsList = true,
                             matchingsList = incompleteMatches.sortedBy { it.matchNumber },
                             emreState = emreState
@@ -1201,7 +1093,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         // Tüm maçlar tamamlanmış ama turnuva bitmemiş - sonraki turu oluştur
                         _uiState.value = _uiState.value.copy(
                             isLoading = false,
-                            showInitialRanking = false,
                             showMatchingsList = false,
                             emreState = emreState,
                             allSongs = songs,
@@ -1216,7 +1107,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     emreState = EmreSystemCorrect.initializeEmreTournament(songs)
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        showInitialRanking = false,
                         emreState = emreState,
                         allSongs = songs,
                         currentMatch = null
@@ -1529,7 +1419,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 // Yeni turun eşleştirmeler listesini göster
                 // (currentMatch=null olmalı ki liste ekranı görünsün)
                 _uiState.value = _uiState.value.copy(
-                    showInitialRanking = false,
                     showMatchingsList = true,
                     currentMatch = null,
                     matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
@@ -1547,72 +1436,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             )
         }
         return false
-    }
-    
-    // Test Protocol Functions
-    fun showTestReport(reportType: String) {
-        viewModelScope.launch {
-            try {
-                val currentState = _uiState.value
-                if (currentState.emreState == null) {
-                    return@launch
-                }
-                
-                // Completed matches'ları database'den al
-                val completedMatches = repository.getCompletedMatchesForList(currentListId)
-                
-                val (reportData, reportTitle) = when (reportType) {
-                    "match_history" -> {
-                        val report = TournamentTestProtocol.generateMatchHistoryReport(currentState.emreState, completedMatches)
-                        Pair(report, "Eşleştirme Geçmişi Raporu")
-                    }
-                    "round_by_round" -> {
-                        val expectedMatchesPerRound = currentState.emreState.teams.size / 2
-                        val report = TournamentTestProtocol.generateRoundByRoundReport(completedMatches, expectedMatchesPerRound)
-                        Pair(report, "Tur Bazında Maç Raporu")
-                    }
-                    "asymmetric_points" -> {
-                        // Son oluşturulan eşleştirmeler için CandidateMatch listesi oluştur
-                        val candidateMatches = currentState.matchingsList.map { match ->
-                            val team1 = currentState.emreState.teams.find { it.song.id == match.songId1 }
-                            val team2 = currentState.emreState.teams.find { it.song.id == match.songId2 }
-                            if (team1 != null && team2 != null) {
-                                EmreSystemCorrect.CandidateMatch(team1, team2, (team1.points != team2.points))
-                            } else {
-                                null
-                            }
-                        }.filterNotNull()
-                        
-                        val report = TournamentTestProtocol.generateAsymmetricPointsReport(candidateMatches)
-                        Pair(report, "Asimetrik Puan Analiz Raporu")
-                    }
-                    else -> {
-                        Pair("Bilinmeyen rapor tipi: $reportType", "Hata")
-                    }
-                }
-                
-                _uiState.value = _uiState.value.copy(
-                    showTestReport = true,
-                    testReportData = reportData,
-                    testReportTitle = reportTitle
-                )
-                
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    showTestReport = true,
-                    testReportData = "Rapor oluşturulurken hata oluştu: ${e.message}",
-                    testReportTitle = "Hata"
-                )
-            }
-        }
-    }
-    
-    fun hideTestReport() {
-        _uiState.value = _uiState.value.copy(
-            showTestReport = false,
-            testReportData = "",
-            testReportTitle = ""
-        )
     }
     
     /**

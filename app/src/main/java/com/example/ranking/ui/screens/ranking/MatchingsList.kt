@@ -48,10 +48,6 @@ internal fun MatchingsListContent(
 ) {
     var isAdvancedView by remember { mutableStateOf(true) } // Büyük kartlar varsayılan
 
-    // Debug logging
-    android.util.Log.d("RANKING_DEBUG", "MatchingsListContent render - matchingsList.size: ${uiState.matchingsList.size}")
-    android.util.Log.d("RANKING_DEBUG", "MatchingsList içeriği: ${uiState.matchingsList.map { "${it.id}:${it.matchNumber}" }}")
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -114,9 +110,9 @@ internal fun MatchingsListContent(
         // Eşleştirmeler listesi
         if (uiState.matchingsList.isEmpty()) {
             Text(
-                text = "Henüz eşleştirme yok - startScoring() çağırılmadı mı?",
+                text = "Henüz eşleştirme yok",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.Red,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(16.dp)
             )
         } else {
@@ -127,7 +123,6 @@ internal fun MatchingsListContent(
                 verticalArrangement = Arrangement.spacedBy(2.dp) // Kartlar arası spacing azaltıldı
             ) {
                 items(uiState.matchingsList) { match ->
-                    android.util.Log.d("RANKING_DEBUG", "Rendering match card: ${match.id}:${match.matchNumber}")
                     if (isAdvancedView) {
                         // Büyük görünüm - Büyük tablo kartları
                         AdvancedMatchCard(
@@ -135,20 +130,14 @@ internal fun MatchingsListContent(
                             songs = uiState.allSongs,
                             method = method,
                             emreState = uiState.emreState,
-                            onClick = {
-                                // Kart tıklama artık puanlama ekranına geçmiyor
-                                android.util.Log.d("RANKING_DEBUG", "AdvancedMatchCard clicked but no action")
-                            }
+                            onClick = { /* Kart tıklama puanlama ekranına geçmez */ }
                         )
                     } else {
                         // Küçük görünüm - Küçük kartlar
                         SimpleMatchCard(
                             match = match,
                             songs = uiState.allSongs,
-                            onClick = {
-                                // Kart tıklama artık puanlama ekranına geçmiyor
-                                android.util.Log.d("RANKING_DEBUG", "SimpleMatchCard clicked but no action")
-                            }
+                            onClick = { /* Kart tıklama puanlama ekranına geçmez */ }
                         )
                     }
                 }
@@ -158,19 +147,10 @@ internal fun MatchingsListContent(
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
-                    try {
-                        android.util.Log.d("RANKING_DEBUG", "Puanlama Ekranına Geç butonu tıklandı")
-                        // İlk maçı seç ve puanlama ekranına geç
-                        val firstMatch = uiState.matchingsList.firstOrNull()
-                        if (firstMatch != null) {
-                            android.util.Log.d("RANKING_DEBUG", "İlk maç seçiliyor: ${firstMatch.id}")
-                            viewModel.selectMatch(firstMatch)
-                        } else {
-                            android.util.Log.e("RANKING_DEBUG", "Hiçbir maç bulunamadı!")
-                        }
-                    } catch (e: Exception) {
-                        android.util.Log.e("RANKING_DEBUG", "Puanlama butonu CRASH: ${e.message}", e)
-                    }
+                    // İlk oynanmamış maçı seç ve puanlama ekranına geç
+                    val firstMatch = uiState.matchingsList.firstOrNull { !it.isCompleted }
+                        ?: uiState.matchingsList.firstOrNull()
+                    firstMatch?.let { viewModel.selectMatch(it) }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -362,17 +342,9 @@ internal fun AdvancedMatchCard(
                 horizontalArrangement = Arrangement.spacedBy(2.dp), // Daha minimal boşluk
                 verticalAlignment = Alignment.Top // Kartları üstten hizala
             ) {
-                // Sol takım kartı - AFGANİSTAN formatı (Box ile wrap - puan rozeti için)
+                // Sol takım kartı (Box ile wrap - puan rozeti için)
                 MatchTeamCard(
                     song = song1,
-                    placeholderName = "AFGANİSTAN",
-                    placeholderRows = listOf(
-                        "Kıta" to "Asya",
-                        "Nüfus (Milyon)" to "438",
-                        "Yüzölçümü (km²)" to "652230",
-                        "GSYİH (Milyar USD)" to "18",
-                        "Kişi Başına GSYİH (USD)" to "411"
-                    ),
                     method = method,
                     emreState = emreState,
                     modifier = Modifier.weight(1f)
@@ -401,17 +373,9 @@ internal fun AdvancedMatchCard(
                     }
                 }
 
-                // Sağ takım kartı - ARNAVUTLUK formatı (Box ile wrap - puan rozeti için)
+                // Sağ takım kartı (Box ile wrap - puan rozeti için)
                 MatchTeamCard(
                     song = song2,
-                    placeholderName = "ARNAVUTLUK",
-                    placeholderRows = listOf(
-                        "Kıta" to "Avrupa",
-                        "Nüfus (Milyon)" to "28",
-                        "Yüzölçümü (km²)" to "28748",
-                        "GSYİH (Milyar USD)" to "28",
-                        "Kişi Başına GSYİH (USD)" to "10000"
-                    ),
                     method = method,
                     emreState = emreState,
                     modifier = Modifier.weight(1f)
@@ -425,8 +389,6 @@ internal fun AdvancedMatchCard(
 @Composable
 private fun MatchTeamCard(
     song: Song?,
-    placeholderName: String,
-    placeholderRows: List<Pair<String, String>>,
     method: String,
     emreState: com.example.ranking.ranking.EmreSystemCorrect.EmreState?,
     modifier: Modifier = Modifier
@@ -453,7 +415,7 @@ private fun MatchTeamCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = song?.name?.uppercase() ?: placeholderName,
+                        text = song?.name?.uppercase() ?: "—",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -477,11 +439,12 @@ private fun MatchTeamCard(
                             TableRow("Artist", song.artist)
                         }
                     }
-                } else {
-                    // Placeholder data resimdeki gibi
+                } else if (song != null) {
+                    // CSV verisi yoksa temel bilgiler gösterilir
                     Column(modifier = Modifier.padding(8.dp)) {
-                        placeholderRows.forEach { (label, value) ->
-                            TableRow(label, value)
+                        TableRow("Ad", song.name)
+                        if (song.artist.isNotBlank()) {
+                            TableRow("Sanatçı", song.artist)
                         }
                     }
                 }

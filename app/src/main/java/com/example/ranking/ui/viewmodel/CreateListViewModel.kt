@@ -7,9 +7,12 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ranking.data.RankingDatabase
+import com.example.ranking.data.Song
 import com.example.ranking.repository.RankingRepository
 import com.example.ranking.utils.CsvReader
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CreateListViewModel(application: Application) : AndroidViewModel(application) {
     
@@ -71,10 +74,11 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                                 // Find the name column (first non-empty header, or first column)
                                 val nameColumnIndex = 0 // Use first column as name
                                 val nameColumnHeader = if (nameColumnIndex < headers.size) headers[nameColumnIndex] else "Name"
-                                
+
+                                val songsToAdd = mutableListOf<Song>()
                                 dataRows.forEachIndexed { index, row ->
                                     val values = row.split(csvDelimiter).map { it.trim() }
-                                    
+
                                     if (values.isNotEmpty() && values[0].isNotBlank()) {
                                         val songName = values[0] // First column as song name
                                         
@@ -104,16 +108,18 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                                         
                                         
                                         // Extract artist/album from known headers or use defaults
-                                        val artist = csvDataMap["Artist"] ?: csvDataMap["artist"] ?: 
+                                        val artist = csvDataMap["Artist"] ?: csvDataMap["artist"] ?:
                                                    csvDataMap["Sanatçı"] ?: csvDataMap["sanatçı"] ?: ""
-                                        val album = csvDataMap["Album"] ?: csvDataMap["album"] ?: 
+                                        val album = csvDataMap["Album"] ?: csvDataMap["album"] ?:
                                                   csvDataMap["Albüm"] ?: csvDataMap["albüm"] ?: ""
-                                        
-                                        repository.addSongWithCsvData(listId, songName, artist, album, csvDataJson)
+
+                                        songsToAdd.add(Song(name = songName, artist = artist, album = album, trackNumber = 0, listId = listId, csvData = csvDataJson))
                                     }
                                 }
-                                
-                                
+                                // Tüm satırlar tek transaction'da eklenir (N+1 önlemi)
+                                repository.addSongsBulk(listId, songsToAdd)
+
+
                             } catch (e: Exception) {
                                 onError("CSV tablo formatı işlenirken hata oluştu: ${e.message}")
                                 return@launch
@@ -144,7 +150,7 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                                 return@launch
                             }
                             
-                            lines.forEach { line ->
+                            val songsToAdd = lines.mapNotNull { line ->
                                 val (songName, artist, album) = if (line.contains(" - ")) {
                                     val parts = line.split(" - ", limit = 3)
                                     when (parts.size) {
@@ -155,11 +161,12 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                                 } else {
                                     Triple(line, "", "")
                                 }
-                                
+
                                 if (songName.isNotBlank()) {
-                                    repository.addSong(listId, songName, artist, album)
-                                }
+                                    Song(name = songName, artist = artist, album = album, trackNumber = 0, listId = listId)
+                                } else null
                             }
+                            repository.addSongsBulk(listId, songsToAdd)
                         }
                     }
                     
@@ -171,10 +178,12 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                         
                         try {
                             
-                            // CSV file'ı string olarak oku
-                            val csvContent = context.contentResolver.openInputStream(csvUri)?.use { inputStream ->
-                                inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
-                                    reader.readText()
+                            // CSV file'ı string olarak oku (disk/ContentProvider IO ana thread'de yapılmaz)
+                            val csvContent = withContext(Dispatchers.IO) {
+                                context.contentResolver.openInputStream(csvUri)?.use { inputStream ->
+                                    inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
+                                        reader.readText()
+                                    }
                                 }
                             } ?: throw Exception("CSV dosyası okunamadı")
                             
@@ -242,12 +251,10 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
         // SINGLE ROW SPECIAL HANDLING - Tek satır varsa header yok demektir
         if (inputLines.size == 1) {
             val values = inputLines[0].split(detectedDelimiter).map { it.trim() }.filter { it.isNotBlank() }
-            
-            values.forEachIndexed { index, value ->
-                if (value.isNotBlank()) {
-                    repository.addSong(listId, value, "", "")
-                }
-            }
+            repository.addSongsBulk(
+                listId,
+                values.map { Song(name = it, artist = "", album = "", trackNumber = 0, listId = listId) }
+            )
             return
         }
         
@@ -257,10 +264,11 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
         
         
         // Process each data row
+        val songsToAdd = mutableListOf<Song>()
         dataRows.forEachIndexed { rowIndex, row ->
             try {
                 val values = row.split(detectedDelimiter).map { it.trim() }
-                
+
                 if (values.isNotEmpty() && values[0].isNotBlank()) {
                     val songName = values[0]
                     
@@ -288,13 +296,15 @@ class CreateListViewModel(application: Application) : AndroidViewModel(applicati
                         .firstNotNullOfOrNull { csvDataMap[it] } ?: ""
                     val album = listOf("Album", "album", "Albüm", "albüm", "ALBUM")
                         .firstNotNullOfOrNull { csvDataMap[it] } ?: ""
-                    
-                    repository.addSongWithCsvData(listId, songName, artist, album, csvDataJson)
+
+                    songsToAdd.add(Song(name = songName, artist = artist, album = album, trackNumber = 0, listId = listId, csvData = csvDataJson))
                 }
             } catch (e: Exception) {
                 // Continue processing other rows
             }
         }
-        
+
+        // Tüm satırlar tek transaction'da eklenir (N+1 önlemi)
+        repository.addSongsBulk(listId, songsToAdd)
     }
 }

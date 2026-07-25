@@ -91,19 +91,6 @@ fun RankingNavigation(
             )
         }
         
-        composable("new_tournament/{listId}") { backStackEntry ->
-            val listId = backStackEntry.arguments?.getString("listId")?.toLongOrNull() ?: 0L
-            NewTournamentScreen(
-                onNavigateBack = { navController.popBackStack() },
-                onTournamentCreated = { tournamentId ->
-                    // Navigate based on system type
-                    navController.navigate("tournament_routing/$tournamentId") {
-                        popUpTo("main_menu")
-                    }
-                }
-            )
-        }
-        
         // Direct tournament creation from main menu
         composable("new_tournament_direct") {
             NewTournamentScreen(

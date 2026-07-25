@@ -9,7 +9,9 @@ import com.example.ranking.data.CriterionList
 import com.example.ranking.data.RankingDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -92,39 +94,45 @@ class CreateCriteriaViewModel(application: Application) : AndroidViewModel(appli
         onSuccess: (List<String>) -> Unit,
         onError: (String) -> Unit
     ) {
-        try {
-            val inputStream = context.contentResolver.openInputStream(uri)
-            val reader = BufferedReader(InputStreamReader(inputStream))
-            val criteria = mutableListOf<String>()
-            
-            reader.useLines { lines ->
-                lines.forEach { line ->
-                    val trimmedLine = line.trim()
-                    if (trimmedLine.isNotEmpty()) {
-                        // Handle both single column and comma-separated values
-                        if (trimmedLine.contains(",")) {
-                            // Multiple criteria per line
-                            trimmedLine.split(",").forEach { criterion ->
-                                val cleanCriterion = criterion.trim().replace("\"", "")
-                                if (cleanCriterion.isNotEmpty()) {
-                                    criteria.add(cleanCriterion)
+        viewModelScope.launch {
+            try {
+                // Dosya okuma ana thread'de yapılmaz (ANR riski)
+                val criteria = withContext(Dispatchers.IO) {
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val reader = BufferedReader(InputStreamReader(inputStream))
+                    val result = mutableListOf<String>()
+
+                    reader.useLines { lines ->
+                        lines.forEach { line ->
+                            val trimmedLine = line.trim()
+                            if (trimmedLine.isNotEmpty()) {
+                                // Handle both single column and comma-separated values
+                                if (trimmedLine.contains(",")) {
+                                    // Multiple criteria per line
+                                    trimmedLine.split(",").forEach { criterion ->
+                                        val cleanCriterion = criterion.trim().replace("\"", "")
+                                        if (cleanCriterion.isNotEmpty()) {
+                                            result.add(cleanCriterion)
+                                        }
+                                    }
+                                } else {
+                                    // Single criterion per line
+                                    result.add(trimmedLine)
                                 }
                             }
-                        } else {
-                            // Single criterion per line
-                            criteria.add(trimmedLine)
                         }
                     }
+                    result
                 }
+
+                if (criteria.isNotEmpty()) {
+                    onSuccess(criteria.distinct()) // Remove duplicates
+                } else {
+                    onError("CSV dosyası boş veya uygun formatta değil")
+                }
+            } catch (e: Exception) {
+                onError("CSV okuma hatası: ${e.message}")
             }
-            
-            if (criteria.isNotEmpty()) {
-                onSuccess(criteria.distinct()) // Remove duplicates
-            } else {
-                onError("CSV dosyası boş veya uygun formatta değil")
-            }
-        } catch (e: Exception) {
-            onError("CSV okuma hatası: ${e.message}")
         }
     }
     

@@ -9,7 +9,9 @@ interface RankingResultDao {
     @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY position ASC")
     fun getRankingResults(listId: Long, method: String): Flow<List<RankingResult>>
     
-    @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY score DESC, position ASC")
+    // Flow sürümüyle AYNI sıralama (position ASC): position, averaj gibi
+    // tiebreak'ler işlenmiş nihai sıradır; score DESC bu sırayı bozabilir
+    @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY position ASC")
     suspend fun getRankingResultsSync(listId: Long, method: String): List<RankingResult>
 
     @Query("SELECT * FROM ranking_results WHERE listId = :listId AND rankingMethod = :method ORDER BY score DESC")
