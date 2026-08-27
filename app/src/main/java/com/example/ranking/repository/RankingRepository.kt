@@ -245,8 +245,18 @@ class RankingRepository(
         matchDao.updateMatch(match)
     }
     
-    suspend fun createMatches(matches: List<Match>) {
-        matchDao.insertMatches(matches)
+    /**
+     * Maçları kaydeder ve **veritabanı id'leri yazılmış** kopyalarını döndürür.
+     *
+     * Çağıran taraf bu nesneleri ekranda gösterip sonucu `updateMatch` ile
+     * yazıyor; id=0 kalan bir nesneyle yapılan güncelleme hiçbir satıra
+     * düşmediği için verilen sonuç sessizce kaybolurdu.
+     */
+    suspend fun createMatches(matches: List<Match>): List<Match> {
+        val ids = matchDao.insertMatches(matches)
+        return matches.mapIndexed { index, match ->
+            ids.getOrNull(index)?.let { match.copy(id = it) } ?: match
+        }
     }
     
     suspend fun clearMatches(listId: Long, method: String) {

@@ -171,27 +171,6 @@ internal fun MatchingsListContent(
     }
 }
 
-private fun parseJsonToMap(jsonString: String): Map<String, String> {
-    return try {
-        // Basit JSON parsing - bracket'ları temizle ve key-value çiftlerini parse et
-        val cleanJson = jsonString.trim().removePrefix("{").removeSuffix("}")
-        val pairs = cleanJson.split(",")
-        val map = mutableMapOf<String, String>()
-
-        pairs.forEach { pair ->
-            val keyValue = pair.split(":")
-            if (keyValue.size == 2) {
-                val key = keyValue[0].trim().removePrefix("\"").removeSuffix("\"")
-                val value = keyValue[1].trim().removePrefix("\"").removeSuffix("\"")
-                map[key] = value
-            }
-        }
-        map
-    } catch (e: Exception) {
-        emptyMap()
-    }
-}
-
 @Composable
 private fun TableRow(
     label: String,
@@ -427,18 +406,23 @@ private fun MatchTeamCard(
 
                 // Tablo verileri - Resimdeki format
                 if (song != null && song.csvData != null) {
-                    val csvMap = parseJsonToMap(song.csvData!!)
+                    // Gercek JSON ayristirici: elle yazilan split(",")/split(":")
+                    // surumu, icinde ":" gecen degerleri (URL, saat, oran) dusuruyor
+                    // ve _displayMode gibi ic anahtarlari kullaniciya gosteriyordu.
+                    val detaylar = cardDetailRows(song.csvData, song.name)
                     Column(modifier = Modifier.padding(8.dp)) {
-                        if (csvMap.isNotEmpty()) {
-                            csvMap.forEach { (key, value) ->
+                        if (detaylar.isNotEmpty()) {
+                            detaylar.forEach { (key, value) ->
                                 TableRow(
                                     label = key,
                                     value = value
                                 )
                             }
                         } else {
-                            TableRow("Name", song.name)
-                            TableRow("Artist", song.artist)
+                            TableRow(stringResource(R.string.matchings_label_name), song.name)
+                            if (song.artist.isNotBlank()) {
+                                TableRow(stringResource(R.string.matchings_label_artist), song.artist)
+                            }
                         }
                     }
                 } else if (song != null) {

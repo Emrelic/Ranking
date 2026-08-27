@@ -69,7 +69,7 @@ object HazirListeler {
                 HazirListe("29_heykeller.csv", "Heykeller", 27, true, "Ünlü heykeller ve anıtlar"),
                 HazirListe("30_yapilar.csv", "Yapılar", 70, true, "Mimari açıdan önemli yapılar"),
                 HazirListe("31_muzik_aletleri.csv", "Müzik Aletleri", 35, true, "Türk ve dünya müzik aletleri"),
-                HazirListe("02_sebnem_ferah_sarkilari.csv", "Şebnem Ferah Şarkıları", 42, false, "Albümleriyle Şebnem Ferah şarkıları")
+                HazirListe("02_sebnem_ferah_sarkilari.csv", "Şebnem Ferah Şarkıları", 85, false, "Albümleriyle Şebnem Ferah şarkıları")
             )
         ),
         HazirListeKategorisi(

@@ -30,8 +30,11 @@ interface MatchDao {
     @Insert
     suspend fun insertMatch(match: Match): Long
 
+    // Üretilen id'ler döndürülür: çağıran taraf eklenen maçları UI'da
+    // gösterip sonra @Update ile güncelliyor; id=0 kalırsa güncelleme
+    // hiçbir satıra düşmez ve verilen sonuç sessizce kaybolur.
     @Insert
-    suspend fun insertMatches(matches: List<Match>)
+    suspend fun insertMatches(matches: List<Match>): List<Long>
 
     @Update
     suspend fun updateMatch(match: Match)

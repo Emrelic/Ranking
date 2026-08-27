@@ -63,7 +63,19 @@ fun RankingScreen(
             ?.let { viewModel.getCriteriaSettingsForTournament(it) }
     }
     val autoOpenCriteriaPanel = criteriaSettingsMap?.get("autoOpenCriteriaPanel") as? Boolean ?: false
-    val mandatoryCriteria = criteriaSettingsMap?.get("mandatoryCriteria") as? Boolean ?: false
+
+    // Kriter değerlendirmesi maç tabanlı yöntemlerde anlamlı; MERGE_SORT
+    // ikili karşılaştırma sorar ve dialoga verilecek bir "maç" yoktur.
+    val kriterDesteklenir = method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT")
+    val kriterMaci = if (kriterDesteklenir) uiState.currentMatch else null
+
+    // 🔴 Dialog ancak GÖSTERİLEBİLİYORSA ana içerik gizlenir. Aksi hâlde
+    // (MERGE_SORT'ta KRİTER'e basıldığında) ekran tamamen boşalıyor ve
+    // TopAppBar da gizlendiği için geri dönüş yolu kalmıyordu.
+    val kriterDialoguGorunur = showCriteriaDialog && kriterMaci != null
+
+    val mandatoryCriteria = (criteriaSettingsMap?.get("mandatoryCriteria") as? Boolean ?: false) &&
+        kriterDesteklenir
 
     // "Kriter panelini otomatik aç": yeni maç ekrana gelince dialog kendiliğinden açılır
     LaunchedEffect(uiState.currentMatch?.id, autoOpenCriteriaPanel) {
@@ -103,7 +115,7 @@ fun RankingScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Ana içerik - Dialog açıkken gizle
-        if (!showCriteriaDialog) {
+        if (!kriterDialoguGorunur) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -229,12 +241,8 @@ fun RankingScreen(
         }
 
         // Kriter Değerlendirme Dialogu - Ana içeriğin üstünde
-        if (showCriteriaDialog) {
-            val currentMatch = when (method) {
-                "LEAGUE", "SWISS", "EMRE_CORRECT" -> uiState.currentMatch
-                else -> null
-            }
-            currentMatch?.let { match ->
+        if (kriterDialoguGorunur) {
+            kriterMaci?.let { match ->
                 CriteriaEvaluationDialog(
                     match = match,
                     song1 = uiState.song1,
@@ -634,6 +642,10 @@ private fun MatchBasedContent(
     // beraberlik) doğrudan işlenmez, kriter dialoguna yönlendirilir
     mandatoryCriteria: Boolean = false
 ) {
+    // Kriter değerlendirmesi yalnız maç tabanlı yöntemlerde anlamlı;
+    // MERGE_SORT ikili karşılaştırma sorar, dialoga verilecek maç yoktur.
+    val kriterDesteklenir = method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT")
+
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {
         MatchingsListContent(
@@ -862,53 +874,62 @@ private fun MatchBasedContent(
                 }
 
                 // SKOR GİR - sağda, yeşil
-                Button(
-                    onClick = {
-                        if (mandatoryCriteria) {
-                            // Zorunlu kriter: skorla sonuç girişi de kriter
-                            // dialoguna yönlendirilir (kriter atlanamaz)
-                            onShowCriteriaDialog(true)
-                        } else {
-                            onShowScoreDialog(true)
-                        }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF388E3C),
-                        contentColor = Color.White
-                    ),
-                    shape = RectangleShape,
-                    contentPadding = PaddingValues(horizontal = 4.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.ranking_process_score),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
+                // İkili karşılaştırmada gizli: skor girişi eşit skora izin verir,
+                // eşit skor beraberlik demektir ve MERGE_SORT'ta beraberlik
+                // "aday kaybetti" sayılıp sıralamayı sessizce keyfileştirir.
+                if (method != "MERGE_SORT") {
+                    Button(
+                        onClick = {
+                            if (mandatoryCriteria) {
+                                // Zorunlu kriter: skorla sonuç girişi de kriter
+                                // dialoguna yönlendirilir (kriter atlanamaz)
+                                onShowCriteriaDialog(true)
+                            } else {
+                                onShowScoreDialog(true)
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF388E3C),
+                            contentColor = Color.White
+                        ),
+                        shape = RectangleShape,
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.ranking_process_score),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
 
                 // KRİTER - sağ uç, yeşil
-                Button(
-                    onClick = { onShowCriteriaDialog(true) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF388E3C),
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp),
-                    contentPadding = PaddingValues(horizontal = 4.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.ranking_criteria_button),
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
+                // Yalnız maç tabanlı yöntemlerde: MERGE_SORT'ta dialoga
+                // verilecek maç yok, buton ekranı boşaltıyordu
+                if (kriterDesteklenir) {
+                    Button(
+                        onClick = { onShowCriteriaDialog(true) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF388E3C),
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.ranking_criteria_button),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
             }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.ranking.data.Song
 import com.example.ranking.ranking.EmreSystemCorrect
 
@@ -89,78 +91,101 @@ internal fun TeamSelectionPanel(
             }
             // CSV data'yı önceden hesapla
             val csvData = team.csvData
-            val jsonData = remember(csvData) {
-                if (csvData != null && csvData.isNotEmpty()) {
-                    try {
-                        val data = org.json.JSONObject(csvData)
-                        val keys = data.keys().asSequence().toList().filter { it !in HIDDEN_CSV_KEYS }
-                        keys.map { key -> key to data.optString(key, "") }
-                    } catch (e: Exception) {
-                        null
-                    }
-                } else {
-                    null
-                }
-            }
+            val detayRows = remember(csvData, team.name) { cardDetailRows(csvData, team.name) }
             val imageUrl = remember(csvData) { extractImageUrl(csvData) }
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 if (imageUrl != null) {
                     item {
                         ItemImage(
                             imageUrl = imageUrl,
                             contentDescription = team.name,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
                 }
-                if (jsonData != null) {
-                    items(jsonData) { (key, value) ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = key,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Text(
-                                text = value,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.weight(1f),
-                                textAlign = TextAlign.End
-                            )
-                        }
+
+                // BAŞLIK — öğenin adı. Karşılaştırmada okunan asıl bilgi budur,
+                // detay satırlarıyla eşit ağırlıkta yazılırsa kart okunmaz olur.
+                item {
+                    Text(
+                        text = team.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 26.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 6.dp)
+                    )
+                }
+
+                if (detayRows.isNotEmpty()) {
+                    item {
+                        HorizontalDivider(
+                            color = borderColor.copy(alpha = 0.35f),
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        )
+                    }
+                    items(detayRows) { (key, value) ->
+                        DetayRow(key = key, value = value)
                     }
                 } else {
-                    item {
-                        Column {
+                    // CSV'siz öğelerde sanatçı/albüm alanları alt bilgi olur
+                    val altBilgi = listOfNotNull(
+                        team.artist.takeIf { it.isNotBlank() },
+                        team.album.takeIf { it.isNotBlank() }
+                    )
+                    if (altBilgi.isNotEmpty()) {
+                        item {
                             Text(
-                                text = team.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                text = altBilgi.joinToString(" · "),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
                             )
-                            team.artist?.let { artist ->
-                                Text(
-                                    text = artist,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+/**
+ * Kart detay satırı: solda soluk etiket, sağda okunur değer.
+ * İkisi eşit ağırlıkta yazılırsa göz hangisinin bilgi olduğunu seçemez.
+ */
+@Composable
+private fun DetayRow(key: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = key,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
+            modifier = Modifier.weight(0.42f)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(0.58f)
+        )
     }
 }

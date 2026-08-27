@@ -283,6 +283,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private fun initializeLeague() {
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
+            // Oturum kaydi olmadan getActiveSession daima null doner; bu yuzden
+            // ekrana her giris "yeni turnuva" sayilip clearMatches ile oynanmis
+            // maclari siliyor, Duraklat/Sifirla butonlari da hic gorunmuyordu.
+            createOrUpdateSession()
             val settings = _uiState.value.leagueSettings
             val doubleRoundRobin = settings?.doubleRoundRobin ?: false
             val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
@@ -294,6 +298,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private fun initializePairwiseSort() {
         viewModelScope.launch {
             repository.clearMatches(currentListId, currentMethod)
+            // Bkz. initializeLeague: oturum kaydi olmayan yontemde her giris
+            // cevaplanmis tum karsilastirmalari siliyordu
+            createOrUpdateSession()
             advancePairwiseSort()
         }
     }
@@ -593,14 +600,16 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             }
             
             if (pairingResult.matches.isNotEmpty()) {
-                repository.createMatches(pairingResult.matches)
-                
+                // id'si yazılmış kopyalar alınır: listeden seçilen maç @Update ile
+                // güncelleneceği için id=0 kalırsa o turun ilk sonucu kaybolur
+                val kayitliMaclar = repository.createMatches(pairingResult.matches)
+
                 // Her turda eşleştirmeler listesini göster
-                
+
                 _uiState.value = _uiState.value.copy(
                     showMatchingsList = true,
                     currentMatch = null, // currentMatch null olmalı ki liste görülebilsin
-                    matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
+                    matchingsList = kayitliMaclar.sortedBy { it.matchNumber },
                     emreState = emreState,
                     currentRound = round
                 )
@@ -621,7 +630,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         return byeTeam
     }
     
+    /**
+     * Bir turun bye geçen takımını maç kayıtlarından bulur.
+     *
+     * Bye YALNIZCA tek sayıda takım varken oluşur. Çift takımda "maç
+     * oynamamış takım" aramak, yarım kalmış bir turda oynamamış takımı
+     * bye sanıp ona hayalet puan verir.
+     */
     private fun findByeTeamFromMatches(state: EmreSystemCorrect.EmreState, matches: List<Match>, songs: List<Song>): EmreSystemCorrect.EmreTeam? {
+        if (songs.size % 2 == 0) return null
         val playedTeamIds = matches.flatMap { listOf(it.songId1, it.songId2) }.toSet()
         val byeSong = songs.find { it.id !in playedTeamIds }
         return byeSong?.let { song ->
@@ -643,9 +660,16 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         var state = EmreSystemCorrect.initializeEmreTournament(songs)
                         val matchesByRound = allMatches.filter { it.isCompleted }.groupBy { it.round }
                         
+                        val tumTamamlanan = allMatches.filter { it.isCompleted }
                         for ((round, roundMatches) in matchesByRound.toSortedMap()) {
                             val byeTeam = findByeTeamFromMatches(state, roundMatches, songs)
-                            state = RankingEngine.processCorrectEmreResults(state, roundMatches, byeTeam)
+                            // Tiebreaker zinciri TÜM geçmişi görmeli (bkz. resumeSession)
+                            state = RankingEngine.processCorrectEmreResults(
+                                state,
+                                roundMatches,
+                                byeTeam,
+                                allCompletedMatches = tumTamamlanan
+                            )
                         }
                         
                         RankingEngine.calculateCorrectEmreResults(state)
@@ -659,10 +683,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             
             repository.clearRankingResults(currentListId, currentMethod)
             repository.saveRankingResults(results)
-            
+
+            // Oturumu ve turnuva kaydini KAPAT.
+            // Kapanmadiginda bitmis turnuva "Aktif Turnuvalar"da kalir ve
+            // "Devam Et" bitmis oturumu yeniden acar.
+            currentVotingSession?.let { oturum ->
+                votingSessionDao.completeTournament(oturum.id, System.currentTimeMillis())
+            }
+            _uiState.value.activeTournamentId?.let { turnuvaId ->
+                database.tournamentDao().completeTournament(turnuvaId)
+            }
+
             _uiState.value = _uiState.value.copy(
                 isComplete = true,
-                progress = 1f
+                progress = 1f,
+                hasActiveSession = false
             )
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
@@ -1080,12 +1115,27 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     val completedMatches = allMatches.filter { it.isCompleted }
                     val matchesByRound = completedMatches.groupBy { it.round }
                     
+                    // Turdaki toplam maç sayısı: yarım kalmış bir tur
+                    // BİTMİŞ gibi işlenirse, tur gerçekten kapanınca aynı
+                    // maçlar ikinci kez sayılır ve puanlar çift olur.
+                    val macSayisiByRound = allMatches.groupBy { it.round }
+                        .mapValues { (_, macs) -> macs.size }
+
                     // Process each completed round to rebuild state
                     for ((round, roundMatches) in matchesByRound.toSortedMap()) {
+                        if (roundMatches.size < (macSayisiByRound[round] ?: 0)) continue
                         val byeTeam = findByeTeamFromMatches(state, roundMatches, songs)
-                        state = RankingEngine.processCorrectEmreResults(state, roundMatches, byeTeam)
+                        // Tiebreaker zinciri TÜM geçmişi görmeli; yalnız bu turun
+                        // maçlarıyla kırılan eşitlik, canlı akıştan farklı bir
+                        // sıra (ve farklı bir sonraki fikstür) üretir.
+                        state = RankingEngine.processCorrectEmreResults(
+                            state,
+                            roundMatches,
+                            byeTeam,
+                            allCompletedMatches = completedMatches
+                        )
                     }
-                    
+
                     emreState = state
                     calculateCurrentStandings()
                     
@@ -1096,7 +1146,8 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             isLoading = false,
                             showMatchingsList = true,
                             matchingsList = incompleteMatches.sortedBy { it.matchNumber },
-                            emreState = emreState
+                            emreState = emreState,
+                            currentRound = incompleteMatches.minOf { it.round }
                         )
                     } else {
                         // Tüm maçlar tamamlanmış ama turnuva bitmemiş - sonraki turu oluştur
@@ -1146,6 +1197,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "ELIMINATION" -> "Eleme"
                 "FULL_ELIMINATION" -> "Tam Eleme"
                 "DIRECT_SCORING" -> "Direkt Puanlama"
+                "MERGE_SORT" -> "İkili Karşılaştırma"
                 else -> currentMethod
             }
             
@@ -1423,15 +1475,17 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     return true
                 }
 
-                repository.createMatches(pairingResult.matches)
+                // id'si yazılmış kopyalar alınır (bkz. createMatches)
+                val kayitliMaclar = repository.createMatches(pairingResult.matches)
 
                 // Yeni turun eşleştirmeler listesini göster
                 // (currentMatch=null olmalı ki liste ekranı görünsün)
                 _uiState.value = _uiState.value.copy(
                     showMatchingsList = true,
                     currentMatch = null,
-                    matchingsList = pairingResult.matches.sortedBy { it.matchNumber },
-                    emreState = emreState
+                    matchingsList = kayitliMaclar.sortedBy { it.matchNumber },
+                    emreState = emreState,
+                    currentRound = emreState!!.currentRound
                 )
                 calculateCurrentStandings()
                 return true

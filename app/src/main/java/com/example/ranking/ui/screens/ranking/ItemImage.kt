@@ -23,6 +23,34 @@ const val IMAGE_COLUMN = "Görsel"
 val HIDDEN_CSV_KEYS = setOf("name", "_displayMode", IMAGE_COLUMN)
 
 /**
+ * Kart başlığında zaten görünen ya da bilgi taşımayan sütunlar.
+ * "No" listedeki sıra numarasıdır; karşılaştırmada anlam taşımaz ve
+ * kartın en değerli satırını işgal eder.
+ */
+private val DEGERSIZ_SUTUNLAR = setOf("no", "sıra", "sira", "#")
+
+/**
+ * csvData'dan kart detay satırlarını çıkarır.
+ * Elenenler: teknik anahtarlar, sıra numarası, kartın başlığıyla aynı
+ * değeri taşıyan sütun (öğe adı iki kez yazılmasın) ve boş/"-" değerler.
+ */
+fun cardDetailRows(csvData: String?, itemName: String): List<Pair<String, String>> {
+    if (csvData.isNullOrBlank()) return emptyList()
+    return try {
+        val data = JSONObject(csvData)
+        data.keys().asSequence()
+            .filter { it !in HIDDEN_CSV_KEYS }
+            .filter { it.trim().lowercase() !in DEGERSIZ_SUTUNLAR }
+            .map { key -> key to data.optString(key, "").trim() }
+            .filter { (_, value) -> value.isNotBlank() && value != "-" }
+            .filterNot { (_, value) -> value.equals(itemName.trim(), ignoreCase = true) }
+            .toList()
+    } catch (e: Exception) {
+        emptyList()
+    }
+}
+
+/**
  * csvData JSON'undan görsel adresini çıkarır.
  * Adres yoksa, boşsa veya "-" ise null döner (görsel gösterilmez).
  */
