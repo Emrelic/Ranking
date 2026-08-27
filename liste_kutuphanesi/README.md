@@ -17,7 +17,7 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | # | Dosya | Satır | Sütunlar |
 |---|-------|-------|----------|
 | 1 | 01_osmanli_padisahlari.csv | 36 | No, Tahta Çıkış, Saltanat Süresi, **Padişah**, Tahttan İniş, Yaşadığı Yıllar, Lakabı/Ünvanı, Dönemin Önemli Olayı, Ölüm Şekli |
-| 2 | 02_sebnem_ferah_sarkilari.csv | 42 | No, Albüm, Yıl, **Şarkı**, Tür |
+| 2 | 02_sebnem_ferah_sarkilari.csv | 85 | No, Albüm, Yıl, **Şarkı**, Tür, Konu, Duygu Tonu, Süre, Söz-Müzik |
 | 3 | 03_ulkeler.csv | 195 | No, Kıta, Nüfus (milyon), **Ülke**, Yüzölçümü (bin km²), GSYH (milyar $), Kişi Başı Gelir ($), Bağımsızlık Yılı, Bayrak Kabul Yılı, Başkent, Para Birimi, Resmi Dil, Görsel 🖼 |
 | 4 | 04_denizler.csv | 44 | No, Bağlı Okyanus, Yüzölçümü (bin km²), **Deniz**, Ortalama Derinlik (m), Kıyı Bölgesi, En Derin Nokta (m), Kıyıdaş Ülke Sayısı, Tuzluluk (binde) |
 | 5 | 05_daglar.csv | 55 | No, Ülke, Yükseklik (m), **Dağ**, Sıradağ/Bölge, Kıta, Dağ Tipi, İlk Tırmanış Yılı, Kalıcı Kar/Buzul |
@@ -48,7 +48,7 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | 30 | 30_yapilar.csv | 70 | No, Yapım Yılı, Şehir, **Yapı**, Ülke, Mimar, Mimari Üslup, Kullanım Amacı, Yükseklik/Ölçü, UNESCO Mirası, İlginç Bilgi, Görsel 🖼 |
 | 31 | 31_muzik_aletleri.csv | 35 | No, Tür, Çalınış Şekli, **Müzik Aleti**, Anavatan/Kültür, Tel/Perde Sayısı, Malzeme, Kullanıldığı Müzik, Ünlü İcracı, Ses Karakteri, Görsel 🖼 |
 
-Toplam **31 liste**, **1811 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
+Toplam **31 liste**, **1854 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
 
 ## Görsel Desteği
 
