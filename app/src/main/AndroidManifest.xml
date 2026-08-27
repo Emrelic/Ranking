@@ -31,19 +31,12 @@
             android:windowSoftInputMode="adjustResize"
             android:launchMode="singleTask"
             android:excludeFromRecents="false"
-            android:taskAffinity=""
-            android:stateNotNeeded="true">
+            android:taskAffinity="">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".TestActivity"
-            android:exported="false"
-            android:label="Tam Eleme Test"
-            android:theme="@style/Theme.Ranking">
         </activity>
     </application>
 

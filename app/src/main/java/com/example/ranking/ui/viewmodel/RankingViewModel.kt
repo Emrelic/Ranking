@@ -146,7 +146,15 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 val activeTournament = database.tournamentDao()
                     .getActiveTournamentForList(listId, method)
 
-                repository.getSongsByListId(listId).collect { songList ->
+                // 🔴 TEK SEFERLİK okuma. Eskiden sonsuz bir collect'ti ve
+                // gövdesinde initializeEmre/initializeLeague/... çağrılıyordu —
+                // bu fonksiyonlar clearMatches yapar. songs tablosuna her yazma
+                // yeni bir emission üretip init'i baştan koşturuyordu: turnuva
+                // ekranı açıkken bir öğe adı düzenlenirse TURNUVA SIFIRLANIYORDU.
+                // Ayrıca collect hiç tamamlanmadığı için her çağrı kalıcı bir
+                // collector bırakıyordu.
+                val songList = repository.getSongsByListIdSync(listId)
+                run {
                     songs = songList
                     if (songs.isNotEmpty()) {
                         // Load completed scores if resuming a session

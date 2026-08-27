@@ -113,13 +113,16 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             try {
                 val matches = repository.getMatchesByListAndMethodSync(listId, "LEAGUE")
-                val songs = repository.getSongsByListId(listId)
+                // Tek seferlik okuma: sonsuz collect her cagrida kalici bir
+                // collector birakiyor, buna karsilik maclar zaten bir kez
+                // okundugu icin canli guncelleme de saglamiyordu.
+                val songList = repository.getSongsByListIdSync(listId)
                 val settings = repository.getLeagueSettings(listId, "LEAGUE")
-                
+
                 // Calculate table entries
                 val tableEntries = mutableMapOf<Long, LeagueTableEntry>()
-                
-                songs.collect { songList ->
+
+                run {
                     // Initialize entries for all teams
                     songList.forEach { song ->
                         tableEntries[song.id] = LeagueTableEntry(
@@ -197,9 +200,10 @@ class ResultsViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             try {
                 val matches = repository.getMatchesByListAndMethodSync(listId, "LEAGUE")
-                val songs = repository.getSongsByListId(listId)
-                
-                songs.collect { songList ->
+                // Tek seferlik okuma (bkz. loadLeagueTable)
+                val songList = repository.getSongsByListIdSync(listId)
+
+                run {
                     val songsMap = songList.associateBy { it.id }
                     
                     val summaryItems = matches
