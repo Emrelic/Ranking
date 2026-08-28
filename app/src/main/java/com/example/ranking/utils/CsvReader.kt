@@ -42,8 +42,15 @@ class CsvReader {
     }
 
     /** Test edilebilirlik için ayrık: tam metni CsvSong listesine çevirir. */
-    fun parseText(text: String): List<CsvSong> {
-        if (text.isBlank()) return emptyList()
+    fun parseText(rawText: String): List<CsvSong> {
+        if (rawText.isBlank()) return emptyList()
+
+        // Baştaki BOM'u burada temizle. readCsvFromUri BOM'u BAYT düzeyinde
+        // siliyor, ama gömülü hazır listeler RankingRepository içinde
+        // `readBytes().toString(UTF_8)` ile okunuyor ve o yolda BOM kalıyordu:
+        // BOM ilk başlık anahtarına yapışıp "No" yerine "﻿No" üretiyor,
+        // tablo görünümünde ilk sütun kayboluyordu.
+        val text = rawText.removePrefix("﻿")
 
         val separator = detectSeparator(text)
         val rows = parseRows(text, separator)

@@ -81,6 +81,9 @@ internal fun CriteriaEvaluationDialog(
     tournamentId: Long,
     onDismiss: () -> Unit,
     onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit,
+    // "Kriter degerlendirmesi zorunlu" ayari: acikken sonuc butonlari
+    // butun kriterler doldurulmadan basilamaz
+    mandatoryCriteria: Boolean = false,
     viewModel: RankingViewModel = viewModel()
 ) {
     // TAM EKRAN IMMERSIVE MODE - Sistem tuşlarını gizle
@@ -188,8 +191,9 @@ internal fun CriteriaEvaluationDialog(
                             song1Name = song1?.name,
                             song2Name = song2?.name,
                             criteriaScores = criteriaScores,
-                            hasAnyExpanded = hasAnyExpanded,
                             criteriaSettings = criteriaSettings,
+                            mandatoryCriteria = mandatoryCriteria,
+                            criterionNames = finalCriteria,
                             onDismiss = onDismiss,
                             onSave = onSave
                         )
@@ -308,17 +312,30 @@ private fun CriteriaEvaluationFooter(
     song1Name: String?,
     song2Name: String?,
     criteriaScores: SnapshotStateMap<String, Pair<Double?, Double?>>,
-    hasAnyExpanded: Boolean,
     criteriaSettings: Map<String, Any>? = null,
+    mandatoryCriteria: Boolean = false,
+    criterionNames: List<String> = emptyList(),
     onDismiss: () -> Unit,
     onSave: (Map<String, Pair<Double?, Double?>>, String) -> Unit
 ) {
-    val team1Total = if (hasAnyExpanded) {
-        criteriaScores.values.sumOf { it.first ?: 0.0 }
-    } else 0.0
-    val team2Total = if (hasAnyExpanded) {
-        criteriaScores.values.sumOf { it.second ?: 0.0 }
-    } else 0.0
+    // 🔴 Toplamlar HER ZAMAN criteriaScores'tan hesaplanir.
+    // Eskiden "en az bir kriter kutusu acik" kosuluna baglilardi: kullanici
+    // butun kriterleri doldurup ozet gormek icin kutulari kapatinca toplamlar
+    // 0 - 0 goruunuyor ve "Otomatik Sonuc" devre disi kaliyordu. Puanlar
+    // silinmis gibi gorunuyordu, oysa yerlerinde duruyorlardi.
+    val team1Total = criteriaScores.values.sumOf { it.first ?: 0.0 }
+    val team2Total = criteriaScores.values.sumOf { it.second ?: 0.0 }
+
+    // Zorunlu kriter modu: HER kriterin iki tarafi da girilmis olmali.
+    // Eskiden bu ayar klasik akista hicbir seyi zorunlu kilmiyordu — sonuc
+    // butonlari hicbir kontrol yapmadan onSave yayiyordu.
+    val eksikKriterler = if (mandatoryCriteria && criterionNames.isNotEmpty()) {
+        criterionNames.filter { ad ->
+            val puan = criteriaScores[ad]
+            puan?.first == null || puan.second == null
+        }
+    } else emptyList()
+    val sonucVerilebilir = eksikKriterler.isEmpty()
 
     // "Kriterlerden otomatik kazanan belirle" ayarı + beraberlik eşiği bandı.
     // Eşik, kazanan tarafın toplam içindeki yüzdesi bu bandın içindeyse
@@ -420,6 +437,25 @@ private fun CriteriaEvaluationFooter(
                 }
             }
 
+            // Butonlar kilitliyse SEBEBİNİ söyle. Sebepsiz kilitli buton,
+            // kullanıcıya "uygulama bozuk" dedirtir.
+            if (eksikKriterler.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (eksikKriterler.size == 1) {
+                        "Sonuç girmek için şu kriter eksik: ${eksikKriterler.first()}"
+                    } else {
+                        "Sonuç girmek için ${eksikKriterler.size} kriter eksik: " +
+                            eksikKriterler.take(3).joinToString(", ") +
+                            if (eksikKriterler.size > 3) "…" else ""
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             // Otomatik kazanan: kriter toplamlarına göre sonucu hesaplar.
@@ -441,7 +477,7 @@ private fun CriteriaEvaluationFooter(
                         }
                         onSave(criteriaScores.toMap(), result)
                     },
-                    enabled = totalSum > 0.0,
+                    enabled = totalSum > 0.0 && sonucVerilebilir,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -468,6 +504,7 @@ private fun CriteriaEvaluationFooter(
             ) {
                 Button(
                     onClick = { onSave(criteriaScores.toMap(), "team1_wins") },
+                    enabled = sonucVerilebilir,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
@@ -493,6 +530,7 @@ private fun CriteriaEvaluationFooter(
                 }
                 Button(
                     onClick = { onSave(criteriaScores.toMap(), "draw") },
+                    enabled = sonucVerilebilir,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurface
@@ -509,6 +547,7 @@ private fun CriteriaEvaluationFooter(
                 }
                 Button(
                     onClick = { onSave(criteriaScores.toMap(), "team2_wins") },
+                    enabled = sonucVerilebilir,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.secondary,
                         contentColor = MaterialTheme.colorScheme.onSecondary

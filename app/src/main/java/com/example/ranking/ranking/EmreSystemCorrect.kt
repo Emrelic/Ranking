@@ -664,17 +664,25 @@ object EmreSystemCorrect {
             val teamId1 = songToTeamMap[match.songId1]
             val teamId2 = songToTeamMap[match.songId2]
 
-            if (teamId1 != null && teamId2 != null) {
-                val normalizedPair = if (teamId1 < teamId2) {
-                    Pair(teamId1, teamId2)
-                } else {
-                    Pair(teamId2, teamId1)
-                }
-                newMatchHistory.add(normalizedPair)
+            // 🔴 YETİM MAÇ: taraflardan biri artık turnuvada değilse (öğe
+            // silinmiş) bu maç ne geçmişe yazılır NE DE puan üretir.
+            // Eskiden geçmiş kaydı iki takımın da var olmasını şart koşuyor,
+            // puan bloğu koşmuyordu; aynı maç hem "hiç oynanmadı" hem
+            // "kazanıldı" sayılıp hayalet puan üretiyordu (takım puanı şişip
+            // sıralamayı bozuyordu).
+            if (teamId1 == null || teamId2 == null) {
+                return@forEach
             }
 
+            val normalizedPair = if (teamId1 < teamId2) {
+                Pair(teamId1, teamId2)
+            } else {
+                Pair(teamId2, teamId1)
+            }
+            newMatchHistory.add(normalizedPair)
+
             // Puanları güncelle
-            if (match.isCompleted) {
+            run {
                 when (match.winnerId) {
                     match.songId1 -> {
                         val winnerIndex = updatedTeams.indexOfFirst { it.id == match.songId1 }
@@ -783,32 +791,62 @@ object EmreSystemCorrect {
             }
         }
 
+        // 🔴 TOPLAM SIRALI karşılaştırıcı — "direkt maç" kriteri BURADA YOK.
+        //
+        // Eskiden zincire `thenComparing { t1, t2 -> direkt maç }` konuyordu.
+        // Bu kriter ikili (pairwise) ve GEÇİŞSİZ: A yener B, B yener C, C
+        // yener A olduğunda A>B>C>A döngüsü kurulur. Java TimSort bunu
+        // denetler ve n>=32'de
+        // "IllegalArgumentException: Comparison method violates its general
+        // contract!" atar — puan tablosu ekranı çökerdi. Ölçüldü: aynı puanlı
+        // 41 ve 63 takımlı "düzenli turnuva" girdilerinde istisna kesin atıyor
+        // (herkesin H2H'si ve mağlubiyeti eşit olduğunda döngü yoğunlaşıyor).
+        //
+        // Çözüm: sıralama yalnız toplam sıralı anahtarlarla yapılır; direkt
+        // maç kriteri aşağıda, YALNIZCA tamamen eşit KOMŞU ikililer üzerinde
+        // bir son geçiş olarak uygulanır. Son geçiş bir karşılaştırıcı
+        // olmadığı için geçişlilik şartına tabi değildir.
         val sortedTeams = samePointTeams.sortedWith(
-            compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // 1. H2H puan (yüksek önce)
-                .thenComparing { team1, team2 ->
-                    // 2. Direkt maç: H2H puanları eşitse, direkt maçta kim yendi?
-                    val h2h1 = headToHeadPoints[team1.id] ?: 0.0
-                    val h2h2 = headToHeadPoints[team2.id] ?: 0.0
+            compareByDescending<EmreTeam> { headToHeadPoints[it.id] ?: 0.0 } // 1. H2H puan
+                .thenBy { team -> calculateLossCount(team, completedMatches) } // 2. En az mağlubiyet
+                .thenBy { it.preRoundPosition }                               // 3. Tur öncesi sıra
+                .thenBy { it.id }                                             // 4. Deterministik son çare
+        ).toMutableList()
 
-                    if (h2h1 == h2h2) {
-                        val directMatch = completedMatches.find { match ->
-                            match.isCompleted &&
-                            ((match.songId1 == team1.id && match.songId2 == team2.id) ||
-                             (match.songId1 == team2.id && match.songId2 == team1.id)) &&
-                            match.winnerId != null
-                        }
-                        when (directMatch?.winnerId) {
-                            team1.id -> -1
-                            team2.id -> 1
-                            else -> 0
-                        }
-                    } else {
-                        0 // İlk kriter zaten çözüyor
+        // Son geçiş: her şeyi eşit olan KOMŞU ikililerde direkt maç kazananı
+        // öne alınır. Yalnız komşulara bakıldığı için döngü kuramaz.
+        var i = 0
+        // Güvenlik sayacı: takas döngüsünün sonlandığı izlendi (bir kez
+        // sıralanan ikili tekrar takas olmaz), ama döngüsel veride sonsuza
+        // kadar dönmektense dürüstçe durmak yeğdir.
+        var guvenlikSayaci = sortedTeams.size * sortedTeams.size + 100
+        while (i < sortedTeams.size - 1 && guvenlikSayaci-- > 0) {
+            val ust = sortedTeams[i]
+            val alt = sortedTeams[i + 1]
+
+            val tamEsit = (headToHeadPoints[ust.id] ?: 0.0) == (headToHeadPoints[alt.id] ?: 0.0) &&
+                calculateLossCount(ust, completedMatches) == calculateLossCount(alt, completedMatches)
+
+            if (tamEsit) {
+                val direktMac = completedMatches.find { match ->
+                    match.isCompleted &&
+                    ((match.songId1 == ust.id && match.songId2 == alt.id) ||
+                     (match.songId1 == alt.id && match.songId2 == ust.id)) &&
+                    match.winnerId != null
+                }
+                // Alttaki takım direkt maçı kazanmışsa yer değiştir
+                if (direktMac?.winnerId == alt.id) {
+                    sortedTeams[i] = alt
+                    sortedTeams[i + 1] = ust
+                    // Takas sonrası bir geri adım: yeni komşuluk da sınanmalı
+                    if (i > 0) {
+                        i--
+                        continue
                     }
                 }
-                .thenBy { team -> calculateLossCount(team, completedMatches) } // 3. En az mağlubiyet
-                .thenBy { it.preRoundPosition }                               // 4. Tur öncesi sıralama
-        )
+            }
+            i++
+        }
 
         // İkincil puanları (H2H) takıma ata - UI gösterimi için
         sortedTeams.forEach { team ->

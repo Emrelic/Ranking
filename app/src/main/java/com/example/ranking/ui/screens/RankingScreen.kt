@@ -255,6 +255,9 @@ fun RankingScreen(
                         ?: match.tournamentId
                         ?: match.listId,
                     onDismiss = { showCriteriaDialog = false },
+                    // Zorunlu kriter modu artık dialogda GERÇEKTEN uygulanıyor:
+                    // eksik kriter varsa sonuç butonları basılamaz
+                    mandatoryCriteria = mandatoryCriteria,
                     onSave = { criteriaScores, winner ->
                         showCriteriaDialog = false
                         // Kriter puanlarını kalıcı kaydet
