@@ -12,9 +12,18 @@ Kapsamlı denetim bulguları ve yapılan işlerin kaydı: **ANALIZ_RAPORU.md**
 
 ## 🟡 TEKNİK BORÇ (ANALIZ_RAPORU.md Faz 0-4'ten artan)
 
-8. **LEAGUE oturum/persistence**: Lig turnuvaları session kaydı olmadığı için "Devam Et" akışına bağlanamıyor (bağlanırsa initializeLeague maçları silip yeniden kurar — önce oturum yönetimi LEAGUE'e genişletilmeli). `saveLeagueSettings` de hiç çağrılmıyor; lig ayarları UI'ı yok
+8. ~~**LEAGUE oturum/persistence**~~ ✅ 2026-08-28: LEAGUE ve MERGE_SORT'a `createOrUpdateSession` eklendi (ikisinde de oturum yoktu; ekrana her giriş oynanmış maçları siliyordu). Kalan: `saveLeagueSettings` hiç çağrılmıyor, lig ayarları UI'ı yok
 9. **RankingViewModel bölünmesi**: ~1500 satır, çok sorumluluk; sistem başına strategy + SessionManager ayrıştırması
-10. **initializeRanking'deki sonsuz Flow.collect**: liste her değiştiğinde init yeniden koşuyor; `first()` ile tek seferlik okumaya çevrilmeli
+10. ~~**initializeRanking'deki sonsuz Flow.collect**~~ ✅ 2026-08-28: tek seferlik okumaya çevrildi. Aynı desen `ResultsViewModel`de iki yerde daha vardı, onlar da kapatıldı
+
+14. 🟠 **İçe aktarmada "ilk satır başlık mı?" sorulmalı** (2026-08-28, MOTOR TESTLERİ kıtası buldu)
+    `CsvReader.parseText` ilk satırı başlık sayıyor. Sayısal listelerde düzeltildi (ilk hücre tam sayıysa veri sayılır), ama **sayısız iki sütunlu listelerde sessiz kayıp sürüyor**:
+    ```
+    Sezen Aksu,Firuze     ← başlık değil, VERİ. İlk hücre sayı değil, hâlâ yutuluyor.
+    MFÖ,Ali Desidero
+    ```
+    Yapısal olarak belirsiz bir durum — hiçbir sezgi güvenilir çözmez; çözdüğünü iddia eden sezgi sessiz kaybı başka bir sessiz kayıpla değiştirir. Tek dürüst çözüm: içe aktarma ekranında sor, varsayılanı sezgiyle doldur.
+    Test: `belgeleme_basliksizIkiSutunluListe_ilkSatirYUTULUYOR` (CsvReaderDeepTest) — bilinçli olarak yeşil, davranışı sabitliyor.
 11. **collectAsStateWithLifecycle** geçişi (22 çağrı lifecycle-aware değil)
 12. **Karar bekleyen kapalı özellikler**: ELIMINATION/FULL_ELIMINATION (tamamla ya da kodu sil), YouTube katmanı (bitir ya da 3 tablo+DAO+ekranı kaldır), SWISS kodunun tamamen silinmesi
 13. **Ölü DAO metotları** (~60 adet, çoğu YouTube): kullanım kararı sonrası temizlik

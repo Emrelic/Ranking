@@ -512,10 +512,33 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         
         // İkili karşılaştırmada maçlar teker teker üretilir; DB'deki toplam yerine
         // tahmini toplam soru sayısı gösterilir (ilerleme çubuğu anlamlı olsun diye)
-        val displayTotal = if (currentMethod == "MERGE_SORT") {
-            maxOf(PairwiseComparisonSort.estimatedTotalComparisons(safeSongs.size), completed + 1)
+        val allMatchesForProgress = if (currentMethod == "EMRE_CORRECT") {
+            repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
         } else {
-            total
+            emptyList()
+        }
+
+        // İlerleme paydası.
+        //
+        // EMRE_CORRECT'te turnuvanın toplam maç sayısı ÖNCEDEN BİLİNMEZ (turlar
+        // eşleşme kurulabildiği sürece üretilir). Payda "o ana kadar yaratılmış
+        // maçlar" olduğu için her tur sonunda 4/4 → çubuk doluyor, kullanıcı
+        // turnuvanın bittiğini sanıyor; yeni tur üretilince 4/8'e düşüyordu.
+        // Çözüm: Emre'de TUR İÇİ ilerleme gösterilir — "bu turun 2/4 maçı".
+        val displayTotal = when (currentMethod) {
+            "MERGE_SORT" ->
+                maxOf(PairwiseComparisonSort.estimatedTotalComparisons(safeSongs.size), completed + 1)
+            "EMRE_CORRECT" -> {
+                val buTur = nextMatch?.round ?: _uiState.value.currentRound
+                allMatchesForProgress.count { it.round == buTur }.coerceAtLeast(1)
+            }
+            else -> total
+        }
+        val displayCompleted = if (currentMethod == "EMRE_CORRECT") {
+            val buTur = nextMatch?.round ?: _uiState.value.currentRound
+            allMatchesForProgress.count { it.round == buTur && it.isCompleted }
+        } else {
+            completed
         }
 
         _uiState.value = _uiState.value.copy(
@@ -523,9 +546,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             currentMatch = nextMatch,
             song1 = song1,
             song2 = song2,
-            completedMatches = completed,
+            completedMatches = displayCompleted,
             totalMatches = displayTotal,
-            progress = if (displayTotal > 0) completed.toFloat() / displayTotal else 0f,
+            progress = if (displayTotal > 0) displayCompleted.toFloat() / displayTotal else 0f,
             emreState = if (currentMethod == "EMRE_CORRECT") emreState else null,
             showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
             canUndo = undoSupported() && lastCompletedMatchId != null
@@ -1423,9 +1446,68 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 
                 _uiState.value = _uiState.value.copy(currentStandings = standings)
-            } else if (currentMethod == "LEAGUE") {
-                // League sistemi için mevcut hesaplama (varsa)
-                // Bu kısım zaten var olabilir
+            } else if (currentMethod == "LEAGUE" || currentMethod == "SWISS") {
+                // Lig ve İsviçre: canlı puan durumu maçlardan hesaplanır.
+                // Bu dal eskiden BOŞ bir yorum bloğuydu ("Bu kısım zaten var
+                // olabilir") — ligde "Puan Durumu" ekranı hep boş çıkıyordu.
+                val ligPuani = if (currentMethod == "LEAGUE") 3.0 else 1.0
+                val beraberlikPuani = if (currentMethod == "LEAGUE") 1.0 else 0.5
+
+                val standings = songs.map { song ->
+                    var points = 0.0
+                    var played = 0
+                    var won = 0
+                    var drawn = 0
+                    var lost = 0
+                    var attilan = 0
+                    var yenilen = 0
+
+                    completedMatches.forEach { match ->
+                        val birinci = match.songId1 == song.id
+                        val ikinci = match.songId2 == song.id
+                        if (!birinci && !ikinci) return@forEach
+
+                        played++
+                        // Skor girilmişse averaj için topla
+                        val kendiSkor = if (birinci) match.score1 else match.score2
+                        val rakipSkor = if (birinci) match.score2 else match.score1
+                        attilan += kendiSkor ?: 0
+                        yenilen += rakipSkor ?: 0
+
+                        when (match.winnerId) {
+                            song.id -> { won++; points += ligPuani }
+                            null -> { drawn++; points += beraberlikPuani }
+                            else -> lost++
+                        }
+                    }
+
+                    Triple(
+                        StandingEntry(
+                            position = 0,
+                            song = song,
+                            points = points,
+                            played = played,
+                            won = won,
+                            drawn = drawn,
+                            lost = lost
+                        ),
+                        attilan - yenilen,  // averaj
+                        attilan             // atılan
+                    )
+                }.sortedWith(
+                    // Toplam sıralı zincir: puan → averaj → atılan → galibiyet → id.
+                    // "Aralarındaki maç" kriteri BİLEREK yok: karşılaştırıcıyı
+                    // geçişsiz yapıp TimSort'u çökertiyor (bkz. EmreSystemCorrect).
+                    compareByDescending<Triple<StandingEntry, Int, Int>> { it.first.points }
+                        .thenByDescending { it.second }
+                        .thenByDescending { it.third }
+                        .thenByDescending { it.first.won }
+                        .thenBy { it.first.song.id }
+                ).mapIndexed { index, (entry, _, _) ->
+                    entry.copy(position = index + 1)
+                }
+
+                _uiState.value = _uiState.value.copy(currentStandings = standings)
             }
         } catch (e: Exception) {
             // Hata durumunda boş liste
