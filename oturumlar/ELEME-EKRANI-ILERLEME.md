@@ -46,23 +46,30 @@ eklensin) değiştiririm — şimdilik en yakın çözüm bu.
 ```
 ./gradlew :app:compileDebugKotlin
 ```
-SONUÇ: **FAILED** — ama hata benim dosyalarımda değil:
-```
-e: CriteriaEvaluationDialog.kt:196:69 Unresolved reference 'name'
-```
-Bu dosya benim alanımda değil (`git status` commit'siz değişiklik gösteriyor,
-başka bir oturumun elinde olabilir). Derleyici BracketView.kt / GroupStandingsView.kt
-için hiçbir hata basmadı — ama modül tek seferde derlendiği için "kendi
-dosyalarım kesin temiz" diye SAYIYLA iddia edemiyorum, yalnızca "derleyici
-çıktısında bu iki dosya için hata görünmedi" diyebilirim. Koordinatöre bildirdim,
-CriteriaEvaluationDialog.kt düzelince tekrar derleyip kesin sonucu buraya yazacağım.
+SONUÇ: **BUILD SUCCESSFUL** (koordinatörün CriteriaEvaluationDialog.kt
+düzeltmesinden sonra). Uyarılar dışında hata yok; bu iki dosya için de
+sıfır hata/uyarı.
 
 ## Rakamlar
 - 2 yeni dosya, 2 bileşen (`BracketView`, `GroupStandingsView`)
-- 4 `@Preview` fonksiyonu (n=8 ve n=12, her bileşen için birer tane)
+- 5 `@Preview` fonksiyonu: `BracketView` için n=8, n=12 (ön turlu),
+  n=32 (telefon genişliği, `widthDp=360`); `GroupStandingsView` için
+  n=8 (2 grup), n=12 (3 grup, biri uzun isimli — Ellipsis testi)
 - Birim testi YOK — şartname zaten istemiyor, `@Preview` görsel doğrulama
-  yerine geçiyor (ama derleme doğrulanana kadar preview'ların GERÇEKTEN
-  render olduğunu da göstermiş değilim — Android Studio/emulator erişimim yok,
-  yalnız derleyici çıktısına bakabiliyorum)
-- Taşma testi: **yapılmadı** — emulator/cihaz erişimim yok, `widthDp=420` ve
-  `widthDp=900` preview parametreleriyle yalnız statik kod incelemesi yaptım
+  yerine geçiyor
+
+## ⚠️ Taşma testi — SAYIYLA dürüst rapor
+**Emulator/cihaz erişimim yok** (bu oturumda Android Studio/AVD çalıştıramıyorum,
+yalnız `gradlew` derleyicisine erişimim var). Bu yüzden "32 takımlık bracket'te
+telefonda yatay kaydırma çalışıyor" iddiasını GÖREREK doğrulayamadım — bu
+ölçülmemiş bir şey, "çalışıyor" diye yazmıyorum.
+
+Yapabildiğim: `BracketViewPreviewN32Phone` adında `widthDp=360, heightDp=640`
+(tipik telefon boyutu) bir `@Preview` ekledim, 32→16→8→4→2→1 maçlık tam bir
+bracket üretiyor. Derleyici bunu hatasız derledi. Kod incelemesiyle
+söyleyebileceğim: `BracketView` kök `Row`'u `Modifier.horizontalScroll(...)
+.verticalScroll(...)` içinde, sütun genişlikleri sabit (170.dp/140.dp) —
+Compose'da bu desen içerik genişliği ekran genişliğini aştığında otomatik
+kaydırma sağlar (yaygın, iyi bilinen bir desen), ama BUNU CİHAZDA GÖRMEDİM.
+Koordinatör ya da emulator erişimi olan biri `BracketViewPreviewN32Phone`'u
+Android Studio'da açıp gözle doğrulamalı.

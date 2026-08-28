@@ -302,6 +302,28 @@ private fun previewRoundsN12(): List<BracketRound> = listOf(
     ))
 )
 
+// 32 takımlık düzenli tek eleme — telefon genişliğinde (360dp) yatay+dikey
+// kaydırmanın gerçekten gerektiğini göstermek için üretilen tam bracket.
+private fun previewRoundsN32(): List<BracketRound> {
+    var matchId = 1L
+    val roundSizes = listOf(16, 8, 4, 2, 1) // maç sayısı: Son 32 → Final
+    return roundSizes.mapIndexed { idx, matchCount ->
+        val teamsInRound = matchCount * 2
+        val matches = (1..matchCount).map { m ->
+            val team1 = if (idx == 0) previewTeam(m * 2 - 1, "Şarkı ${m * 2 - 1}") else null
+            val team2 = if (idx == 0) previewTeam(m * 2, "Şarkı ${m * 2}") else null
+            BracketMatch(matchId++, idx + 1, m, team1, team2, isCompleted = false, isPlayable = idx == 0)
+        }
+        BracketRound(idx + 1, bracketRoundTitle(teamsInRound), matches)
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360, heightDp = 640, name = "Bracket n=32 (telefon genişliği)")
+@Composable
+private fun BracketViewPreviewN32Phone() {
+    BracketView(rounds = previewRoundsN32(), onMatchClick = {})
+}
+
 @Preview(showBackground = true, widthDp = 900, name = "Bracket n=8")
 @Composable
 private fun BracketViewPreviewN8() {
