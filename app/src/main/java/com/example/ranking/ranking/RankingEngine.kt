@@ -106,22 +106,32 @@ object RankingEngine {
         }
 
         matches.filter { it.isCompleted }.forEach { match ->
+            // 🔴 YETİM MAÇ KORUMASI. `points` yalnız `songs`tan doldurulur;
+            // maç kaydında silinmiş bir öğenin id'si varsa `points[id]!!`
+            // NullPointerException atıyordu ve kullanıcı "Sıralama tamamlama
+            // hatası" görüyordu. Ölçüldü (LeagueEngineDeepTest): hem beraberlik
+            // dalı (:113) hem averaj dalı (:123) çöküyordu.
+            // ResultsViewModel aynı hesabı `?:` ile korumuştu, motor korunmamıştı.
+            val p1 = points[match.songId1]
+            val p2 = points[match.songId2]
+            if (p1 == null || p2 == null) return@forEach
+
             when (match.winnerId) {
-                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 3.0
-                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 3.0
+                match.songId1 -> points[match.songId1] = p1 + 3.0
+                match.songId2 -> points[match.songId2] = p2 + 3.0
                 null -> { // Draw
-                    points[match.songId1] = points[match.songId1]!! + 1.0
-                    points[match.songId2] = points[match.songId2]!! + 1.0
+                    points[match.songId1] = p1 + 1.0
+                    points[match.songId2] = p2 + 1.0
                 }
             }
             // Skor girildiyse averaj için biriktir
             val s1 = match.score1
             val s2 = match.score2
             if (s1 != null && s2 != null) {
-                goalsFor[match.songId1] = goalsFor[match.songId1]!! + s1
-                goalsAgainst[match.songId1] = goalsAgainst[match.songId1]!! + s2
-                goalsFor[match.songId2] = goalsFor[match.songId2]!! + s2
-                goalsAgainst[match.songId2] = goalsAgainst[match.songId2]!! + s1
+                goalsFor[match.songId1] = (goalsFor[match.songId1] ?: 0) + s1
+                goalsAgainst[match.songId1] = (goalsAgainst[match.songId1] ?: 0) + s2
+                goalsFor[match.songId2] = (goalsFor[match.songId2] ?: 0) + s2
+                goalsAgainst[match.songId2] = (goalsAgainst[match.songId2] ?: 0) + s1
             }
         }
 
@@ -316,11 +326,11 @@ object RankingEngine {
         
         groupMatches.filter { it.isCompleted }.forEach { match ->
             when (match.winnerId) {
-                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 3.0
-                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 3.0
+                match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 3.0
+                match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 3.0
                 null -> { // Draw
-                    points[match.songId1] = points[match.songId1]!! + 1.0
-                    points[match.songId2] = points[match.songId2]!! + 1.0
+                    points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 1.0
+                    points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 1.0
                 }
             }
         }
@@ -642,11 +652,11 @@ object RankingEngine {
         
         matches.filter { it.isCompleted }.forEach { match ->
             when (match.winnerId) {
-                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 1.0
-                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 1.0
+                match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 1.0
+                match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 1.0
                 null -> { // Draw
-                    points[match.songId1] = points[match.songId1]!! + 0.5
-                    points[match.songId2] = points[match.songId2]!! + 0.5
+                    points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 0.5
+                    points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 0.5
                 }
             }
         }
@@ -675,11 +685,11 @@ object RankingEngine {
                 
                 // Calculate points for this round
                 when (match.winnerId) {
-                    match.songId1 -> pointsThisRound[match.songId1] = pointsThisRound[match.songId1]!! + 1.0
-                    match.songId2 -> pointsThisRound[match.songId2] = pointsThisRound[match.songId2]!! + 1.0
+                    match.songId1 -> pointsThisRound[match.songId1] = pointsThisRound.getOrDefault(match.songId1, 0.0) + 1.0
+                    match.songId2 -> pointsThisRound[match.songId2] = pointsThisRound.getOrDefault(match.songId2, 0.0) + 1.0
                     null -> { // Draw
-                        pointsThisRound[match.songId1] = pointsThisRound[match.songId1]!! + 0.5
-                        pointsThisRound[match.songId2] = pointsThisRound[match.songId2]!! + 0.5
+                        pointsThisRound[match.songId1] = pointsThisRound.getOrDefault(match.songId1, 0.0) + 0.5
+                        pointsThisRound[match.songId2] = pointsThisRound.getOrDefault(match.songId2, 0.0) + 0.5
                     }
                 }
             }
@@ -793,11 +803,11 @@ object RankingEngine {
 
             matches.forEach { match ->
                 when (match.winnerId) {
-                    match.songId1 -> points[match.songId1] = points[match.songId1]!! + 3
-                    match.songId2 -> points[match.songId2] = points[match.songId2]!! + 3
+                    match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0) + 3
+                    match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0) + 3
                     null -> {
-                        points[match.songId1] = points[match.songId1]!! + 1
-                        points[match.songId2] = points[match.songId2]!! + 1
+                        points[match.songId1] = points.getOrDefault(match.songId1, 0) + 1
+                        points[match.songId2] = points.getOrDefault(match.songId2, 0) + 1
                     }
                 }
             }
@@ -1146,11 +1156,11 @@ object RankingEngine {
         // Puanları hesapla
         matches.filter { it.isCompleted }.forEach { match ->
             when (match.winnerId) {
-                match.songId1 -> points[match.songId1] = points[match.songId1]!! + 3.0
-                match.songId2 -> points[match.songId2] = points[match.songId2]!! + 3.0
+                match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 3.0
+                match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 3.0
                 null -> { // Beraberlik
-                    points[match.songId1] = points[match.songId1]!! + 1.0
-                    points[match.songId2] = points[match.songId2]!! + 1.0
+                    points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 1.0
+                    points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 1.0
                 }
             }
         }

@@ -5,7 +5,10 @@ import android.net.Uri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.nio.ByteBuffer
+import java.nio.charset.CharacterCodingException
 import java.nio.charset.Charset
+import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
 import java.text.Normalizer
 
@@ -239,11 +242,22 @@ class CsvReader {
             return Pair(bytes.sliceArray(2 until bytes.size), StandardCharsets.UTF_16LE)
         }
 
-        val sample = bytes.take(4096).toByteArray()
-
-        // UTF-8 olarak geçerli mi? Geçersiz baytlar U+FFFD (replacement) üretir.
-        val utf8Text = String(sample, StandardCharsets.UTF_8)
-        if (!utf8Text.contains('�')) {
+        // UTF-8 olarak geçerli mi? — KATI doğrulama, TÜM baytlar üzerinde.
+        //
+        // Eskiden bu kontrol iki yönden hatalıydı (MOTOR TESTLERİ kıtası buldu):
+        //
+        // ① Yalnız İLK 4096 BAYTA bakıyordu. Başı düz ASCII olan bir cp1254
+        //    dosyası UTF-8 sanılıyor, sonradan gelen Türkçe karakterler U+FFFD
+        //    oluyordu. 1854 satırlık kütüphanede 4096 bayt ≈ ilk 40 satır.
+        //
+        // ② "Metinde U+FFFD var mı" diye bakıyordu. Ama U+FFFD GEÇERLİ bir
+        //    UTF-8 karakteridir: dosya gerçekten onu içeriyorsa tüm dosya
+        //    cp1254 sanılıyor ve bütün Türkçe bozuluyordu. Tek bir kaçak
+        //    karakter listenin tamamını zehirliyordu.
+        //
+        // Katı çözücü ikisini de çözer: bozuk BAYT DİZİSİNİ hata olarak
+        // bildirir, geçerli U+FFFD'yi sorunsuz çözer.
+        if (isValidUtf8(bytes)) {
             return Pair(bytes, StandardCharsets.UTF_8)
         }
 
@@ -252,6 +266,26 @@ class CsvReader {
             Pair(bytes, Charset.forName("windows-1254"))
         } catch (e: Exception) {
             Pair(bytes, StandardCharsets.UTF_8)
+        }
+    }
+
+    /**
+     * Baytlar BAŞTAN SONA geçerli UTF-8 mi?
+     *
+     * `String(bytes, UTF_8)` bozuk baytları sessizce U+FFFD'ye çevirdiği için
+     * "bozuk bayt" ile "gerçekten U+FFFD içeren geçerli metin" ayırt edilemez.
+     * Katı çözücü (REPORT) bu ayrımı yapar.
+     */
+    internal fun isValidUtf8(bytes: ByteArray): Boolean {
+        if (bytes.isEmpty()) return true
+        val decoder = StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT)
+            .onUnmappableCharacter(CodingErrorAction.REPORT)
+        return try {
+            decoder.decode(ByteBuffer.wrap(bytes))
+            true
+        } catch (e: CharacterCodingException) {
+            false
         }
     }
 
