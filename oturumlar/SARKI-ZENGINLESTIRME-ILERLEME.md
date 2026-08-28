@@ -42,9 +42,17 @@ doğruladım. "Koyu" (Parmak İzi) için 3a'nın kendisi "tek kaynak, zayıf" di
 ben onu kabul etmedim, "-" yazdım. Can Kırıkları'nı (albüm 5) 3a araştırmadığı için tamamen
 kendim araştırdım.
 
+## Albüm 4/9 — Kelimeler Yetse (2003), satır 31-40 ✅ TAMAM
+- Süreler: MusicBrainz release 87775ed4 (kendi sorgum). Konu/duygu 3a'nın taslağından, tamamı
+  makul/genel ifadeler, çelişki bulunmadı. 40/40 hücre dolu, "-" yok.
+
+## Albüm 5/9 — Can Kırıkları (2005), satır 41-50 ✅ TAMAM
+- Bu albümü 3a araştırmadı, tamamen kendi WebSearch taramamla yaptım (10 ayrı sorgu,
+  şarkı hikâyesi/röportaj kaynaklı). Süreler: MusicBrainz release 8f3dbd7e.
+- "Zaman Geçip Gidiyor" ve "Çakıl Taşları" konuları sanatçının kendi röportaj açıklamalarına
+  dayanıyor (doğrudan alıntı yok, betimleme). 40/40 hücre dolu, "-" yok.
+
 ## Kalan albümler
-4. Kelimeler Yetse (2003) — satır 31-40
-5. Can Kırıkları (2005) — satır 41-50
 6. Benim Adım Orman (2009) — satır 51-61
 7. Od (2013) — satır 62-71
 8. Parmak İzi (2018) — satır 72-81
