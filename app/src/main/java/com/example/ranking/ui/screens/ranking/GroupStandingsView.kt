@@ -190,13 +190,16 @@ private fun GroupStandingRow(entry: GroupStandingEntry) {
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 4.dp),
                 thickness = 2.dp,
-                color = GecisSeridi
+                color = if (androidx.compose.foundation.isSystemInDarkTheme()) GecisSeridiKoyu else GecisSeridiAcik
             )
         }
     }
 }
 
-private val GecisSeridi = androidx.compose.ui.graphics.Color(0xFF4CAF50)
+// Koyu/açık için iki ayrı ton: açık zeminde koyu yeşil (yeterli kontrast),
+// koyu zeminde daha canlı yeşil (yeterli kontrast).
+private val GecisSeridiAcik = androidx.compose.ui.graphics.Color(0xFF2E7D32)
+private val GecisSeridiKoyu = androidx.compose.ui.graphics.Color(0xFF66BB6A)
 
 @Composable
 private fun BodyCell(text: String, width: Dp, vurgulu: Boolean = false) {

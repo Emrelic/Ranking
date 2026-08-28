@@ -223,10 +223,14 @@ private fun BracketTeamRow(team: BracketTeam?) {
 // Şampiyon kutusu, mevcut dokudaki MatchingsList.kt gibi tören amaçlı sabit
 // bir vurgu rengi kullanır (bkz. AdvancedMatchCard'daki Color(0xFF388E3C));
 // yalnız dekoratif çerçevede, metin/zemin kontrastı MaterialTheme'den gelir.
-private val AltinCerceve = Color(0xFFFFD700)
+// Koyu/açık için iki ayrı ton: açık zeminde koyu gold (yeterli kontrast),
+// koyu zeminde parlak gold (yeterli kontrast) — isSystemInDarkTheme() seçer.
+private val AltinCerceveAcik = Color(0xFFB8860B)  // DarkGoldenrod — beyaz zeminde okunur
+private val AltinCerceveKoyu = Color(0xFFFFD700)  // parlak altın — koyu zeminde okunur
 
 @Composable
 private fun ChampionColumn(champion: BracketTeam) {
+    val altinCerceve = if (androidx.compose.foundation.isSystemInDarkTheme()) AltinCerceveKoyu else AltinCerceveAcik
     Column(
         verticalArrangement = Arrangement.spacedBy(14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -239,7 +243,7 @@ private fun ChampionColumn(champion: BracketTeam) {
             color = MaterialTheme.colorScheme.primary
         )
         Card(
-            border = BorderStroke(2.dp, AltinCerceve),
+            border = BorderStroke(2.dp, altinCerceve),
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
         ) {

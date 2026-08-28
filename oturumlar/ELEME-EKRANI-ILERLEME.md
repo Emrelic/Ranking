@@ -73,3 +73,38 @@ Compose'da bu desen içerik genişliği ekran genişliğini aştığında otomat
 kaydırma sağlar (yaygın, iyi bilinen bir desen), ama BUNU CİHAZDA GÖRMEDİM.
 Koordinatör ya da emulator erişimi olan biri `BracketViewPreviewN32Phone`'u
 Android Studio'da açıp gözle doğrulamalı.
+
+## Ek iş — FixturePanel.kt (koordinatörün 2. görevi)
+
+Ölçüm: `FixtureScreen.kt` ve `"fixture/{listId}/{method}"` rotası YOK.
+`RankingNavigation.kt`'de bulunanlar: `"results/{listId}/{method}"` ve
+`"tournament_ranking/{tournamentId}"`.
+
+Yazdım: `FixturePanel.kt` — yönteme göre dispatch eden genel bileşen.
+- `"ELIMINATION"` → `eliminationRounds: List<BracketRound>` doluysa
+  `BracketView`'a devreder; boşsa "motor sonucu bekleniyor" mesajı
+- diğer yöntemler (`LEAGUE`, `SWISS`, `EMRE_CORRECT`, `MERGE_SORT`, ...)
+  → ham `Match` listesini `round` alanına göre gruplar, tur başlıklı basit
+  eşleşme listesi (`RoundByRoundFixture`)
+
+Neden ELIMINATION ham `Match`'ten değil hazır `BracketRound`'dan besleniyor:
+mevcut `RankingEngine.kt`'deki eleme motoru BYE geçen takım için Match satırı
+hiç üretmiyor (`createDirectEliminationMatches`, tek kalan eleman sessizce
+atlanıyor) — CLAUDE.md zaten bu motoru "tamamlanmadı" diye işaretlemiş. Ham
+listeden BYE'ı güvenilir çıkaramadığım için uydurmadım, entegrasyonu
+koordinatöre/yeni motora bıraktım.
+
+3 `@Preview`: LEAGUE tur tur, ELIMINATION (BracketView'a devreden dolu
+örnek), ELIMINATION (motor boşken boş-durum mesajı).
+
+Derleme: **BUILD SUCCESSFUL**, 3 dosya için de hata/uyarı yok.
+
+## Tema notu (koordinatörün ricası üzerine)
+Sabit renkler (altın çerçeve, geçiş şeridi) artık `isSystemInDarkTheme()`
+ile açık/koyu için ayrı ton kullanıyor:
+```
+BracketView.kt          AltinCerceveAcik = 0xFFB8860B · AltinCerceveKoyu = 0xFFFFD700
+GroupStandingsView.kt   GecisSeridiAcik  = 0xFF2E7D32  · GecisSeridiKoyu  = 0xFF66BB6A
+```
+Kontrast seçimini gözle görmedim (emulator yok), yalnız bilinen
+"açık zeminde koyu ton / koyu zeminde açık ton" kuralına göre seçtim.
