@@ -14,9 +14,35 @@
 - Şüpheli/doğrulanamamış kayıt: yok bu albümde.
 - diff -q durumu: bu albüm sonunda iki CSV birebir aynı (kontrol edildi).
 
+## Albüm 2/9 — Artık Kısa Cümleler Kuruyorum (1999), satır 11-20 ✅ TAMAM
+- Süreler: MusicBrainz release 045943f0 (kendi sorgum) — tr.wikipedia.org'da süre yoktu.
+- Söz-Müzik: tüm şarkılar Şebnem Ferah, istisna "Yorgun" → Deniz Yılmaz (Kurban), Wikipedia'da
+  doğrulandı.
+- "Üvey"in konusu (çocuklara yönelik cinsel istismar) ayrıca doğrulandı — sanatçının kendi
+  açıklamasına dayanıyor.
+- "Ay" için konu bulunamadı → "-". Duygu Tonu genel (albüm teması: kızkardeş kaybı, ağır rock).
+- 40 hücrenin 39'u dolu, 1 "-" (Ay/Konu).
+
+## Albüm 3/9 — Perdeler (2001), satır 21-30 ✅ TAMAM
+- Süreler: MusicBrainz release 146dc92d (kendi sorgum).
+- "Yemen Türküsü": anonim halk türküsü, derleyen Muzaffer Sarısözen (aslı "Havada Bulut Yok") —
+  doğrulandı. Bu şarkının süresi bulduğum MB release'inde yoktu (farklı baskıda bonus track
+  olarak değişmiş) → "-".
+- Diğer 9 şarkı Şebnem Ferah'a ait.
+- 40 hücrenin 39'u dolu, 1 "-" (Yemen Türküsü/Süre).
+
+## ⚠️ Kaynak notu — albüm 4, 6, 8, 9 (ve albüm 2-3'ün konu/duygu taslağı)
+Paralel çalışan bir kardeş oturum (ranking-3a, aynı işe atanmış ama sonra başka işe yönlendirildi)
+Kadın dışındaki 7 albümün konu/duygu/süre/söz-müzik taslağını bana ilk elden verdi. Kendi
+ölçütlerimle örnekleme yaptım: 5 albümün (Perdeler, Kelimeler Yetse, Benim Adım Orman, Od,
+Artık Kısa Cümleler Kuruyorum) sürelerini MusicBrainz'ten bağımsız doğruladım — tüm değerler
+1-3 saniye içinde eşleşti (farklı baskı/remaster farkı, tutarsızlık değil). Ayrıca yüksek riskli
+iddiaları (4 cover şarkı, "Üvey", "Yemen Türküsü", "Çok Yorgunum") ayrıca kendi aramalarımla
+doğruladım. "Koyu" (Parmak İzi) için 3a'nın kendisi "tek kaynak, zayıf" diye işaretlemişti —
+ben onu kabul etmedim, "-" yazdım. Can Kırıkları'nı (albüm 5) 3a araştırmadığı için tamamen
+kendim araştırdım.
+
 ## Kalan albümler
-2. Artık Kısa Cümleler Kuruyorum (1999) — satır 11-20
-3. Perdeler (2001) — satır 21-30
 4. Kelimeler Yetse (2003) — satır 31-40
 5. Can Kırıkları (2005) — satır 41-50
 6. Benim Adım Orman (2009) — satır 51-61
