@@ -299,27 +299,64 @@ class SwissSystemTest {
 
         val results1 = SwissSystem.calculateResults(songs, matches)
         val results2 = SwissSystem.calculateResults(songs, matches)
-        assertEquals(results1, results2)
+        // 🔴 RankingResult.createdAt = System.currentTimeMillis() varsayılanı taşır;
+        // tam nesneyi karşılaştırmak iki çağrı arasına milisaniye sınırı girerse
+        // testi kırar (yük altındaki tam paket koşumunda ölçüldü, tekil koşumda
+        // görünmez). Karşılaştırma yalnız GERÇEK içerik alanlarıyla yapılmalı.
+        val ozetle = { list: List<com.example.ranking.data.RankingResult> ->
+            list.map { Triple(it.songId, it.score, it.position) }
+        }
+        assertEquals(ozetle(results1), ozetle(results2))
     }
 
     // ---------------------------------------------------------------
-    // Performans: n=64
+    // Yapısal olarak imkânsız eşleştirme — turnuva dürüstçe bitmeli
     // ---------------------------------------------------------------
 
     @Test
-    fun testSixtyFourTeamsPerformance() {
-        val songs = makeSongs(64)
+    fun testStructurallyImpossiblePairingEndsHonestly() {
+        // 4 takım, çift sayı (bye yok). 1 numaralı takım diğer ÜÇÜYLE DE zaten
+        // oynamış; kalan tek aday havuzunda (2,3,4) 1'e uygun rakip YOK.
+        // Tekrarsız tam eşleştirme YAPISAL OLARAK imkânsız — "tekrar eşleştir"
+        // çözüm değil (kural 1), turnuva dürüstçe bitmeli, çökmemeli.
+        val songs = makeSongs(4)
+        val history = listOf(
+            Match(id = 1, listId = 1L, rankingMethod = SwissSystem.METHOD, songId1 = 1L, songId2 = 2L, winnerId = 1L, round = 1, matchNumber = 1, isCompleted = true),
+            Match(id = 2, listId = 1L, rankingMethod = SwissSystem.METHOD, songId1 = 1L, songId2 = 3L, winnerId = 1L, round = 1, matchNumber = 2, isCompleted = true),
+            Match(id = 3, listId = 1L, rankingMethod = SwissSystem.METHOD, songId1 = 1L, songId2 = 4L, winnerId = 1L, round = 1, matchNumber = 3, isCompleted = true)
+        )
+
+        val state = SwissSystem.computeState(songs, history)
+        assertFalse("Tur bütçesi henüz dolmadı, isComplete erken tetiklenmemeli", state.isComplete)
+
+        val pairing = SwissSystem.createNextRound(state, history)
+        assertFalse("Yapısal olarak imkânsız eşleştirmede canContinue=false olmalı", pairing.canContinue)
+        assertTrue("Anlamlı bir gerekçe dönmeli (boş olmamalı)", pairing.reason.isNotBlank())
+        assertTrue("Çökmedi ve hiç yarım/geçersiz maç üretmedi", pairing.matches.isEmpty())
+    }
+
+    // ---------------------------------------------------------------
+    // Performans: n=64, n=128
+    // ---------------------------------------------------------------
+
+    /** n takımlı bir turnuvayı sonuna kadar oynatır, her turun createNextRound
+     *  süresini [maxMsPerRound] ile sınırlar. Döner: kaç tur oynandı. */
+    private fun runPerformanceScenario(n: Int, maxMsPerRound: Long): Int {
+        val songs = makeSongs(n)
         var state = SwissSystem.computeState(songs, emptyList())
         val allCompleted = mutableListOf<Match>()
         var nextMatchId = 1L
-        val maxRounds = SwissSystem.recommendedRoundCount(64)
+        val maxRounds = SwissSystem.recommendedRoundCount(n)
 
         var rounds = 0
         while (rounds < maxRounds) {
             val start = System.nanoTime()
             val pairing = SwissSystem.createNextRound(state, allCompleted)
             val elapsedMs = (System.nanoTime() - start) / 1_000_000
-            assertTrue("createNextRound < 2sn olmalı (ölçülen: ${elapsedMs}ms, tur ${rounds + 1})", elapsedMs < 2000)
+            assertTrue(
+                "createNextRound < ${maxMsPerRound}ms olmalı (n=$n, ölçülen: ${elapsedMs}ms, tur ${rounds + 1})",
+                elapsedMs < maxMsPerRound
+            )
 
             if (!pairing.canContinue) break
             rounds++
@@ -330,6 +367,18 @@ class SwissSystemTest {
             }
             state = SwissSystem.computeState(songs, allCompleted)
         }
+        return rounds
+    }
+
+    @Test
+    fun testSixtyFourTeamsPerformance() {
+        val rounds = runPerformanceScenario(n = 64, maxMsPerRound = 2000)
         assertTrue("n=64 için en az birkaç tur oynanmalı", rounds >= 3)
+    }
+
+    @Test
+    fun testOneHundredTwentyEightTeamsPerformance() {
+        val rounds = runPerformanceScenario(n = 128, maxMsPerRound = 5000)
+        assertTrue("n=128 için en az birkaç tur oynanmalı", rounds >= 3)
     }
 }
