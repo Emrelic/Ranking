@@ -356,3 +356,77 @@ yüzünden deterministik değil. Rastgelelik kaldırılınca bu testler yazılab
 
 Swiss geri izleme bütçesinin (50.000 deneme) dolduğu dal hâlâ zorlanmadı
 (ikinci öncelik).
+
+---
+
+# BEŞİNCİ GEÇİŞ — grup yolunda hayalet puan
+
+## SAYIM (beşinci koşum)
+
+| dosya | test | geçti | KIRIK |
+|---|---|---|---|
+| EmreSystemDeepTest | 56 | 56 | 0 |
+| CsvReaderDeepTest | 53 | 53 | 0 |
+| YeniMotorlarCaprazTest | 43 | 43 | 0 |
+| PairwiseDeepTest | 30 | 30 | 0 |
+| `RankingEngineYetimMacTest` | 22 (+5) | 21 | **1** |
+| **toplam** | **231** | **230** | **1** |
+
+Önceki geçişteki 4 kırık testin dördü de yeşile döndü (d4531f1 doğrulandı).
+
+## 🔴 BENİM HATAM — yanlış mekanizma teşhisi
+Dördüncü geçişte "gruplar örtüşüyor **çünkü `songIndex` hiç ilerletilmiyor**"
+demiştim. **Yanlış.** `songIndex` `for (currentGroupId in 0 until groupId)`
+döngüsüyle zaten ilerliyordu; ben fonksiyonu iki parçalı bir `sed` aralığıyla
+okuduğum için tam o döngü çıktıdan düşmüş, eksik gördüğüm koda bakıp
+mekanizmayı uydurmuşum.
+
+**Ölçüm doğruydu** (10 takım / 2 grup → 8 yerine 7 farklı takım), **sebep
+yanlıştı**: örtüşmenin tek sebebi `shuffled()`'dı — grup 0 ile grup 1'in
+dilimleri farklı karıştırmalardan geliyordu. Koordinatör düzeltti, test
+yorumundaki yanlış cümle de düzeltildi.
+
+Ders: bir fonksiyonun tamamını okumadan mekanizma iddia etme. Ölçüm ile sebep
+ayrı şeyler; ölçtüğümü bildirmek, sebebi uydurmaktan güvenli.
+
+## ✅ GRUP SIRALAMASI TEMİZ ÇIKTI
+Dağıtım deterministik olduğu için (10 takım → grup 0 = 1..5, grup 1 = 6..10)
+hayalet puan artık ölçülebiliyor. `calculateGroupStandings`'in koruması
+**gerçek**: puan haritası `groupSongs`tan doldurulduğu için silinmiş id
+gerçekten null dönüyor ve maç atlanıyor.
+- `grupSiralamasi_yetimMacHayaletPuanUretmiyor` ✅
+- `grupSiralamasi_gecerliMacDogruSiraliyor` ✅ (karşı kontrol)
+- `elemeSonuclari_yetimMacElenecekTakimiDegistirmiyor` ✅
+- `grupDagitimi_gruplarTumTakimlariKapsiyor` ✅
+
+## 🔴 KUSUR — `getWinnersAndLosers` üçlü grup dalındaki koruma ÖLÜ KOD
+**Kırık test:** `kazananKaybeden_ucluGrupHayaletPuanUretmiyor`
+
+```kotlin
+val allSongIds = mutableSetOf<Long>()
+matches.forEach { allSongIds.add(it.songId1); allSongIds.add(it.songId2) }   // ← silinmiş id'ler de girer
+allSongIds.forEach { points[it] = 0 }
+...
+if (points[match.songId1] == null || points[match.songId2] == null) return@forEach  // ← ASLA tetiklenmez
+```
+Puan haritası **maçlardan** dolduruluyor, `songs`tan değil. Silinmiş öğe de
+haritaya giriyor, dolayısıyla null kontrolü hiçbir zaman doğru olmuyor.
+Koruma yazılmış ama çalışmıyor.
+
+Ölçülen sonuç: songs=[1,2], silinmiş 999. Gerçek maçta 1, 2'yi yeniyor; 999 iki
+hayalet maç kazanıyor. 999 (6 puan) zirveye çıkıyor → `songs.find(999)` null
+döndüğü için **kazanan listesi BOŞ kalıyor** ve gerçek galip takım 1 kaybeden
+sayılıyor. Beklenen `[1]`, bulunan `[]`.
+
+Aynı ölü koruma deseni `calculateTripleGroupPoints` (:1147) içinde de var:
+```kotlin
+matches.forEach { points[it.songId1] = points[it.songId1] ?: 0.0; ... }  // ← hepsi doldurulur
+...
+if (points[match.songId1] == null || points[match.songId2] == null) return@forEach  // ← ölü
+```
+Bunu bir testle **gösteremedim**: fonksiyona yalnız `calculateFullEliminationResults`
+üzerinden, ön eleme turlarının belirli bir yapısıyla erişiliyor. Yapısal olarak
+`getWinnersAndLosers` ile aynı, ama ölçmedim — iddia değil, işaret.
+
+Çözüm ikisinde de aynı: puan haritası `songs`tan doldurulmalı ya da guard
+`songs.none { it.id == match.songIdX }` gibi gerçek bir kontrole çevrilmeli.

@@ -277,9 +277,105 @@ class RankingEngineYetimMacTest {
         val qualifiers = RankingEngine.getGroupQualifiers(songs, emptyList(), config)
 
         assertEquals(
-            "Aynı takım birden fazla gruptan çıkmış — gruplar örtüşüyor " +
-                "(getGroupSongs her grup için listenin BAŞINDAN dilim alıyor, songIndex hiç ilerlemiyor)",
+            "Aynı takım birden fazla gruptan çıkmış — gruplar örtüşüyor. " +
+                "(Sebep: getGroupSongs her çağrıda YENİDEN karıştırıyordu; grup 0'ın " +
+                "dilimi ile grup 1'in dilimi farklı karıştırmalardan geliyordu. " +
+                "songIndex zaten ilerliyor — ilk teşhisimde bunu yanlış yazmıştım.)",
             qualifiers.size, qualifiers.map { it.id }.toSet().size
         )
+    }
+
+    @Test
+    fun grupDagitimi_gruplarTumTakimlariKapsiyor() {
+        // Dağıtım deterministik olduğuna göre gruplar tam bölüm olmalı:
+        // 10 takım / 2 grup → grup 0 = 1..5, grup 1 = 6..10, her takım tam bir grupta.
+        val songs = makeSongs(10)
+        val config = RankingEngine.calculateOptimalGroupConfig(10, 2)
+        assertEquals("Kurulum: 2 grup beklenir", 2, config.groupCount)
+
+        // Grup 0'ın tamamı elenmeden geçsin diye eleme sayısı kadar takım düşer;
+        // iki grubun elemelileri birleşince tüm takımlar temsil edilmeli.
+        val qualifiers = RankingEngine.getGroupQualifiers(songs, emptyList(), config)
+        val beklenenSayi = 10 - config.groupCount * config.eliminationsPerGroup
+        assertEquals("Eleme sonrası kalan takım sayısı", beklenenSayi, qualifiers.size)
+        assertTrue(
+            "Elemeli takımlar gerçek listeden gelmeli",
+            qualifiers.all { it.id in 1L..10L }
+        )
+    }
+
+    // ==========================================================
+    // ⑦ GRUP YOLUNDA HAYALET PUAN
+    //    (dağıtım d4531f1'de deterministik olduğu için artık ölçülebilir)
+    // ==========================================================
+
+    @Test
+    fun grupSiralamasi_yetimMacHayaletPuanUretmiyor() {
+        // 10 takım / 2 grup → grup 0 = takım 1..5 (id sırası), grup 1 = 6..10.
+        // Grup 0'da HİÇ gerçek maç yok; yalnız takım 5'in silinmiş 999'a karşı
+        // bir "galibiyeti" var. Hayalet puan verilirse takım 5 grubun BAŞINA
+        // çıkar ve elenen takım 4 olur. Doğru davranışta puanlar eşit kalır,
+        // sıralama id sırasını korur ve elenen takım 5 olur.
+        val songs = makeSongs(10)
+        val config = RankingEngine.calculateOptimalGroupConfig(10, 2)
+        val hayaletMac = listOf(match(1, 5L, 999L, 5L, round = 0, groupId = 0))
+
+        val qualifiers = RankingEngine.getGroupQualifiers(songs, hayaletMac, config)
+        val grup0Elemeli = qualifiers.filter { it.id <= 5L }.map { it.id }
+
+        assertEquals(
+            "HAYALET PUAN: takım 5'in tek maçı silinmiş bir öğeye karşı; " +
+                "puan üretmemeli ve grup sıralamasını değiştirmemeli",
+            listOf(1L, 2L, 3L, 4L), grup0Elemeli
+        )
+    }
+
+    @Test
+    fun grupSiralamasi_gecerliMacDogruSiraliyor() {
+        // Karşı kontrol: GERÇEK bir galibiyet sıralamayı değiştirmeli.
+        val songs = makeSongs(10)
+        val config = RankingEngine.calculateOptimalGroupConfig(10, 2)
+        val gercekMac = listOf(match(1, 5L, 4L, 5L, round = 0, groupId = 0))
+
+        val qualifiers = RankingEngine.getGroupQualifiers(songs, gercekMac, config)
+        val grup0Elemeli = qualifiers.filter { it.id <= 5L }.map { it.id }
+
+        assertTrue("Gerçek galibiyette takım 5 elemeli olmalı", 5L in grup0Elemeli)
+        assertFalse("Gerçek mağlubiyette takım 4 elenmeli", 4L in grup0Elemeli)
+    }
+
+    @Test
+    fun elemeSonuclari_yetimMacElenecekTakimiDegistirmiyor() {
+        val songs = makeSongs(10)
+        val hayaletMac = listOf(match(1, 5L, 999L, 5L, round = 0, groupId = 0, method = "ELIMINATION"))
+        val results = RankingEngine.calculateEliminationResults(songs, hayaletMac)
+
+        assertTrue("Silinmiş öğe sonuçlara sızmamalı", results.none { it.songId > 10L })
+        val elenen = results.filter { it.rankingMethod == "ELIMINATION" && it.songId <= 5L }
+            .minByOrNull { it.position }
+        // Grup 0'dan elenen takım, hayalet puan olmadığında en alttaki (5) olmalı
+        assertNotNull("Grup 0'dan bir takım elenmeli", elenen)
+    }
+
+    @Test
+    fun kazananKaybeden_ucluGrupHayaletPuanUretmiyor() {
+        // songs = [1, 2]; 999 silinmiş. Üçlü grup dalı (3 farklı id, 3 maç).
+        // Gerçek maç: 1, 2'yi yendi → kazanan 1 olmalı, kaybeden 2.
+        // Hayalet puan verilirse 999 (6 puanla) en üste çıkar; kazanan listesi
+        // BOŞ kalır (999 songs'ta yok) ve gerçekten kazanan takım 1 kaybeden sayılır.
+        val songs = makeSongs(2)
+        val matches = listOf(
+            match(1, 1L, 2L, 1L),
+            match(2, 2L, 999L, 999L),
+            match(3, 999L, 1L, 999L)
+        )
+        val (winners, losers) = RankingEngine.getWinnersAndLosers(songs, matches)
+
+        assertEquals(
+            "HAYALET PUAN: silinmiş 999 puan toplayıp zirveye çıkıyor, " +
+                "gerçek galibi olan takım 1 kazanan sayılmıyor",
+            listOf(1L), winners.map { it.id }
+        )
+        assertEquals("Kaybeden yalnız takım 2 olmalı", listOf(2L), losers.map { it.id })
     }
 }
