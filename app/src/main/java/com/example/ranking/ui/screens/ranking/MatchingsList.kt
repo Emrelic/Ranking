@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.ranking.R
 import com.example.ranking.data.Match
@@ -204,12 +205,21 @@ private fun TableRow(
         }
 
         // Veri altında - büyük ve siyah, center aligned
+        //
+        // Bu liste bir ÖNİZLEME: şarkı sözü gibi uzun alanlar kırpılır,
+        // yoksa tek bir öğe kartı ekranı baştan sona kaplıyor ve turun
+        // eşleştirmeleri görünmez oluyor. Tam metin puanlama ekranında,
+        // kendi kaydırılabilir panelinde okunur.
+        val uzunMu = value.length > 90 || value.contains('\n')
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyLarge,
+            style = if (uzunMu) MaterialTheme.typography.bodySmall
+                    else MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            fontWeight = FontWeight.Bold,
+            fontWeight = if (uzunMu) FontWeight.Normal else FontWeight.Bold,
             textAlign = TextAlign.Center,
+            maxLines = if (uzunMu) 3 else Int.MAX_VALUE,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 4.dp)

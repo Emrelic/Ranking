@@ -9,13 +9,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -30,6 +33,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ranking.data.Song
 import com.example.ranking.ranking.EmreSystemCorrect
+
+/**
+ * Bir değerin "uzun metin" sayılması için gereken karakter sayısı.
+ *
+ * Şarkı sözü, özet, biyografi gibi alanlar etiket/değer satırına sığmaz:
+ * 670 karakterlik bir söz, satırın %58'lik değer sütununa sıkıştırılınca
+ * kart okunamaz hâle geliyordu. Bu eşiği aşan (ya da satır sonu içeren)
+ * değerler kendi kaydırılabilir panelinde gösterilir.
+ */
+private const val UZUN_METIN_ESIGI = 90
+
+/** Uzun metin panelinin en fazla kaplayacağı yükseklik; gerisi kaydırılır. */
+private val UZUN_METIN_YUKSEKLIGI = 170.dp
 
 // MatchBasedContent içindeki iki takım paneli (song1/song2) için ortak bileşen.
 // Fark gösteren her şey parametre: takım, çerçeve rengi ve tıklama davranışı.
@@ -94,6 +110,20 @@ internal fun TeamSelectionPanel(
             val detayRows = remember(csvData, team.name) { cardDetailRows(csvData, team.name) }
             val imageUrl = remember(csvData) { extractImageUrl(csvData) }
 
+            // Kısa öznitelikler ile uzun metinler AYRILIR: ikisi aynı satır
+            // biçiminde gösterilince uzun olan kartı ezip kısa olanları
+            // okunmaz hâle getiriyor.
+            val kisaSatirlar = remember(detayRows) {
+                detayRows.filter { (_, deger) ->
+                    deger.length <= UZUN_METIN_ESIGI && !deger.contains('\n')
+                }
+            }
+            val uzunMetinler = remember(detayRows) {
+                detayRows.filter { (_, deger) ->
+                    deger.length > UZUN_METIN_ESIGI || deger.contains('\n')
+                }
+            }
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -126,7 +156,7 @@ internal fun TeamSelectionPanel(
                     )
                 }
 
-                if (detayRows.isNotEmpty()) {
+                if (kisaSatirlar.isNotEmpty()) {
                     item {
                         HorizontalDivider(
                             color = borderColor.copy(alpha = 0.35f),
@@ -134,10 +164,21 @@ internal fun TeamSelectionPanel(
                             modifier = Modifier.padding(bottom = 6.dp)
                         )
                     }
-                    items(detayRows) { (key, value) ->
+                    items(kisaSatirlar) { (key, value) ->
                         DetayRow(key = key, value = value)
                     }
-                } else {
+                }
+
+                // Uzun metinler kendi kaydırılabilir panellerinde
+                items(uzunMetinler) { (baslik, metin) ->
+                    UzunMetinPaneli(
+                        baslik = baslik,
+                        metin = metin,
+                        vurguRengi = borderColor
+                    )
+                }
+
+                if (detayRows.isEmpty()) {
                     // CSV'siz öğelerde sanatçı/albüm alanları alt bilgi olur
                     val altBilgi = listOfNotNull(
                         team.artist.takeIf { it.isNotBlank() },
@@ -156,6 +197,79 @@ internal fun TeamSelectionPanel(
                     }
                 }
             }
+        }
+    }
+}
+
+/**
+ * Uzun metin (şarkı sözü, özet, biyografi) için KENDİ KAYDIRMASI olan panel.
+ *
+ * Yükseklik sınırlıdır; metin sığmazsa panelin içinde kaydırılarak okunur,
+ * kartın kendisi uzayıp diğer bilgileri ekrandan atmaz.
+ *
+ * ⚠️ `heightIn(max = ...)` şart: bu panel LazyColumn öğesinin içinde duruyor
+ * ve orada gelen yükseklik kısıtı SONSUZ. Sınır konmazsa `verticalScroll`
+ * ölçüm sırasında sonsuz yükseklikle karşılaşır.
+ */
+@Composable
+private fun UzunMetinPaneli(
+    baslik: String,
+    metin: String,
+    vurguRengi: Color
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .background(
+                MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
+                RoundedCornerShape(10.dp)
+            )
+            .border(
+                1.dp,
+                vurguRengi.copy(alpha = 0.30f),
+                RoundedCornerShape(10.dp)
+            )
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = baslik,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = vurguRengi
+            )
+            // Kaydırma ipucu: panel içeriği sığmadığında kullanıcı metnin
+            // devamı olduğunu bilmezse okumayı denemiyor
+            Text(
+                text = "↕ kaydır",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            )
+        }
+
+        HorizontalDivider(
+            color = vurguRengi.copy(alpha = 0.20f),
+            thickness = 1.dp,
+            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp)
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = UZUN_METIN_YUKSEKLIGI)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Text(
+                text = metin,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 18.sp
+            )
         }
     }
 }

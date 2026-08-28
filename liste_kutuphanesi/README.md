@@ -47,8 +47,9 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | 29 | 29_heykeller.csv | 27 | No, Heykeltıraş, Yıl, **Heykel**, Ülke/Şehir, Malzeme, Yükseklik (m), Dönem, İlginç Bilgi, Görsel 🖼 |
 | 30 | 30_yapilar.csv | 70 | No, Yapım Yılı, Şehir, **Yapı**, Ülke, Mimar, Mimari Üslup, Kullanım Amacı, Yükseklik/Ölçü, UNESCO Mirası, İlginç Bilgi, Görsel 🖼 |
 | 31 | 31_muzik_aletleri.csv | 35 | No, Tür, Çalınış Şekli, **Müzik Aleti**, Anavatan/Kültür, Tel/Perde Sayısı, Malzeme, Kullanıldığı Müzik, Ünlü İcracı, Ses Karakteri, Görsel 🖼 |
+| 32 | 32_sebnem_ferah_sozleriyle.csv | 80 | No, Sanatçı, Albüm, **Şarkı Adı**, Şarkı Sözleri |
 
-Toplam **31 liste**, **1854 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
+Toplam **32 liste**, **1934 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
 
 ## Görsel Desteği
 
