@@ -38,6 +38,7 @@ Gerekçeler ve ayrıntılar: **ANALIZ_RAPORU.md** (Faz 2 kararları).
 - **Tiebreaker zinciri** (TÜM maç geçmişine bakar): H2H puanı → direkt maç → en az mağlubiyet → tur öncesi sıralama
 - **Maç numaralandırma**: üstten seçilen eşleşme 1, 2, 3...; alttan seçilen N, N-1... Oylama sırası matchNumber ASC (1 → 2 → 3)
 - **Bitiş**: tekrarsız tam eşleştirme kurulamazsa veya hiçbir eşleşme aynı puanlı değilse turnuva biter
+- ⚠️ **Tek sayılı turnuvada tam round-robin'e ULAŞILMAZ** (kusur değil, kuralın sonucu): bye 1 puan, beraberlik 0.5 getirdiği için puanlar erken ayrışır ve "aynı puanlı eşleşme yok" kuralı turnuvayı bitirir. Ölçüldü: **n=3 → 1 tur, n=5 → 2 tur**. Çift sayıda sapma yok (n=4 → 3 tur). Kullanıcı "5 öğe girdim, 2 turda bitti" diye şaşırabilir — beklenen davranıştır
 - Tur kapanışı TEK yoldan yürür: `updateEmreCorrectStateAfterMatch` tur kapattıysa `loadNextMatch` çağrılmaz (çift puanlama regresyonuna dikkat — testi var)
 
 ---
