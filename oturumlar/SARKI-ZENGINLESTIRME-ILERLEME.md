@@ -52,8 +52,18 @@ kendim araştırdım.
 - "Zaman Geçip Gidiyor" ve "Çakıl Taşları" konuları sanatçının kendi röportaj açıklamalarına
   dayanıyor (doğrudan alıntı yok, betimleme). 40/40 hücre dolu, "-" yok.
 
+## Albüm 6/9 — Benim Adım Orman (2009), satır 51-61 ✅ TAMAM
+- Süreler: MusicBrainz release 502811a6 (kendi sorgum).
+- "Ateşe Yakın"in konusu ayrıca doğrulandı: Ferah babasını 1999 depreminden ~1,5 ay sonra
+  kaybetti, şarkı ona yazıldı (birden fazla kaynakta tutarlı).
+- "İnsanlık" için konu/duygu bulunamadı → ikisi de "-" (3a de aynı şekilde işaretlemişti).
+- 44 hücrenin 42'si dolu, 2 "-" (İnsanlık/Konu, İnsanlık/Duygu Tonu).
+
+## Albüm 7/9 — Od (2013), satır 62-71 ✅ TAMAM
+- Süreler: MusicBrainz release f936e15b (kendi sorgum).
+- "Çok Yorgunum": Nâzım Hikmet'in "Mavi Liman" şiiri, Cem Karaca bestesi — Ferah'ın yorumu.
+  Ayrıca doğrulandı (headliner.com.tr, şiirlerlesarkilarla). 40/40 hücre dolu, "-" yok.
+
 ## Kalan albümler
-6. Benim Adım Orman (2009) — satır 51-61
-7. Od (2013) — satır 62-71
 8. Parmak İzi (2018) — satır 72-81
 9. Albüm Dışı (Single) — satır 82-85
