@@ -420,13 +420,18 @@ private fun SystemTypeSelectionStep(
     // Yarım/kırık sistemler tamamlanana kadar listeden çıkarıldı
     // (yarım özellik kırık deneyim yaratıyordu):
     // - SINGLE_ELIMINATION, DOUBLE_ELIMINATION: algoritma tamamlanmadı
-    // - SWISS: kural ihlalleri var (bye yok, tekrar eşleşme, persistence);
-    //   Geliştirilmiş İsviçre (EMRE_CORRECT) bu ihtiyacı karşılıyor
     // - ELIMINATION, FULL_ELIMINATION: puanlama ekranı stub, grup dağılımı
-    //   rastgele; ANALIZ_RAPORU.md Faz 2 kararı
+    //   deterministik değil; yeni EliminationSystem motoru bitince açılacak
+    //
+    // SWISS 2026-08-28'de GERİ AÇILDI: yeni SwissSystem motoru yazıldı.
+    // Eski yolda bye yoktu (tek takım sessizce turdan düşüyordu), tekrar
+    // eşleşme serbestti ve matchNumber atanmıyordu. Yeni motorda tekrarsız
+    // tam eşleştirme geri izlemeyle garanti ediliyor, bye adil rotasyonla
+    // dağıtılıyor. 59 test (14 kendi + 43 çapraz + 2 gerileme) geçiyor.
     val systemTypes = listOf(
         "MERGE_SORT",
         "EMRE_CORRECT",
+        "SWISS",
         "LEAGUE",
         "DIRECT_SCORING"
     )

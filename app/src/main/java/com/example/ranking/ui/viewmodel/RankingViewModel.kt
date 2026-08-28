@@ -9,6 +9,7 @@ import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
 import com.example.ranking.ranking.EmreSystemCorrect
 import com.example.ranking.ranking.PairwiseComparisonSort
+import com.example.ranking.ranking.SwissSystem
 import com.example.ranking.repository.RankingRepository
 import com.example.ranking.utils.CsvReader
 import com.google.gson.Gson
@@ -440,10 +441,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             // Check if we need more rounds (for Swiss, Emre, or Elimination)
             when (currentMethod) {
                 "SWISS" -> {
-                    val currentRound = getCurrentSwissRound(completed)
-                    val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
-                    if (currentRound <= maxRounds) {
-                        createNextSwissRound(currentRound)
+                    // Tur numarası maçlardan türetilir: bye varken tur başına
+                    // (n-1)/2 maç olduğu için "tamamlanan / (n/2)" hesabı tek
+                    // takım sayısında yanlış tur veriyordu.
+                    val sonTur = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                        .maxOfOrNull { it.round } ?: 0
+                    val siradakiTur = sonTur + 1
+                    if (siradakiTur <= SwissSystem.recommendedRoundCount(songs.size)) {
+                        createNextSwissRound(siradakiTur)
                         return
                     }
                 }
@@ -555,45 +560,67 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         )
     }
     
+    /**
+     * İsviçre sisteminde sıradaki turu üretir — YENİ MOTOR (`SwissSystem`).
+     *
+     * Eski yol `RankingEngine.createSwissMatchesWithState` idi ve dört kuralı
+     * birden çiğniyordu: bye yoktu (7 takımda 6 numaralı takım hiç eşleşmiyor,
+     * hiç puan almıyor, sessizce turdan düşüyordu), puan grubunda tek kalan
+     * takım da düşüyordu, tekrar eşleşme serbest bırakılmıştı ("if no fresh
+     * pairing found, pair the first two available") ve matchNumber hiç
+     * atanmıyordu. Bu yüzden sistem menüden gizlenmişti.
+     */
     private suspend fun createNextSwissRound(round: Int) {
         try {
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             val completedMatches = allMatches.filter { it.isCompleted }
-            
-            // Create Swiss standings from completed matches
-            val swissStandings = RankingEngine.createSwissStandingsFromMatches(songs, completedMatches)
-            
-            // Create new matches using advanced pairing
-            val newMatches = RankingEngine.createSwissMatchesWithState(songs, swissStandings)
-            
-            if (newMatches.isNotEmpty()) {
-                repository.createMatches(newMatches)
 
-                // Save updated Swiss state
-                currentVotingSession?.let { session ->
-                    val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
-                    repository.saveSwissState(
-                        sessionId = session.id,
-                        currentRound = round,
-                        maxRounds = maxRounds,
-                        standings = swissStandings.standings,
-                        pairingHistory = swissStandings.pairingHistory,
-                        roundHistory = swissStandings.roundHistory
-                    )
-                }
+            val state = SwissSystem.computeState(songs, completedMatches)
+            val pairing = SwissSystem.createNextRound(state, completedMatches)
 
-                loadNextMatch()
-            } else {
-                // Yeni eşleştirme üretilemedi: loadNextMatch aynı turu tekrar
-                // istemesin diye turnuva burada bitirilir (sonsuz döngü koruması)
+            if (!pairing.canContinue || pairing.matches.isEmpty()) {
+                // Turnuva dürüstçe biter (tekrarsız tam eşleştirme kurulamıyor
+                // ya da tur bütçesi doldu). loadNextMatch aynı turu tekrar
+                // istemesin diye burada kapatılır.
                 completeRanking()
+                return
             }
+
+            // id'leri yazılmış kopyalar (bkz. createMatches) — id=0 kalırsa
+            // listeden seçilen maçın sonucu sessizce kaybolur
+            val kayitliMaclar = repository.createMatches(pairing.matches)
+
+            // BYE geçen takımın puanı maç kaydı üretmez; state'ten okunur.
+            // Kullanıcıya da bildirilir, yoksa "benim takımım niye oynamadı"
+            // sorusu cevapsız kalır.
+            byeBilgisi = pairing.byeTeam?.song?.name
+
+            currentVotingSession?.let { session ->
+                repository.saveSwissState(
+                    sessionId = session.id,
+                    currentRound = round,
+                    maxRounds = state.maxRounds,
+                    standings = state.teams.associate { it.id to it.points },
+                    pairingHistory = emptySet(),
+                    roundHistory = emptyList()
+                )
+            }
+
+            _uiState.value = _uiState.value.copy(
+                currentRound = round,
+                matchingsList = kayitliMaclar.sortedBy { it.matchNumber }
+            )
+
+            loadNextMatch()
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
-                error = "Swiss round oluşturma hatası: ${e.message}"
+                error = "İsviçre turu oluşturulamadı: ${e.message}"
             )
         }
     }
+
+    /** Bu turda bye geçen takımın adı (İsviçre/Emre) — UI bilgilendirmesi için. */
+    private var byeBilgisi: String? = null
     
     // Doğru Emre usulü state
     private var emreState: EmreSystemCorrect.EmreState? = null
@@ -682,7 +709,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             val results = when (currentMethod) {
                 "LEAGUE" -> RankingEngine.calculateLeagueResults(songs, allMatches)
-                "SWISS" -> RankingEngine.calculateSwissResults(songs, allMatches)
+                "SWISS" -> SwissSystem.calculateResults(songs, allMatches.filter { it.isCompleted })
                 "EMRE_CORRECT" -> {
                     if (emreState != null) {
                         RankingEngine.calculateCorrectEmreResults(emreState!!)
@@ -904,11 +931,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
             }
         }
-    }
-    
-    private fun getCurrentSwissRound(completedMatches: Int): Int {
-        val matchesPerRound = songs.size / 2
-        return (completedMatches / matchesPerRound) + 1
     }
     
     private fun getCurrentEmreRound(completedMatches: Int): Int {

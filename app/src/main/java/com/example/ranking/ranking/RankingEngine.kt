@@ -172,7 +172,9 @@ object RankingEngine {
         val groupConfig = calculateOptimalGroupConfig(songCount, teamsToEliminate)
         
         // Create group stage matches
-        val shuffledSongs = songs.shuffled()
+        // Sıralama getGroupSongs ile AYNI olmalı (song.id) — aksi halde
+        // maçları kuran dağıtım ile sonucu okuyan dağıtım ayrışır
+        val shuffledSongs = songs.sortedBy { it.id }
         var songIndex = 0
         
         for (groupId in 0 until groupConfig.groupCount) {
@@ -296,7 +298,20 @@ object RankingEngine {
     }
     
     private fun getGroupSongs(allSongs: List<Song>, groupId: Int, groupConfig: GroupConfig): List<Song> {
-        val shuffledSongs = allSongs.shuffled() // Should use same shuffle as createEliminationMatches
+        // 🔴 DETERMİNİSTİK dağıtım — `shuffled()` KALDIRILDI.
+        //
+        // Eskiden bu fonksiyon her çağrıda YENİDEN karıştırıyordu. Grupları
+        // kuran `createEliminationMatches` başka bir karıştırma yapmıştı, yani
+        // sonuçtaki gruplar oynanan maçlarla alakasızdı. Dahası: grup 0'ın
+        // dilimi ile grup 1'in dilimi FARKLI karıştırmalardan geldiği için
+        // gruplar ÖRTÜŞÜYOR, aynı takım iki gruptan birden çıkabiliyordu
+        // (10 takım / 2 grup senaryosunda 8 yerine 7 farklı takım).
+        // Koddaki eski yorum bunu zaten itiraf ediyordu:
+        // "Should use same shuffle as createEliminationMatches".
+        //
+        // Bu motorlarda durum tablosu tutulmaz; tamamlanmış maçlar baştan
+        // oynatılır. Rastgelelik replay'i kırar — sıralama song.id'ye göre.
+        val shuffledSongs = allSongs.sortedBy { it.id }
         var songIndex = 0
         
         for (currentGroupId in 0 until groupId) {
@@ -325,6 +340,11 @@ object RankingEngine {
         }
         
         groupMatches.filter { it.isCompleted }.forEach { match ->
+            // 🔴 YETİM MAÇ: taraflardan biri artık listede yoksa (öğe silinmiş)
+            // maç HİÇ İŞLENMEZ. `getOrDefault` çökmeyi kapatıyordu ama hayatta
+            // kalan takıma silinmiş rakibe karşı "galibiyet" puanı yazmaya devam
+            // ediyordu — aynı maç hem "oynanmadı" hem "kazanıldı" sayılıyordu.
+            if (points[match.songId1] == null || points[match.songId2] == null) return@forEach
             when (match.winnerId) {
                 match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 3.0
                 match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 3.0
@@ -651,6 +671,11 @@ object RankingEngine {
         }
         
         matches.filter { it.isCompleted }.forEach { match ->
+            // 🔴 YETİM MAÇ: taraflardan biri artık listede yoksa (öğe silinmiş)
+            // maç HİÇ İŞLENMEZ. `getOrDefault` çökmeyi kapatıyordu ama hayatta
+            // kalan takıma silinmiş rakibe karşı "galibiyet" puanı yazmaya devam
+            // ediyordu — aynı maç hem "oynanmadı" hem "kazanıldı" sayılıyordu.
+            if (points[match.songId1] == null || points[match.songId2] == null) return@forEach
             when (match.winnerId) {
                 match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 1.0
                 match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 1.0
@@ -684,6 +709,8 @@ object RankingEngine {
                 pairingHistory.add(Pair(match.songId2, match.songId1))
                 
                 // Calculate points for this round
+                // 🔴 YETİM MAÇ: silinmiş öğeye karşı puan yazılmaz (bkz. yukarısı)
+                if (pointsThisRound[match.songId1] == null || pointsThisRound[match.songId2] == null) return@forEach
                 when (match.winnerId) {
                     match.songId1 -> pointsThisRound[match.songId1] = pointsThisRound.getOrDefault(match.songId1, 0.0) + 1.0
                     match.songId2 -> pointsThisRound[match.songId2] = pointsThisRound.getOrDefault(match.songId2, 0.0) + 1.0
@@ -802,6 +829,8 @@ object RankingEngine {
             allSongIds.forEach { points[it] = 0 }
 
             matches.forEach { match ->
+                // 🔴 YETİM MAÇ: silinmiş öğeye karşı puan yazılmaz
+                if (points[match.songId1] == null || points[match.songId2] == null) return@forEach
                 when (match.winnerId) {
                     match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0) + 3
                     match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0) + 3
@@ -1155,6 +1184,11 @@ object RankingEngine {
         
         // Puanları hesapla
         matches.filter { it.isCompleted }.forEach { match ->
+            // 🔴 YETİM MAÇ: taraflardan biri artık listede yoksa (öğe silinmiş)
+            // maç HİÇ İŞLENMEZ. `getOrDefault` çökmeyi kapatıyordu ama hayatta
+            // kalan takıma silinmiş rakibe karşı "galibiyet" puanı yazmaya devam
+            // ediyordu — aynı maç hem "oynanmadı" hem "kazanıldı" sayılıyordu.
+            if (points[match.songId1] == null || points[match.songId2] == null) return@forEach
             when (match.winnerId) {
                 match.songId1 -> points[match.songId1] = points.getOrDefault(match.songId1, 0.0) + 3.0
                 match.songId2 -> points[match.songId2] = points.getOrDefault(match.songId2, 0.0) + 3.0
