@@ -284,3 +284,75 @@ beklenen metin yanlıştı. Düzeltildi.
   **doğrudan** test edilmedi (private); yalnız dış davranışlarından doğrulandı.
   Swiss'te geri izleme bütçesinin (50.000) dolduğu senaryo ZORLANMADI.
 - `RankingViewModel` / `RankingScreen` entegrasyonu benim dosyam değil.
+
+---
+
+# DÖRDÜNCÜ GEÇİŞ — kodlama sözleşmesi + RankingEngine yetim maç taraması
+
+## SAYIM (dördüncü koşum)
+
+| dosya | test | geçti | KIRIK |
+|---|---|---|---|
+| `EmreSystemDeepTest.kt` | 56 | 56 | 0 |
+| `CsvReaderDeepTest.kt` | 53 | 53 | 0 |
+| `YeniMotorlarCaprazTest.kt` | 43 | 43 | 0 |
+| `PairwiseDeepTest.kt` | 30 | 30 | 0 |
+| `LeagueEngineDeepTest.kt` | 27 | 27 | 0 |
+| `RankingEngineYetimMacTest.kt` (YENİ) | 17 | 13 | **4** |
+| **toplam** | **226** | **222** | **4** |
+
+Dört kırık test **bilerek kırık bırakıldı** — üçü ayrı, ikisi yeni kusur gösteriyor.
+
+## ① KODLAMA: iki tuzak kapandı, testler sözleşmeye çevrildi
+9f0b8f1 ile `isValidUtf8` (katı çözücü, TÜM baytlar) geldi. İki `belgeleme_`
+testi beklentiye çevrildi ve önekleri kaldırıldı:
+- `bayt_gercekYerineKoymaKarakteri_utf8OlarakCozulur`
+- `bayt_tespit4096BaytSonrasindakiCp1254yiDeGorur`
+Ayrıca `isValidUtf8` doğrudan sınandı: geçerli (ASCII, Türkçe, gerçek U+FFFD,
+emoji) ve geçersiz (cp1254 baytları, yarım çok-baytlı dizi, tek başına devam
+baytı, overlong kodlama, sonu kesik dosya) durumlar.
+
+## ② YETİM MAÇ TARAMASI — düzeltmenin BAĞIMSIZ sınanması
+Koordinatör `RankingEngine.kt`'deki tüm `map[...]!!` desenlerini kapattı.
+Her genel giriş noktası silinmiş öğe id'si taşıyan maçlarla çağrıldı.
+
+**ÇÖKME YOK** — doğrulandı: `calculateLeagueResults`, `calculateSwissResults`,
+`createSwissStandingsFromMatches`, `getWinnersAndLosers` (üçlü grup dalı dahil),
+`getGroupQualifiers`, `calculateEliminationResults`,
+`calculateFullEliminationResults`. Boş girdiler ve tanımsız `winnerId` de çökmüyor.
+
+### 🔴 KUSUR — `getOrDefault` çökmeyi kapattı ama HAYALET PUANI kapatmadı
+**Kırık testler:** `swissSonuclari_yetimMacCokmuyor`,
+`swissPuani_yalnizYetimMaciOlanTakimSifirKalmali`
+
+İki motor aynı olaya farklı cevap veriyor:
+- **Lig** (:110): `if (p1 == null || p2 == null) return@forEach` → maç TAMAMEN atlanıyor
+- **İsviçre** (:645, :688): yalnız `!!` → `getOrDefault` → çökme gitti ama
+  silinmiş öğeye karşı "galibiyet" hayattaki takıma **puan yazmaya devam ediyor**
+
+Ölçüm: tek geçerli maçı olan takım 1.0 yerine 2.0 puan alıyor. Bu, EMRE_CORRECT'te
+KUSUR #1 olarak bildirilip düzeltilen davranışın aynısı. Aynı desen
+`calculateGroupStandings` (:319), `calculateTripleGroupPoints` (:1159) ve
+`getWinnersAndLosers` üçlü grup dalında (:806) da var.
+
+### 🔴 KUSUR — grup dağıtımı rastgele VE gruplar örtüşüyor
+**Kırık testler:** `grupDagitimi_ayniGirdiIkiKez_ayniSonucVermeli`,
+`grupDagitimi_gruplarAyrikOlmali`
+
+`getGroupSongs` (:288) iki ayrı şey yapıyor:
+1. `allSongs.shuffled()` — ORTAK.md'nin yasakladığı rastgelelik; replay kırılıyor,
+   aynı girdi her çağrıda farklı grup dağılımı veriyor (ölçüldü: ilk denemede farklı)
+2. `songIndex` **hiç ilerletilmiyor**; her grup için listenin BAŞINDAN dilim
+   alınıyor → gruplar örtüşüyor, aynı takım birden fazla gruptan çıkabiliyor
+   (ölçüldü: 10 takım / 2 grup → 8 elemeli ama yalnız 7 farklı takım)
+Koddaki `// Should use same shuffle as createEliminationMatches` yorumu bunun
+bilinen bir eksik olduğunu söylüyor.
+
+## KAPSANAMAYAN (yeni)
+Grup yolunda **hayalet puan ölçülemiyor**: `calculateGroupStandings` ve
+`calculateTripleGroupPoints` yalnız `getGroupQualifiers` /
+`calculateEliminationResults` üzerinden erişilebiliyor, onlar da `shuffled()`
+yüzünden deterministik değil. Rastgelelik kaldırılınca bu testler yazılabilir.
+
+Swiss geri izleme bütçesinin (50.000 deneme) dolduğu dal hâlâ zorlanmadı
+(ikinci öncelik).

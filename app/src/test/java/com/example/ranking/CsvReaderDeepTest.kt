@@ -526,33 +526,66 @@ No,Albüm,Yıl,Şarkı,Tür,Konu,Duygu Tonu,Süre,Söz-Müzik
     }
 
     @Test
-    fun belgeleme_bayt_gercekYerineKoymaKarakteriUtf8yiCp1254SANDIRIYOR() {
-        // TEHLİKE: tespit "UTF-8 çözümünde U+FFFD var mı" diye bakıyor.
-        // Dosya GERÇEKTEN U+FFFD içeriyorsa (geçerli UTF-8'dir) motor onu
-        // bozuk sanıp tüm dosyayı windows-1254 okur → bütün Türkçe bozulur.
+    fun bayt_gercekYerineKoymaKarakteri_utf8OlarakCozulur() {
+        // SÖZLEŞME (9f0b8f1): U+FFFD GEÇERLİ bir UTF-8 karakteridir. Dosya onu
+        // gerçekten içeriyorsa dosya bozuk sayılmamalı; katı çözücü bozuk BAYT
+        // DİZİSİ ile geçerli U+FFFD'yi ayırt eder.
+        // Eskiden "metinde U+FFFD var mı" kontrolü tüm dosyayı cp1254 sandırıp
+        // bütün Türkçeyi bozuyordu — tek kaçak karakter listeyi zehirliyordu.
         val kaynak = "No,A,B,Ad\n1,x,y,Şarkı�son"
         val metin = reader.bytesToText(kaynak.toByteArray(Charsets.UTF_8))
-        assertNotEquals(
-            "Gerçek U+FFFD içeren geçerli UTF-8 dosya cp1254 sanılıyor (mevcut davranış)",
-            kaynak, metin
-        )
-        assertFalse(
-            "cp1254 okunduğu için Türkçe bozuluyor: '$metin'",
-            metin.contains("Şarkı")
-        )
+        assertEquals("Geçerli UTF-8 dosya olduğu gibi çözülmeli", kaynak, metin)
+        assertTrue("Türkçe bozulmamalı", metin.contains("Şarkı"))
+
+        val songs = reader.parseText(metin)
+        assertEquals(1, songs.size)
+        assertTrue("Öğe adı korunmalı, bulunan: '${songs[0].name}'", songs[0].name.startsWith("Şarkı"))
     }
 
     @Test
-    fun belgeleme_bayt_tespitYalnizIlk4096BaytaBakar() {
-        // 4096 baytlık örnekten sonra gelen cp1254 baytları görülmez;
-        // dosya UTF-8 sayılır ve o karakterler U+FFFD olur.
+    fun bayt_tespit4096BaytSonrasindakiCp1254yiDeGorur() {
+        // SÖZLEŞME (9f0b8f1): tespit TÜM baytlara bakar. Başı düz ASCII olan bir
+        // cp1254 dosyasında Türkçe karakterler dosyanın sonunda olabilir;
+        // eski 4096 baytlık örnekleme onları göremiyordu (1854 satırlık
+        // kütüphanede 4096 bayt ≈ ilk 40 satır).
         val dolgu = "No,A,B,Ad\n" + (1..500).joinToString("\n") { "$it,x,y,Oge$it" } + "\n"
         assertTrue("Dolgu 4096 baytı aşmalı", dolgu.toByteArray(Charsets.UTF_8).size > 4096)
-        val ham = dolgu.toByteArray(Charsets.UTF_8) + ascii("501,x,y,") + bytes(0xDE) + ascii("ark") + bytes(0xFD)
+
+        val ham = dolgu.toByteArray(Charsets.UTF_8) +
+            ascii("501,x,y,") + bytes(0xDE) + ascii("ark") + bytes(0xFD)
         val metin = reader.bytesToText(ham)
+
+        assertFalse("Bozuk karakter kalmamalı: '${metin.takeLast(20)}'", metin.contains('�'))
+        assertTrue("Dosya sonundaki cp1254 Türkçe çözülmeli", metin.endsWith("Şarkı"))
+
+        val songs = reader.parseText(metin)
+        assertEquals("501 öğe okunmalı", 501, songs.size)
+        assertEquals("Son öğenin adı doğru çözülmeli", "Şarkı", songs.last().name)
+    }
+
+    // --- isValidUtf8 doğrudan ---
+
+    @Test
+    fun gecerliUtf8_dogruTespitEdilir() {
+        assertTrue("Boş dizi geçerli sayılmalı", reader.isValidUtf8(ByteArray(0)))
+        assertTrue("Düz ASCII geçerli", reader.isValidUtf8(ascii("No,A,B,Ad")))
+        assertTrue("Türkçe UTF-8 geçerli", reader.isValidUtf8("ÇĞİÖŞÜçğıöşü".toByteArray(Charsets.UTF_8)))
         assertTrue(
-            "4096'dan sonraki cp1254 baytları görülmüyor, bozuk karakter kalıyor",
-            metin.contains('�')
+            "Gerçek U+FFFD içeren UTF-8 geçerli",
+            reader.isValidUtf8("Şarkı�son".toByteArray(Charsets.UTF_8))
+        )
+        assertTrue("Emoji (4 baytlık dizi) geçerli", reader.isValidUtf8("🎵".toByteArray(Charsets.UTF_8)))
+    }
+
+    @Test
+    fun gecersizUtf8_dogruTespitEdilir() {
+        assertFalse("cp1254 Türkçe baytları UTF-8 değil", reader.isValidUtf8(bytes(0xDE, 0xFD)))
+        assertFalse("Yarım kalmış çok baytlı dizi geçersiz", reader.isValidUtf8(bytes(0xC3)))
+        assertFalse("Devam baytı ile başlayan dizi geçersiz", reader.isValidUtf8(bytes(0x80)))
+        assertFalse("Aşırı uzun (overlong) kodlama geçersiz", reader.isValidUtf8(bytes(0xC0, 0x80)))
+        assertFalse(
+            "Sonu yarım kalan dosya geçersiz",
+            reader.isValidUtf8(ascii("Sarki,") + bytes(0xE4, 0xB8))
         )
     }
 
