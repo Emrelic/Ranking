@@ -248,7 +248,7 @@ class PairwiseDeepTest {
     // ==========================================================
 
     @Test
-    fun beraberlik_adayKaybetmisSayilir_davranisSabitleniyor() {
+    fun belgeleme_beraberlik_adayKaybetmisSayilir() {
         // Kod yorumu: "Kayıtta winnerId=null görülürse öğe kaybetti sayılır."
         // Bu test o kararı SABİTLER; davranış değişirse burada kırılır.
         val songs = makeSongs(2)
@@ -386,6 +386,45 @@ class PairwiseDeepTest {
         val answered = m.copy(id = 1L, winnerId = m.songId1, isCompleted = true)
         val second = PairwiseComparisonSort.createNextComparisonMatch(songs, listOf(answered))
         assertEquals("ikinci sorunun matchNumber'ı 2 olmalı", 2, second?.matchNumber)
+    }
+
+    @Test
+    fun tahminiSoruSayisi_azalmaz() {
+        // Üst sınır n büyüdükçe küçülemez
+        var prev = 0
+        (1..80).forEach { n ->
+            val cur = PairwiseComparisonSort.estimatedTotalComparisons(n)
+            assertTrue("estimatedTotalComparisons($n)=$cur, önceki $prev'den küçük", cur >= prev)
+            prev = cur
+        }
+    }
+
+    @Test
+    fun tekOge_yabanciMaclarlaBileTamamlanmisSayilir() {
+        val songs = makeSongs(1)
+        val orphan = listOf(
+            Match(id = 1L, listId = 7L, rankingMethod = method, songId1 = 99L, songId2 = 98L,
+                winnerId = 99L, isCompleted = true)
+        )
+        val state = PairwiseComparisonSort.computeState(songs, orphan)
+        assertTrue("1 öğede yabancı maç varken de sıralama bitmiş sayılmalı", state.isComplete)
+        assertEquals(listOf(1L), state.sortedIds)
+    }
+
+    @Test
+    fun skorlarPozisyonlaTutarli() {
+        val songs = makeSongs(12)
+        val run = runSort(songs, answer = lowerIdIsBetter)
+        val results = PairwiseComparisonSort.calculateResults(songs, run.matches)
+        results.sortedBy { it.position }.zipWithNext().forEach { (ust, alt) ->
+            assertTrue(
+                "Üstteki öğenin skoru alttakinden büyük olmalı (${ust.score} vs ${alt.score})",
+                ust.score > alt.score
+            )
+        }
+        assertEquals("En alttaki skor 1 olmalı", 1.0, results.maxOf { it.position }.let { p ->
+            results.first { it.position == p }.score
+        }, 0.0001)
     }
 
     @Test

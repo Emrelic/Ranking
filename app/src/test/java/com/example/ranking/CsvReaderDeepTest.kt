@@ -139,6 +139,41 @@ class CsvReaderDeepTest {
         assertEquals("Test", songs[0].name)
     }
 
+    @Test
+    fun ayrac_esitSayidaVirgulVeNoktaliVirgul_virgulKazanir() {
+        // Belirsiz durum: aynı sayıda , ve ; var. Kural: ; ancak virgülden
+        // ÇOK olduğunda kazanır → virgül kalmalı.
+        val songs = reader.parseText("A,B;C\n1,2;3")
+        assertEquals(1, songs.size)
+        assertEquals("Belirsizlikte virgül seçilmeli", "2;3", songs[0].name)
+    }
+
+    @Test
+    fun eskiMacSatirSonu_yalnizCR() {
+        // \r ile biten (klasik Mac) dosya — satırlar ayrılmalı
+        val songs = reader.parseText("Sanatçı,Şarkı\rA,Bir\rB,İki")
+        assertEquals("Yalnız CR'li dosyada iki öğe olmalı", 2, songs.size)
+        assertEquals("Bir", songs[0].name)
+        assertEquals("İki", songs[1].name)
+    }
+
+    @Test
+    fun yalnizBosluktanOlusanAlanBosSayilir() {
+        val songs = reader.parseText("No,A,B,Ad\n1,   ,   ,Test")
+        assertEquals(1, songs.size)
+        assertEquals("Boşluk alanı trim edilmeli", "", songs[0].artist)
+        assertEquals("Test", songs[0].name)
+    }
+
+    @Test
+    fun alanBasindakiBosluktanSonraTirnak_tirnakliSayilir() {
+        // Excel bazen ", \"a,b\"" biçiminde yazar. Alan başındaki boşluk
+        // sonrası tırnak, tırnaklı alan olarak açılmalı ki virgül korunsun.
+        val songs = reader.parseText("No,A,B,Ad\n1,x,y, \"Ali, Veli\"")
+        assertEquals(1, songs.size)
+        assertEquals("Ali, Veli", songs[0].name)
+    }
+
     // ==========================================================
     // ③ SÜTUN SAYISI KALIPLARI
     // ==========================================================
@@ -195,7 +230,7 @@ class CsvReaderDeepTest {
     }
 
     @Test
-    fun bozukSatir_dorttenAzSutun_sessizceKaydiriyor() {
+    fun belgeleme_bozukSatir_dorttenAzSutunAdiKaydiriyor() {
         // BELGELEME: 9 sütunluk dosyada 3 alanlı bozuk bir satır, 3-sütun kalıbına
         // düşüyor ve "ad" 3. alandan alınıyor. Sessiz veri kayması.
         val songs = reader.parseText(
@@ -212,7 +247,7 @@ class CsvReaderDeepTest {
     }
 
     @Test
-    fun bosAdliSatirSessizceDusuyor() {
+    fun belgeleme_bosAdliSatirSessizceDusuyor() {
         // BELGELEME: 4. sütunu boş olan satır listeye HİÇ girmiyor, uyarı da yok.
         val songs = reader.parseText(
             "No,A,B,Ad\n1,a,b,Var\n2,a,b,\n3,a,b,Yine Var"
@@ -244,9 +279,14 @@ class CsvReaderDeepTest {
     // ==========================================================
 
     @Test
-    fun basliksizCokSutunluDosya_ilkSatirKAYBOLUYOR() {
-        // BELGELEME (veri kaybı riski): ilk satır 2+ alanlıysa KOŞULSUZ başlık sayılır.
-        // Başlıksız bir dosyanın ilk öğesi sessizce yutulur.
+    fun belgeleme_basliksizIkiSutunluListe_ilkSatirYUTULUYOR_bkzYAPILACAKLAR() {
+        // BELGELEME (bilinçli kabul edilen veri kaybı — kapatılmadı, GÖRÜNÜR bırakıldı):
+        // İlk satırın ilk hücresi tam sayıysa artık VERİ sayılıyor (9a15e55), ama
+        // sayısız listelerde ("Sezen Aksu,Firuze") ilk satır hâlâ başlık sayılıp
+        // yutuluyor. 2 sütunlu sanatçı-şarkı listesinde başlık olup olmadığı
+        // YAPISAL OLARAK belirsiz; hiçbir sezgi güvenilir çözemez.
+        // Doğru çözüm içe aktarmada kullanıcıya sormak → YAPILACAKLAR.md.
+        // Bu test o kaybı görünür tutuyor; sessizce "düzeldi" sanılmasın.
         val songs = reader.parseText("Sezen Aksu,Firuze\nMFÖ,Ali Desidero\nTarkan,Şımarık")
         assertEquals("Başlıksız çok sütunlu dosyada ilk satır yutuluyor", 2, songs.size)
         assertFalse("İlk satır öğe olarak gelmemeli (mevcut davranış)", songs.any { it.name == "Firuze" })
@@ -266,7 +306,7 @@ class CsvReaderDeepTest {
     }
 
     @Test
-    fun csvData_baslikSayisindanFazlaAlanDusuyor() {
+    fun belgeleme_csvData_baslikSayisindanFazlaAlanDusuyor() {
         // BELGELEME: başlıkta 4, satırda 6 alan varsa fazladan 2 alan csvData'ya girmiyor.
         val songs = reader.parseText("No,A,B,Ad\n1,a,b,Test,fazla1,fazla2")
         val json = JSONObject(songs[0].csvData ?: "{}")

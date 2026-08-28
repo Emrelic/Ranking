@@ -127,3 +127,61 @@ Koordinatör yeni iş verdi: `SwissSystem.kt` (ranking-5e) ve
 `EliminationSystem.kt` (ranking-f9) motorları yazılıyor; ortaya çıktıkça
 `YeniMotorlarCaprazTest.kt` ile kırmaya çalışacağım. Motorlar henüz commit
 edilmedi.
+
+---
+
+# İKİNCİ GEÇİŞ — tur kapanışı, çift puanlama, küçük turnuvalar
+
+## SAYIM (ikinci koşum)
+
+| dosya | test | geçti | kırık |
+|---|---|---|---|
+| `EmreSystemDeepTest.kt` | 56 | 56 | 0 |
+| `PairwiseDeepTest.kt` | 30 | 30 | 0 |
+| `CsvReaderDeepTest.kt` | 41 | 41 | 0 |
+| **toplam** | **127** | **127** | **0** |
+
+## 🔴 BENİM HATAM — dört yanlış beklenti
+
+İlk yazımda dört test kırıldı ve **dördü de motor kusuru değildi, benim
+beklentim yanlıştı.** Kayda geçiriyorum ki "test kırıldı = motor bozuk"
+sanılmasın:
+
+| test | beklediğim | ölçülen | gerçek |
+|---|---|---|---|
+| n=3 hepsi berabere | 3 tur (tam round-robin) | 1 tur | bye 1 puan getirdiği için puanlar ayrışıyor, "aynı puanlı eşleşme yok" kuralı turnuvayı bitiriyor — KURALA UYGUN |
+| n=5 hepsi berabere | 5 tur | 2 tur | aynı sebep + tekrarsız tam eşleştirme kurulamıyor — KURALA UYGUN |
+| yarım maçın ikilisi 2. turda eşleşir | eşleşir | eşleşmiyor | n=4'te o ikilinin tamamlayıcısı oynanmış ikili; yasaklı olduğu için yapısal olarak imkânsız |
+| byeTeam geçilmezse aynı takım yine bye geçer | takım 5 | takım 3 | takım 5 mağlubiyeti olmadığı için tiebreaker'da yükseldi; bye en alttakine gitti. Asıl tehlike (byePassed işaretlenmiyor) doğru, testin ifadesi yanlıştı |
+
+Testler düzeltildi; ölçülen davranış kurala uygun olduğu için **kurala göre**
+yeniden yazıldı.
+
+## TEHLİKE SÖZLEŞMELERİ (yeni sabitlenenler)
+
+### `belgeleme_turKapanisi_motorIDEMPOTENT_DEGIL`
+`processRoundResults` aynı maç listesiyle iki kez çağrılırsa **puanlar ikiye
+katlanır**; motor "bu turu işledim mi" diye bakmaz. Maç geçmişi küme olduğu
+için katlanmaz — yani puan ile geçmiş ayrışır. Koruma ÇAĞIRANDA olmak zorunda.
+Bugün düzeltilen "kaybolan oy" ve "resume'da çift puanlama" kusurlarının ikisi
+de bu sözleşmenin korunmamasından geliyordu.
+
+### `turKapanisi_byeGecilmezseByePuaniVeByeIsaretiKaybolur`
+Çağıran `byeTeam`'i geçirmezse: bye puanı verilmez **ve** `byePassed`
+işaretlenmez → takım "hiç bye geçmemiş" sayılmaya devam eder, ileride ikinci
+byeyi alabilir. Karşılaştırmalı olarak doğru çağrının 1 puan + `byePassed=true`
+ürettiği de aynı testte sabitlendi.
+
+### Tek sayılı küçük turnuvalarda bitiş (ölçülen)
+Hepsi berabere senaryosunda: **n=3 → 1 tur, n=5 → 2 tur.** Tam round-robin'e
+ULAŞILMAZ. Sebep: bye 1 puan, beraberlik 0.5 puan; bye alan takım tek başına
+yukarı çıkıyor ve "aynı puanlı eşleşme yok" kuralı devreye giriyor.
+Çift sayıda böyle bir sapma yok: n=4 hepsi berabere → 3 tur, 6 maç, tam
+round-robin.
+
+## CSV — başlık sezgisi (kapatılmadı, görünür bırakıldı)
+`belgeleme_basliksizIkiSutunluListe_ilkSatirYUTULUYOR_bkzYAPILACAKLAR`
+9a15e55 ile "ilk hücre tam sayıysa veridir" kuralı geldi; sayısal listelerdeki
+kaybı kapatıyor. Ama `Sezen Aksu,Firuze` gibi sayısız listelerde ilk satır hâlâ
+yutuluyor. 2 sütunlu listede başlık olup olmadığı yapısal olarak belirsiz;
+doğru çözüm içe aktarmada sormak → YAPILACAKLAR.md.

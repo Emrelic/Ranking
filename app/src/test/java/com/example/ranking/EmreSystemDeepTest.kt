@@ -745,6 +745,247 @@ class EmreSystemDeepTest {
         )
     }
 
+    // ==========================================================
+    // ⑫ EK SINIRLAR (ikinci geçiş)
+    // ==========================================================
+
+    // ---- TUR KAPANIŞI VE ÇİFT PUANLAMA YOLU ----
+    // Bu bölge bugün düzeltilen "kaybolan oy / çift puanlama" sınıfının motor
+    // tarafı. Motorun sözleşmesi burada SABİTLENİYOR ki çağıran taraf
+    // (RankingViewModel) yanlış kullanınca sessiz kalmasın.
+
+    @Test
+    fun belgeleme_turKapanisi_motorIDEMPOTENT_DEGIL() {
+        // 🔴 TEHLİKE SÖZLEŞMESİ: processRoundResults aynı maç listesiyle iki kez
+        // çağrılırsa puanlar İKİYE KATLANIR. Motor "bu turu daha önce işledim mi"
+        // diye bakmaz — korumanın çağıranda olması ŞART.
+        // (Tur kapanışı tek yoldan yürümezse doğrudan bu hataya düşülür.)
+        val state = EmreSystemCorrect.initializeEmreTournament(makeSongs(4))
+        val round = listOf(match(1, 1L, 2L, 1L), match(2, 3L, 4L, 3L))
+
+        val bir = EmreSystemCorrect.processRoundResults(state, round, null, round)
+        val iki = EmreSystemCorrect.processRoundResults(bir, round, null, round)
+
+        assertEquals("Tek işlemede 1 puan", 1.0, bir.teams.first { it.id == 1L }.points, 0.0001)
+        assertEquals(
+            "İKİ KEZ işlenirse 2 puan olur — motor idempotent değil, koruma çağıranda",
+            2.0, iki.teams.first { it.id == 1L }.points, 0.0001
+        )
+        assertEquals(
+            "Maç geçmişi ise küme olduğu için ikiye katlanmaz",
+            2, iki.matchHistory.size
+        )
+        assertEquals("Her çağrı turu bir artırır", 3, iki.currentRound)
+    }
+
+    @Test
+    fun turKapanisi_byeGecilmezseByePuaniVeByeIsaretiKaybolur() {
+        // 🔴 Çağıran byeTeam'i geçirmezse: bye puanı verilmez VE byePassed
+        // işaretlenmez → takım "hiç bye geçmemiş" sayılmaya devam eder,
+        // ileride ikinci kez bye geçebilir. (Rotasyonun sessiz bozulma yolu.)
+        var state = EmreSystemCorrect.initializeEmreTournament(makeSongs(5))
+        val r1 = EmreSystemCorrect.createHybridPairingSystem(state)
+        assertEquals(5L, r1.byeTeam?.id)
+
+        val completed = r1.matches.mapIndexed { i, m ->
+            m.copy(id = (i + 1).toLong(), winnerId = m.songId1, isCompleted = true)
+        }
+        // byeTeam BİLEREK geçilmiyor
+        state = EmreSystemCorrect.processRoundResults(state, completed, null, completed)
+
+        val byeTakim = state.teams.first { it.id == 5L }
+        assertEquals("byeTeam geçilmezse bye puanı kaybolur", 0.0, byeTakim.points, 0.0001)
+        assertFalse(
+            "byeTeam geçilmezse byePassed işaretlenmiyor — takım yeniden bye adayı",
+            byeTakim.byePassed
+        )
+        assertEquals("byeCount da artmıyor", 0, byeTakim.byeCount)
+
+        // Karşılaştırma: byeTeam geçilirse ikisi de doğru işleniyor
+        val dogru = EmreSystemCorrect.processRoundResults(
+            EmreSystemCorrect.initializeEmreTournament(makeSongs(5)),
+            completed, r1.byeTeam, completed
+        )
+        val dogruBye = dogru.teams.first { it.id == 5L }
+        assertEquals("byeTeam geçilince 1 puan", 1.0, dogruBye.points, 0.0001)
+        assertTrue("byeTeam geçilince byePassed işaretlenir", dogruBye.byePassed)
+    }
+
+    @Test
+    fun turKapanisi_yarimKalanMacOynanmisSayilmaz() {
+        // Turun bir maçı yarım kalırsa o ikili "oynadı" sayılmamalı;
+        // oynanan ikili ise bir daha eşleşmemeli.
+        // NOT: n=4'te yarım kalan ikili 2. turda YİNE DE eşleşemez — çünkü
+        // onun tamamlayıcısı oynanmış ikilidir ve yasaklıdır. Bu yapısal bir
+        // zorunluluk, kusur değil.
+        val state = EmreSystemCorrect.initializeEmreTournament(makeSongs(4))
+        val r1 = EmreSystemCorrect.createHybridPairingSystem(state)
+        assertEquals(2, r1.matches.size)
+
+        val tamam = r1.matches[0].copy(id = 1L, winnerId = r1.matches[0].songId1, isCompleted = true)
+        val yarim = r1.matches[1].copy(id = 2L, winnerId = null, isCompleted = false)
+        val oynananIkili = normalize(tamam.songId1, tamam.songId2)
+        val oynanmayanIkili = normalize(yarim.songId1, yarim.songId2)
+
+        val next = EmreSystemCorrect.processRoundResults(state, listOf(tamam, yarim), null, listOf(tamam))
+        assertEquals("Yalnız tamamlanan maç geçmişe girmeli", 1, next.matchHistory.size)
+
+        val r2 = EmreSystemCorrect.createHybridPairingSystem(next)
+        val r2Pairs = r2.matches.map { normalize(it.songId1, it.songId2) }.toSet()
+        assertEquals("2. turda yine tam eşleştirme olmalı", 2, r2.matches.size)
+        assertEquals(
+            "2. turda kimse turdan düşmemeli",
+            setOf(1L, 2L, 3L, 4L),
+            r2.matches.flatMap { listOf(it.songId1, it.songId2) }.toSet()
+        )
+        assertFalse("Oynanmış ikili tekrar eşleşmemeli", oynananIkili in r2Pairs)
+        assertFalse(
+            "Yarım kalan ikili de eşleşemez (tamamlayıcısı yasaklı) — yapısal",
+            oynanmayanIkili in r2Pairs
+        )
+    }
+
+    /**
+     * TEK SAYILI KÜÇÜK TURNUVALARDA BİTİŞ KURALI
+     *
+     * Ölçülen davranış: bye 1 puan getirdiği için tek sayılı turnuvada puanlar
+     * hızla ayrışır ve turnuva **tam round-robin'e ulaşmadan** biter. Bu
+     * CLAUDE.md'deki kurala UYGUN:
+     *   "hiçbir eşleşme aynı puanlı değilse turnuva biter" ve
+     *   "tekrarsız tam eşleştirme kurulamazsa turnuva biter"
+     * (n=3 → 1 tur, n=5 → 2 tur; hepsi berabere senaryosunda ölçüldü.)
+     */
+    private fun assertTekSayiliBitisKurali(n: Int, beklenenTur: Int) {
+        val sim = simulate(n) { null }
+        assertEquals("n=$n hepsi berabere: beklenen tur sayısı", beklenenTur, sim.rounds.size)
+
+        // Oynanan turlar kurallı olmalı
+        val pairs = sim.allMatches.map { normalize(it.songId1, it.songId2) }
+        assertEquals("n=$n: tekrar eşleşme olmamalı", pairs.size, pairs.toSet().size)
+        sim.rounds.forEach { r ->
+            assertNotNull("n=$n tur ${r.round}: bye olmalı", r.byeTeamId)
+            assertEquals("n=$n tur ${r.round}: maç sayısı", (n - 1) / 2, r.matches.size)
+        }
+        val byes = sim.rounds.mapNotNull { it.byeTeamId }
+        assertEquals("n=$n: aynı takım iki kez bye geçmemeli", byes.size, byes.toSet().size)
+
+        // Bitiş gerçekten motorun kararı olmalı
+        val son = EmreSystemCorrect.createHybridPairingSystem(sim.finalState)
+        assertFalse("n=$n: turnuva bitmiş olmalı", son.canContinue && son.matches.isNotEmpty())
+    }
+
+    @Test
+    fun kucukTurnuva_n3_bitisKurali() = assertTekSayiliBitisKurali(3, beklenenTur = 1)
+
+    @Test
+    fun kucukTurnuva_n5_bitisKurali() = assertTekSayiliBitisKurali(5, beklenenTur = 2)
+
+    @Test
+    fun macNumaralari_alttanSecilenEnBuyukNumarayiAlir() {
+        // Kural: üstten seçilen eşleşme 1,2,3...; alttan seçilen N, N-1...
+        // n=8 ilk turda en alttaki ikili (7-8) en büyük numarayı (4) almalı.
+        val state = EmreSystemCorrect.initializeEmreTournament(makeSongs(8))
+        val pairing = EmreSystemCorrect.createHybridPairingSystem(state)
+        val bottom = pairing.matches.firstOrNull {
+            normalize(it.songId1, it.songId2) == Pair(7L, 8L)
+        }
+        assertNotNull("İlk turda 7-8 eşleşmesi olmalı", bottom)
+        assertEquals(
+            "Alttan seçilen eşleşme en büyük maç numarasını almalı",
+            pairing.matches.size, bottom?.matchNumber
+        )
+    }
+
+    @Test
+    fun bye_dagilimAdil_n9() {
+        val n = 9
+        val sim = simulate(n, winnerPicker = mixedResults)
+        val byeCounts = mutableMapOf<Long, Int>()
+        sim.rounds.mapNotNull { it.byeTeamId }.forEach { byeCounts[it] = (byeCounts[it] ?: 0) + 1 }
+        val min = byeCounts.values.minOrNull() ?: 0
+        val max = byeCounts.values.maxOrNull() ?: 0
+        assertTrue(
+            "n=9 bye dağılımı adil değil (en az $min, en çok $max): $byeCounts",
+            max - min <= 1
+        )
+        assertTrue(
+            "Bye alan takım sayısı tur sayısını aşamaz",
+            byeCounts.size <= sim.rounds.size
+        )
+    }
+
+    @Test
+    fun turNumarasi_herTurdaBirArtar() {
+        var state = EmreSystemCorrect.initializeEmreTournament(makeSongs(6))
+        assertEquals("Başlangıçta tur 1", 1, state.currentRound)
+        repeat(3) { i ->
+            val pairing = EmreSystemCorrect.createHybridPairingSystem(state)
+            if (!pairing.canContinue) return@repeat
+            val completed = pairing.matches.mapIndexed { idx, m ->
+                m.copy(id = (i * 10 + idx + 1).toLong(), winnerId = m.songId1, isCompleted = true)
+            }
+            state = EmreSystemCorrect.processRoundResults(state, completed, pairing.byeTeam, completed)
+            assertEquals("Tur numarası bir artmalı", i + 2, state.currentRound)
+        }
+    }
+
+    @Test
+    fun finalSonuclari_pozisyonlar1denNyeTekrarsiz() {
+        listOf(5, 8, 16).forEach { n ->
+            val sim = simulate(n, winnerPicker = mixedResults)
+            val results = EmreSystemCorrect.calculateFinalResults(sim.finalState)
+            assertEquals("n=$n sonuç sayısı", n, results.size)
+            assertEquals(
+                "n=$n pozisyonlar 1..$n tekrarsız olmalı",
+                (1..n).toList(), results.map { it.position }.sorted()
+            )
+            assertEquals(
+                "n=$n hiçbir öğe kaybolmamalı",
+                (1L..n.toLong()).toSet(), results.map { it.songId }.toSet()
+            )
+            // Skor = puan olmalı ve pozisyon sırası puanla çelişmemeli
+            results.sortedBy { it.position }.zipWithNext().forEach { (ust, alt) ->
+                assertTrue(
+                    "n=$n: ${ust.songId} (${ust.score}) üstte ama ${alt.songId} (${alt.score}) daha yüksek puanlı",
+                    ust.score >= alt.score
+                )
+            }
+        }
+    }
+
+    @Test
+    fun hepsiBerabere_tumTakimlarAyniPuanda() {
+        val sim = simulate(8) { null }
+        val points = sim.finalState.teams.map { it.points }.toSet()
+        assertEquals(
+            "Herkes berabere ise tüm puanlar eşit olmalı, bulunan: $points",
+            1, points.size
+        )
+        assertEquals(
+            "Her tur 0.5 puan eklenmeli",
+            sim.rounds.size * 0.5, points.first(), 0.0001
+        )
+    }
+
+    @Test
+    fun kucukTurnuva_tamRoundRobinTamamlanir() {
+        // n=4, herkes berabere: puanlar hep eşit kalır, tekrarsız eşleştirme
+        // bitene kadar sürer → tam round-robin (3 tur, 6 maç)
+        val sim = simulate(4) { null }
+        assertEquals("n=4 hepsi berabere: 3 tur oynanmalı", 3, sim.rounds.size)
+        assertEquals("n=4: toplam 6 maç olmalı", 6, sim.allMatches.size)
+        val pairs = sim.allMatches.map { normalize(it.songId1, it.songId2) }.toSet()
+        assertEquals("Tüm ikililer tam bir kez oynanmalı", 6, pairs.size)
+    }
+
+    @Test
+    fun ayniPuanliEslesmeBayragi_ilkTurdaDaimaTrue() {
+        val state = EmreSystemCorrect.initializeEmreTournament(makeSongs(6))
+        val pairing = EmreSystemCorrect.createHybridPairingSystem(state)
+        assertTrue("İlk turda hasSamePointMatch true olmalı", pairing.hasSamePointMatch)
+        assertTrue("İlk tur her zaman oynanır", pairing.canContinue)
+    }
+
     @Test
     fun sinir_ayniMacIkiKezIslenmez() {
         val state = EmreSystemCorrect.initializeEmreTournament(makeSongs(4))
