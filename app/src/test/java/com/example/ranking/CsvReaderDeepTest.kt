@@ -18,9 +18,9 @@ import org.junit.Test
  *  - sütun sayısı 1,2,3,4+ · boş satır · yalnız ayraçtan oluşan satır
  *  - Türkçe karakter ve mojibake onarımı
  *
- * ⚠️ KAPSANAMAYAN: BOM ve windows-1254 tespiti `detectEncodingAndRemoveBOM`
- * içinde private ve yalnız `readCsvFromUri` (Android Context + Uri) yolundan
- * çağrılıyor. JVM birim testinden erişilemiyor — bkz. bomKarakteri_parseTextTarafindanTemizlenir.
+ * ✅ BAYT DÜZEYİ: `bytesToText` (9a15e55) saf fonksiyon olduğu için BOM ve
+ * windows-1254 tespiti artık doğrudan test ediliyor (⑥.5 bölümü).
+ * Kalan boşluk yok.
  */
 class CsvReaderDeepTest {
 
@@ -449,6 +449,111 @@ No,Albüm,Yıl,Şarkı,Tür,Konu,Duygu Tonu,Süre,Söz-Müzik
                 assertTrue("Gömülü asset #$i içinde adı boş öğe var", s.name.isNotBlank())
             }
         }
+    }
+
+    // ==========================================================
+    // ⑥.5 BAYT → METİN (bytesToText) — encoding tespiti
+    //     Bu adım 9a15e55'te saf fonksiyona çıkarıldı; artık JVM'den test edilebiliyor.
+    // ==========================================================
+
+    private fun bytes(vararg values: Int) = ByteArray(values.size) { values[it].toByte() }
+
+    private fun ascii(s: String) = s.toByteArray(Charsets.US_ASCII)
+
+    @Test
+    fun bayt_duzUtf8TurkceDogruCozulur() {
+        val kaynak = "No,A,B,Şarkı\n1,x,y,Güneş"
+        assertEquals(kaynak, reader.bytesToText(kaynak.toByteArray(Charsets.UTF_8)))
+    }
+
+    @Test
+    fun bayt_utf8BomSilinir() {
+        val bom = bytes(0xEF, 0xBB, 0xBF)
+        val govde = "No,A,B,Ad\n1,x,y,Test".toByteArray(Charsets.UTF_8)
+        val metin = reader.bytesToText(bom + govde)
+        assertFalse("UTF-8 BOM bayt düzeyinde silinmeli", metin.startsWith("﻿"))
+        assertTrue("Metin başlıkla başlamalı, bulunan: '${metin.take(6)}'", metin.startsWith("No,"))
+    }
+
+    @Test
+    fun bayt_utf16LeBomCozulur() {
+        val kaynak = "No,A,B,Ad\n1,x,y,Şarkı"
+        val ham = bytes(0xFF, 0xFE) + kaynak.toByteArray(Charsets.UTF_16LE)
+        assertEquals("UTF-16LE BOM'lu dosya çözülmeli", kaynak, reader.bytesToText(ham))
+    }
+
+    @Test
+    fun bayt_utf16BeBomCozulur() {
+        val kaynak = "No,A,B,Ad\n1,x,y,Şarkı"
+        val ham = bytes(0xFE, 0xFF) + kaynak.toByteArray(Charsets.UTF_16BE)
+        assertEquals("UTF-16BE BOM'lu dosya çözülmeli", kaynak, reader.bytesToText(ham))
+    }
+
+    @Test
+    fun bayt_windows1254TurkceCozulur() {
+        // windows-1254: Ş=0xDE ş=0xFE ı=0xFD ğ=0xF0 ç=0xE7 ü=0xFC ö=0xF6 İ=0xDD
+        // Bu baytlar GEÇERLİ UTF-8 DEĞİL → motor cp1254'e düşmeli.
+        val ham = ascii("Sanatci,Sarki\nTest,") +
+            bytes(0xDE) + ascii("ark") + bytes(0xFD)   // "Şarkı"
+        val metin = reader.bytesToText(ham)
+        assertTrue(
+            "windows-1254 Türkçe çözülmeli, bulunan: '$metin'",
+            metin.endsWith("Şarkı")
+        )
+        assertFalse("Bozuk karakter kalmamalı", metin.contains('�'))
+    }
+
+    @Test
+    fun bayt_windows1254_parseTextIleUctanUcaCalisir() {
+        // "Şımarık" cp1254: Ş=0xDE ı=0xFD m a r ı=0xFD k
+        val ham = ascii("Sanatci,Sarki\nTarkan,") +
+            bytes(0xDE, 0xFD) + ascii("mar") + bytes(0xFD) + ascii("k")
+        val songs = reader.parseText(reader.bytesToText(ham))
+        assertEquals(1, songs.size)
+        assertEquals("Tarkan", songs[0].artist)
+        assertEquals("Şımarık", songs[0].name)
+    }
+
+    @Test
+    fun bayt_bosDizi() {
+        assertEquals("Boş dosya boş metin vermeli", "", reader.bytesToText(ByteArray(0)))
+        assertTrue(reader.parseText(reader.bytesToText(ByteArray(0))).isEmpty())
+    }
+
+    @Test
+    fun bayt_yalnizBomIcerenDosya() {
+        assertEquals("Yalnız BOM içeren dosya boş metin vermeli", "", reader.bytesToText(bytes(0xEF, 0xBB, 0xBF)))
+    }
+
+    @Test
+    fun belgeleme_bayt_gercekYerineKoymaKarakteriUtf8yiCp1254SANDIRIYOR() {
+        // TEHLİKE: tespit "UTF-8 çözümünde U+FFFD var mı" diye bakıyor.
+        // Dosya GERÇEKTEN U+FFFD içeriyorsa (geçerli UTF-8'dir) motor onu
+        // bozuk sanıp tüm dosyayı windows-1254 okur → bütün Türkçe bozulur.
+        val kaynak = "No,A,B,Ad\n1,x,y,Şarkı�son"
+        val metin = reader.bytesToText(kaynak.toByteArray(Charsets.UTF_8))
+        assertNotEquals(
+            "Gerçek U+FFFD içeren geçerli UTF-8 dosya cp1254 sanılıyor (mevcut davranış)",
+            kaynak, metin
+        )
+        assertFalse(
+            "cp1254 okunduğu için Türkçe bozuluyor: '$metin'",
+            metin.contains("Şarkı")
+        )
+    }
+
+    @Test
+    fun belgeleme_bayt_tespitYalnizIlk4096BaytaBakar() {
+        // 4096 baytlık örnekten sonra gelen cp1254 baytları görülmez;
+        // dosya UTF-8 sayılır ve o karakterler U+FFFD olur.
+        val dolgu = "No,A,B,Ad\n" + (1..500).joinToString("\n") { "$it,x,y,Oge$it" } + "\n"
+        assertTrue("Dolgu 4096 baytı aşmalı", dolgu.toByteArray(Charsets.UTF_8).size > 4096)
+        val ham = dolgu.toByteArray(Charsets.UTF_8) + ascii("501,x,y,") + bytes(0xDE) + ascii("ark") + bytes(0xFD)
+        val metin = reader.bytesToText(ham)
+        assertTrue(
+            "4096'dan sonraki cp1254 baytları görülmüyor, bozuk karakter kalıyor",
+            metin.contains('�')
+        )
     }
 
     // ==========================================================

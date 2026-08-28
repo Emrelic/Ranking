@@ -185,3 +185,102 @@ round-robin.
 kaybı kapatıyor. Ama `Sezen Aksu,Firuze` gibi sayısız listelerde ilk satır hâlâ
 yutuluyor. 2 sütunlu listede başlık olup olmadığı yapısal olarak belirsiz;
 doğru çözüm içe aktarmada sormak → YAPILACAKLAR.md.
+
+---
+
+# ÜÇÜNCÜ GEÇİŞ — bayt/encoding, lig motoru, Swiss çapraz testleri
+
+## SAYIM (üçüncü koşum)
+
+| dosya | test | geçti | kırık |
+|---|---|---|---|
+| `EmreSystemDeepTest.kt` | 56 | 56 | 0 |
+| `CsvReaderDeepTest.kt` | 51 | 51 | 0 |
+| `YeniMotorlarCaprazTest.kt` (YENİ) | 43 | 43 | 0 |
+| `PairwiseDeepTest.kt` | 30 | 30 | 0 |
+| `LeagueEngineDeepTest.kt` (YENİ) | 27 | 27 | 0 |
+| **toplam** | **207** | **207** | **0** |
+
+## ① BAYT → METİN kapsandı (kapsanamayanlar listesindeki boşluk kapandı)
+
+`CsvReader.bytesToText` 9a15e55'te saf fonksiyona çıkarıldığı için artık JVM'den
+doğrudan test ediliyor. 10 yeni test: düz UTF-8, UTF-8 BOM, UTF-16LE/BE BOM,
+windows-1254 Türkçe (hem ham hem uçtan uca `parseText` ile), boş dizi,
+yalnız BOM içeren dosya.
+
+İki TEHLİKE belgelendi (kusur olarak bildirildi, kapatma kararı koordinatörde):
+
+### `belgeleme_bayt_gercekYerineKoymaKarakteriUtf8yiCp1254SANDIRIYOR`
+Encoding tespiti "UTF-8 çözümünde U+FFFD var mı" diye bakıyor. Dosya
+**gerçekten** U+FFFD içeriyorsa (bu geçerli UTF-8'dir) motor onu bozuk sanıp
+**tüm dosyayı windows-1254 okuyor** → bütün Türkçe bozuluyor.
+
+### `belgeleme_bayt_tespitYalnizIlk4096BaytaBakar`
+Tespit yalnız ilk 4096 bayta bakıyor. Daha sonra gelen cp1254 baytları
+görülmüyor, dosya UTF-8 sayılıyor ve o karakterler U+FFFD oluyor.
+Büyük listelerde (1854 satırlık kütüphanede 4096 bayt ≈ ilk 40 satır) gerçek risk.
+
+## ② LİG MOTORU — `LeagueEngineDeepTest.kt` (27 test)
+
+Fikstür (circle method) doğrulandı: n=4,6,8,12 çift ve n=5,7,9 tek için
+**her ikili tam bir kez**, tur sayısı çiftte n-1 / tekte n, her turda takım
+en fazla bir maçta, BYE takımı (id=-1) gerçek maça sızmıyor, tek sayıda
+**herkes tam bir kez boşta kalıyor**, çift devirde her ikili tam iki kez ve
+rövanşta ev sahibi/deplasman yer değiştiriyor. Determinizm doğrulandı.
+
+Puanlama: 3/1/0, tamamlanmamış maç sayılmıyor, averaj (gol farkı) ve atılan gol
+tiebreak'leri doğru, yarım skorlu (score1 dolu score2 null) maç averaja girmiyor.
+Karşılaştırıcı toplam sıralı → 3'lü döngüde ve 64 takımlı yoğun döngüde
+`sortedWith` çökmüyor.
+
+### 🔴 KUSUR — `points[...]!!` yetim maçta NPE (koordinatör tarafından düzeltildi)
+`calculateLeagueResults`'ta `points[match.songId1]!!` deseni, maç kaydında
+silinmiş bir öğenin id'si varsa NPE atıyordu (beraberlik dalı :113 ve averaj
+dalı :123).
+
+⚠️ **DÜRÜSTLÜK NOTU:** Bu üç testi (`yetimMac_silinmisOgeIleCokmemeli`,
+`yetimMac_beraberlikDalindaCokmemeli`, `yetimMac_averajDalindaCokmemeli`)
+**KIRMIZI GÖRMEDİM.** Dosyayı diske yazdım, koordinatör aynı sırada koştu,
+NPE'yi ölçtü ve `RankingEngine.kt`'yi düzeltti; benim ilk koşumumda testler
+zaten yeşil geldi. Kusurun gerçek olduğunun kanıtı koordinatörün ölçümü ve
+kodda bıraktığı yorum — benim kendi ölçümüm değil.
+
+## ③ SWISS ÇAPRAZ TESTLERİ — `YeniMotorlarCaprazTest.kt` (43 test)
+
+`SwissSystem` (ranking-37) bağımsız olarak kırılmaya çalışıldı. **Kusur
+bulunamadı.** Doğrulananlar:
+- kırmızı çizgi: n=4,5,8,9,16,17,32 ve "hepsi berabere" senaryolarında
+  tekrar eşleşme YOK
+- her turda tam eşleştirme, kimse düşmüyor; tek takımda bye **gerçekten**
+  veriliyor, bye kaydı kendiyle-eşleşme imzası taşıyor ve tamamlanmış geliyor
+- bye rotasyonu adil (n=5,7,9): kimse ikinci byeyi herkes almadan almıyor
+- maç numaraları gerçek maçlar için 1..N tekrarsız, 1 numara en üst sıralıda
+- puan: galibiyet 1 · beraberlik 0.5 · bye 1; turnuva boyu toplam tutuyor
+- **replay**: maç listesi sırası bozulunca da, öğe listesi sırası değişince de
+  durum ve sonuç AYNI
+- tur bütçesi ceil(log2 n) aşılmıyor; tüm ikililer oynanmışken motor tekrar
+  eşleştirme yapmak yerine dürüstçe bitiriyor
+- yetim maç, başka yönteme ait maç, tamamlanmamış maç sayılmıyor
+- 64 takımlı yoğun döngüde `calculateResults` çökmüyor
+- n=64 ilk tur < 2 sn, tam turnuva < 20 sn
+
+### TEHLİKE SÖZLEŞMELERİ (Swiss)
+- `bye_kaydiSaklanmazsaAyniTakimTekrarByeGecer`: bye Match satırı olarak
+  saklanmazsa replay bye geçmişini hatırlamıyor ve aynı takım yine bye geçiyor.
+  Aynı testte, saklandığında rotasyonun doğru çalıştığı da karşılaştırmalı
+  sabitlendi.
+- `belgeleme_ayniMacIkiKezKaydedilirsePuanIKIYEKATLANIR`: replay tüm listeyi
+  baştan oynattığı için çift kayıt puanı ikiye katlıyor. Tekilleştirme çağıranda.
+
+## ④ BENİM HATAM (bu geçişte 1 tane)
+`bayt_windows1254_parseTextIleUctanUcaCalisir` ilk yazımda kırıldı: cp1254
+bayt dizisini yanlış kurmuştum (`Ş` + "imar" + ı + ú). Motor doğru çözüyordu,
+beklenen metin yanlıştı. Düzeltildi.
+
+## KALAN KAPSANAMAYANLAR
+- `EliminationSystem.kt` henüz yok — geldiğinde `YeniMotorlarCaprazTest.kt`'ye
+  eklenecek.
+- Emre backtrack zinciri ve Swiss `pairWithBacktracking` iç durumları
+  **doğrudan** test edilmedi (private); yalnız dış davranışlarından doğrulandı.
+  Swiss'te geri izleme bütçesinin (50.000) dolduğu senaryo ZORLANMADI.
+- `RankingViewModel` / `RankingScreen` entegrasyonu benim dosyam değil.
