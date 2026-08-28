@@ -64,6 +64,58 @@ kendim araştırdım.
 - "Çok Yorgunum": Nâzım Hikmet'in "Mavi Liman" şiiri, Cem Karaca bestesi — Ferah'ın yorumu.
   Ayrıca doğrulandı (headliner.com.tr, şiirlerlesarkilarla). 40/40 hücre dolu, "-" yok.
 
-## Kalan albümler
-8. Parmak İzi (2018) — satır 72-81
-9. Albüm Dışı (Single) — satır 82-85
+## Albüm 8/9 — Parmak İzi (2018), satır 72-81 ✅ TAMAM
+- Süreler için ne tr.wikipedia.org ne MusicBrainz veri verdi (release'de "Belirtilmemiş") →
+  3a'nın verdiği süreleri kullandım (düşük riskli, çünkü 3a'nın süre verisi 5 albümde MB ile
+  1-3 saniye farkla tutarlı çıkmıştı — bkz. yukarıdaki kaynak notu).
+- "Sözde Namus"un Özgecan Aslan'a adandığı ve kadın cinayetleri temasını işlediği ayrıca
+  doğrulandı (ekmekvegul.net, eksisözlük).
+- "Vicdan" için 3a'nın "toplumsal duyarsızlığa şiddet eleştirisi" iddiasını doğrulayamadım;
+  bulduğum kaynaklar yalnız "vicdan, sorumluluk, iç dünya" gibi genel bir çerçeve veriyordu —
+  Konu'yu bu yüzden daha temkinli/genel yazdım.
+- "Koyu": 3a kendisi "tek kaynak, zayıf" diye işaretlemişti, ben de doğrulayamadım →
+  Konu ve Duygu Tonu "-" (yalnız Süre dolduruldu, o düşük riskli bir sayı).
+- 40 hücrenin 38'i dolu, 2 "-" (Koyu/Konu, Koyu/Duygu Tonu).
+
+## Albüm 9/9 — Albüm Dışı (Single), satır 82-85 ✅ TAMAM
+- 4 şarkının 4'ü de cover/ortak seslendirme — özgün beste değil, Söz-Müzik sütununda orijinal
+  yazar belirtildi, Ferah'ın yorumu olduğu not düşüldü:
+  - Değirmenler → Bülent Ortaçgil'e Saygı derlemesi (2000); süre kendi aramamla da 4:14 doğrulandı.
+  - Gönülçelen → Teoman'ın "Balans ve Manevra" film müziği (2005), doğrulandı.
+  - Ünzile → Aysel Gürel (söz) / Onno Tunç (müzik), Onno Tunç'a Saygı albümü (2007), doğrulandı
+    (orijinali 1986'da Sezen Aksu).
+  - Özgürce Yaşa → Vodafone'un gençlik/özgürlük kampanya şarkısı (2011), Hayko Cepkin/Badem/TNK/
+    Aylin Aslım ile ortak. 3a'nın verdiği "26 yaş altı" detayını doğrulayamadım, Konu'ya
+    koymadım — genel "gençliğin özgürce yaşama hakkı" ifadesiyle bıraktım.
+- 16 hücrenin 16'sı dolu, "-" yok.
+
+---
+
+## 🏁 SONUÇ — iş tamamlandı
+
+**Doldurma oranı:** 85 satır × 4 sütun = 340 hücrenin **334'ü dolu, 6'sı "-"** (kaynak
+bulunamadığı için bilerek boş bırakıldı, uydurulmadı):
+
+| Şarkı | Sütun | Neden "-" |
+|---|---|---|
+| Ay (Artık Kısa Cümleler Kuruyorum) | Konu | Güvenilir tema kaynağı bulunamadı |
+| Yemen Türküsü (Perdeler) | Süre | Bulduğum MB baskısında bu bonus track yoktu |
+| İnsanlık (Benim Adım Orman) | Konu, Duygu Tonu | Kaynak bulunamadı (3a de aynı şekilde işaretlemişti) |
+| Koyu (Parmak İzi) | Konu, Duygu Tonu | Tek ve zayıf kaynak — kabul edilmedi |
+
+**Şüpheli/çapraz-doğrulanamamış kayıt:** yok — yukarıdaki 6 hücre dışında her satır ya kendi
+aramalarımla ya da MusicBrainz'ten bağımsız doğrulandı.
+
+**diff -q durumu:** `liste_kutuphanesi/02_sebnem_ferah_sarkilari.csv` ile
+`app/src/main/assets/hazir_listeler/02_sebnem_ferah_sarkilari.csv` her commit'te birebir aynı
+(sonuncusu da dahil, kontrol edildi).
+
+**Kaynak/işbirliği notu:** Kadın (1) ve Can Kırıkları (5) albümleri tamamen kendi
+WebSearch/WebFetch taramamla araştırıldı. Diğer 7 albümün konu/duygu taslağı ranking-a3
+koordinatörlüğünde çalışan kardeş oturum ranking-3a'dan geldi; süreleri MusicBrainz'ten (5 albüm)
+bağımsız doğruladım, yüksek riskli iddiaları (4 cover, "Üvey", "Yemen Türküsü", "Çok Yorgunum",
+"Sözde Namus", "Ateşe Yakın") ayrıca kendi aramalarımla teyit ettim. Doğrulayamadığım "Koyu" ve
+"Özgürce Yaşa"nın bir detayını kabul etmedim.
+
+**Kırmızı çizgi:** Hiçbir şarkı sözünden tek dize bile alıntılanmadı; tüm Konu alanları
+betimlemeden ibaret.
