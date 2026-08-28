@@ -96,7 +96,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     // olmaktan çıkar; bu yüzden tur kapanışında null'lanır.
     private var lastCompletedMatchId: Long? = null
 
-    private fun undoSupported(): Boolean = currentMethod in setOf("LEAGUE", "EMRE_CORRECT", "MERGE_SORT")
+    /**
+     * Son sonucun geri alınabildiği yöntemler.
+     *
+     * Maç tabanlı ve sonucu tersine çevrilebilir olanlar. Direkt Puanlama
+     * hariç: orada "son maç" kavramı yok, puanlar tek tek kaydediliyor.
+     */
+    private fun undoSupported(): Boolean =
+        currentMethod in setOf("LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT")
     
     private fun resetState() {
         // Tüm state'i sıfırla
@@ -885,7 +892,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     showMatchingsList = false
                 )
 
-                if (currentMethod == "EMRE_CORRECT") {
+                // Puan tablosu geri alınan sonucu yansıtmalı — yoksa silinen
+                // puan tabloda durmaya devam eder
+                if (currentMethod in setOf("EMRE_CORRECT", "LEAGUE", "SWISS")) {
                     calculateCurrentStandings()
                 }
             } catch (e: Exception) {
@@ -1596,6 +1605,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 // Tur tamamlandı, sonuçları işle
                 // Tur kapandıktan sonra maç geri alınamaz (yeni tur eşleştirmeleri bu sonuçlara dayanır)
                 lastCompletedMatchId = null
+                // Buton da kaybolmalı: canUndo true kalırsa kullanıcı basıyor
+                // ve hiçbir şey olmuyordu (imleç boş, işlem sessizce dönüyor)
+                _uiState.value = _uiState.value.copy(canUndo = false)
                 val byeTeam = findByeTeam(currentState, currentRoundMatches)
                 emreState = RankingEngine.processCorrectEmreResults(
                     currentState,

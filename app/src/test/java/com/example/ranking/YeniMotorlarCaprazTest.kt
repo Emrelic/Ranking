@@ -376,10 +376,11 @@ class YeniMotorlarCaprazTest {
         val a = SwissSystem.computeState(sim.songs, sim.all)
         val b = SwissSystem.computeState(sim.songs, sim.all)
         assertEquals("Aynı maç listesi aynı durumu vermeli", a, b)
+        // createdAt karşılaştırma dışı (bkz. replay_macSirasiBozuksaBileAyniDurum)
         assertEquals(
             "Aynı maç listesi aynı sonucu vermeli",
-            SwissSystem.calculateResults(sim.songs, sim.all),
-            SwissSystem.calculateResults(sim.songs, sim.all)
+            SwissSystem.calculateResults(sim.songs, sim.all).map { Triple(it.songId, it.score, it.position) },
+            SwissSystem.calculateResults(sim.songs, sim.all).map { Triple(it.songId, it.score, it.position) }
         )
     }
 
@@ -393,10 +394,15 @@ class YeniMotorlarCaprazTest {
         val duz = SwissSystem.computeState(sim.songs, sim.all)
         val bozuk = SwissSystem.computeState(sim.songs, karisik)
         assertEquals("Kayıt sırası değişince durum değişmemeli", duz, bozuk)
+        // ⚠️ `createdAt` KARŞILAŞTIRMA DIŞI: RankingResult'ın varsayılanı
+        // System.currentTimeMillis(). İki çağrı milisaniye sınırını aşarsa
+        // nesneler eşit çıkmıyor ve test motoru suçlu gösteriyor — oysa
+        // songId/score/position birebir aynı. (Aynı tuzak SwissSystemTest'te
+        // de vardı, orada da böyle çözüldü.)
         assertEquals(
             "Kayıt sırası değişince sonuç değişmemeli",
-            SwissSystem.calculateResults(sim.songs, sim.all),
-            SwissSystem.calculateResults(sim.songs, karisik)
+            SwissSystem.calculateResults(sim.songs, sim.all).map { Triple(it.songId, it.score, it.position) },
+            SwissSystem.calculateResults(sim.songs, karisik).map { Triple(it.songId, it.score, it.position) }
         )
     }
 

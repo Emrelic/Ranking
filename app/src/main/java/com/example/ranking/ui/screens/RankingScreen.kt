@@ -705,17 +705,33 @@ private fun MatchBasedContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(R.string.ranking_progress_count, uiState.completedMatches + 1, uiState.totalMatches),
+                        // Sayaç toplamı aşmamalı: son maçta "5/4" görünüyordu
+                        text = stringResource(
+                            R.string.ranking_progress_count,
+                            (uiState.completedMatches + 1).coerceAtMost(uiState.totalMatches.coerceAtLeast(1)),
+                            uiState.totalMatches
+                        ),
                         style = MaterialTheme.typography.bodySmall
                     )
 
-                    // Son maç sonucunu geri alma (tur kapanana kadar)
+                    // Son maç sonucunu geri alma (tur kapanana kadar).
+                    // Yanlışlıkla oy veren biri bunu ARAMADAN görmeli:
+                    // düz metin bağlantı olarak fark edilmiyordu.
                     if (uiState.canUndo) {
-                        TextButton(
+                        FilledTonalButton(
                             onClick = { viewModel.undoLastMatch() },
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                            modifier = Modifier.height(32.dp),
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
                         ) {
-                            Text(stringResource(R.string.ranking_undo_last_match), style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                text = stringResource(R.string.ranking_undo_last_match),
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
 

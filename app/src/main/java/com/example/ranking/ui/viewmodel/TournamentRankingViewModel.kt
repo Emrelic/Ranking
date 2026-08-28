@@ -106,25 +106,22 @@ class TournamentRankingViewModel(application: Application) : AndroidViewModel(ap
             // TEMPORARY FIX: Redirect to existing working RankingScreen system
             // This will be properly integrated later
             
-            when (tournament.systemType) {
-                "EMRE_CORRECT" -> {
-                    
-                    // For now, set error to indicate need for redirect
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "REDIRECT_TO_RANKING_SCREEN:${tournament.songListId}:${tournament.systemType}"
-                    )
-                }
-                else -> {
-                    // Not: EMRE dışındaki sistemlerde RankingScreen'e otomatik
-                    // yönlendirme YAPILMAZ - bu sistemlerde oturum kaydı olmadığı
-                    // için yönlendirme mevcut maçları silip turnuvayı sıfırlar.
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = "Bu sistem türü (${tournament.systemType}) turnuva ekranından devam ettirilemiyor. Turnuvaya kaldığınız yerden devam etmek için Yeni Turnuva ekranını kullanın."
-                    )
-                }
-            }
+            // TÜM sistemlerde puanlama ekranına devam modunda yönlendirilir.
+            //
+            // Eskiden yalnız EMRE_CORRECT yönlendiriliyordu; diğer sistemlerde
+            // "bu sistem türü turnuva ekranından devam ettirilemiyor" hatası
+            // veriliyordu. Gerekçesi şuydu: o sistemlerde oturum kaydı yoktu,
+            // yönlendirme mevcut maçları silip turnuvayı sıfırlıyordu.
+            //
+            // Kök sebep 2026-08-29'da kapatıldı: Lig ve İkili Karşılaştırma
+            // artık oturum kuruyor, initializeX() fonksiyonlarındaki tekrar
+            // eden clearMatches çağrıları kaldırıldı ve "oturum yok ama maç
+            // var" durumu için kurtarma yolu eklendi. Dolayısıyla bu kısıt
+            // artık devam ettirmeyi ENGELLEYEN tek şey durumundaydı.
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                errorMessage = "REDIRECT_TO_RANKING_SCREEN:${tournament.songListId}:${tournament.systemType}"
+            )
             
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
