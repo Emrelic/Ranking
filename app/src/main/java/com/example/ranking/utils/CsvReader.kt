@@ -30,9 +30,7 @@ class CsvReader {
     suspend fun readCsvFromUri(context: Context, uri: Uri): List<CsvSong> = withContext(Dispatchers.IO) {
         val text = try {
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                val allBytes = inputStream.readBytes()
-                val (cleanBytes, charset) = detectEncodingAndRemoveBOM(allBytes)
-                String(cleanBytes, charset)
+                bytesToText(inputStream.readBytes())
             } ?: throw Exception("Dosya açılamadı. Dosya erişim izni olmayabilir.")
         } catch (e: Exception) {
             throw Exception("CSV dosyası okunamadı: ${e.message}", e)
@@ -59,8 +57,19 @@ class CsvReader {
 
         if (rows.isEmpty()) return emptyList()
 
-        // İlk satır birden fazla alana sahipse başlık kabul edilir (mevcut davranış)
-        val hasHeader = rows.first().size >= 2
+        // Baslik tespiti.
+        //
+        // Eskiden ilk satir KOSULSUZ baslik sayiliyordu: baslıksiz cok sutunlu
+        // bir dosyanin ilk ogesi sessizce yutuluyordu (50 satirlik dosyadan 49
+        // oge geliyor, hicbir uyari cikmiyordu).
+        //
+        // Sezgi: baslik satirinin ilk hucresi metindir ("No", "Sira", "#").
+        // Veri satirinin ilk hucresi ise sira numarasidir (1, 2, 3...).
+        // Dolayisiyla ilk hucre TAM SAYIYSA o satir veridir, baslik degil.
+        // 31 gomulu hazir listenin hepsinde ilk hucre "No" — davranislari
+        // degismiyor.
+        val ilkSatir = rows.first()
+        val hasHeader = ilkSatir.size >= 2 && ilkSatir[0].toIntOrNull() == null
         val headers = if (hasHeader) rows.first() else null
         val dataRows = if (hasHeader) rows.drop(1) else rows
 
@@ -200,6 +209,19 @@ class CsvReader {
             }
             else -> CsvSong(name = "")
         }
+    }
+
+    /**
+     * Ham baytlari metne cevirir: BOM tespiti + Turkce encoding fallback.
+     *
+     * Android'e bagimli degil ve `internal` — JVM birim testinden dogrudan
+     * cagrilabilir. Eskiden bu mantik yalnizca `readCsvFromUri(Context, Uri)`
+     * icinden erisilebiliyordu, yani windows-1254 fallback'i ve bayt duzeyi
+     * BOM tespiti hic test edilemiyordu.
+     */
+    internal fun bytesToText(bytes: ByteArray): String {
+        val (cleanBytes, charset) = detectEncodingAndRemoveBOM(bytes)
+        return String(cleanBytes, charset)
     }
 
     // Detect encoding and remove BOM if present
