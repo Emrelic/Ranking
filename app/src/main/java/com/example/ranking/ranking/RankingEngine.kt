@@ -817,10 +817,17 @@ object RankingEngine {
         val winners = mutableListOf<Song>()
         val losers = mutableListOf<Song>()
 
+        // 🔴 Katılımcı kümesi maçlardan türetilir AMA `songs` ile sınırlanır.
+        //
+        // Eskiden maçtaki her id koşulsuz ekleniyordu: silinmiş bir öğenin
+        // id'si de kümeye girip puan topluyordu. Üçlü grupta zirveye çıkarsa
+        // `songs.find { it.id == ... }` onu bulamıyor ve KAZANAN HİÇ
+        // EKLENMİYORDU — gerçek galip sessizce eleniyordu.
+        val gecerliIdler = songs.mapTo(mutableSetOf()) { it.id }
         val allSongIds = mutableSetOf<Long>()
         matches.forEach { match ->
-            allSongIds.add(match.songId1)
-            allSongIds.add(match.songId2)
+            if (match.songId1 in gecerliIdler) allSongIds.add(match.songId1)
+            if (match.songId2 in gecerliIdler) allSongIds.add(match.songId2)
         }
 
         if (allSongIds.size == 3 && matches.size == 3) {
@@ -849,14 +856,20 @@ object RankingEngine {
                 val song1 = songs.find { it.id == match.songId1 }
                 val song2 = songs.find { it.id == match.songId2 }
 
+                // 🔴 YETİM MAÇ: taraflardan biri silinmişse maç HİÇ İŞLENMEZ.
+                // Eskiden `?.let` yüzünden yalnız eksik taraf atlanıyor, ayakta
+                // kalan taraf yine de kaybeden yazılıyordu — silinmiş bir öğeye
+                // "yenilmiş" sayılan takım turnuvadan eleniyordu.
+                if (song1 == null || song2 == null) return@forEach
+
                 when (match.winnerId) {
                     match.songId1 -> {
-                        song1?.let { winners.add(it) }
-                        song2?.let { losers.add(it) }
+                        winners.add(song1)
+                        losers.add(song2)
                     }
                     match.songId2 -> {
-                        song2?.let { winners.add(it) }
-                        song1?.let { losers.add(it) }
+                        winners.add(song2)
+                        losers.add(song1)
                     }
                 }
             }

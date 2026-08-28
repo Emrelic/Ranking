@@ -603,6 +603,41 @@ No,Albüm,Yıl,Şarkı,Tür,Konu,Duygu Tonu,Süre,Söz-Müzik
         return candidates.map { java.io.File(it) }.firstOrNull { it.isDirectory }
     }
 
+    /**
+     * Başlık hariç MANTIKSAL veri satırı sayısı: tırnak durumunu izler,
+     * tırnak içindeki satır sonlarını satır sonu saymaz.
+     */
+    private fun logicalDataLineCount(text: String): Int {
+        var tirnakIcinde = false
+        var satirSayisi = 0
+        var satirDoluMu = false
+        var i = 0
+        while (i < text.length) {
+            val ch = text[i]
+            when {
+                tirnakIcinde -> {
+                    if (ch == '"') {
+                        if (i + 1 < text.length && text[i + 1] == '"') i++ else tirnakIcinde = false
+                    }
+                }
+                ch == '"' -> { tirnakIcinde = true; satirDoluMu = true }
+                ch == '\r' -> {
+                    if (i + 1 < text.length && text[i + 1] == '\n') i++
+                    if (satirDoluMu) satirSayisi++
+                    satirDoluMu = false
+                }
+                ch == '\n' -> {
+                    if (satirDoluMu) satirSayisi++
+                    satirDoluMu = false
+                }
+                !ch.isWhitespace() -> satirDoluMu = true
+            }
+            i++
+        }
+        if (satirDoluMu) satirSayisi++
+        return (satirSayisi - 1).coerceAtLeast(0) // başlık satırı düşülür
+    }
+
     @Test
     fun diskteki_tumHazirListeler_ayristirilabiliyor() {
         val dir = assetsDir()
@@ -621,7 +656,14 @@ No,Albüm,Yıl,Şarkı,Tür,Konu,Duygu Tonu,Süre,Söz-Müzik
             val songs = reader.parseText(text)
             totalItems += songs.size
 
-            val dataLines = text.lines().drop(1).count { it.isNotBlank() }
+            // MANTIKSAL satır sayısı — fiziksel değil.
+            //
+            // RFC-4180'de tırnak içindeki satır sonu alanın parçasıdır.
+            // 32_sebnem_ferah_sozleriyle.csv çok satırlı alan içeren ilk
+            // listemiz (her şarkının sözleri tırnak içinde, içinde satır
+            // sonlarıyla): 2687 fiziksel satır = 80 mantıksal satır.
+            // Fiziksel `\n` saymak orada 2607 sahte "kayıp" üretiyordu.
+            val dataLines = logicalDataLineCount(text)
             if (songs.size != dataLines) {
                 problems.add("${file.name}: ${dataLines} veri satırı → ${songs.size} öğe (fark ${dataLines - songs.size})")
             }

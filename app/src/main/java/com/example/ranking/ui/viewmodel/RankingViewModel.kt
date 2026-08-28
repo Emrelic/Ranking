@@ -176,9 +176,36 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                             activeTournamentId = activeTournament?.id
                         )
                         
+                        // 🔴 KURTARMA: oturum kaydı yok AMA maçlar duruyorsa
+                        // turnuva sıfırlanmaz — maçlardan devam edilir.
+                        //
+                        // Oturum kaydı birkaç yoldan kaybolabiliyor: yöntem
+                        // eskiden hiç oturum kurmuyordu (Lig ve İkili
+                        // Karşılaştırma), önceki bir "yeni turnuva" girişi
+                        // oturumu kapatmış olabiliyor, ya da oturum yazılmadan
+                        // uygulama kapanabiliyor. Bu durumda eskiden
+                        // initializeX() çağrılıyor ve oynanmış maçların hepsi
+                        // siliniyordu. Maç kayıtları asıl gerçektir; oturum
+                        // yalnız bir imleç.
+                        val mevcutMaclar = if (!forceNew && activeSession == null) {
+                            repository.getMatchesByListAndMethodSync(listId, method)
+                        } else {
+                            emptyList()
+                        }
+
                         if (activeSession != null) {
                             // Resume existing session
                             resumeSession(activeSession)
+                        } else if (mevcutMaclar.isNotEmpty()) {
+                            // Eksik oturumu kur, sonra maçlardan devam et
+                            createOrUpdateSession()
+                            currentVotingSession?.let { yeniOturum ->
+                                _uiState.value = _uiState.value.copy(
+                                    currentSession = yeniOturum,
+                                    hasActiveSession = true
+                                )
+                                resumeSession(yeniOturum)
+                            } ?: loadNextMatch()
                         } else {
                             // Start new session
                             when (method) {
@@ -291,7 +318,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeLeague() {
         viewModelScope.launch {
-            repository.clearMatches(currentListId, currentMethod)
             // Oturum kaydi olmadan getActiveSession daima null doner; bu yuzden
             // ekrana her giris "yeni turnuva" sayilip clearMatches ile oynanmis
             // maclari siliyor, Duraklat/Sifirla butonlari da hic gorunmuyordu.
@@ -306,7 +332,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
 
     private fun initializePairwiseSort() {
         viewModelScope.launch {
-            repository.clearMatches(currentListId, currentMethod)
             // Bkz. initializeLeague: oturum kaydi olmayan yontemde her giris
             // cevaplanmis tum karsilastirmalari siliyordu
             createOrUpdateSession()
@@ -331,7 +356,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeSwiss() {
         viewModelScope.launch {
-            repository.clearMatches(currentListId, currentMethod)
             
             // Initialize Swiss state for first round
             currentVotingSession?.let { session ->
@@ -366,8 +390,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     return@launch
                 }
                 
-                repository.clearMatches(currentListId, currentMethod)
-                
+                    
                 // Session oluştur
                 createOrUpdateSession()
                 
@@ -397,7 +420,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeElimination() {
         viewModelScope.launch {
-            repository.clearMatches(currentListId, currentMethod)
             val matches = RankingEngine.createEliminationMatches(songs)
             repository.createMatches(matches)
             loadNextMatch()
@@ -406,7 +428,6 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeFullElimination() {
         viewModelScope.launch {
-            repository.clearMatches(currentListId, currentMethod)
             val matches = RankingEngine.createFullEliminationMatches(songs)
             repository.createMatches(matches)
             loadNextMatch()
@@ -767,8 +788,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     fun submitDirectScore(songId: Long, score: Double) {
         viewModelScope.launch {
             directScores[songId] = score
-            
+
             // Save score to session
+            // ⚠️ Oturum yoksa puan HİÇ YAZILMIYORDU: yalnız bellekte kalıp
+            // uygulama kapanınca sessizce kayboluyordu. Oturum burada
+            // garanti altına alınır — puan diske yazılmadan devam edilmez.
+            if (currentVotingSession == null) {
+                createOrUpdateSession()
+            }
             currentVotingSession?.let { session ->
                 val votingScore = VotingScore(
                     sessionId = session.id,
