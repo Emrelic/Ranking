@@ -1,5 +1,6 @@
 package com.example.ranking.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -27,6 +29,7 @@ import com.example.ranking.ui.screens.ranking.CriteriaEvaluationDialog
 import com.example.ranking.ui.screens.ranking.HIDDEN_CSV_KEYS
 import com.example.ranking.ui.screens.ranking.ItemImage
 import com.example.ranking.ui.screens.ranking.extractImageUrl
+import com.example.ranking.ui.screens.ranking.MacSonuclariDialog
 import com.example.ranking.ui.screens.ranking.MatchingsListContent
 import com.example.ranking.ui.screens.ranking.methodTitle
 import com.example.ranking.ui.screens.ranking.ScoreInputDialog
@@ -55,6 +58,7 @@ fun RankingScreen(
     var showStandingsDialog by remember { mutableStateOf(false) }
     var showScoreDialog by remember { mutableStateOf(false) }
     var showResetConfirmDialog by remember { mutableStateOf(false) }
+    var showResultsDialog by remember { mutableStateOf(false) }
 
     // Turnuvanın kriter ayarları (panel otomatik açılış + zorunlu kriter için)
     var criteriaSettingsMap by remember { mutableStateOf<Map<String, Any>?>(null) }
@@ -123,7 +127,19 @@ fun RankingScreen(
             ) {
         TopAppBar(
             title = {
-                Text(methodTitle(method))
+                // Yöntem adı yerine TUR + EŞLEŞME SAYACI (kullanıcı isteği):
+                // "2. Tur 25/40". Maç ekranda değilken (liste/bitiş/puanlama
+                // dışı) yöntem adına dönülür — sayaç o an anlamsız.
+                val aktifMac = uiState.currentMatch
+                if (aktifMac != null && !uiState.isComplete) {
+                    val sayac = "${(uiState.completedMatches + 1).coerceAtMost(uiState.totalMatches.coerceAtLeast(1))}/${uiState.totalMatches}"
+                    val tur = if (method == "SWISS" || method == "EMRE_CORRECT") {
+                        "${aktifMac.round}. Tur "
+                    } else ""
+                    Text("$tur$sayac")
+                } else {
+                    Text(methodTitle(method))
+                }
             },
             navigationIcon = {
                 IconButton(onClick = onNavigateBack) {
@@ -153,19 +169,29 @@ fun RankingScreen(
                         }
                     }
 
-                    // Session management buttons
-                    if (uiState.hasActiveSession) {
+                    // DURAKLAT KALDIRILDI: tek işi hiçbir yerden okunmayan
+                    // isPaused bayrağını yazmaktı — oturum zaten her oyda
+                    // diske kaydediliyor ve "Devam Eden Turnuvalar"da duruyor.
+                    // Yerine SONUÇLAR: oylanmış maçlar görülür ve tur bitmeden
+                    // (yalnız takımın son maçıysa) sonuç değiştirilebilir.
+                    if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT")) {
                         Button(
-                            onClick = { viewModel.pauseSession() },
+                            onClick = {
+                                viewModel.macSonuclariniYukle()
+                                showResultsDialog = true
+                            },
                             shape = RoundedCornerShape(6.dp),
                             modifier = Modifier.height(32.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer
                             )
                         ) {
-                            Text(stringResource(R.string.ranking_pause), fontSize = 10.sp)
+                            Text("Sonuçlar", fontSize = 10.sp)
                         }
+                    }
 
+                    if (uiState.hasActiveSession) {
                         Button(
                             onClick = { showResetConfirmDialog = true },
                             shape = RoundedCornerShape(6.dp),
@@ -240,7 +266,6 @@ fun RankingScreen(
                 onShowStandingsDialog = { showStandingsDialog = it },
                 showScoreDialog = showScoreDialog,
                 onShowScoreDialog = { showScoreDialog = it },
-                onPauseSession = { viewModel.pauseSession() },
                 onResetRequest = { showResetConfirmDialog = true },
                 mandatoryCriteria = mandatoryCriteria
             )
@@ -292,6 +317,18 @@ fun RankingScreen(
                     }
                 )
             }
+        }
+
+        // Sonuçlar dialogu — oylanmış maçlar, tur bitmeden düzenlenebilir
+        if (showResultsDialog) {
+            MacSonuclariDialog(
+                uiState = uiState,
+                method = method,
+                onDismiss = { showResultsDialog = false },
+                onSonucDegistir = { matchId, winnerId ->
+                    viewModel.tamamlanmisSonucuDegistir(matchId, winnerId)
+                }
+            )
         }
 
         // Standings Dialog with TMB buttons
@@ -657,7 +694,6 @@ private fun MatchBasedContent(
     onShowStandingsDialog: (Boolean) -> Unit = {},
     showScoreDialog: Boolean = false,
     onShowScoreDialog: (Boolean) -> Unit = {},
-    onPauseSession: () -> Unit = {},
     onResetRequest: () -> Unit = {},
     // "Kriter değerlendirmesi zorunlu" ayarı: sonuç girişleri (takım seçimi,
     // beraberlik) doğrudan işlenmez, kriter dialoguna yönlendirilir
@@ -700,266 +736,353 @@ private fun MatchBasedContent(
         val useScores = uiState.leagueSettings?.useScores ?: false
         var showVsMenu by remember { mutableStateOf(false) }
 
-        // IMAGE #6: 6 KATMANLI SABİT LAYOUT
-        // progress / Takım1 başlık / Takım1 scroll / orta buton çubuğu (ekran
-        // ortasında) / Takım2 başlık / Takım2 scroll (ekran dibine kadar)
+        // YATAY MOD: ekran döndürülünce kartlar YAN YANA durur, buton çubuğu
+        // aralarında DİKEY bir sütun olur. Manifest'te configChanges
+        // orientation'ı kapsadığı için dönüşte activity yeniden yaratılmaz,
+        // oylama state'i aynen korunur.
+        val yatayMod = LocalConfiguration.current.orientation ==
+            Configuration.ORIENTATION_LANDSCAPE
+
+        // IMAGE #6: 6 KATMANLI SABİT LAYOUT (dikey)
+        // progress / Takım1 scroll / orta buton çubuğu (ekran ortasında) /
+        // Takım2 scroll (ekran dibine kadar) — yatayda 3. ve 6. katman yan yana
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // 1. SABİT: TUR İLERLEME ÇUBUĞU
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-            ) {
-                LinearProgressIndicator(
-                    progress = { uiState.progress },
-                    modifier = Modifier.fillMaxWidth()
-                )
+            // İLERLEME ÇUBUĞU KALDIRILDI (kullanıcı isteği): kazandırdığı
+            // dikey alan kartlara verildi. Tur + eşleşme SAYACI üst çubukta
+            // (TopAppBar başlığı, "2. Tur 25/40"); butonların yanında ise
+            // bu eşleşmenin NUMARASI gösterilir.
+            val turEtiketi: String? = null
+            val macSayaci = "Maç ${match.matchNumber}"
 
-                Spacer(modifier = Modifier.height(4.dp))
+            // 2./5. TAKIM BAŞLIKLARI kaldırıldı — ad artık kartın KENDİ başlık
+            // şeridinde (bkz. TeamSelectionPanel).
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            // Takım panelleri ve orta buton çubuğu — dikeyde alt alta,
+            // yatayda YAN YANA (butonlar aralarında dikey sütun olur).
+            val takim1Tikla: () -> Unit = {
+                if (mandatoryCriteria) {
+                    // Zorunlu kriter: sonuç kriter dialogu üzerinden verilir
+                    onShowCriteriaDialog(true)
+                } else if (!useScores) {
+                    uiState.song1?.id?.let { songId -> onMatchResult(match.id, songId) }
+                }
+            }
+            val takim2Tikla: () -> Unit = {
+                if (mandatoryCriteria) {
+                    onShowCriteriaDialog(true)
+                } else if (!useScores) {
+                    uiState.song2?.id?.let { songId -> onMatchResult(match.id, songId) }
+                }
+            }
+            val beraberlikTikla: () -> Unit = {
+                if (mandatoryCriteria) {
+                    // Zorunlu kriter: beraberlik de dialog üzerinden verilir
+                    onShowCriteriaDialog(true)
+                } else {
+                    onMatchResult(match.id, null) // null = beraberlik
+                }
+            }
+            val skorTikla: () -> Unit = {
+                if (mandatoryCriteria) {
+                    // Zorunlu kriter: skorla sonuç girişi de kriter
+                    // dialoguna yönlendirilir (kriter atlanamaz)
+                    onShowCriteriaDialog(true)
+                } else {
+                    onShowScoreDialog(true)
+                }
+            }
+            val vsMenu: @Composable () -> Unit = {
+                DropdownMenu(
+                    expanded = showVsMenu,
+                    onDismissRequest = { showVsMenu = false }
                 ) {
-                    Text(
-                        // Sayaç toplamı aşmamalı: son maçta "5/4" görünüyordu
-                        text = stringResource(
-                            R.string.ranking_progress_count,
-                            (uiState.completedMatches + 1).coerceAtMost(uiState.totalMatches.coerceAtLeast(1)),
-                            uiState.totalMatches
-                        ),
-                        style = MaterialTheme.typography.bodySmall
+                    // Duraklat menüden kaldırıldı: isPaused bayrağını hiçbir
+                    // kod okumuyordu, buton hiçbir şey yapmıyordu
+                    if (uiState.hasActiveSession) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ranking_reset)) },
+                            onClick = {
+                                showVsMenu = false
+                                onResetRequest()
+                            }
+                        )
+                    }
+                    if (method == "LEAGUE" || method == "EMRE_CORRECT") {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ranking_standings_menu)) },
+                            onClick = {
+                                showVsMenu = false
+                                onShowStandingsDialog(true)
+                            }
+                        )
+                    }
+                    if (uiState.canUndo) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.ranking_undo_last_match)) },
+                            onClick = {
+                                showVsMenu = false
+                                viewModel.undoLastMatch()
+                            }
+                        )
+                    }
+                }
+            }
+
+            if (yatayMod) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    TeamSelectionPanel(
+                        song = uiState.song1,
+                        method = method,
+                        emreState = uiState.emreState,
+                        borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        onClick = takim1Tikla,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
                     )
 
-                    // Geri alma tuşu artık ÜST ÇUBUKTA (bkz. TopAppBar actions).
-                    // Burada da durursa aynı işlev iki yerde görünüp kafa
-                    // karıştırıyor ve dar ilerleme satırını sıkıştırıyordu.
-
-                    if (method == "SWISS" || method == "EMRE_CORRECT") {
-                        Text(
-                            text = stringResource(R.string.ranking_round, match.round),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-
-            // 2. İLK TAKIM BAŞLIĞI kaldırıldı — ad artık kartın KENDİ başlık
-            // şeridinde (bkz. TeamSelectionPanel). Eskiden hem burada hem
-            // kartın içinde yazılıyor, aynı bilgi iki kez yer kaplıyordu.
-
-            // 3. SCROLL PENCERESİ: İLK TAKIM TABLOSU (her yöne kaydırılabilir)
-            TeamSelectionPanel(
-                song = uiState.song1,
-                method = method,
-                emreState = uiState.emreState,
-                borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                onClick = {
-                    if (mandatoryCriteria) {
-                        // Zorunlu kriter: sonuç kriter dialogu üzerinden verilir
-                        onShowCriteriaDialog(true)
-                    } else if (!useScores) {
-                        uiState.song1?.id?.let { songId ->
-                            onMatchResult(match.id, songId)
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f) // Available space'in yarısını al
-            )
-
-            // 4. SABİT: ORTA BUTON ÇUBUĞU (Image #6) - tam ekran ortasında
-            // BERABERLIK (büyük, yeşil) | VS (sarı, popup) | SKOR GİR + KRİTER (yeşil)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-                    .padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                // BERABERLIK - sol, büyük, yeşil
-                // İkili karşılaştırmada beraberlik yok: her soruda kazanan seçilmeli
-                if (method != "MERGE_SORT") {
-                    Button(
-                        onClick = {
-                            if (mandatoryCriteria) {
-                                // Zorunlu kriter: beraberlik de dialog üzerinden verilir
-                                onShowCriteriaDialog(true)
-                            } else {
-                                onMatchResult(match.id, null) // null = beraberlik
-                            }
-                        },
+                    // ORTA BUTON SÜTUNU — yatayda kartların ARASINDA dikey durur
+                    // (112dp: "BERABERLİK" tek satırda sığsın, kırılmasın)
+                    Column(
                         modifier = Modifier
-                            .weight(2f)
-                            .fillMaxHeight(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF388E3C),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp),
-                        contentPadding = PaddingValues(horizontal = 4.dp)
+                            .width(112.dp)
+                            .fillMaxHeight()
+                            .padding(horizontal = 4.dp)
                     ) {
-                        Text(
-                            text = stringResource(R.string.ranking_draw_button),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
+                        if (method != "MERGE_SORT") {
+                            OrtaButon(
+                                text = stringResource(R.string.ranking_draw_button),
+                                onClick = beraberlikTikla,
+                                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp),
+                                modifier = Modifier.fillMaxWidth().weight(1.4f)
+                            )
+                        }
+                        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+                            Button(
+                                onClick = { showVsMenu = true },
+                                modifier = Modifier.fillMaxSize(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFFFC107),
+                                    contentColor = Color.Black
+                                ),
+                                shape = if (method == "MERGE_SORT")
+                                    RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+                                else RectangleShape,
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.ranking_vs),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+                            vsMenu()
+                        }
+                        if (method != "MERGE_SORT") {
+                            OrtaButon(
+                                text = stringResource(R.string.ranking_process_score),
+                                onClick = skorTikla,
+                                shape = RectangleShape,
+                                modifier = Modifier.fillMaxWidth().weight(1f)
+                            )
+                        }
+                        if (kriterDesteklenir) {
+                            OrtaButon(
+                                text = stringResource(R.string.ranking_criteria_button),
+                                onClick = { onShowCriteriaDialog(true) },
+                                shape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp),
+                                modifier = Modifier.fillMaxWidth().weight(1f)
+                            )
+                        }
+                        // Tur + eşleşme sayacı (ilerleme çubuğunun yerine)
+                        TurMacSayaci(
+                            turEtiketi = turEtiketi,
+                            macSayaci = macSayaci,
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
                         )
                     }
-                }
 
-                // VS - ortada, sarı; üst işlemler popup menüde
-                Box(
+                    TeamSelectionPanel(
+                        song = uiState.song2,
+                        method = method,
+                        emreState = uiState.emreState,
+                        borderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                        onClick = takim2Tikla,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                    )
+                }
+            } else {
+                // 3. SCROLL PENCERESİ: İLK TAKIM TABLOSU (her yöne kaydırılabilir)
+                TeamSelectionPanel(
+                    song = uiState.song1,
+                    method = method,
+                    emreState = uiState.emreState,
+                    borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                    onClick = takim1Tikla,
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
+                        .fillMaxWidth()
+                        .weight(1f) // Available space'in yarısını al
+                )
+
+                // 4. SABİT: ORTA BUTON ÇUBUĞU (Image #6) - tam ekran ortasında
+                // BERABERLIK (büyük, yeşil) | VS (sarı, popup) | SKOR GİR + KRİTER (yeşil)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp)
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.Start
                 ) {
-                    Button(
-                        onClick = { showVsMenu = true },
-                        modifier = Modifier.fillMaxSize(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFFC107),
-                            contentColor = Color.Black
-                        ),
-                        shape = if (method == "MERGE_SORT")
-                            RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp, topEnd = 0.dp, bottomEnd = 0.dp)
-                        else
-                            RectangleShape,
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(
-                            text = stringResource(R.string.ranking_vs),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.ExtraBold
+                    // BERABERLIK - sol, büyük, yeşil
+                    // İkili karşılaştırmada beraberlik yok: her soruda kazanan seçilmeli
+                    if (method != "MERGE_SORT") {
+                        OrtaButon(
+                            text = stringResource(R.string.ranking_draw_button),
+                            onClick = beraberlikTikla,
+                            shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp),
+                            modifier = Modifier.weight(2f).fillMaxHeight(),
+                            textStyle = MaterialTheme.typography.labelLarge
                         )
                     }
 
-                    DropdownMenu(
-                        expanded = showVsMenu,
-                        onDismissRequest = { showVsMenu = false }
-                    ) {
-                        if (uiState.hasActiveSession) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.ranking_pause)) },
-                                onClick = {
-                                    showVsMenu = false
-                                    onPauseSession()
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.ranking_reset)) },
-                                onClick = {
-                                    showVsMenu = false
-                                    onResetRequest()
-                                }
-                            )
-                        }
-                        if (method == "LEAGUE" || method == "EMRE_CORRECT") {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.ranking_standings_menu)) },
-                                onClick = {
-                                    showVsMenu = false
-                                    onShowStandingsDialog(true)
-                                }
-                            )
-                        }
-                        if (uiState.canUndo) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.ranking_undo_last_match)) },
-                                onClick = {
-                                    showVsMenu = false
-                                    viewModel.undoLastMatch()
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // SKOR GİR - sağda, yeşil
-                // İkili karşılaştırmada gizli: skor girişi eşit skora izin verir,
-                // eşit skor beraberlik demektir ve MERGE_SORT'ta beraberlik
-                // "aday kaybetti" sayılıp sıralamayı sessizce keyfileştirir.
-                if (method != "MERGE_SORT") {
-                    Button(
-                        onClick = {
-                            if (mandatoryCriteria) {
-                                // Zorunlu kriter: skorla sonuç girişi de kriter
-                                // dialoguna yönlendirilir (kriter atlanamaz)
-                                onShowCriteriaDialog(true)
-                            } else {
-                                onShowScoreDialog(true)
-                            }
-                        },
+                    // VS - ortada, sarı; üst işlemler popup menüde
+                    Box(
                         modifier = Modifier
                             .weight(1f)
-                            .fillMaxHeight(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF388E3C),
-                            contentColor = Color.White
-                        ),
-                        shape = RectangleShape,
-                        contentPadding = PaddingValues(horizontal = 4.dp)
+                            .fillMaxHeight()
                     ) {
-                        Text(
+                        Button(
+                            onClick = { showVsMenu = true },
+                            modifier = Modifier.fillMaxSize(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFFC107),
+                                contentColor = Color.Black
+                            ),
+                            shape = if (method == "MERGE_SORT")
+                                RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                            else RectangleShape,
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.ranking_vs),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                        vsMenu()
+                    }
+
+                    // SKOR GİR - sağda, yeşil
+                    // İkili karşılaştırmada gizli: skor girişi eşit skora izin verir,
+                    // eşit skor beraberlik demektir ve MERGE_SORT'ta beraberlik
+                    // "aday kaybetti" sayılıp sıralamayı sessizce keyfileştirir.
+                    if (method != "MERGE_SORT") {
+                        OrtaButon(
                             text = stringResource(R.string.ranking_process_score),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            onClick = skorTikla,
+                            shape = RectangleShape,
+                            modifier = Modifier.weight(1f).fillMaxHeight()
                         )
                     }
-                }
 
-                // KRİTER - sağ uç, yeşil
-                // Yalnız maç tabanlı yöntemlerde: MERGE_SORT'ta dialoga
-                // verilecek maç yok, buton ekranı boşaltıyordu
-                if (kriterDesteklenir) {
-                    Button(
-                        onClick = { onShowCriteriaDialog(true) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF388E3C),
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(topStart = 0.dp, bottomStart = 0.dp, topEnd = 8.dp, bottomEnd = 8.dp),
-                        contentPadding = PaddingValues(horizontal = 4.dp)
-                    ) {
-                        Text(
+                    // KRİTER - sağ uç, yeşil
+                    // Yalnız maç tabanlı yöntemlerde: MERGE_SORT'ta dialoga
+                    // verilecek maç yok, buton ekranı boşaltıyordu
+                    if (kriterDesteklenir) {
+                        OrtaButon(
                             text = stringResource(R.string.ranking_criteria_button),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center
+                            onClick = { onShowCriteriaDialog(true) },
+                            shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp),
+                            modifier = Modifier.weight(1f).fillMaxHeight()
                         )
                     }
+
+                    // Tur + eşleşme sayacı (ilerleme çubuğunun yerine):
+                    // "2. Tur / 25/40" — butonların hemen yanında
+                    TurMacSayaci(
+                        turEtiketi = turEtiketi,
+                        macSayaci = macSayaci,
+                        modifier = Modifier.fillMaxHeight().padding(start = 4.dp)
+                    )
                 }
+
+                // 6. SCROLL PENCERESİ: İKİNCİ TAKIM TABLOSU - ekran dibine kadar
+                TeamSelectionPanel(
+                    song = uiState.song2,
+                    method = method,
+                    emreState = uiState.emreState,
+                    borderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                    onClick = takim2Tikla,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f) // Available space'in yarısını al
+                )
             }
+        }
+    }
+}
 
-            // 5. İKİNCİ TAKIM BAŞLIĞI kaldırıldı — ad kartın kendi şeridinde
-            // (bkz. TeamSelectionPanel)
-
-            // 6. SCROLL PENCERESİ: İKİNCİ TAKIM TABLOSU - ekran dibine kadar
-            TeamSelectionPanel(
-                song = uiState.song2,
-                method = method,
-                emreState = uiState.emreState,
-                borderColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
-                onClick = {
-                    if (mandatoryCriteria) {
-                        // Zorunlu kriter: sonuç kriter dialogu üzerinden verilir
-                        onShowCriteriaDialog(true)
-                    } else if (!useScores) {
-                        uiState.song2?.id?.let { songId ->
-                            onMatchResult(match.id, songId)
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f) // Available space'in yarısını al
+/** Tur ve eşleşme sayacı — ilerleme çubuğunun yerine, butonların yanında. */
+@Composable
+private fun TurMacSayaci(
+    turEtiketi: String?,
+    macSayaci: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        if (turEtiketi != null) {
+            Text(
+                text = turEtiketi,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
             )
         }
+        Text(
+            text = macSayaci,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
+        )
+    }
+}
+
+/** Orta çubuğun yeşil butonu — dikey/yatay yerleşimde ortak gövde. */
+@Composable
+private fun OrtaButon(
+    text: String,
+    onClick: () -> Unit,
+    shape: androidx.compose.ui.graphics.Shape,
+    modifier: Modifier = Modifier,
+    textStyle: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.labelMedium
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color(0xFF388E3C),
+            contentColor = Color.White
+        ),
+        shape = shape,
+        contentPadding = PaddingValues(horizontal = 4.dp)
+    ) {
+        Text(
+            text = text,
+            style = textStyle,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
+        )
     }
 }

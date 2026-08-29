@@ -44,7 +44,7 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Ranking.FullScreen"
-            android:screenOrientation="portrait"
+            android:screenOrientation="fullUser"
             android:configChanges="orientation|keyboardHidden|screenSize|navigation"
             android:windowSoftInputMode="adjustResize"
             android:launchMode="singleTask"

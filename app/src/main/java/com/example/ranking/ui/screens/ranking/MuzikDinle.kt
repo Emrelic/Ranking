@@ -19,6 +19,7 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
@@ -597,8 +598,11 @@ fun DinleButonu(
             if (!bildirimErisimiVar(context)) izinSor = true
             else youtubeMusicteAc(context, song)
         },
-        modifier = modifier.height(30.dp),
-        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+        // Parmakla basarken sağa sola taşma şikayeti: buton YATAY olarak
+        // büyütüldü (padding 10→18, asgari genişlik) — yükseklik aynı ki
+        // kartta fazladan dikey yer yemesin.
+        modifier = modifier.height(30.dp).widthIn(min = 96.dp),
+        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 0.dp),
         colors = ButtonDefaults.filledTonalButtonColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer

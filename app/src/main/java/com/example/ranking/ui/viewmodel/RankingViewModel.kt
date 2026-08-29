@@ -68,7 +68,17 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val canUndo: Boolean = false, // Son maç sonucu geri alınabilir mi
         // Bu liste+yöntem için aktif turnuva kaydı (kriter dialogu bununla
         // kriterleri bulur; maçlarda tournamentId tutulmadığı için gerekli)
-        val activeTournamentId: Long? = null
+        val activeTournamentId: Long? = null,
+        // Sonuçlar dialogu: tamamlanmış maçlar + hangileri düzenlenebilir
+        val macSonuclari: List<MacSonucSatiri> = emptyList()
+    )
+
+    /** Sonuçlar dialogunun bir satırı. */
+    data class MacSonucSatiri(
+        val match: Match,
+        val song1: Song?,
+        val song2: Song?,
+        val duzenlenebilir: Boolean
     )
     
     private val _uiState = MutableStateFlow(RankingUiState())
@@ -91,10 +101,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     private var currentSongIndex: Int = 0
     private var currentVotingSession: VotingSession? = null
 
-    // Son tamamlanan maç - tur kapanana kadar geri alınabilir.
-    // Tur kapanınca (Emre'de sonuçlar işlenip yeni tur üretilince) geri alma güvenli
-    // olmaktan çıkar; bu yüzden tur kapanışında null'lanır.
-    private var lastCompletedMatchId: Long? = null
+    // GERİ ALMA YIĞINI — tamamlanma sırasıyla maç id'leri; her "Geri Al"
+    // basışı EN SONDAKİNİ geri alır, tekrar basış bir öncekini (çok adımlı).
+    // Tur kapanınca (Emre'de sonuçlar işlenip yeni tur üretilince) geri alma
+    // güvenli olmaktan çıkar; bu yüzden tur kapanışında yığın boşaltılır.
+    private val undoYigini = ArrayDeque<Long>()
 
     /**
      * Son sonucun geri alınabildiği yöntemler.
@@ -104,6 +115,22 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun undoSupported(): Boolean =
         currentMethod in setOf("LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT")
+
+    /**
+     * Maçları AKTİF TURNUVANIN kimliğiyle kaydeder.
+     *
+     * Motorlar tournamentId üretmiyor (null kalıyordu) ve aynı liste+yöntemle
+     * açılan paralel turnuvaların maçları tek sorguda ayrıştırılamıyordu
+     * (cihazda ölçüldü: Sonuçlar ekranı iki turnuvanın 42 maçını birden
+     * gösterdi). Kimlik burada, tek noktadan yazılır.
+     */
+    private suspend fun createMatchesForTournament(matches: List<Match>): List<Match> {
+        val aktifId = _uiState.value.activeTournamentId
+        val kimlikli = if (aktifId == null) matches else matches.map {
+            if (it.tournamentId == null) it.copy(tournamentId = aktifId) else it
+        }
+        return repository.createMatches(kimlikli)
+    }
     
     private fun resetState() {
         // Tüm state'i sıfırla
@@ -111,7 +138,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         currentSongIndex = 0
         currentVotingSession = null
         emreState = null
-        lastCompletedMatchId = null
+        undoYigini.clear()
         
         _uiState.value = RankingUiState(
             isLoading = false,
@@ -332,7 +359,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val settings = _uiState.value.leagueSettings
             val doubleRoundRobin = settings?.doubleRoundRobin ?: false
             val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
-            repository.createMatches(matches)
+            createMatchesForTournament(matches)
             loadNextMatch()
         }
     }
@@ -354,7 +381,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
         val next = PairwiseComparisonSort.createNextComparisonMatch(songs, allMatches.filter { it.isCompleted })
         if (next != null) {
-            repository.createMatches(listOf(next))
+            createMatchesForTournament(listOf(next))
             loadNextMatch()
         } else {
             completeRanking()
@@ -379,7 +406,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             }
             
             val matches = RankingEngine.createSwissMatches(songs, 1, emptyList())
-            repository.createMatches(matches)
+            createMatchesForTournament(matches)
             loadNextMatch()
         }
     }
@@ -545,8 +572,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         
         // İkili karşılaştırmada maçlar teker teker üretilir; DB'deki toplam yerine
         // tahmini toplam soru sayısı gösterilir (ilerleme çubuğu anlamlı olsun diye)
+        // Turnuva kimliğiyle filtrelenir: paralel turnuvaların maçları sayacı
+        // şişiriyordu (cihazda ölçüldü: tur içi 20 maç yerine "41/120")
         val allMatchesForProgress = if (currentMethod == "EMRE_CORRECT") {
-            repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+            sonucMaclari()
         } else {
             emptyList()
         }
@@ -584,7 +613,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             progress = if (displayTotal > 0) displayCompleted.toFloat() / displayTotal else 0f,
             emreState = if (currentMethod == "EMRE_CORRECT") emreState else null,
             showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
-            canUndo = undoSupported() && lastCompletedMatchId != null
+            canUndo = undoSupported() && undoYigini.isNotEmpty()
         )
     }
     
@@ -616,7 +645,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
 
             // id'leri yazılmış kopyalar (bkz. createMatches) — id=0 kalırsa
             // listeden seçilen maçın sonucu sessizce kaybolur
-            val kayitliMaclar = repository.createMatches(pairing.matches)
+            val kayitliMaclar = createMatchesForTournament(pairing.matches)
 
             // BYE geçen takımın puanı maç kaydı üretmez; state'ten okunur.
             // Kullanıcıya da bildirilir, yoksa "benim takımım niye oynamadı"
@@ -700,7 +729,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             if (pairingResult.matches.isNotEmpty()) {
                 // id'si yazılmış kopyalar alınır: listeden seçilen maç @Update ile
                 // güncelleneceği için id=0 kalırsa o turun ilk sonucu kaybolur
-                val kayitliMaclar = repository.createMatches(pairingResult.matches)
+                val kayitliMaclar = createMatchesForTournament(pairingResult.matches)
 
                 // Her turda eşleştirmeler listesini göster
 
@@ -844,7 +873,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     isCompleted = true
                 )
                 repository.updateMatch(updatedMatch)
-                if (undoSupported()) lastCompletedMatchId = updatedMatch.id
+                if (undoSupported()) undoYigini.addLast(updatedMatch.id)
 
                 // Update Swiss state if this is a Swiss tournament
                 if (currentMethod == "SWISS") {
@@ -868,27 +897,33 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     /**
      * Son tamamlanan maç sonucunu geri alır (tur kapanmadıysa).
      * Maç tekrar "oynanmamış" duruma döner ve puanlama ekranına getirilir.
+     *
+     * ÇOK ADIMLI: her basış yığından bir maç geri alır — en sondaki oydan
+     * başlayıp geriye doğru. Sonuç da puan da silinir (puan tablosu maç
+     * kayıtlarından yeniden hesaplandığı için sonucu geri almak puanı da
+     * yok eder, sanki hiç oylanmamış gibi).
      */
     fun undoLastMatch() {
         viewModelScope.launch {
             try {
-                val matchId = lastCompletedMatchId ?: return@launch
+                val matchId = undoYigini.removeLastOrNull() ?: return@launch
                 val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
                 val match = allMatches.find { it.id == matchId } ?: run {
-                    lastCompletedMatchId = null
-                    _uiState.value = _uiState.value.copy(canUndo = false)
+                    _uiState.value = _uiState.value.copy(canUndo = undoYigini.isNotEmpty())
                     return@launch
                 }
 
-                // İkili karşılaştırmada bir sonraki soru önceden oluşturulmuş olabilir;
-                // geri alınan cevaba bağlı olduğu için önce o silinir.
+                // İkili karşılaştırmada sonraki sorular önceden oluşturulmuş
+                // olabilir ve geri alınan cevaba bağlıdır; önce onlar silinir.
+                // (Bir önceki geri almanın kendi restore ettiği maç da
+                // oynanmamış durumda olduğundan burada silinir — motor o
+                // soruyu cevap replay'inden yeniden üretir, kayıp olmaz.)
                 if (currentMethod == "MERGE_SORT") {
                     repository.deleteUncompletedMatches(currentListId, currentMethod)
                 }
 
                 val restored = match.copy(winnerId = null, score1 = null, score2 = null, isCompleted = false)
                 repository.updateMatch(restored)
-                lastCompletedMatchId = null
 
                 val safeSongs = getSafeSongs()
                 val (completed, total) = repository.getMatchProgress(currentListId, currentMethod)
@@ -900,7 +935,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     totalMatches = total,
                     progress = if (total > 0) completed.toFloat() / total else 0f,
                     isComplete = false,
-                    canUndo = false,
+                    // Yığında maç kaldıkça buton durur: bir kez daha basılırsa
+                    // bir önceki oy da geri alınır
+                    canUndo = undoYigini.isNotEmpty(),
                     showMatchingsList = false
                 )
 
@@ -911,6 +948,113 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = "Geri alma hatası: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Sonuçlar dialogu için tamamlanmış maçları ve düzenlenebilirliklerini yükler.
+     *
+     * DÜZENLENEBİLİRLİK KURALI (şartname): bir maçın sonucu ancak HER İKİ
+     * takımın da EN SON eşleşmesiyse değiştirilebilir; ve tur kapanmadan.
+     * · Emre/İsviçre: yalnız AÇIK turun (en yüksek tur numarası) tamamlanmış
+     *   maçları — tur kapanınca sonuçlar işlenip yeni tur bu sonuçlara göre
+     *   kurulduğu için eski turlara dokunmak sıralamayı bozar.
+     * · Lig: fikstür sonuçlardan bağımsız; kural doğrudan uygulanır — iki
+     *   takımdan herhangi birinin DAHA SONRAKİ (tur, maç no) tamamlanmış
+     *   maçı varsa artık değiştirilemez.
+     */
+    fun macSonuclariniYukle() {
+        viewModelScope.launch {
+            try {
+                val allMatches = sonucMaclari()
+                val safeSongs = getSafeSongs()
+                val satirlar = allMatches
+                    .filter { it.isCompleted }
+                    .sortedWith(
+                        compareByDescending<Match> { it.round }.thenByDescending { it.matchNumber }
+                    )
+                    .map { m ->
+                        MacSonucSatiri(
+                            match = m,
+                            song1 = safeSongs.find { it.id == m.songId1 },
+                            song2 = safeSongs.find { it.id == m.songId2 },
+                            duzenlenebilir = sonucDuzenlenebilirMi(m, allMatches)
+                        )
+                    }
+                _uiState.value = _uiState.value.copy(macSonuclari = satirlar)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "Sonuçlar yüklenemedi: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Sonuçlar dialogunun maç kümesi. Turnuva kimliği yazılmış maçlar varsa
+     * yalnız BU turnuvanınkiler + kimliksiz eski kayıtlar alınır. (Cihazda
+     * ölçüldü: aynı liste+yöntemle açılmış PARALEL turnuvaların maçları tek
+     * sorguda karışıyor; kimliksiz eski kayıtlar ayrıştırılamıyor ama yeni
+     * maçlara artık kimlik yazıldığı için yeni turnuvalar temiz.)
+     */
+    private suspend fun sonucMaclari(): List<Match> {
+        val tumu = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+        val aktifId = _uiState.value.activeTournamentId ?: return tumu
+        return tumu.filter { it.tournamentId == null || it.tournamentId == aktifId }
+    }
+
+    private fun sonucDuzenlenebilirMi(m: Match, allMatches: List<Match>): Boolean {
+        if (!m.isCompleted) return false
+        return when (currentMethod) {
+            // Açık turda her takım en fazla bir kez oynar; dolayısıyla açık
+            // turun her tamamlanmış maçı iki takımın da son eşleşmesidir.
+            //
+            // "Tur açık mı" MAÇ KAYITLARINDAN türetilir: turda oynanmamış maç
+            // kaldıysa tur açıktır. (Tur kapanışının tanımı zaten "turun tüm
+            // maçları tamamlandı" — bkz. updateEmreCorrectStateAfterMatch.)
+            // "En büyük tur numarası açık turdur" DENMEZ: cihazda ölçüldü,
+            // paralel eski turnuvaların 0 oylu hayalet turları en büyük turu
+            // yukarı çekip bu turun maçlarını yanlışlıkla kilitliyordu.
+            "EMRE_CORRECT", "SWISS" ->
+                allMatches.any { it.round == m.round && !it.isCompleted }
+            "LEAGUE" -> {
+                fun sonrakiMaciVar(teamId: Long) = allMatches.any { o ->
+                    o.isCompleted && o.id != m.id &&
+                        (o.songId1 == teamId || o.songId2 == teamId) &&
+                        (o.round > m.round ||
+                            (o.round == m.round && o.matchNumber > m.matchNumber))
+                }
+                !sonrakiMaciVar(m.songId1) && !sonrakiMaciVar(m.songId2)
+            }
+            // İkili karşılaştırmada soru zinciri cevaplara bağlı; sonuç
+            // değiştirme değil, Geri Al kullanılır.
+            else -> false
+        }
+    }
+
+    /**
+     * Tamamlanmış bir maçın sonucunu değiştirir (Sonuçlar dialogundan).
+     * Kural ihlalinde hiçbir şey yazılmaz, kullanıcıya sebep söylenir.
+     * Skorla girilmiş sonuçta kazanan değişince eski skorlar anlamsız
+     * kalacağından temizlenir.
+     */
+    fun tamamlanmisSonucuDegistir(matchId: Long, winnerId: Long?) {
+        viewModelScope.launch {
+            try {
+                val allMatches = sonucMaclari()
+                val match = allMatches.find { it.id == matchId } ?: return@launch
+                if (!sonucDuzenlenebilirMi(match, allMatches)) {
+                    _uiState.value = _uiState.value.copy(
+                        error = "Bu maçın sonucu artık değiştirilemez: takımın daha sonraki maçı oylanmış ya da tur kapanmış."
+                    )
+                    return@launch
+                }
+                repository.updateMatch(match.copy(winnerId = winnerId, score1 = null, score2 = null))
+                if (currentMethod in setOf("EMRE_CORRECT", "LEAGUE", "SWISS")) {
+                    calculateCurrentStandings()
+                }
+                macSonuclariniYukle()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "Sonuç değiştirilemedi: ${e.message}")
             }
         }
     }
@@ -926,7 +1070,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     isCompleted = true
                 )
                 repository.updateMatch(updatedMatch)
-                if (undoSupported()) lastCompletedMatchId = updatedMatch.id
+                if (undoSupported()) undoYigini.addLast(updatedMatch.id)
 
                 // Update Swiss state if this is a Swiss tournament
                 if (currentMethod == "SWISS") {
@@ -960,7 +1104,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
 
                 try {
                     repository.updateMatch(updatedMatch)
-                    if (undoSupported()) lastCompletedMatchId = updatedMatch.id
+                    if (undoSupported()) undoYigini.addLast(updatedMatch.id)
                     Log.d("RankingViewModel", "✅ Skor güncellendi: ${match.songId1} vs ${match.songId2}")
 
                     // Beraberlik girişi de diğer sonuç yollarıyla aynı state
@@ -1633,7 +1777,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             if (currentRoundMatches.size >= expectedMatchesInRound) {
                 // Tur tamamlandı, sonuçları işle
                 // Tur kapandıktan sonra maç geri alınamaz (yeni tur eşleştirmeleri bu sonuçlara dayanır)
-                lastCompletedMatchId = null
+                undoYigini.clear()
                 // Buton da kaybolmalı: canUndo true kalırsa kullanıcı basıyor
                 // ve hiçbir şey olmuyordu (imleç boş, işlem sessizce dönüyor)
                 _uiState.value = _uiState.value.copy(canUndo = false)
@@ -1656,7 +1800,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
 
                 // id'si yazılmış kopyalar alınır (bkz. createMatches)
-                val kayitliMaclar = repository.createMatches(pairingResult.matches)
+                val kayitliMaclar = createMatchesForTournament(pairingResult.matches)
 
                 // Yeni turun eşleştirmeler listesini göster
                 // (currentMatch=null olmalı ki liste ekranı görünsün)
