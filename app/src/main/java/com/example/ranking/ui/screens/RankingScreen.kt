@@ -746,25 +746,9 @@ private fun MatchBasedContent(
                 }
             }
 
-            // 2. SABİT: İLK TAKIM BAŞLIĞI - mavi, sıkıştırılmış
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Text(
-                    text = uiState.song1?.name?.uppercase() ?: stringResource(R.string.ranking_team1_fallback),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
+            // 2. İLK TAKIM BAŞLIĞI kaldırıldı — ad artık kartın KENDİ başlık
+            // şeridinde (bkz. TeamSelectionPanel). Eskiden hem burada hem
+            // kartın içinde yazılıyor, aynı bilgi iki kez yer kaplıyordu.
 
             // 3. SCROLL PENCERESİ: İLK TAKIM TABLOSU (her yöne kaydırılabilir)
             TeamSelectionPanel(
@@ -953,25 +937,8 @@ private fun MatchBasedContent(
                 }
             }
 
-            // 5. SABİT: İKİNCİ TAKIM BAŞLIĞI - mavi, sıkıştırılmış
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 2.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Text(
-                    text = uiState.song2?.name?.uppercase() ?: stringResource(R.string.ranking_team2_fallback),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    textAlign = TextAlign.Center
-                )
-            }
+            // 5. İKİNCİ TAKIM BAŞLIĞI kaldırıldı — ad kartın kendi şeridinde
+            // (bkz. TeamSelectionPanel)
 
             // 6. SCROLL PENCERESİ: İKİNCİ TAKIM TABLOSU - ekran dibine kadar
             TeamSelectionPanel(

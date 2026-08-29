@@ -124,9 +124,39 @@ internal fun TeamSelectionPanel(
                 }
             }
 
+            Column(modifier = Modifier.fillMaxSize()) {
+
+                // BAŞLIK ŞERİDİ — öğenin adı kartın kendi başlık çubuğunda.
+                //
+                // Ad eskiden hem kartın DIŞINDAKİ ayrı başlık bloğunda hem de
+                // kartın içinde yazılıyordu; aynı bilgi iki kez görünüyor ve
+                // dar ekranda yer yiyordu. Dıştaki blok kaldırıldı, ad buraya
+                // taşındı: kartın üstüne yapışık, tam genişlikte mavi şerit.
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            // Üst köşeler kart çerçevesine oturur (12dp - 3dp kenarlık)
+                            RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = team.name.uppercase(),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 22.sp
+                    )
+                }
+
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .weight(1f)
                     .padding(horizontal = 10.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
@@ -138,22 +168,6 @@ internal fun TeamSelectionPanel(
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
-                }
-
-                // BAŞLIK — öğenin adı. Karşılaştırmada okunan asıl bilgi budur,
-                // detay satırlarıyla eşit ağırlıkta yazılırsa kart okunmaz olur.
-                item {
-                    Text(
-                        text = team.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.Center,
-                        lineHeight = 26.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 6.dp)
-                    )
                 }
 
                 // "▶ Dinle" — yalnız müzik listelerinde.
@@ -211,7 +225,8 @@ internal fun TeamSelectionPanel(
                         }
                     }
                 }
-            }
+            } // LazyColumn
+            } // Column (başlık şeridi + içerik)
         }
     }
 }
