@@ -256,28 +256,38 @@ fun youtubeMusicteAc(context: Context, song: Song) {
     //
     // Bu yüzden: komut gönderilir, birkaç saniye sonra GERÇEKTEN çalıyor mu
     // diye bakılır; çalmıyorsa önplan yoluna düşülür.
-    // 🔴 SIRA ÖNEMLİ — önce ÇALIŞTIĞI ÖLÇÜLEN yol.
+    // ARKA PLAN — YouTube Music ekrana gelmez, kullanıcı Ranking'de kalır.
     //
-    // Arka plan yolu (playFromSearch) bir süre zincirin başındaydı ve
-    // "komutu gönderdim" diye başarılı sayılıp çıkıyordu; YouTube Music ise
-    // parçayı yalnızca kuyruğa alıp bekletiyordu. Sonuç: buton hiçbir şey
-    // çaldırmaz oldu — çalışan önplan yoluna hiç sıra gelmiyordu.
-    //
-    // Şimdi önplan yolu ASIL yol. Arka plan denemesi ondan SONRA, yalnız
-    // bir iyileştirme olarak yapılır: çalışırsa kullanıcı uygulamada kalır,
-    // çalışmazsa zaten şarkı çalmaya başlamış olur.
+    // ⚠️ "Komutu gönderdim" BAŞARI SAYILMAZ. Bir kez öyle yapıldı ve buton
+    // hiçbir şey çaldırmaz oldu: YouTube Music parçayı kuyruğa alıp
+    // bekletiyor, biz de başarılı sanıp çalışan önplan yoluna hiç
+    // geçmiyorduk. Şimdi GERÇEK SES ile doğrulanıyor; ses yoksa önplan
+    // yoluna düşülüyor.
+    if (arkaPlandaCal(context, song)) {
+        Toast.makeText(context, "▶ ${song.name}", Toast.LENGTH_SHORT).show()
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (!muzikCaliyorMu(context)) {
+                onPlandaAc(context, song)
+            }
+        }, 5000L)
+        return
+    }
+
     onPlandaAc(context, song)
 }
 
-/** YouTube Music şu an gerçekten çalıyor mu? */
-private fun calmayaBasladiMi(context: Context): Boolean {
+/**
+ * Şu an GERÇEKTEN ses çıkıyor mu?
+ *
+ * 🔴 Medya oturumunun `state=PLAYING` demesi YETMİYOR — cihazda ölçüldü:
+ * oturum "çalıyor" derken konum saniyelerce hiç ilerlemiyordu (ses yoktu).
+ * `AudioManager.isMusicActive` ses katmanına bakar, oturumun iddiasına
+ * değil; bu yüzden doğrulama için tek güvenilir ölçü odur.
+ */
+private fun muzikCaliyorMu(context: Context): Boolean {
     return try {
-        val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
-            as? MediaSessionManager ?: return false
-        val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
-        val ytm = yonetici.getActiveSessions(bilesen)
-            .firstOrNull { it.packageName == YTM_PAKET } ?: return false
-        ytm.playbackState?.state == PlaybackState.STATE_PLAYING
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        audio?.isMusicActive == true
     } catch (e: Exception) {
         false
     }
