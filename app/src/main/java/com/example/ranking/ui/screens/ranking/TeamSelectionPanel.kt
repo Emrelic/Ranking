@@ -47,6 +47,15 @@ private const val UZUN_METIN_ESIGI = 90
 /** Uzun metin panelinin en fazla kaplayacağı yükseklik; gerisi kaydırılır. */
 private val UZUN_METIN_YUKSEKLIGI = 170.dp
 
+/**
+ * Kart başlık şeridinin rengi — koyu mavi, beyaz yazıyla.
+ *
+ * Tema renklerinden (primaryContainer) alınmıyor: o ton açık kalıyor ve
+ * beyaz yazı okunmuyordu. Sabit koyu mavi hem açık hem koyu temada
+ * beyazla yeterli kontrast veriyor.
+ */
+private val SERIT_MAVI = Color(0xFF0D47A1)
+
 // MatchBasedContent içindeki iki takım paneli (song1/song2) için ortak bileşen.
 // Fark gösteren her şey parametre: takım, çerçeve rengi ve tıklama davranışı.
 @Composable
@@ -136,7 +145,7 @@ internal fun TeamSelectionPanel(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            MaterialTheme.colorScheme.primaryContainer,
+                            SERIT_MAVI,
                             // Üst köşeler kart çerçevesine oturur (12dp - 3dp kenarlık)
                             RoundedCornerShape(topStart = 9.dp, topEnd = 9.dp)
                         )
@@ -147,7 +156,7 @@ internal fun TeamSelectionPanel(
                         text = team.name.uppercase(),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         lineHeight = 22.sp
                     )

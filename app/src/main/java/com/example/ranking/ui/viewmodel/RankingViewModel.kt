@@ -660,9 +660,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             }
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
             
-            // Tamamlanmış maçları işle ve yeni state oluştur
-            val completedMatches = allMatches.filter { it.isCompleted && it.round == round - 1 }
-            
+            // Tamamlanmış maçları işle ve yeni state oluştur.
+            //
+            // 🔴 ÇİFT İŞLEME KORUMASI: tur kapanışı normalde
+            // `updateEmreCorrectStateAfterMatch` içinde yapılır ve state oradaki
+            // `processCorrectEmreResults` ile bir sonraki tura geçer
+            // (currentRound = R+1). Burada aynı turu bir kez daha işlemek
+            // puanları ikiye katlar. State zaten ilerlemişse geçmiş tur
+            // yeniden işlenmez.
+            val oncekiTurZatenIslendi = currentState.currentRound >= round
+            val completedMatches = if (oncekiTurZatenIslendi) {
+                emptyList()
+            } else {
+                allMatches.filter { it.isCompleted && it.round == round - 1 }
+            }
+
             if (completedMatches.isNotEmpty()) {
                 // Bye geçen takımı bul (varsa)
                 val byeTeam = findByeTeam(currentState, completedMatches)
@@ -1600,12 +1612,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             }.sortedBy { it.matchNumber }
 
 
-            // Tur tamamlandı mı kontrol et
-            // ⚠️ KRİTİK: Expected matches sayısı takım sayısına göre sabittir
-            val expectedMatchesInRound = if (songs.size % 2 == 0) {
-                songs.size / 2  // Çift takım = tam eşleştirme
+            // Tur tamamlandı mı? — O TURUN GERÇEK maç sayısına bakılır.
+            //
+            // Eskiden `songs.size / 2` sabiti kullanılıyordu. O sabit, motorun
+            // her turda tam eşleştirme ürettiği varsayımına dayanıyor; bir tur
+            // herhangi bir sebeple daha az maç içerirse (ya da veritabanında
+            // tur numaraları çakışırsa) sayı hiç tutmuyor, tur KAPANMIYOR ve
+            // loadNextMatch boş maç bulup createNextEmreRound'u çağırıyor —
+            // eşleştirme penceresi tur ortasında yeniden açılıyor.
+            val turdakiTumMaclar = allMatches.count { it.round == completedMatch.round }
+            val expectedMatchesInRound = if (turdakiTumMaclar > 0) {
+                turdakiTumMaclar
+            } else if (songs.size % 2 == 0) {
+                songs.size / 2
             } else {
-                (songs.size - 1) / 2  // Tek takım = 1 bye + eşleştirmeler
+                (songs.size - 1) / 2
             }
 
 
