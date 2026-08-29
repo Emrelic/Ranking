@@ -1231,13 +1231,21 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     // Tamamlanmamış maçlar varsa eşleştirmeler listesini göster
                     val incompleteMatches = allMatches.filter { !it.isCompleted }
                     if (incompleteMatches.isNotEmpty()) {
+                        // KALDIĞI NOKTAYA DÖN — eşleştirme listesine değil, oy
+                        // verilecek MAÇA. Kullanıcı turnuvayı bir maçın başında
+                        // bırakıyor; dönüşte liste ekranı gelince "kaçıncı
+                        // maçtaydım" sorusunu kendisi çözmek zorunda kalıyordu.
+                        //
+                        // Maçı loadNextMatch() seçiyor: sorgusu round ASC +
+                        // matchNumber ASC, yani Emre usulünün oylama sırası.
+                        // İlerleme sayaçlarını ve geri alma durumunu da o kurar.
                         _uiState.value = _uiState.value.copy(
-                            isLoading = false,
-                            showMatchingsList = true,
                             matchingsList = incompleteMatches.sortedBy { it.matchNumber },
                             emreState = emreState,
+                            allSongs = songs,
                             currentRound = incompleteMatches.minOf { it.round }
                         )
+                        loadNextMatch()
                     } else {
                         // Tüm maçlar tamamlanmış ama turnuva bitmemiş - sonraki turu oluştur
                         _uiState.value = _uiState.value.copy(

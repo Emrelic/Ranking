@@ -18,7 +18,9 @@ internal fun methodTitle(method: String): String {
         "MERGE_SORT" -> stringResource(R.string.new_tournament_system_merge_sort_title)
         "LEAGUE" -> stringResource(R.string.new_tournament_system_league_title)
         "SWISS" -> stringResource(R.string.new_tournament_system_swiss_title)
-        "EMRE_CORRECT" -> stringResource(R.string.new_tournament_system_emre_title)
+        // Üst çubukta yer dar: "Geliştirilmiş İsviçre Sistemi" bütün genişliği
+        // yiyip geri alma tuşuna yer bırakmıyordu. Kısaltıldı.
+        "EMRE_CORRECT" -> "İsviçre+"
         "ELIMINATION" -> stringResource(R.string.new_tournament_system_elimination_title)
         "FULL_ELIMINATION" -> stringResource(R.string.new_tournament_system_full_elimination_title)
         else -> stringResource(R.string.method_title_fallback)

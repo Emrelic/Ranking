@@ -135,6 +135,24 @@ fun RankingScreen(
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    // GERİ AL — üst çubukta, en solda.
+                    // Yanlışlıkla oy veren kullanıcı en çok buraya bakıyor;
+                    // ilerleme satırındaki küçük buton fark edilmiyordu.
+                    if (uiState.canUndo) {
+                        Button(
+                            onClick = { viewModel.undoLastMatch() },
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier.height(32.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        ) {
+                            Text("↩ Geri Al", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
                     // Session management buttons
                     if (uiState.hasActiveSession) {
                         Button(
@@ -714,26 +732,9 @@ private fun MatchBasedContent(
                         style = MaterialTheme.typography.bodySmall
                     )
 
-                    // Son maç sonucunu geri alma (tur kapanana kadar).
-                    // Yanlışlıkla oy veren biri bunu ARAMADAN görmeli:
-                    // düz metin bağlantı olarak fark edilmiyordu.
-                    if (uiState.canUndo) {
-                        FilledTonalButton(
-                            onClick = { viewModel.undoLastMatch() },
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
-                            modifier = Modifier.height(32.dp),
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer,
-                                contentColor = MaterialTheme.colorScheme.onErrorContainer
-                            )
-                        ) {
-                            Text(
-                                text = stringResource(R.string.ranking_undo_last_match),
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+                    // Geri alma tuşu artık ÜST ÇUBUKTA (bkz. TopAppBar actions).
+                    // Burada da durursa aynı işlev iki yerde görünüp kafa
+                    // karıştırıyor ve dar ilerleme satırını sıkıştırıyordu.
 
                     if (method == "SWISS" || method == "EMRE_CORRECT") {
                         Text(

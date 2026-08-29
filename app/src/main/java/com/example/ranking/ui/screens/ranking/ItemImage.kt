@@ -20,7 +20,14 @@ import org.json.JSONObject
 const val IMAGE_COLUMN = "Görsel"
 
 /** Öğe kartlarında satır olarak gösterilmemesi gereken teknik anahtarlar. */
-val HIDDEN_CSV_KEYS = setOf("name", "_displayMode", IMAGE_COLUMN)
+/**
+ * Kartta GÖSTERİLMEYEN sütunlar.
+ *
+ * "YouTube" sütunu video kimliği tutuyor ("sBE_mGu7yGg" gibi); kullanıcıya
+ * bir anlam ifade etmiyor ve kartta ham metin olarak görünüyordu. Değeri
+ * "▶ Dinle" butonu kullanıyor, gösterilmesi gerekmiyor.
+ */
+val HIDDEN_CSV_KEYS = setOf("name", "_displayMode", IMAGE_COLUMN, "YouTube")
 
 /**
  * Kart başlığında zaten görünen ya da bilgi taşımayan sütunlar.
