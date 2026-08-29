@@ -48,8 +48,9 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | 30 | 30_yapilar.csv | 70 | No, Yapım Yılı, Şehir, **Yapı**, Ülke, Mimar, Mimari Üslup, Kullanım Amacı, Yükseklik/Ölçü, UNESCO Mirası, İlginç Bilgi, Görsel 🖼 |
 | 31 | 31_muzik_aletleri.csv | 35 | No, Tür, Çalınış Şekli, **Müzik Aleti**, Anavatan/Kültür, Tel/Perde Sayısı, Malzeme, Kullanıldığı Müzik, Ünlü İcracı, Ses Karakteri, Görsel 🖼 |
 | 32 | 32_sebnem_ferah_sozleriyle.csv | 80 | No, Sanatçı, Albüm, **Şarkı Adı**, Şarkı Sözleri |
+| 33 | 33_sayilar_1_100_test.csv | 100 | No, Grup, Beklenen Sıra, **Sayı**, Basamak — *sıralama sınavı için* |
 
-Toplam **32 liste**, **1934 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
+Toplam **33 liste**, **2034 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
 
 ## Görsel Desteği
 

@@ -55,7 +55,10 @@ object HazirListeler {
                 HazirListe("19_baliklar.csv", "Balıklar", 50, false, "Su tipi, boy ve beslenmeleriyle balıklar"),
                 HazirListe("20_bitkiler.csv", "Bitkiler", 55, true, "Familya, tip ve kullanımlarıyla bitkiler"),
                 HazirListe("21_mikroplar_hastaliklar.csv", "Mikroplar ve Hastalıklar", 45, false, "Etken, bulaşma ve belirtileriyle hastalıklar"),
-                HazirListe("15_yiyecekler.csv", "Yiyecekler", 60, false, "Kalori, protein ve lif değerleriyle yiyecekler")
+                HazirListe("15_yiyecekler.csv", "Yiyecekler", 60, false, "Kalori, protein ve lif değerleriyle yiyecekler"),
+                // Sıralama sistemini sınamak için: 1-100 karışık. Büyük sayıyı
+                // seçerek oynanır, sonuç 100'den 1'e sıralı çıkmalı.
+                HazirListe("33_sayilar_1_100_test.csv", "Sayılar 1-100 (Test)", 100, false, "Sistemi sınamak için karışık 100 sayı")
             )
         ),
         HazirListeKategorisi(
