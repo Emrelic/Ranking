@@ -4,7 +4,11 @@ import android.app.SearchManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.view.KeyEvent
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
@@ -119,8 +123,12 @@ fun youtubeMusicteAc(context: Context, song: Song) {
     // 1) Video kimliği biliniyorsa doğrudan o parçayı aç
     if (kimlik != null) {
         val uri = Uri.parse("https://music.youtube.com/watch?v=$kimlik")
-        if (baslat(context, Intent(Intent.ACTION_VIEW, uri).setPackage(paket))) return
-        if (baslat(context, Intent(Intent.ACTION_VIEW, uri))) return
+        if (baslat(context, Intent(Intent.ACTION_VIEW, uri).setPackage(paket))) {
+            calmayiBaslat(context); return
+        }
+        if (baslat(context, Intent(Intent.ACTION_VIEW, uri))) {
+            calmayiBaslat(context); return
+        }
     }
 
     val sorgu = muzikAramaMetni(song)
@@ -136,9 +144,9 @@ fun youtubeMusicteAc(context: Context, song: Song) {
         sanatciAdi(song)?.let { putExtra(MediaStore.EXTRA_MEDIA_ARTIST, it) }
         putExtra(MediaStore.EXTRA_MEDIA_TITLE, song.name)
     }
-    if (baslat(context, Intent(calIntent).setPackage(paket))) return
+    if (baslat(context, Intent(calIntent).setPackage(paket))) { calmayiBaslat(context); return }
     // Paket kısıtı olmadan: kullanıcının kurulu başka bir müzik uygulaması
-    if (baslat(context, calIntent)) return
+    if (baslat(context, calIntent)) { calmayiBaslat(context); return }
 
     // 3) Arama sayfası (uygulama ya da tarayıcı)
     val aramaUri = Uri.parse("https://music.youtube.com/search?q=${Uri.encode(sorgu)}")
@@ -151,6 +159,40 @@ fun youtubeMusicteAc(context: Context, song: Song) {
         "YouTube Music ya da bir tarayıcı bulunamadı",
         Toast.LENGTH_SHORT
     ).show()
+}
+
+/**
+ * YouTube Music parçayı yükledikten sonra ÇALMA emrini gönderir.
+ *
+ * 🔴 Ölçülmüş davranış: `music.youtube.com/watch?v=<id>` adresi açıldığında
+ * YouTube Music parçayı yüklüyor ama DURAKLATILMIŞ bırakıyor
+ * (`PlaybackState state=2`). Kullanıcının ayrıca oynat tuşuna basması
+ * gerekiyordu. Medya "oynat" tuşu gönderilince durum 3'e (ÇALIYOR) geçiyor —
+ * cihazda doğrulandı.
+ *
+ * ⚠️ KEYCODE_MEDIA_PLAY gönderilir, PLAY_PAUSE DEĞİL: ikincisi çalmakta olan
+ * bir parçayı duraklatır. PLAY tekrar tekrar gönderilse bile zararsızdır.
+ *
+ * Emir birkaç kez denenir çünkü YouTube Music medya oturumunu almadan önce
+ * gönderilen tuş kaybolur; yükleme süresi ağa ve cihaza göre değişiyor.
+ */
+private fun calmayiBaslat(context: Context) {
+    val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
+    val handler = Handler(Looper.getMainLooper())
+    listOf(1200L, 2200L, 3500L).forEach { gecikme ->
+        handler.postDelayed({
+            try {
+                audio.dispatchMediaKeyEvent(
+                    KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY)
+                )
+                audio.dispatchMediaKeyEvent(
+                    KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY)
+                )
+            } catch (e: Exception) {
+                // Sistem emri reddederse kullanıcı elle başlatır; çökme olmaz
+            }
+        }, gecikme)
+    }
 }
 
 /** Intent'i başlatmayı dener; hedef yoksa false döner (çökmez). */
