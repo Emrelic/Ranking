@@ -10,6 +10,30 @@ Kapsamlı denetim bulguları ve yapılan işlerin kaydı: **ANALIZ_RAPORU.md**
 2. **Sihirbaz kısayolları**: liste adımında "Yeni Liste Oluştur" → oluştur → dönüşte otomatik seçim; kriter adımında aynı akış
 3. **Image #6 oylama layout'u**: 6 katmanlı düzen, VS popup menüsü, yeşil/sarı/yeşil buton çubuğu — görsel/UX beğeni kontrolü
 
+## 🔵 SIRADAKİ ÖZELLİKLER (kullanıcı istedi, sıraya alındı)
+
+### S1. Sesli oylama — "bir / iki / sıfır" komutlarıyla maç sonucu
+İstek (2026-08-29): iki takım eşleşmesinde mikrofona **"bir"** deyince 1. öğe,
+**"iki"** deyince 2. öğe kazanır, **"sıfır"** deyince beraberlik.
+
+Ön inceleme yapıldı, uygulanabilir:
+- Android `SpeechRecognizer` + `RecognizerIntent`, `EXTRA_LANGUAGE = "tr-TR"`
+- `androidx.activity.compose` zaten bağımlılıklarda var (izin isteği için gerekli)
+- `RECORD_AUDIO` izni AndroidManifest'e EKLENMELİ (şu an yok)
+
+Tasarım notları:
+- Mikrofon **açma/kapama düğmesi** olmalı; sürekli dinleme pil yakar ve
+  kullanıcı ne zaman dinlendiğini bilmeli
+- Her sonuçtan sonra tanıyıcı yeniden başlatılmalı (tek atışlık çalışır)
+- Sayılar bazen rakam olarak dönüyor: "bir"/"1", "iki"/"2", "sıfır"/"0"
+  varyantlarının hepsi kabul edilmeli
+- ⚠️ **Yanlış tetikleme riski**: "bir" Türkçede çok yaygın ("bir şey", "bir daha").
+  Yalnız KISA ve TAM eşleşen söylemler kabul edilmeli, cümle içinde geçen
+  "bir" oy saymamalı
+- Ne duyulduğu ekranda gösterilmeli — kullanıcı yanlış anlaşılmayı görebilsin
+- Ekrandan çıkınca tanıyıcı serbest bırakılmalı (`DisposableEffect`)
+- Geri alma tuşu zaten var; sesli oylamada yanlış tetiklemenin telafisi o
+
 ## 🟡 TEKNİK BORÇ (ANALIZ_RAPORU.md Faz 0-4'ten artan)
 
 8. ~~**LEAGUE oturum/persistence**~~ ✅ 2026-08-28: LEAGUE ve MERGE_SORT'a `createOrUpdateSession` eklendi (ikisinde de oturum yoktu; ekrana her giriş oynanmış maçları siliyordu). Kalan: `saveLeagueSettings` hiç çağrılmıyor, lig ayarları UI'ı yok
