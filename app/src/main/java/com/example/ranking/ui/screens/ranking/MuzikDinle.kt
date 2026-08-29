@@ -256,16 +256,16 @@ fun youtubeMusicteAc(context: Context, song: Song) {
     //
     // Bu yüzden: komut gönderilir, birkaç saniye sonra GERÇEKTEN çalıyor mu
     // diye bakılır; çalmıyorsa önplan yoluna düşülür.
-    if (arkaPlandaCal(context, song)) {
-        Toast.makeText(context, "▶ ${song.name}", Toast.LENGTH_SHORT).show()
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!calmayaBasladiMi(context)) {
-                onPlandaAc(context, song)
-            }
-        }, 3000L)
-        return
-    }
-
+    // 🔴 SIRA ÖNEMLİ — önce ÇALIŞTIĞI ÖLÇÜLEN yol.
+    //
+    // Arka plan yolu (playFromSearch) bir süre zincirin başındaydı ve
+    // "komutu gönderdim" diye başarılı sayılıp çıkıyordu; YouTube Music ise
+    // parçayı yalnızca kuyruğa alıp bekletiyordu. Sonuç: buton hiçbir şey
+    // çaldırmaz oldu — çalışan önplan yoluna hiç sıra gelmiyordu.
+    //
+    // Şimdi önplan yolu ASIL yol. Arka plan denemesi ondan SONRA, yalnız
+    // bir iyileştirme olarak yapılır: çalışırsa kullanıcı uygulamada kalır,
+    // çalışmazsa zaten şarkı çalmaya başlamış olur.
     onPlandaAc(context, song)
 }
 
