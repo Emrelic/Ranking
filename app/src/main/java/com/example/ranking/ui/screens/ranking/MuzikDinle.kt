@@ -1,9 +1,11 @@
 package com.example.ranking.ui.screens.ranking
 
+import android.app.SearchManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
@@ -20,18 +22,14 @@ import com.example.ranking.data.Song
 import org.json.JSONObject
 
 /**
- * Öğeyi YouTube Music'te açma desteği.
+ * Öğeyi YouTube Music'te çalma desteği.
  *
- * Şarkı listelerinde puanlama yaparken "bu şarkı hangisiydi?" sorusu
- * sık çıkıyor. Buton, öğeyi YouTube Music'te aratıp uygulamayı açar.
+ * Şarkı listelerinde puanlama yaparken "bu şarkı hangisiydi?" sorusu sık
+ * çıkıyor. Buton şarkıyı YouTube Music'te çaldırır.
  *
- * ⚠️ DOĞRUDAN ÇALMA YOK — bilinçli. Bir şarkıyı tek dokunuşla çalmak için
- * YouTube video kimliği gerekir; onu isim üzerinden güvenilir çözmenin tek
- * yolu YouTube Data API'dir ve bu projede API anahtarı yok. Uydurulmuş bir
- * kimlik yanlış şarkıyı açar, ki bu hiç açmamaktan kötüdür. Bu yüzden
- * arama sonuçları açılır: kullanıcı doğru kaydı görüp tek dokunuşla çalar.
- * Listeye "YouTube" sütunu (video kimliği) eklenirse doğrudan çalma
- * `youtubeKimligi` üzerinden kendiliğinden devreye girer.
+ * Asıl yol `MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH`: Android'in
+ * "şunu bul ve çal" arayüzü, Google Asistan'ın da kullandığı mekanizma.
+ * Ayrıntılı düşme zinciri `youtubeMusicteAc` üzerinde yazılı.
  */
 
 /** csvData'da bu anahtarlardan biri varsa öğe müzik parçası sayılır. */
@@ -93,46 +91,81 @@ fun muzikAramaMetni(song: Song): String {
 }
 
 /**
- * YouTube Music'i açar. Kurulu değilse tarayıcıya düşer, o da yoksa
- * kullanıcıya sebebini söyler — sessizce hiçbir şey yapmaz duruma düşmez.
+ * Şarkıyı YouTube Music'te ÇALAR.
+ *
+ * Dört kademeli düşme zinciri; her kademe bir öncekinden daha az şey vaat
+ * eder, sonuncusu bile sessiz kalmaz:
+ *
+ * 1. **Video kimliği varsa doğrudan o parça** — `watch?v=<id>` açılır, çalar
+ * 2. **MEDIA_PLAY_FROM_SEARCH** — Android'in "şunu bul ve çal" intent'i.
+ *    Google Asistan'ın "şu şarkıyı çal" derken kullandığı yol budur;
+ *    YouTube Music aramayı kendi yapar ve ÇALMAYA BAŞLAR. Kullanıcının
+ *    sonuç listesinden seçmesi gerekmez.
+ * 3. **Arama sayfası** — 2. kademe çalışmazsa sonuçlar açılır, tek dokunuş
+ * 4. **Tarayıcı / bilgilendirme** — hiçbiri yoksa sebebi söylenir
+ *
+ * ⚠️ Başka bir uygulamanın ekranına dokunmak (arama kutusuna yazıp çıkan
+ * sonuca basmak) Android'de MÜMKÜN DEĞİL — bir uygulama başka uygulamanın
+ * arayüzünü süremez. Bunu yapabilen tek mekanizma Erişilebilirlik Servisi'dir;
+ * o da engelli kullanıcılar için tasarlanmış, kullanıcının sistem ayarlarından
+ * elle açması gereken, YouTube Music arayüzü her değiştiğinde kırılan bir yol.
+ * Doğru çözüm yukarıdaki 2. kademe: uygulamanın KENDİ desteklediği "ara ve çal"
+ * arayüzünü kullanmak.
  */
 fun youtubeMusicteAc(context: Context, song: Song) {
+    val paket = "com.google.android.apps.youtube.music"
     val kimlik = youtubeKimligi(song.csvData)
-    val adres = if (kimlik != null) {
-        // Sütunda video kimliği varsa doğrudan o parça açılır
-        "https://music.youtube.com/watch?v=$kimlik"
-    } else {
-        val sorgu = muzikAramaMetni(song)
-        if (sorgu.isBlank()) {
-            Toast.makeText(context, "Aranacak bir ad bulunamadı", Toast.LENGTH_SHORT).show()
-            return
-        }
-        "https://music.youtube.com/search?q=${Uri.encode(sorgu)}"
+
+    // 1) Video kimliği biliniyorsa doğrudan o parçayı aç
+    if (kimlik != null) {
+        val uri = Uri.parse("https://music.youtube.com/watch?v=$kimlik")
+        if (baslat(context, Intent(Intent.ACTION_VIEW, uri).setPackage(paket))) return
+        if (baslat(context, Intent(Intent.ACTION_VIEW, uri))) return
     }
 
-    val uri = Uri.parse(adres)
-
-    // 1) YouTube Music uygulaması
-    try {
-        context.startActivity(
-            Intent(Intent.ACTION_VIEW, uri).setPackage("com.google.android.apps.youtube.music")
-        )
+    val sorgu = muzikAramaMetni(song)
+    if (sorgu.isBlank()) {
+        Toast.makeText(context, "Aranacak bir ad bulunamadı", Toast.LENGTH_SHORT).show()
         return
-    } catch (e: ActivityNotFoundException) {
-        // kurulu değil — sıradaki seçeneğe geç
     }
 
-    // 2) Paket kısıtı olmadan (tarayıcı ya da kullanıcının seçtiği uygulama)
-    try {
-        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-    } catch (e: ActivityNotFoundException) {
-        Toast.makeText(
-            context,
-            "YouTube Music ya da bir tarayıcı bulunamadı",
-            Toast.LENGTH_SHORT
-        ).show()
+    // 2) "Ara ve çal" — YouTube Music aramayı yapıp çalmaya başlar
+    val calIntent = Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH).apply {
+        putExtra(MediaStore.EXTRA_MEDIA_FOCUS, "vnd.android.cursor.item/audio")
+        putExtra(SearchManager.QUERY, sorgu)
+        sanatciAdi(song)?.let { putExtra(MediaStore.EXTRA_MEDIA_ARTIST, it) }
+        putExtra(MediaStore.EXTRA_MEDIA_TITLE, song.name)
     }
+    if (baslat(context, Intent(calIntent).setPackage(paket))) return
+    // Paket kısıtı olmadan: kullanıcının kurulu başka bir müzik uygulaması
+    if (baslat(context, calIntent)) return
+
+    // 3) Arama sayfası (uygulama ya da tarayıcı)
+    val aramaUri = Uri.parse("https://music.youtube.com/search?q=${Uri.encode(sorgu)}")
+    if (baslat(context, Intent(Intent.ACTION_VIEW, aramaUri).setPackage(paket))) return
+    if (baslat(context, Intent(Intent.ACTION_VIEW, aramaUri))) return
+
+    // 4) Hiçbiri yoksa sessiz kalma
+    Toast.makeText(
+        context,
+        "YouTube Music ya da bir tarayıcı bulunamadı",
+        Toast.LENGTH_SHORT
+    ).show()
 }
+
+/** Intent'i başlatmayı dener; hedef yoksa false döner (çökmez). */
+private fun baslat(context: Context, intent: Intent): Boolean = try {
+    context.startActivity(intent)
+    true
+} catch (e: ActivityNotFoundException) {
+    false
+}
+
+/** csvData'daki "Sanatçı" sütunu (varsa) — arama eşleşmesini keskinleştirir. */
+private fun sanatciAdi(song: Song): String? =
+    csvSozlugu(song.csvData).entries.firstOrNull { (k, _) ->
+        k.lowercase().let { it.contains("sanatçı") || it.contains("sanatci") }
+    }?.value?.takeIf { it.isNotBlank() && it != "-" }
 
 /**
  * "▶ Dinle" butonu.
