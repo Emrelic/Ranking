@@ -37,7 +37,9 @@ import androidx.compose.ui.unit.dp
 import com.example.ranking.MainActivity
 import com.example.ranking.MuzikDenetimServisi
 import com.example.ranking.data.Song
+import com.example.ranking.utils.CsvReader
 import org.json.JSONObject
+import java.util.Locale
 
 /**
  * Öğeyi YouTube Music'te çalma desteği.
@@ -79,6 +81,84 @@ fun muzikOgesiMi(csvData: String?): Boolean {
     return anahtarlar.any { anahtar ->
         MUZIK_ANAHTARLARI.any { anahtar.contains(it) }
     }
+}
+
+/**
+ * Gömülü hazır listelerden derlenen "şarkı → YouTube kimliği" sözlüğü.
+ *
+ * 🔴 NEDEN VAR — cihazda ölçülen kusurun kökü:
+ * Kullanıcının veritabanındaki liste ESKİ bir içe aktarma; csvData'sında
+ * `YouTube` sütunu yok (adb ile DB çekilip bakıldı: anahtarlar No, Sanatçı,
+ * Albüm, Şarkı Adı, Şarkı Sözleri — kimlik yok). Kimlik olmayınca ölçülmüş
+ * TEK sağlam yol olan `watch?v=<id>` hiç kullanılamıyor ve akış
+ * MEDIA_PLAY_FROM_SEARCH'e düşüyordu; o yol da cihazda ölçüldü: şarkıyı
+ * kuyruğa koyuyor ama ÇALDIRMIYOR, sonrasında gönderilen medya "oynat"
+ * tuşu bile açmıyor. Kullanıcının "listede hazır geliyor ama başlamıyor"
+ * dediği davranış buydu.
+ *
+ * Çözüm: kimlik csvData'da yoksa, uygulamaya gömülü hazır listelerdeki
+ * (assets/hazir_listeler) kimlikli CSV'lerden sanatçı+ad eşleşmesiyle
+ * tamamlanır. Sözlük ilk ihtiyaçta BİR KEZ kurulur; yalnız başlığında
+ * kimlik sütunu olan dosyalar parse edilir (bugün 1 dosya, 79 kimlik).
+ */
+private var kutuphaneSozlugu: Pair<Map<String, String>, Map<String, String>>? = null
+
+/** Türkçe'ye göre küçültülmüş eşleşme anahtarı ("İ" → "i", "I" → "ı"). */
+private fun eslesmeAnahtari(s: String): String = s.trim().lowercase(Locale("tr"))
+
+/** Şarkının kimliğini gömülü listelerden bulur (yoksa null). */
+internal fun kutuphaneKimligi(context: Context, song: Song): String? {
+    val (sanatcili, adTek) = kutuphaneSozlugu
+        ?: kutuphaneSozluguKur(context).also { kutuphaneSozlugu = it }
+    val ad = eslesmeAnahtari(song.name)
+    if (ad.isBlank()) return null
+    val sanatci = sanatciAdi(song)?.let { eslesmeAnahtari(it) }
+    return sanatci?.let { sanatcili["$it|$ad"] } ?: adTek[ad]
+}
+
+private fun kutuphaneSozluguKur(
+    context: Context
+): Pair<Map<String, String>, Map<String, String>> {
+    val sanatcili = HashMap<String, String>()
+    // Ad-tek yedek: aynı ad iki farklı kimliğe gidiyorsa güvenilmez, atılır
+    val adTek = HashMap<String, String?>()
+    try {
+        val am = context.assets
+        val okuyucu = CsvReader()
+        for (dosya in am.list("hazir_listeler").orEmpty()) {
+            if (!dosya.endsWith(".csv")) continue
+            try {
+                val metin = am.open("hazir_listeler/$dosya").use {
+                    okuyucu.bytesToText(it.readBytes())
+                }
+                // Başlığında kimlik sütunu olmayan dosya hiç parse edilmez
+                val baslik = metin.lineSequence().firstOrNull()
+                    ?.lowercase(Locale("tr")) ?: continue
+                if (KIMLIK_ANAHTARLARI.none { baslik.contains(it) }) continue
+
+                for (parca in okuyucu.parseText(metin)) {
+                    val kimlik = youtubeKimligi(parca.csvData) ?: continue
+                    val ad = eslesmeAnahtari(parca.name)
+                    if (ad.isBlank()) continue
+                    val sanatci = eslesmeAnahtari(parca.artist)
+                    if (sanatci.isNotBlank()) {
+                        sanatcili.putIfAbsent("$sanatci|$ad", kimlik)
+                    }
+                    if (adTek.containsKey(ad)) {
+                        if (adTek[ad] != kimlik) adTek[ad] = null
+                    } else {
+                        adTek[ad] = kimlik
+                    }
+                }
+            } catch (e: Exception) {
+                // Tek dosyanın bozukluğu sözlüğün kalanını engellemesin
+            }
+        }
+    } catch (e: Exception) {
+    }
+    val temizAdTek = HashMap<String, String>()
+    for ((ad, kimlik) in adTek) if (kimlik != null) temizAdTek[ad] = kimlik
+    return Pair(sanatcili, temizAdTek)
 }
 
 /** Varsa YouTube video kimliği (doğrudan çalma için). */
@@ -322,7 +402,10 @@ private fun istenenSarkiCaliyorMu(context: Context, oncekiAd: String?): Boolean 
  */
 private fun onPlandaAc(context: Context, song: Song) {
     val paket = YTM_PAKET
-    val kimlik = youtubeKimligi(song.csvData)
+    // Kimlik önce şarkının kendi verisinden, yoksa gömülü listelerden.
+    // (Eski içe aktarmalarda YouTube sütunu yok; kimliksiz kalınca çalışan
+    // tek yol olan watch?v= atlanıyor ve şarkı "hazır ama sessiz" kalıyordu.)
+    val kimlik = youtubeKimligi(song.csvData) ?: kutuphaneKimligi(context, song)
 
     // 1) Video kimliği biliniyorsa doğrudan o parçayı aç
     if (kimlik != null) {
@@ -421,22 +504,29 @@ private fun calmayiBaslat(context: Context) {
     // (Arka plan yolu kullanılabiliyorsa buraya hiç gelinmez; bu, izin
     // verilmemişken ya da YouTube Music'in henüz canlı oturumu yokken
     // yaşanan tek seferlik geçişi telafi eder.)
-    handler.postDelayed({
-        try {
-            context.startActivity(
-                Intent(context, MainActivity::class.java).apply {
-                    addFlags(
-                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
-                            Intent.FLAG_ACTIVITY_NEW_TASK or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    )
-                }
-            )
-        } catch (e: Exception) {
-            // Android arka plandan ekran açmayı engelleyebilir; kullanıcı
-            // geri tuşuyla döner. Çökme olmaz.
-        }
-    }, 3000L)
+    // İKİ deneme: cihazda ölçüldü — YouTube Music SOĞUK açılışta (ilk Dinle)
+    // MusicActivity'sini geç yüklüyor ve 3 sn'deki tek dönüş denemesinin
+    // ÜSTÜNE çıkıyordu; kullanıcı YTM ekranında kalıyordu. Sıcak durumda
+    // 3 sn'lik deneme yetiyor (ölçüldü: ~2.5 sn'de Ranking önde). Geç deneme
+    // zaten öndeyken gelirse REORDER_TO_FRONT görünür bir şey yapmaz.
+    listOf(3000L, 7000L).forEach { donusGecikmesi ->
+        handler.postDelayed({
+            try {
+                context.startActivity(
+                    Intent(context, MainActivity::class.java).apply {
+                        addFlags(
+                            Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                                Intent.FLAG_ACTIVITY_NEW_TASK or
+                                Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                // Android arka plandan ekran açmayı engelleyebilir; kullanıcı
+                // geri tuşuyla döner. Çökme olmaz.
+            }
+        }, donusGecikmesi)
+    }
 
     // Parçanın hazırlanma süresi ağa göre değişiyor; emir hazır olmadan
     // gönderilirse yutuluyor. Ranking'e dönüş 3 sn'de olduğu için emirler
