@@ -3,8 +3,11 @@ package com.example.ranking.ui.screens.ranking
 import android.app.SearchManager
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.ComponentName
 import android.content.Intent
 import android.media.AudioManager
+import android.media.session.MediaSessionManager
+import android.provider.Settings
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -17,11 +20,19 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.ranking.MainActivity
+import com.example.ranking.MuzikDenetimServisi
 import com.example.ranking.data.Song
 import org.json.JSONObject
 
@@ -116,9 +127,82 @@ fun muzikAramaMetni(song: Song): String {
  * Doğru çözüm yukarıdaki 2. kademe: uygulamanın KENDİ desteklediği "ara ve çal"
  * arayüzünü kullanmak.
  */
+private const val YTM_PAKET = "com.google.android.apps.youtube.music"
+
+/** Bildirim erişimi verilmiş mi? (arka plan denetiminin ön şartı) */
+fun bildirimErisimiVar(context: Context): Boolean {
+    val izinliler = Settings.Secure.getString(
+        context.contentResolver, "enabled_notification_listeners"
+    ) ?: return false
+    return izinliler.contains(context.packageName)
+}
+
+/** Kullanıcıyı bildirim erişimi ayarına götürür. */
+fun bildirimErisimiIste(context: Context) {
+    try {
+        context.startActivity(
+            Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        )
+    } catch (e: Exception) {
+        Toast.makeText(context, "Bildirim erişimi ayarı açılamadı", Toast.LENGTH_SHORT).show()
+    }
+}
+
+/**
+ * ARKA PLANDA çalar — YouTube Music ekrana GELMEZ.
+ *
+ * `MediaController.transportControls.playFromSearch` YouTube Music'in kendi
+ * medya oturumuna gönderilir; uygulama önplana çıkmadan çalmaya başlar ve
+ * çalmakta olan parça kendiliğinden yerini yenisine bırakır (kuyruk
+ * değiştiği için ayrıca durdurmak gerekmiyor).
+ *
+ * Ön şartlar:
+ * · Kullanıcı bildirim erişimi vermiş olmalı (MuzikDenetimServisi)
+ * · YouTube Music'in CANLI bir medya oturumu olmalı — yani uygulama daha önce
+ *   en az bir kez çalmış olmalı. Oturum yoksa false döner, çağıran ilk kez
+ *   önplandan açar; ondan sonraki tüm dokunuşlar arka plandan yürür.
+ *
+ * @return komut gönderildiyse true
+ */
+fun arkaPlandaCal(context: Context, song: Song): Boolean {
+    if (!bildirimErisimiVar(context)) return false
+
+    val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
+        as? MediaSessionManager ?: return false
+    val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
+
+    val oturumlar = try {
+        yonetici.getActiveSessions(bilesen)
+    } catch (e: SecurityException) {
+        // İzin verilmiş görünüyor ama servis henüz bağlanmamış olabilir
+        return false
+    } catch (e: Exception) {
+        return false
+    }
+
+    val ytm = oturumlar.firstOrNull { it.packageName == YTM_PAKET } ?: return false
+
+    val sorgu = muzikAramaMetni(song)
+    if (sorgu.isBlank()) return false
+
+    return try {
+        ytm.transportControls.playFromSearch(sorgu, null)
+        true
+    } catch (e: Exception) {
+        false
+    }
+}
+
 fun youtubeMusicteAc(context: Context, song: Song) {
-    val paket = "com.google.android.apps.youtube.music"
+    val paket = YTM_PAKET
     val kimlik = youtubeKimligi(song.csvData)
+
+    // 0) ARKA PLAN — YouTube Music ekrana gelmez, kullanıcı Ranking'de kalır
+    if (arkaPlandaCal(context, song)) {
+        Toast.makeText(context, "▶ ${song.name}", Toast.LENGTH_SHORT).show()
+        return
+    }
 
     // 1) Video kimliği biliniyorsa doğrudan o parçayı aç
     if (kimlik != null) {
@@ -179,6 +263,28 @@ fun youtubeMusicteAc(context: Context, song: Song) {
 private fun calmayiBaslat(context: Context) {
     val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
     val handler = Handler(Looper.getMainLooper())
+
+    // Çalma emirleri gittikten sonra kullanıcıyı Ranking'e geri getir.
+    // (Arka plan yolu kullanılabiliyorsa buraya hiç gelinmez; bu, izin
+    // verilmemişken ya da YouTube Music'in henüz canlı oturumu yokken
+    // yaşanan tek seferlik geçişi telafi eder.)
+    handler.postDelayed({
+        try {
+            context.startActivity(
+                Intent(context, MainActivity::class.java).apply {
+                    addFlags(
+                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT or
+                            Intent.FLAG_ACTIVITY_NEW_TASK or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    )
+                }
+            )
+        } catch (e: Exception) {
+            // Android arka plandan ekran açmayı engelleyebilir; kullanıcı
+            // geri tuşuyla döner. Çökme olmaz.
+        }
+    }, 4200L)
+
     listOf(1200L, 2200L, 3500L).forEach { gecikme ->
         handler.postDelayed({
             try {
@@ -221,8 +327,41 @@ fun DinleButonu(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var izinSor by remember { mutableStateOf(false) }
+
+    if (izinSor) {
+        AlertDialog(
+            onDismissRequest = { izinSor = false },
+            title = { Text("Uygulamadan çıkmadan dinle") },
+            text = {
+                Text(
+                    "Şarkıyı YouTube Music ekrana GELMEDEN çalabilmek için bir kerelik " +
+                        "\"bildirim erişimi\" izni gerekiyor. Ranking bildirimlerinizi " +
+                        "okumaz, saklamaz veya dışarı göndermez — bu izin yalnızca " +
+                        "YouTube Music'e \"şunu çal\" emrini iletmek için kullanılıyor.\n\n" +
+                        "İzin vermezseniz şarkı yine çalar, ama her seferinde YouTube " +
+                        "Music ekrana gelir ve geri dönmeniz gerekir."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { bildirimErisimiIste(context); izinSor = false }) {
+                    Text("Ayarı Aç")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { youtubeMusicteAc(context, song); izinSor = false }) {
+                    Text("Şimdilik böyle çal")
+                }
+            }
+        )
+    }
+
     FilledTonalButton(
-        onClick = { youtubeMusicteAc(context, song) },
+        onClick = {
+            // İzin yoksa bir kez açıkla; kullanıcı isterse izinsiz de çalar
+            if (!bildirimErisimiVar(context)) izinSor = true
+            else youtubeMusicteAc(context, song)
+        },
         modifier = modifier.height(30.dp),
         contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
         colors = ButtonDefaults.filledTonalButtonColors(

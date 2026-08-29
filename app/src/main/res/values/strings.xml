@@ -375,4 +375,5 @@
     <!-- Standings Dialog -->
     <string name="standings_dialog_title">Puan Durumu</string>
     <string name="standings_dialog_placeholder">Puan durumu burada gösterilecek</string>
+    <string name="muzik_denetimi_servis_adi">Ranking müzik denetimi</string>
 </resources>
