@@ -17,7 +17,7 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | # | Dosya | Satır | Sütunlar |
 |---|-------|-------|----------|
 | 1 | 01_osmanli_padisahlari.csv | 36 | No, Tahta Çıkış, Saltanat Süresi, **Padişah**, Tahttan İniş, Yaşadığı Yıllar, Lakabı/Ünvanı, Dönemin Önemli Olayı, Ölüm Şekli |
-| 2 | 02_sebnem_ferah_sarkilari.csv | 85 | No, Albüm, Yıl, **Şarkı**, Tür, Konu, Duygu Tonu, Süre, Söz-Müzik |
+| 2 | 02_sebnem_ferah_sarkilari.csv | 85 | No, Albüm, Yıl, **Şarkı**, Tür, Konu, Duygu Tonu, Süre, Söz-Müzik, Sanatçı |
 | 3 | 03_ulkeler.csv | 195 | No, Kıta, Nüfus (milyon), **Ülke**, Yüzölçümü (bin km²), GSYH (milyar $), Kişi Başı Gelir ($), Bağımsızlık Yılı, Bayrak Kabul Yılı, Başkent, Para Birimi, Resmi Dil, Görsel 🖼 |
 | 4 | 04_denizler.csv | 44 | No, Bağlı Okyanus, Yüzölçümü (bin km²), **Deniz**, Ortalama Derinlik (m), Kıyı Bölgesi, En Derin Nokta (m), Kıyıdaş Ülke Sayısı, Tuzluluk (binde) |
 | 5 | 05_daglar.csv | 55 | No, Ülke, Yükseklik (m), **Dağ**, Sıradağ/Bölge, Kıta, Dağ Tipi, İlk Tırmanış Yılı, Kalıcı Kar/Buzul |

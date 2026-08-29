@@ -10,6 +10,20 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
 
+    <!--
+        Android 11+ paket görünürlüğü: setPackage ile başlatılan bir intent,
+        hedef paket burada bildirilmezse ActivityNotFoundException atar.
+        "Dinle" butonu şarkıyı YouTube Music'te açmak için gerekiyor.
+    -->
+    <queries>
+        <package android:name="com.google.android.apps.youtube.music" />
+        <package android:name="com.google.android.youtube" />
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:name=".RankingApp"
         android:allowBackup="true"

@@ -156,6 +156,21 @@ internal fun TeamSelectionPanel(
                     )
                 }
 
+                // "▶ Dinle" — yalnız müzik listelerinde.
+                // Puanlama sırasında "bu şarkı hangisiydi?" sorusunun cevabı.
+                if (muzikOgesiMi(csvData)) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 6.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            DinleButonu(song = team)
+                        }
+                    }
+                }
+
                 if (kisaSatirlar.isNotEmpty()) {
                     item {
                         HorizontalDivider(
