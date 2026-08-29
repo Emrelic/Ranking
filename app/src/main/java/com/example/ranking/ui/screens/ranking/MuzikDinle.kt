@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.media.AudioManager
 import android.media.MediaMetadata
+import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.provider.Settings
@@ -167,84 +168,73 @@ fun bildirimErisimiIste(context: Context) {
  *
  * @return komut gönderildiyse true
  */
-fun arkaPlandaCal(context: Context, song: Song): Boolean {
-    if (!bildirimErisimiVar(context)) return false
-
-    val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
-        as? MediaSessionManager ?: return false
-    val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
-
-    val oturumlar = try {
-        yonetici.getActiveSessions(bilesen)
-    } catch (e: SecurityException) {
-        // İzin verilmiş görünüyor ama servis henüz bağlanmamış olabilir
-        return false
-    } catch (e: Exception) {
-        return false
-    }
-
-    val ytm = oturumlar.firstOrNull { it.packageName == YTM_PAKET } ?: return false
-
-    val sorgu = muzikAramaMetni(song)
-    if (sorgu.isBlank()) return false
-
+/** O anki YouTube Music denetleyicisi (her seferinde taze bulunur). */
+private fun ytmDenetleyici(context: Context): MediaController? {
     return try {
-        // 🔴 ÇALARKEN gönderilen playFromSearch şarkıyı DEĞİŞTİRMİYOR
-        // (kullanıcı ölçtü: bir şarkı çalarken başkasına Dinle denince
-        // yenisi başlamıyordu). Önce durdurulur, sonra yeni arama verilir.
-        try { ytm.transportControls.stop() } catch (e: Exception) { }
-        ytm.transportControls.playFromSearch(sorgu, null)
-
-        // 🔴 ÖLÇÜLMÜŞ: YouTube Music `playFromSearch` ile parçayı kuyruğa alıp
-        // HAZIR bekletiyor ama ÇALMAYA BAŞLAMIYOR (PlaybackState state=1,
-        // yani STOPPED). Sözleşmeye göre kendiliğinden çalması gerekirdi;
-        // uygulamanın davranışı böyle. Açık `play()` emri gerekiyor.
-        //
-        // Emir birkaç kez gönderilir: parçanın hazırlanması ağa göre değişiyor
-        // ve hazır olmadan gönderilen `play()` yutuluyor. `play()` tekrarı
-        // zararsızdır (duraklatmaz, `pause` ya da toggle değil).
-        val handler = Handler(Looper.getMainLooper())
-        listOf(500L, 1200L, 2000L, 3200L, 4500L).forEach { gecikme ->
-            handler.postDelayed({ calEmriGonder(context) }, gecikme)
-        }
-        true
+        val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
+            as? MediaSessionManager ?: return null
+        val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
+        yonetici.getActiveSessions(bilesen).firstOrNull { it.packageName == YTM_PAKET }
     } catch (e: Exception) {
-        false
+        null
     }
 }
 
 /**
- * O ANDAKİ YouTube Music oturumuna "çal" emri gönderir.
+ * ARKA PLANDA çalar — YouTube Music ekrana GELMEZ.
  *
- * 🔴 Oturum HER SEFERİNDE yeniden bulunur. YouTube Music parçayı
- * hazırlarken medya oturumunu yeniliyor; `playFromSearch` öncesinde
- * yakalanan denetleyici bayatlıyor ve ona gönderilen `play()` hiçbir yere
- * ulaşmıyordu (cihazda ölçüldü: oturumun `updated` damgası hiç değişmedi).
+ * 🔴 SIRA VE KOŞULLAR ACI DENEYİMLE BULUNDU:
  *
- * İki emir birden denenir:
- * · `transportControls.play()` — olağan yol
- * · `dispatchMediaButtonEvent(KEYCODE_MEDIA_PLAY)` — medya tuşu, doğrudan
- *   o oturuma. Bu yolun çalıştığı cihazda ölçülmüştü (state 2 → 3).
- *   PLAY gönderilir, PLAY_PAUSE değil: ikincisi çalanı duraklatırdı.
+ * · `stop()` GÖNDERİLMEZ. Gönderildiğinde çalan şarkı duraksıyor, yeni
+ *   parça yüklenmiyor ve sonraki `play()` emri ESKİ şarkıyı kaldığı
+ *   yerden sürdürüyordu — kullanıcının gördüğü "duraksadı, sonra devam
+ *   etti, yeni şarkı başlamadı" davranışı tam olarak buydu.
+ *
+ * · `play()` KÖRLEMESİNE GÖNDERİLMEZ. Yalnız çalan parçanın ADI
+ *   değiştiyse gönderilir; yoksa eski şarkıyı devam ettirmekten başka
+ *   işe yaramıyor.
+ *
+ * · Önce video kimliğiyle (`playFromMediaId`), o tutmazsa aramayla
+ *   (`playFromSearch`) denenir.
+ *
+ * @return komutlar gönderildiyse true (ÇALDIĞI ANLAMINA GELMEZ —
+ *         doğrulamayı çağıran yapar)
  */
-private fun calEmriGonder(context: Context) {
-    try {
-        val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
-            as? MediaSessionManager ?: return
-        val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
-        val ytm = yonetici.getActiveSessions(bilesen)
-            .firstOrNull { it.packageName == YTM_PAKET } ?: return
+fun arkaPlandaCal(context: Context, song: Song): Boolean {
+    if (!bildirimErisimiVar(context)) return false
+    val ytm = ytmDenetleyici(context) ?: return false
 
-        ytm.transportControls.play()
-        ytm.dispatchMediaButtonEvent(
-            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY)
-        )
-        ytm.dispatchMediaButtonEvent(
-            KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY)
-        )
-    } catch (e: Exception) {
-        // İzin çekilmiş ya da oturum kapanmış olabilir; sessizce geç
+    val oncekiAd = ytm.metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
+    val kimlik = youtubeKimligi(song.csvData)
+    val sorgu = muzikAramaMetni(song)
+    if (kimlik == null && sorgu.isBlank()) return false
+
+    val handler = Handler(Looper.getMainLooper())
+
+    // 1) Kimlikle doğrudan dene
+    if (kimlik != null) {
+        try { ytm.transportControls.playFromMediaId(kimlik, null) } catch (e: Exception) { }
     }
+
+    // 2) Değişmediyse aramayla dene
+    handler.postDelayed({
+        if (calanParcaAdi(context) == oncekiAd && sorgu.isNotBlank()) {
+            try {
+                ytmDenetleyici(context)?.transportControls?.playFromSearch(sorgu, null)
+            } catch (e: Exception) { }
+        }
+    }, 1300L)
+
+    // 3) Parça DEĞİŞTİYSE çalmasını sağla — değişmediyse dokunma
+    listOf(2800L, 4200L).forEach { gecikme ->
+        handler.postDelayed({
+            if (calanParcaAdi(context) != oncekiAd) {
+                try { ytmDenetleyici(context)?.transportControls?.play() } catch (e: Exception) { }
+            }
+        }, gecikme)
+    }
+
+    return true
 }
 
 fun youtubeMusicteAc(context: Context, song: Song) {
