@@ -380,8 +380,41 @@ private fun onPlandaAc(context: Context, song: Song) {
  * Emir birkaç kez denenir çünkü YouTube Music medya oturumunu almadan önce
  * gönderilen tuş kaybolur; yükleme süresi ağa ve cihaza göre değişiyor.
  */
+/**
+ * "Çal" emrini İKİ KANALDAN birden gönderir.
+ *
+ * ① Doğrudan YouTube Music'in medya oturumuna (`MediaController`).
+ *    Bildirim erişimi verildiyse bu kanal uygulamamız ARKA PLANDAYKEN de
+ *    çalışır — asıl güvenilir yol budur.
+ * ② Sistem medya tuşu (`AudioManager`). Bildirim erişimi yoksa tek çare
+ *    bu, ama arka plandaki uygulamadan gönderilince engellenebiliyor.
+ *
+ * Oturum HER ÇAĞRIDA yeniden bulunur: YouTube Music parçayı hazırlarken
+ * oturumunu yeniliyor, önceden yakalanan denetleyici bayatlıyor.
+ */
+private fun calEmriGonder(context: Context) {
+    // ① Oturuma doğrudan
+    try {
+        ytmDenetleyici(context)?.let { ytm ->
+            ytm.transportControls.play()
+            ytm.dispatchMediaButtonEvent(
+                KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY)
+            )
+            ytm.dispatchMediaButtonEvent(
+                KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY)
+            )
+        }
+    } catch (e: Exception) { }
+
+    // ② Sistem medya tuşu
+    try {
+        val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        audio?.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY))
+        audio?.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY))
+    } catch (e: Exception) { }
+}
+
 private fun calmayiBaslat(context: Context) {
-    val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager ?: return
     val handler = Handler(Looper.getMainLooper())
 
     // Çalma emirleri gittikten sonra kullanıcıyı Ranking'e geri getir.
@@ -405,19 +438,11 @@ private fun calmayiBaslat(context: Context) {
         }
     }, 3000L)
 
-    listOf(1200L, 2200L, 3500L).forEach { gecikme ->
-        handler.postDelayed({
-            try {
-                audio.dispatchMediaKeyEvent(
-                    KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY)
-                )
-                audio.dispatchMediaKeyEvent(
-                    KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY)
-                )
-            } catch (e: Exception) {
-                // Sistem emri reddederse kullanıcı elle başlatır; çökme olmaz
-            }
-        }, gecikme)
+    // Parçanın hazırlanma süresi ağa göre değişiyor; emir hazır olmadan
+    // gönderilirse yutuluyor. Ranking'e dönüş 3 sn'de olduğu için emirler
+    // dönüşün HEM ÖNCESİNE hem SONRASINA yayılıyor.
+    listOf(1000L, 1800L, 2600L, 3600L, 4800L, 6200L).forEach { gecikme ->
+        handler.postDelayed({ calEmriGonder(context) }, gecikme)
     }
 }
 
