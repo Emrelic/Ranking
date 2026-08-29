@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.ComponentName
 import android.content.Intent
 import android.media.AudioManager
+import android.media.MediaMetadata
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 import android.provider.Settings
@@ -188,6 +189,10 @@ fun arkaPlandaCal(context: Context, song: Song): Boolean {
     if (sorgu.isBlank()) return false
 
     return try {
+        // 🔴 ÇALARKEN gönderilen playFromSearch şarkıyı DEĞİŞTİRMİYOR
+        // (kullanıcı ölçtü: bir şarkı çalarken başkasına Dinle denince
+        // yenisi başlamıyordu). Önce durdurulur, sonra yeni arama verilir.
+        try { ytm.transportControls.stop() } catch (e: Exception) { }
         ytm.transportControls.playFromSearch(sorgu, null)
 
         // 🔴 ÖLÇÜLMÜŞ: YouTube Music `playFromSearch` ile parçayı kuyruğa alıp
@@ -263,10 +268,11 @@ fun youtubeMusicteAc(context: Context, song: Song) {
     // bekletiyor, biz de başarılı sanıp çalışan önplan yoluna hiç
     // geçmiyorduk. Şimdi GERÇEK SES ile doğrulanıyor; ses yoksa önplan
     // yoluna düşülüyor.
+    val oncekiParca = calanParcaAdi(context)
     if (arkaPlandaCal(context, song)) {
         Toast.makeText(context, "▶ ${song.name}", Toast.LENGTH_SHORT).show()
         Handler(Looper.getMainLooper()).postDelayed({
-            if (!muzikCaliyorMu(context)) {
+            if (!istenenSarkiCaliyorMu(context, oncekiParca)) {
                 onPlandaAc(context, song)
             }
         }, 5000L)
@@ -276,21 +282,42 @@ fun youtubeMusicteAc(context: Context, song: Song) {
     onPlandaAc(context, song)
 }
 
-/**
- * Şu an GERÇEKTEN ses çıkıyor mu?
- *
- * 🔴 Medya oturumunun `state=PLAYING` demesi YETMİYOR — cihazda ölçüldü:
- * oturum "çalıyor" derken konum saniyelerce hiç ilerlemiyordu (ses yoktu).
- * `AudioManager.isMusicActive` ses katmanına bakar, oturumun iddiasına
- * değil; bu yüzden doğrulama için tek güvenilir ölçü odur.
- */
-private fun muzikCaliyorMu(context: Context): Boolean {
+/** YouTube Music'te o an çalan parçanın adı (yoksa null). */
+private fun calanParcaAdi(context: Context): String? {
     return try {
-        val audio = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-        audio?.isMusicActive == true
+        val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
+            as? MediaSessionManager ?: return null
+        val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
+        val ytm = yonetici.getActiveSessions(bilesen)
+            .firstOrNull { it.packageName == YTM_PAKET } ?: return null
+        ytm.metadata?.getString(MediaMetadata.METADATA_KEY_TITLE)
     } catch (e: Exception) {
-        false
+        null
     }
+}
+
+/**
+ * İSTENEN şarkı çalmaya başladı mı?
+ *
+ * 🔴 İki yanlış doğrulama denendi, ikisi de kusuru gizledi:
+ *
+ * ① `state == PLAYING` — cihazda ölçüldü: oturum "çalıyor" derken konum
+ *    saniyelerce hiç ilerlemiyordu, ses yoktu.
+ * ② `AudioManager.isMusicActive` — ses VAR ama ESKİ şarkının sesi.
+ *    Kullanıcı çalan bir şarkı varken başkasına Dinle deyince doğrulama
+ *    "başarılı" diyor, yedek yola hiç geçilmiyordu.
+ *
+ * Doğru ölçü: çalan parçanın ADI değişti mi ve ses gerçekten var mı.
+ */
+private fun istenenSarkiCaliyorMu(context: Context, oncekiAd: String?): Boolean {
+    val audio = try {
+        context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+    } catch (e: Exception) { null }
+    if (audio?.isMusicActive != true) return false
+
+    val simdiki = calanParcaAdi(context)
+    // Ad okunamıyorsa sese güvenilir; okunuyorsa DEĞİŞMİŞ olmalı
+    return simdiki == null || simdiki != oncekiAd
 }
 
 /**
