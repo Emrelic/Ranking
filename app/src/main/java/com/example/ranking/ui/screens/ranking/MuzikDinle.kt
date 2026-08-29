@@ -7,6 +7,7 @@ import android.content.ComponentName
 import android.content.Intent
 import android.media.AudioManager
 import android.media.session.MediaSessionManager
+import android.media.session.PlaybackState
 import android.provider.Settings
 import android.net.Uri
 import android.os.Handler
@@ -188,9 +189,56 @@ fun arkaPlandaCal(context: Context, song: Song): Boolean {
 
     return try {
         ytm.transportControls.playFromSearch(sorgu, null)
+
+        // 🔴 ÖLÇÜLMÜŞ: YouTube Music `playFromSearch` ile parçayı kuyruğa alıp
+        // HAZIR bekletiyor ama ÇALMAYA BAŞLAMIYOR (PlaybackState state=1,
+        // yani STOPPED). Sözleşmeye göre kendiliğinden çalması gerekirdi;
+        // uygulamanın davranışı böyle. Açık `play()` emri gerekiyor.
+        //
+        // Emir birkaç kez gönderilir: parçanın hazırlanması ağa göre değişiyor
+        // ve hazır olmadan gönderilen `play()` yutuluyor. `play()` tekrarı
+        // zararsızdır (duraklatmaz, `pause` ya da toggle değil).
+        val handler = Handler(Looper.getMainLooper())
+        listOf(500L, 1200L, 2000L, 3200L, 4500L).forEach { gecikme ->
+            handler.postDelayed({ calEmriGonder(context) }, gecikme)
+        }
         true
     } catch (e: Exception) {
         false
+    }
+}
+
+/**
+ * O ANDAKİ YouTube Music oturumuna "çal" emri gönderir.
+ *
+ * 🔴 Oturum HER SEFERİNDE yeniden bulunur. YouTube Music parçayı
+ * hazırlarken medya oturumunu yeniliyor; `playFromSearch` öncesinde
+ * yakalanan denetleyici bayatlıyor ve ona gönderilen `play()` hiçbir yere
+ * ulaşmıyordu (cihazda ölçüldü: oturumun `updated` damgası hiç değişmedi).
+ *
+ * İki emir birden denenir:
+ * · `transportControls.play()` — olağan yol
+ * · `dispatchMediaButtonEvent(KEYCODE_MEDIA_PLAY)` — medya tuşu, doğrudan
+ *   o oturuma. Bu yolun çalıştığı cihazda ölçülmüştü (state 2 → 3).
+ *   PLAY gönderilir, PLAY_PAUSE değil: ikincisi çalanı duraklatırdı.
+ */
+private fun calEmriGonder(context: Context) {
+    try {
+        val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
+            as? MediaSessionManager ?: return
+        val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
+        val ytm = yonetici.getActiveSessions(bilesen)
+            .firstOrNull { it.packageName == YTM_PAKET } ?: return
+
+        ytm.transportControls.play()
+        ytm.dispatchMediaButtonEvent(
+            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY)
+        )
+        ytm.dispatchMediaButtonEvent(
+            KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY)
+        )
+    } catch (e: Exception) {
+        // İzin çekilmiş ya da oturum kapanmış olabilir; sessizce geç
     }
 }
 
@@ -198,11 +246,50 @@ fun youtubeMusicteAc(context: Context, song: Song) {
     val paket = YTM_PAKET
     val kimlik = youtubeKimligi(song.csvData)
 
-    // 0) ARKA PLAN — YouTube Music ekrana gelmez, kullanıcı Ranking'de kalır
+    // 0) ARKA PLAN — YouTube Music ekrana gelmez, kullanıcı Ranking'de kalır.
+    //
+    // 🔴 DOĞRULANIR: arka plan yolu "komutu gönderdim" diye başarılı sayılamaz.
+    // Ölçüldü — YouTube Music playFromSearch ile parçayı kuyruğa alıp HAZIR
+    // bekletiyor, çalmaya başlamıyor. Bu yol başarılı sayılıp çıkılınca,
+    // çalıştığı ÖLÇÜLMÜŞ olan önplan yoluna hiç sıra gelmiyor ve buton
+    // hiçbir şey çalmaz hale geliyordu (gerileme).
+    //
+    // Bu yüzden: komut gönderilir, birkaç saniye sonra GERÇEKTEN çalıyor mu
+    // diye bakılır; çalmıyorsa önplan yoluna düşülür.
     if (arkaPlandaCal(context, song)) {
         Toast.makeText(context, "▶ ${song.name}", Toast.LENGTH_SHORT).show()
+        Handler(Looper.getMainLooper()).postDelayed({
+            if (!calmayaBasladiMi(context)) {
+                onPlandaAc(context, song)
+            }
+        }, 3000L)
         return
     }
+
+    onPlandaAc(context, song)
+}
+
+/** YouTube Music şu an gerçekten çalıyor mu? */
+private fun calmayaBasladiMi(context: Context): Boolean {
+    return try {
+        val yonetici = context.getSystemService(Context.MEDIA_SESSION_SERVICE)
+            as? MediaSessionManager ?: return false
+        val bilesen = ComponentName(context, MuzikDenetimServisi::class.java)
+        val ytm = yonetici.getActiveSessions(bilesen)
+            .firstOrNull { it.packageName == YTM_PAKET } ?: return false
+        ytm.playbackState?.state == PlaybackState.STATE_PLAYING
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/**
+ * ÖNPLAN yolu — YouTube Music ekrana gelir. Çalıştığı cihazda ölçülmüştü.
+ * Arka plan yolu şarkıyı başlatamazsa buraya düşülür.
+ */
+private fun onPlandaAc(context: Context, song: Song) {
+    val paket = YTM_PAKET
+    val kimlik = youtubeKimligi(song.csvData)
 
     // 1) Video kimliği biliniyorsa doğrudan o parçayı aç
     if (kimlik != null) {
