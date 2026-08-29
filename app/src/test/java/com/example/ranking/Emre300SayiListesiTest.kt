@@ -50,6 +50,11 @@ class Emre300SayiListesiTest {
             val (songs, deger) = ortak
             Emre300SayiListesiTest().oynat(songs, deger, kaos = true)
         }
+        private val ortak299 by lazy { Emre300SayiListesiTest().sayiListesi299() }
+        private val kosum299 by lazy {
+            val (songs, deger) = ortak299
+            Emre300SayiListesiTest().oynat(songs, deger, kaos = false)
+        }
     }
 
     // ==========================================================
@@ -84,10 +89,25 @@ class Emre300SayiListesiTest {
         }
     }
 
+    /** 299 öğelik TEK SAYILI varyant: 200 değer birer kez + 99'u ikinci kez. */
+    private fun sayiListesi299(): Pair<List<Song>, Map<Long, Int>> {
+        val rnd = Random(43)
+        val degerler = (1..200).toMutableList()
+        degerler += (1..200).shuffled(rnd).take(99)
+        degerler.shuffle(rnd)
+        check(degerler.size == 299)
+        val songs = degerler.mapIndexed { i, deger ->
+            Song(id = (i + 1).toLong(), name = "Sayı $deger", listId = 1L)
+        }
+        return Pair(songs, degerler.mapIndexed { i, d -> (i + 1).toLong() to d }.toMap())
+    }
+
     private data class Kosum(
         val finalState: EmreSystemCorrect.EmreState,
         val allMatches: List<Match>,
-        val turSayisi: Int
+        val turSayisi: Int,
+        /** Tur sırasıyla bye geçen takım id'leri (çift sayıda boş). */
+        val byeler: List<Long>
     )
 
     /**
@@ -108,6 +128,7 @@ class Emre300SayiListesiTest {
     ): Kosum {
         var state = EmreSystemCorrect.initializeEmreTournament(songs)
         val allMatches = mutableListOf<Match>()
+        val byeler = mutableListOf<Long>()
         var nextId = 1L
         var tur = 0
 
@@ -115,6 +136,7 @@ class Emre300SayiListesiTest {
             val pairing = EmreSystemCorrect.createHybridPairingSystem(state)
             if (!pairing.canContinue || pairing.matches.isEmpty()) break
             tur++
+            pairing.byeTeam?.let { byeler.add(it.id) }
 
             val turunMaclari = pairing.matches.map { it.copy(id = nextId++) }.toMutableList()
 
@@ -156,23 +178,25 @@ class Emre300SayiListesiTest {
             )
 
             // ① PUAN MUHASEBESİ — her tur kapanışında denetlenir
-            puanMuhasebesiniDogrula(state, allMatches)
+            puanMuhasebesiniDogrula(state, allMatches, byeler)
         }
-        return Kosum(state, allMatches, tur)
+        return Kosum(state, allMatches, tur, byeler)
     }
 
     /**
-     * ① Toplam puan = oynanan maç sayısı (bye yok; her maç 1 puan dağıtır).
-     * Ayrıca her takımın puanı maç kayıtlarından bağımsız yeniden hesaplanır.
+     * ① Toplam puan = oynanan maç sayısı + bye sayısı (her maç kasaya 1 puan
+     * koyar, her bye 1 puan). Ayrıca her takımın puanı maç kayıtlarından ve
+     * bye listesinden BAĞIMSIZ yeniden hesaplanıp motorunkiyle karşılaştırılır.
      */
     private fun puanMuhasebesiniDogrula(
         state: EmreSystemCorrect.EmreState,
-        allMatches: List<Match>
+        allMatches: List<Match>,
+        byeler: List<Long>
     ) {
         val toplamPuan = state.teams.sumOf { it.points }
         assertEquals(
-            "Toplam puan kasası tutmuyor: ${allMatches.size} maç oynandı ama toplam puan $toplamPuan",
-            allMatches.size.toDouble(),
+            "Toplam puan kasası tutmuyor: ${allMatches.size} maç + ${byeler.size} bye ama toplam puan $toplamPuan",
+            (allMatches.size + byeler.size).toDouble(),
             toplamPuan,
             1e-9
         )
@@ -187,9 +211,10 @@ class Emre300SayiListesiTest {
                 else -> beklenen.merge(m.winnerId!!, 1.0, Double::plus)
             }
         }
+        byeler.forEach { beklenen.merge(it, 1.0, Double::plus) }
         state.teams.forEach { t ->
             assertEquals(
-                "Takım ${t.id} (${t.song.name}) puanı maç kayıtlarıyla uyuşmuyor",
+                "Takım ${t.id} (${t.song.name}) puanı maç+bye kayıtlarıyla uyuşmuyor",
                 beklenen[t.id] ?: 0.0,
                 t.points,
                 1e-9
@@ -321,6 +346,84 @@ class Emre300SayiListesiTest {
         // En büyük değer(ler) ilk sırada yenilgisiz olmalı: 200'ün kopyaları en üst dilimde
         assertTrue(
             "En büyük sayı (200) ilk 5'te değil: ilk 5 = ${degerSirasi.take(5)}",
+            degerSirasi.take(5).contains(200)
+        )
+    }
+
+    // ==========================================================
+    // TEK SAYILI VARYANT: 299 öğe (200 tekil + 99 mükerrer) — BYE devrede
+    // ==========================================================
+
+    @Test
+    fun tekSayili299_byeKasasi_rotasyon_veSiralama() {
+        val (_, deger) = ortak299
+        val kosum = kosum299
+
+        assertTrue("299'luk turnuva hiç tur oynamadı", kosum.turSayisi > 0)
+
+        // TEK SAYIDA HER TURDA tam (299-1)/2 = 149 maç + tam 1 bye olmalı
+        val turBasinaMac = kosum.allMatches.groupBy { it.round }.mapValues { it.value.size }
+        turBasinaMac.forEach { (tur, adet) ->
+            assertEquals("Tur $tur tam eşleştirme değil ($adet maç, 149 olmalı)", 149, adet)
+        }
+        assertEquals(
+            "Her turda tam 1 bye olmalı: ${kosum.turSayisi} tur, ${kosum.byeler.size} bye",
+            kosum.turSayisi, kosum.byeler.size
+        )
+
+        // BYE ROTASYONU ADİL: kimse ikinci bye'ı herkes almadan almaz
+        val byeSayaci = kosum.byeler.groupingBy { it }.eachCount()
+        val enCok = byeSayaci.values.maxOrNull() ?: 0
+        val herkesinByesi = if (byeSayaci.size == 299) (byeSayaci.values.minOrNull() ?: 0) else 0
+        assertTrue(
+            "Bye rotasyonu adaletsiz: bir takım $enCok bye almışken herkese $herkesinByesi bye düşmüş",
+            enCok - herkesinByesi <= 1
+        )
+
+        // Kırmızı çizgi
+        val gorulen = mutableSetOf<Pair<Long, Long>>()
+        kosum.allMatches.forEach { m ->
+            val cift = if (m.songId1 < m.songId2) m.songId1 to m.songId2 else m.songId2 to m.songId1
+            assertTrue("KIRMIZI ÇİZGİ (299): $cift ikinci kez eşleşti", gorulen.add(cift))
+        }
+
+        // Mükerrer eşleşmeler beraberlik mi
+        kosum.allMatches.forEach { m ->
+            if (deger.getValue(m.songId1) == deger.getValue(m.songId2)) {
+                assertEquals("Mükerrer çift beraberlik değil", null, m.winnerId)
+            }
+        }
+
+        // Final sıralama: kayıp yok + puan monotonluğu + sıralılık ölçümü
+        val sonuc = EmreSystemCorrect.calculateFinalResults(kosum.finalState)
+        assertEquals(299, sonuc.size)
+        assertEquals(299, sonuc.map { it.songId }.toSet().size)
+        val sirali = sonuc.sortedBy { it.position }
+        sirali.zipWithNext().forEach { (ust, alt) ->
+            assertTrue(
+                "Puan sırası bozuk: poz ${ust.position} (${ust.score}) < poz ${alt.position} (${alt.score})",
+                ust.score >= alt.score - 1e-9
+            )
+        }
+
+        val degerSirasi = sirali.map { deger.getValue(it.songId) }
+        var inversiyon = 0L
+        for (i in degerSirasi.indices) {
+            for (j in i + 1 until degerSirasi.size) {
+                if (degerSirasi[i] < degerSirasi[j]) inversiyon++
+            }
+        }
+        val maxInv = 299L * 298L / 2L
+        val yuzde = 100.0 * (1.0 - inversiyon.toDouble() / maxInv)
+        println("== 299 TEK SAYILI: ${kosum.turSayisi} tur, ${kosum.allMatches.size} maç, ${kosum.byeler.size} bye ==")
+        println("İlk 10: ${degerSirasi.take(10)} · Son 10: ${degerSirasi.takeLast(10)}")
+        println("İnversiyon: $inversiyon / $maxInv (sıralılık %${"%.2f".format(yuzde)})")
+        assertTrue(
+            "299'luk sıralama 'büyükten küçüğe' eğiliminden uzak: %${"%.2f".format(yuzde)}",
+            yuzde >= 90.0
+        )
+        assertTrue(
+            "En büyük sayı (200) ilk 5'te değil: ${degerSirasi.take(5)}",
             degerSirasi.take(5).contains(200)
         )
     }
