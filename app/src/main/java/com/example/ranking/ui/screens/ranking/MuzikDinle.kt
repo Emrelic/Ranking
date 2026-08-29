@@ -258,17 +258,23 @@ fun youtubeMusicteAc(context: Context, song: Song) {
     // bekletiyor, biz de başarılı sanıp çalışan önplan yoluna hiç
     // geçmiyorduk. Şimdi GERÇEK SES ile doğrulanıyor; ses yoksa önplan
     // yoluna düşülüyor.
-    val oncekiParca = calanParcaAdi(context)
-    if (arkaPlandaCal(context, song)) {
-        Toast.makeText(context, "▶ ${song.name}", Toast.LENGTH_SHORT).show()
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (!istenenSarkiCaliyorMu(context, oncekiParca)) {
-                onPlandaAc(context, song)
-            }
-        }, 5000L)
-        return
-    }
-
+    // 🔴 ARKA PLAN YOLU ZİNCİRDEN ÇIKARILDI — beş tur denendi, çalışmıyor.
+    //
+    // Ölçülen: YouTube Music dışarıdan gelen şarkı DEĞİŞTİRME komutlarını
+    // (playFromMediaId, playFromSearch) canlı bir oturumu varken kabul
+    // etmiyor. Kabul ettiği tek şeyler play/pause/stop — yani var olan
+    // parçayı yönetmek. Bu yüzden "uygulamadan çıkmadan başka şarkıya geç"
+    // isteği bu arayüzle karşılanamıyor.
+    //
+    // Denemenin kendisi de zarar veriyordu: 5 saniye boyunca hiçbir şey
+    // olmuyor, kullanıcı butonun bozuk olduğunu sanıyordu.
+    //
+    // Kod (arkaPlandaCal, ytmDenetleyici, MuzikDenetimServisi) duruyor:
+    // YouTube Music ileride bu komutları desteklerse yeniden bağlanabilir.
+    //
+    // ÇALIŞAN YOL: şarkıyı önplanda aç, medya tuşuyla başlat, sonra
+    // Ranking'e geri dön. Premium'da çalma arka planda sürdüğü için
+    // kullanıcı hem şarkıyı duyar hem uygulamaya döner.
     onPlandaAc(context, song)
 }
 
@@ -397,7 +403,7 @@ private fun calmayiBaslat(context: Context) {
             // Android arka plandan ekran açmayı engelleyebilir; kullanıcı
             // geri tuşuyla döner. Çökme olmaz.
         }
-    }, 4200L)
+    }, 3000L)
 
     listOf(1200L, 2200L, 3500L).forEach { gecikme ->
         handler.postDelayed({
