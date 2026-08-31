@@ -1135,6 +1135,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     fun submitDrawResult(matchId: Long, team1Score: Int, team2Score: Int) {
         viewModelScope.launch {
+            // 🔴 İkili karşılaştırmada beraberlik YOK: winnerId=null kaydı
+            // replay'de "aday kaybetti" sayılır ve sıralamayı sessizce
+            // keyfileştirir. UI bu yolu MERGE_SORT'ta zaten gizliyor; bu
+            // bekçi, UI değişse bile davranışı korur. (Aynı bekçi daha önce
+            // vardı, bir UI yenilemesinde kaybolmuştu — testi:
+            // IkiliKarsilastirmaKapsamliTest.belgeleme davranış sınavları.)
+            if (currentMethod == "MERGE_SORT") return@launch
             val currentState = _uiState.value
             currentState.currentMatch?.let { match ->
                 Log.d("RankingViewModel", "🎯 Skor girişi: Takım1=$team1Score, Takım2=$team2Score")
