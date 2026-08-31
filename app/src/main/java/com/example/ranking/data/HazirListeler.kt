@@ -58,7 +58,10 @@ object HazirListeler {
                 HazirListe("15_yiyecekler.csv", "Yiyecekler", 60, false, "Kalori, protein ve lif değerleriyle yiyecekler"),
                 // Sıralama sistemini sınamak için: 1-100 karışık. Büyük sayıyı
                 // seçerek oynanır, sonuç 100'den 1'e sıralı çıkmalı.
-                HazirListe("33_sayilar_1_100_test.csv", "Sayılar 1-100 (Test)", 100, false, "Sistemi sınamak için karışık 100 sayı")
+                HazirListe("33_sayilar_1_100_test.csv", "Sayılar 1-100 (Test)", 100, false, "Sistemi sınamak için karışık 100 sayı"),
+                // İki İsviçre varyantını kıyaslamak için: aynı dizilişin
+                // simülasyon eşi SiralamaKalitesiKarsilastirmaTest.n200'de
+                HazirListe("34_sayilar_1_200_test.csv", "Sayılar 1-200 (Test)", 200, false, "İsviçre varyantlarını kıyaslamak için 200 sayı")
             )
         ),
         HazirListeKategorisi(

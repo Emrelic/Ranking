@@ -49,8 +49,9 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | 31 | 31_muzik_aletleri.csv | 35 | No, Tür, Çalınış Şekli, **Müzik Aleti**, Anavatan/Kültür, Tel/Perde Sayısı, Malzeme, Kullanıldığı Müzik, Ünlü İcracı, Ses Karakteri, Görsel 🖼 |
 | 32 | 32_sebnem_ferah_sozleriyle.csv | 80 | No, Sanatçı, Albüm, **Şarkı Adı**, Şarkı Sözleri |
 | 33 | 33_sayilar_1_100_test.csv | 100 | No, Grup, Beklenen Sıra, **Sayı**, Basamak — *sıralama sınavı için* |
+| 34 | 34_sayilar_1_200_test.csv | 200 | No, Grup, Beklenen Sıra, **Sayı**, Basamak — *İsviçre varyantı kıyası* |
 
-Toplam **33 liste**, **2034 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
+Toplam **34 liste**, **2234 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
 
 ## Görsel Desteği
 

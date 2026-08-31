@@ -123,6 +123,39 @@ class SiralamaKalitesiKarsilastirmaTest {
         assertTrue("Swiss sıralaması rastgeleden iyi değil: $swissOrt", swissOrt < 25.0)
     }
 
+    /**
+     * Kullanıcı isteği (2026-08-31): "1-200 arasında 200 sayı içeren liste,
+     * Geliştirilmiş İsviçre ve düz İsviçre ile sıralansın, karşılaştırılsın."
+     *
+     * Cihazdaki 34 numaralı hazır listeyle AYNI tohum kullanılır — telefonda
+     * elle oynanan turnuva ile buradaki simülasyon aynı diziliş üzerinde.
+     */
+    @Test
+    fun n200_emreVeSwiss_karsilastirma() {
+        // Cihazdaki 34_sayilar_1_200_test.csv bu dizilişle üretildi (Java
+        // LCG, tohum 200). CSV başka araçla yeniden üretilirse bu denetim
+        // ayrışmayı yakalar — liste ile simülasyon sessizce kopmasın.
+        assertEquals(
+            listOf(52, 69, 23, 173, 127, 189, 31, 29, 186, 199),
+            sarkilar(200, 200L).take(10).map { it.id.toInt() }
+        )
+        val e = emreKostur(200, 200L)
+        val s = swissKostur(200, 200L)
+        println("=== n=200 (kullanıcı senaryosu) ===")
+        rapor("EMRE", e)
+        rapor("SWISS", s)
+        println("MERGE_SORT tahmini soru: " +
+            PairwiseComparisonSort.estimatedTotalComparisons(200))
+
+        assertEquals(200, e.siralama.toSet().size)
+        assertEquals(200, s.siralama.toSet().size)
+        // Emre, düz İsviçre'den belirgin iyi sıralamalı (asıl iddia bu)
+        assertTrue(
+            "Emre (${e.ortSapma}) düz İsviçre'den (${s.ortSapma}) iyi olmalı",
+            e.ortSapma < s.ortSapma
+        )
+    }
+
     @Test
     fun n128_ikiMotor_veIkiliKarsilastirmaMaliyeti() {
         val e = emreKostur(128, 99L)
