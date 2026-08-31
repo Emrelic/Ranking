@@ -688,7 +688,30 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 return
             }
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
-            
+
+            // 🔴 AÇIK TUR VARKEN YENİ TUR ÜRETİLMEZ.
+            //
+            // Katlanmanın (40 → 80 → 160 eşleşme) kök sebebi buydu: yarım
+            // kalmış bir tur dururken buraya gelinince, eskisi silinmeden
+            // yepyeni bir tur daha kuruluyor ve iki turun maçları veritabanında
+            // yan yana duruyordu. Ekranda tek liste gibi göründükleri için de
+            // "aynı takım aynı turda iki kez eşleşti" izlenimi doğuyordu.
+            //
+            // Yarım tur varsa yapılacak şey yeni tur kurmak değil, o turun
+            // kalan maçını oynatmaktır.
+            val yarimKalanTur = allMatches.filter { !it.isCompleted }
+                .minOfOrNull { it.round }
+            if (yarimKalanTur != null) {
+                loadNextMatch()
+                return
+            }
+
+            // Aynı tur ikinci kez kurulmasın (mükerrer maç kaydı)
+            if (allMatches.any { it.round == round }) {
+                loadNextMatch()
+                return
+            }
+
             // Tamamlanmış maçları işle ve yeni state oluştur.
             //
             // 🔴 ÇİFT İŞLEME KORUMASI: tur kapanışı normalde
@@ -1384,8 +1407,24 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     emreState = state
                     calculateCurrentStandings()
                     
-                    // Tamamlanmamış maçlar varsa eşleştirmeler listesini göster
-                    val incompleteMatches = allMatches.filter { !it.isCompleted }
+                    // Tamamlanmamış maçlar varsa eşleştirmeler listesini göster.
+                    //
+                    // 🔴 YALNIZ AÇIK OLAN TUR. Eskiden süzgeç yoktu:
+                    // `allMatches.filter { !it.isCompleted }` bütün turların
+                    // yarım maçlarını tek listede topluyordu. Sonuçları
+                    // ölçüldü — 80 takımlı turnuvada liste 40 → 80 → 160 diye
+                    // katlanıyor ve aynı takım "aynı turda" birden çok kez
+                    // görünüyordu (aslında farklı turlardaki maçlarıydı).
+                    //
+                    // Dahası bu liste ZARARLIYDI: kullanıcı eski turdan kalma
+                    // bir maça oy verince `updateEmreCorrectStateAfterMatch`
+                    // o eski turu yeniden "tamamlandı" sayıp BİR TUR DAHA
+                    // üretiyordu — katlanmanın motoru buydu.
+                    val acikTur = allMatches.filter { !it.isCompleted }
+                        .minOfOrNull { it.round }
+                    val incompleteMatches = allMatches.filter {
+                        !it.isCompleted && it.round == acikTur
+                    }
                     if (incompleteMatches.isNotEmpty()) {
                         // KALDIĞI NOKTAYA DÖN — eşleştirme listesine değil, oy
                         // verilecek MAÇA. Kullanıcı turnuvayı bir maçın başında
