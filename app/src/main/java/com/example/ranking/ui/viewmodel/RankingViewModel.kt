@@ -1541,6 +1541,50 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
+    /**
+     * Turnuvayı ERKEN bitirir (kullanıcı isteği: "8 tur yeter" / "yoruldum").
+     *
+     * Emre'de turnuva normalde eşleşme kurulamayınca biter; 100 takımda bu
+     * ~50 tur sürer ve kimse oynamaz. Şampiyonu belirlemek için ceil(log2 n)
+     * tur yeter (128 takım → 7); sonrası orta sıraları keskinleştirir.
+     * Bitirme kararının sayısal dayanağı `EmreSystemCorrect.kesinlikRaporu`.
+     *
+     * Adımlar:
+     * ① Yarım kalan turun OYNANMIŞ maçları state'e işlenir (tur kapanmadığı
+     *   için işlenmemişlerdi; oynanmış oy çöpe gitmesin). Bye VERİLMEZ —
+     *   yarım turda "oynamayan takım" bye değildir.
+     * ② Tamamlanmamış maçlar silinir (silinmezse "Devam Et" onları açar).
+     * ③ completeRanking: sonuçlar yazılır, oturum ve turnuva kapanır.
+     */
+    fun erkenBitir() {
+        viewModelScope.launch {
+            try {
+                if (currentMethod != "EMRE_CORRECT") return@launch
+                val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+                val state = emreState
+                if (state != null) {
+                    val acikTur = allMatches.filter { !it.isCompleted }.minOfOrNull { it.round }
+                    if (acikTur != null) {
+                        val yarimTurunOynananlari = allMatches.filter {
+                            it.isCompleted && it.round == acikTur
+                        }
+                        if (yarimTurunOynananlari.isNotEmpty()) {
+                            emreState = RankingEngine.processCorrectEmreResults(
+                                state, yarimTurunOynananlari, null,
+                                allCompletedMatches = allMatches.filter { it.isCompleted }
+                            )
+                        }
+                    }
+                }
+                repository.deleteUncompletedMatches(currentListId, currentMethod)
+                completeRanking()
+                calculateCurrentStandings()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "Erken bitirme hatası: ${e.message}")
+            }
+        }
+    }
+
     fun pauseSession() {
         viewModelScope.launch {
             currentVotingSession?.let { session ->

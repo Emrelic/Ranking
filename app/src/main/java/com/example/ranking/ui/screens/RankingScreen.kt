@@ -58,6 +58,7 @@ fun RankingScreen(
     var showStandingsDialog by remember { mutableStateOf(false) }
     var showScoreDialog by remember { mutableStateOf(false) }
     var showResetConfirmDialog by remember { mutableStateOf(false) }
+    var showBitirDialog by remember { mutableStateOf(false) }
     var showResultsDialog by remember { mutableStateOf(false) }
 
     // Turnuvanın kriter ayarları (panel otomatik açılış + zorunlu kriter için)
@@ -88,6 +89,46 @@ fun RankingScreen(
         ) {
             showCriteriaDialog = true
         }
+    }
+
+    // Erken bitirme: keskinlik raporu + onay
+    if (showBitirDialog) {
+        val rapor = uiState.emreState?.let {
+            com.example.ranking.ranking.EmreSystemCorrect.kesinlikRaporu(it)
+        }
+        AlertDialog(
+            onDismissRequest = { showBitirDialog = false },
+            title = { Text("Turnuvayı bitir?") },
+            text = {
+                if (rapor != null) {
+                    Text(
+                        """
+                        Oynanan tur: ${rapor.oynananTur} (şampiyon için önerilen: ${rapor.onerilenTur})
+
+                        SIRALAMA KESKİNLİĞİ: %${rapor.genelYuzde}
+                        (${rapor.kanitliSinir}/${rapor.toplamSinir} komşuluk kanıtlı)
+
+                          Üst sıralar:  %${rapor.ustYuzde}
+                          Orta bölge:  %${rapor.ortaYuzde}
+                          Alt sıralar:  %${rapor.altYuzde}
+
+                        Kanıtlı = komşuların puanı farklı ya da aralarında maç oynanmış. Belirsiz komşuluklar tiebreaker tahminiyle sıralanır; devam ederseniz orta bölge keskinleşir.
+                        """.trimIndent()
+                    )
+                } else {
+                    Text("Şu anki sıralamayla turnuva bitirilecek.")
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showBitirDialog = false
+                    viewModel.erkenBitir()
+                }) { Text("Bitir") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBitirDialog = false }) { Text("Devam Et") }
+            }
+        )
     }
 
     // Sıfırlama onayı - tek dokunuşla turnuva silinmesini engeller
@@ -172,6 +213,32 @@ fun RankingScreen(
                     // DURAKLAT KALDIRILDI: tek işi hiçbir yerden okunmayan
                     // isPaused bayrağını yazmaktı — oturum zaten her oyda
                     // diske kaydediliyor ve "Devam Eden Turnuvalar"da duruyor.
+                    // BİTİR — Emre'de önerilen tur sayısına (ceil log2 n)
+                    // ulaşılınca görünür. Turnuva normalde ~n/2 tur sürer ve
+                    // kimse sonuna kadar oynamaz; şampiyon log2(n) turda
+                    // bellidir, kalan turlar orta sıraları keskinleştirir.
+                    // Basınca keskinlik raporu gösterilir, karar kullanıcının.
+                    if (method == "EMRE_CORRECT" && !uiState.isComplete) {
+                        val takimSayisi = uiState.allSongs.size
+                        val onerilenTur = if (takimSayisi > 1)
+                            kotlin.math.ceil(kotlin.math.log2(takimSayisi.toDouble())).toInt()
+                        else 1
+                        if (uiState.currentRound > onerilenTur) {
+                            Button(
+                                onClick = { showBitirDialog = true },
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier.height(32.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                    contentColor = MaterialTheme.colorScheme.onTertiary
+                                )
+                            ) {
+                                Text("BİTİR", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+
                     // Yerine SONUÇLAR: oylanmış maçlar görülür ve tur bitmeden
                     // (yalnız takımın son maçıysa) sonuç değiştirilebilir.
                     if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT")) {

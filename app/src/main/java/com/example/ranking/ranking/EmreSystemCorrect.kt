@@ -54,6 +54,69 @@ object EmreSystemCorrect {
         val isComplete: Boolean = false
     )
 
+    /**
+     * Sıralamanın NE KADAR OTURDUĞUNUN raporu — erken bitirme kararı için.
+     *
+     * Ölçü: sıralamadaki her komşu çift (i, i+1) için sınır "KANITLI" sayılır
+     * eğer (a) puanları farklıysa — puan Emre'de doğrudan maç sonuçlarından
+     * gelir — ya da (b) aynı puandalar ama ARALARINDA maç oynanmışsa (yeri
+     * o maç belirlemiştir). Aynı puanlı ve hiç karşılaşmamış komşuların
+     * sırası ise tiebreaker tahminidir: BELİRSİZ sınır.
+     *
+     * Uçlar erken oturur (puanlar ayrışır), orta bölge uzun süre belirsiz
+     * kalır — bu yüzden bölge bazında da verilir.
+     */
+    data class KesinlikRaporu(
+        val toplamSinir: Int,          // n-1
+        val kanitliSinir: Int,
+        val genelYuzde: Int,           // kanıtlı / toplam
+        val ustYuzde: Int,             // ilk %20'lik bölgenin sınırları
+        val ortaYuzde: Int,            // orta %60
+        val altYuzde: Int,             // son %20
+        val onerilenTur: Int,          // ceil(log2 n) — şampiyon için asgari
+        val oynananTur: Int
+    )
+
+    fun kesinlikRaporu(state: EmreState): KesinlikRaporu {
+        val sirali = state.teams.sortedBy { it.currentPosition }
+        val n = sirali.size
+        if (n < 2) return KesinlikRaporu(0, 0, 100, 100, 100, 100, 0, state.currentRound - 1)
+
+        fun oynadilarMi(a: EmreTeam, b: EmreTeam): Boolean {
+            val anahtar = if (a.teamId < b.teamId) Pair(a.teamId, b.teamId)
+                          else Pair(b.teamId, a.teamId)
+            return anahtar in state.matchHistory
+        }
+
+        val kanitli = BooleanArray(n - 1)
+        for (i in 0 until n - 1) {
+            val ust = sirali[i]; val alt = sirali[i + 1]
+            kanitli[i] = ust.points != alt.points || oynadilarMi(ust, alt)
+        }
+
+        fun bolgeYuzdesi(bas: Int, son: Int): Int {
+            val aralik = (bas until son).toList()
+            if (aralik.isEmpty()) return 100
+            return (aralik.count { kanitli[it] } * 100) / aralik.size
+        }
+        val ustSon = (n / 5).coerceAtLeast(1)
+        val altBas = (n - 1 - n / 5).coerceAtLeast(ustSon)
+
+        val k = kanitli.count { it }
+        return KesinlikRaporu(
+            toplamSinir = n - 1,
+            kanitliSinir = k,
+            genelYuzde = (k * 100) / (n - 1),
+            ustYuzde = bolgeYuzdesi(0, ustSon),
+            ortaYuzde = bolgeYuzdesi(ustSon, altBas),
+            altYuzde = bolgeYuzdesi(altBas, n - 1),
+            onerilenTur = kotlin.math.ceil(
+                kotlin.math.log2(n.toDouble())
+            ).toInt().coerceAtLeast(1),
+            oynananTur = (state.currentRound - 1).coerceAtLeast(0)
+        )
+    }
+
     data class EmrePairingResult(
         val matches: List<Match>,
         val byeTeam: EmreTeam? = null,
