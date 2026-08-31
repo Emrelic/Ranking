@@ -67,6 +67,9 @@ fun ListEditScreen(
     var draggedRow by remember { mutableStateOf<Int?>(null) }
     var draggedOverRow by remember { mutableStateOf<Int?>(null) }
     var showHeaderDesignDialog by remember { mutableStateOf(false) }
+    // Uzun basılan hücrenin büyük düzenleyicisi: (satır, sütun, mevcut değer).
+    // Satır içi kutu TEK SATIRLIK — şarkı sözü gibi uzun metin için bu var.
+    var buyukDuzenleme by remember { mutableStateOf<Triple<Int, String, String>?>(null) }
     
     // UNIFIED SCROLL STATE - TÜM TABLO İÇİN TEK SCROLL
     val tableScrollState = rememberScrollState()
@@ -616,7 +619,13 @@ fun ListEditScreen(
                                                 modifier = Modifier
                                                     .width(120.dp)
                                                     .height(48.dp)
-                                                    .clickable {
+                                                    .combinedClickable(
+                                                        // Uzun bas: çok satırlı büyük düzenleyici
+                                                        // (söz gibi uzun metinler satır içi kutuya sığmıyor)
+                                                        onLongClick = {
+                                                            buyukDuzenleme = Triple(rowIndex, header, cellValue)
+                                                        }
+                                                    ) {
                                                         if (isEditing) {
                                                             val updatedRow = row.toMutableMap()
                                                             updatedRow[header] = editingText
@@ -672,6 +681,27 @@ fun ListEditScreen(
                 }
             }
         }
+    }
+
+    // Büyük hücre düzenleyici (uzun basma)
+    buyukDuzenleme?.let { (satir, sutun, deger) ->
+        HucreDuzenleDialog(
+            sutunAdi = sutun,
+            ogeAdi = listData.getOrNull(satir)?.get(headers.firstOrNull() ?: "") ?: "Satır ${satir + 1}",
+            ilkDeger = deger,
+            onKaydet = { yeni ->
+                listData.getOrNull(satir)?.let { row ->
+                    val updatedRow = row.toMutableMap()
+                    updatedRow[sutun] = yeni
+                    val updatedListData = listData.toMutableList()
+                    updatedListData[satir] = updatedRow
+                    listData = updatedListData
+                    hasUnsavedChanges = true
+                }
+                buyukDuzenleme = null
+            },
+            onKapat = { buyukDuzenleme = null }
+        )
     }
 
     // Add Column Dialog

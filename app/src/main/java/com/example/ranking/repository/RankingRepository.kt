@@ -92,6 +92,11 @@ class RankingRepository(
         )
     }
 
+    /** Tek öğeyi olduğu gibi günceller (hücre düzenleme yolu). */
+    suspend fun updateSong(song: com.example.ranking.data.Song) {
+        songDao.updateSong(song)
+    }
+
     suspend fun deleteSong(songId: Long) {
         database.withTransaction {
             val song = songDao.getSongById(songId)

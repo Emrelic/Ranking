@@ -14,6 +14,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import org.json.JSONObject
 import com.example.ranking.data.Song
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun ListViewScreen(
     listId: Long,
@@ -161,7 +165,13 @@ fun ListViewScreen(
 
                 if (songsWithCsvData.isNotEmpty() && songsWithCsvData.first().csvData != null) {
                     // All CSV songs have structured data - show full screen table
-                    FullScreenTableDisplay(csvData = songsWithCsvData.first().csvData!!, allSongs = songs)
+                    FullScreenTableDisplay(
+                        csvData = songsWithCsvData.first().csvData!!,
+                        allSongs = songs,
+                        onHucreKaydet = { song, sutun, deger ->
+                            viewModel.hucreGuncelle(song, sutun, deger)
+                        }
+                    )
                 } else {
                     // No CSV data available
                     Box(
@@ -177,8 +187,33 @@ fun ListViewScreen(
 }
 
 // FULL SCREEN SEAMLESS TABLE - Like ListEditScreen
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
-private fun FullScreenTableDisplay(csvData: String, allSongs: List<com.example.ranking.data.Song>) {
+private fun FullScreenTableDisplay(
+    csvData: String,
+    allSongs: List<com.example.ranking.data.Song>,
+    onHucreKaydet: (com.example.ranking.data.Song, String, String) -> Unit = { _, _, _ -> }
+) {
+    // Uzun basılan hücre: (öğe, sütun, mevcut değer). Menü → Düzenle → dialog.
+    var uzunBasilan by remember {
+        mutableStateOf<Triple<com.example.ranking.data.Song, String, String>?>(null)
+    }
+    var duzenlenen by remember {
+        mutableStateOf<Triple<com.example.ranking.data.Song, String, String>?>(null)
+    }
+
+    duzenlenen?.let { (song, sutun, deger) ->
+        HucreDuzenleDialog(
+            sutunAdi = sutun,
+            ogeAdi = song.name,
+            ilkDeger = deger,
+            onKaydet = { yeni ->
+                onHucreKaydet(song, sutun, yeni)
+                duzenlenen = null
+            },
+            onKapat = { duzenlenen = null }
+        )
+    }
     // Extract headers from the first song's CSV data
     val headers = remember(csvData) {
         try {
@@ -256,10 +291,31 @@ private fun FullScreenTableDisplay(csvData: String, allSongs: List<com.example.r
                         Surface(
                             modifier = Modifier
                                 .width(120.dp)
-                                .height(40.dp),
+                                .height(40.dp)
+                                .combinedClickable(
+                                    onClick = { },
+                                    // Excel hücresi gibi: uzun bas → Düzenle menüsü
+                                    onLongClick = {
+                                        uzunBasilan = Triple(song, header, cellValue)
+                                    }
+                                ),
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                         ) {
+                            // Menü hücreye çıpalı açılır
+                            DropdownMenu(
+                                expanded = uzunBasilan?.first?.id == song.id &&
+                                    uzunBasilan?.second == header,
+                                onDismissRequest = { uzunBasilan = null }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("✏ Düzenle") },
+                                    onClick = {
+                                        duzenlenen = uzunBasilan
+                                        uzunBasilan = null
+                                    }
+                                )
+                            }
                             Box(
                                 contentAlignment = Alignment.Center,
                                 modifier = Modifier.fillMaxSize().padding(4.dp)
