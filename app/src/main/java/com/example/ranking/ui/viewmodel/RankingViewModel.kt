@@ -615,6 +615,27 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             showMatchingsList = false,  // Maç yüklendiğinde eşleştirmeler listesini gizle
             canUndo = undoSupported() && undoYigini.isNotEmpty()
         )
+
+        // Oturuma "kaldığı yer" yazılır.
+        //
+        // 🔴 Eskiden burada HİÇBİR ŞEY yazılmıyordu: cihazdan çekilen
+        // veritabanında 20 oturumun 20'si de tur=1, tamamlanan=0,
+        // ilerleme=0 duruyordu — createOrUpdateSession yalnız Direkt
+        // Puanlama alanlarını (currentIndex) güncelliyor, maç tabanlı
+        // yöntemler oturuma hiç dokunmuyordu. "Kapatıp açınca kaldığı
+        // yeri hatırlamalı" isteğinin diskteki eksik yarısı buydu.
+        currentVotingSession?.let { oturum ->
+            val guncel = oturum.copy(
+                currentRound = nextMatch?.round ?: _uiState.value.currentRound,
+                currentMatchId = nextMatch?.id,
+                completedMatches = completed,
+                totalMatches = total,
+                progress = if (total > 0) completed.toFloat() / total else 0f,
+                lastModified = System.currentTimeMillis()
+            )
+            votingSessionDao.updateSession(guncel)
+            currentVotingSession = guncel
+        }
     }
     
     /**
