@@ -176,10 +176,26 @@ Liste: **L-SAYI** (nesnel doğruluk için) + bir tur da **L-KÜÇÜK**.
       18 tur / 1.365 maç, sıfır hata verdi; cihazda da hatasız olmalı.)
 - [ ] **2.2.b Tur/maç sayısı makul mü:** 100 öğede kabaca 15-18 tur.
       **BEKLENEN:** tur sayacı her turda 1 artar, geriye gitmez, atlamaz.
-- [ ] ⚠️ **BİTİR düğmesi bu yöntemde YOK** (yalnız Geliştirilmiş İsviçre'de var).
-      Turnuvayı yarıda bırakmanın tek yolu "Sıfırla" — sapma değil,
-      YAPILACAKLAR.md'deki **Y1** maddesi.
-- [ ] ⚠️ **Puan Durumu düğmesi bu yöntemde YOK** — YAPILACAKLAR.md **Y3**.
+- [ ] **2.2.c 🔴 BUGÜN EKLENDİ — BİTİR düğmesi (özellikle sınanacak).**
+      Bu yöntemde erken bitirme bu sabah YOKTU; bugün eklendi, yani taze
+      düzeltme — Sıfırla (Ç12) gibi muamele görsün. Oynanan tur sayısı
+      ceil(log₂n)'i geçince çubukta **BİTİR** belirmeli (100 öğede 7. turdan
+      sonra, 5 öğede 3.).
+      **BEKLENEN:** basınca **SIRALAMA KESKİNLİĞİ: %..** yazan dialog çıkar
+      ("komşu sıraların bu kadarı kanıtlı"). "Devam Et" → turnuva sürer.
+      "Bitir" → oynanmamış maçlar silinir, o ana kadarki kanıtlarla sıralama
+      kaydedilir, Sonuçlar ekranı gelir ve turnuva **"Devam Eden Turnuvalar"dan
+      düşer**. Dialogda yüzde hiç görünmüyorsa ya da "Bitir" sonrası turnuva
+      listede kalıyorsa sapma.
+- [ ] **2.2.d 🔴 BUGÜN EKLENDİ — Puan Durumu (özellikle sınanacak).**
+      Bu yöntemde puan tablosu da bugün eklendi. Çubuktaki **Puan** düğmesine bas.
+      **BEKLENEN:** tablo DOLU gelir (boş çıkarsa sapma); oynanan/galibiyet/
+      beraberlik sayıları oynanmış maçlarla tutar; **sıra motorun kendi
+      sıralamasıdır** — yani en çok puan toplayan öğe illa 1. sırada olmayabilir,
+      sıralamayı üstünlük kanıtları belirler. Bu beklenen davranıştır; puan
+      burada yalnız bilgilendirme.
+- [ ] **2.2.e** Bitirdikten sonra Puan Durumu ile Final Sıralama'yı karşılaştır.
+      **BEKLENEN:** iki liste aynı sırayı gösterir.
 
 ### 2.3 Hibrit İsviçre — Kanıt Turlu (HIBRIT)
 
@@ -204,7 +220,23 @@ Liste: **L-SAYI** + **L-TEK** (tek sayı / bye davranışı).
       öğeler arasında olur; tur sayacı düzgün artar.
 - [ ] **2.3.c L-TEK (7 öğe) ile bye:** **BEKLENEN:** her turda bir öğe maç
       yapmaz; aynı öğe üst üste bye geçmemeli.
-- [ ] ⚠️ BİTİR yok (**Y1**) · ⚠️ Puan Durumu yok (**Y3**).
+- [ ] **2.3.d 🔴 BUGÜN EKLENDİ — BİTİR düğmesi (özellikle sınanacak).**
+      Hibritte erken bitirme bu sabah YOKTU; bugün eklendi — taze düzeltme,
+      Sıfırla (Ç12) gibi muamele görsün. Tur sayısı ceil(log₂n)'i geçince
+      çubukta **BİTİR** belirmeli.
+      **BEKLENEN:** basınca **SIRALAMA KESKİNLİĞİ: %..** dialogu çıkar;
+      "Bitir" → oynanmamış maçlar silinir, o ana kadarki kanıtlarla sıralama
+      kaydedilir, turnuva "Devam Eden Turnuvalar"dan düşer. Yüzde görünmüyorsa
+      ya da turnuva listede kalıyorsa sapma.
+- [ ] **2.3.e 🔴 BUGÜN EKLENDİ — Puan Durumu (özellikle sınanacak).**
+      Çubuktaki **Puan** düğmesi.
+      **BEKLENEN:** tablo DOLU; galibiyet/beraberlik sayıları maçlarla tutuyor;
+      **sıra motorun kendi sıralaması** (en çok puanlı illa 1. olmayabilir —
+      beklenen davranış).
+- [ ] **2.3.f** Kanıt turları ilerledikçe keskinlik yüzdesine bak (BİTİR
+      dialogunu açıp kapatarak).
+      **BEKLENEN:** yüzde tur ilerledikçe ARTAR, geriye gitmez; %100'e ulaşınca
+      turnuva kendiliğinden biter.
 
 ### 2.4 Geliştirilmiş İsviçre — Emre Usulü (EMRE_CORRECT)
 
@@ -409,6 +441,9 @@ Ekran gör.: (varsa)
 | Lig | | — | | | |
 | Direkt Puanlama | | — | | | |
 
-**Zaman kısıtlıysa önce bu üç adım:** **Ç12 Sıfırla** · **Ç13 öldür-devam et** ·
-**Ç10 tur kapanınca Geri Al**. Üçü de geçmişte kırıldı, üçü de veri kaybıyla
-sonuçlanan davranışlar.
+**Zaman kısıtlıysa önce bunlar — hepsi TAZE düzeltme ya da geçmişte kırılmış davranış:**
+
+1. **Ç12 Sıfırla** ve **Ç13 öldür-devam et** — ikisi de veri kaybıyla sonuçlanmıştı.
+2. **Ç10 tur kapanınca Geri Al'ın kaybolması.**
+3. **2.2.c / 2.2.d ve 2.3.d / 2.3.e** — BİTİR düğmesi ve Puan Durumu, Emre Sıralama
+   ile Hibrit'e **bugün eklendi**; bu protokolün ilk sürümünde daha yoklardı.
