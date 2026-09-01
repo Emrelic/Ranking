@@ -287,8 +287,12 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
 - [ ] **2.5.0 Sistem kartı görünüyor mu?** Sihirbazın sistem adımında
       **5. sırada "İsviçre Sistemi"** kartı var mı?
       **BEKLENEN:** VAR (2026-08-28'de yeni SwissSystem motoruyla geri açıldı).
-      ⚠️ Not: **CLAUDE.md hâlâ "SWISS UI'dan çıkarıldı" diyor** — belge kodun
-      gerisinde kalmış; koordinatöre bildirildi. Telefonda gördüğün doğrudur.
+      ⚠️ **Not (2026-09-02'de güncellendi):** CLAUDE.md bu konuda ARTIK GÜNCEL —
+      SWISS aktif yöntem tablosunda 🟢 olarak duruyor, gizli listede değil.
+      AMA belge başka yönden hâlâ fazla iyimser: SWISS satırı "geri izlemeli
+      tekrarsız tam eşleştirme, adil bye rotasyonu, 59 test" diyor ve
+      **turnuvanın 1. turunun bu motordan GELMEDİĞİNİ söylemiyor** (bkz. 2.5.c).
+      Yani belgeye bakıp "bu yöntem sağlam" diye varsayma.
 - [ ] Ç1
 - [ ] Ç4
 - [ ] Ç5
@@ -306,11 +310,26 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
 - [ ] **2.5.b 🔴 Bye adaleti (L-TEK, 7 öğe):** tam turnuva oyna, kimin kaç kez bye
       geçtiğini izle. **BEKLENEN:** bye sayıları arasında en çok 1 fark; herkes
       bir kez geçmeden kimse ikinci kez geçmemeli.
+      🔢 **Bye SAYISI beklentisi (yanlış saymamak için):** 1. turda hiç bye
+      üretilmediği için tek sayılı turnuvada toplam bye sayısı tur sayısından
+      **bir eksik** olur (R tur → R-1 bye). "7 öğe, 4 tur, 4 bye beklerim" diye
+      sayarsan eksik bulursun — bu ikinci bir kusur değil, 2.5.c'deki kusurun
+      yan etkisidir.
+      🔎 **Bedava ek gözlem (şüphe — ölçülmedi, kod okuması destekliyor):**
+      bye seçimi sıralamanın ALTINDAN başlayıp hiç bye almamış ilk takımı
+      seçiyor. 1. turda düşen öğe 0 maç / 0 puanla 2. turda en altta olacağı
+      için bye'ı büyük olasılıkla O alır — yani aynı öğe hem 1. turda düşer hem
+      2. turda oynamaz. 2.5.b'yi oynarken "1. turda kaybolan öğe 2. turda bye
+      mı aldı?" diye bak; öyleyse SAPMA formuna yaz.
       📌 **Bye ekranda nasıl görünür:** yeni motor bye'ı **kendisiyle eşleşen
       bir maç kaydı** olarak tutuyor (`songId1 == songId2`, kazanan aynı öğe,
       tamamlanmış). Yani Sonuçlar listesinde **"X vs X"** biçiminde bir satır
       görebilirsin — bu bir kusur DEĞİL, bye'ın veri biçimi. Bye puanı (1 puan)
       buradan geliyor.
+      📍 **NEREDE ARAYACAKSIN:** bye kaydının maç numarası **0**, gerçek
+      maçlarınki 1..N. Sonuçlar listesi tur ve maç numarasına göre BÜYÜKTEN
+      KÜÇÜĞE sıralandığı için bye satırı, ait olduğu turun **EN SONUNDA**
+      görünür (en başta değil). Aradığın satırı bulamıyorsan turun sonuna bak.
 - [ ] **2.5.c 🔴🔴 KİMSE KAYBOLMUYOR — 1. TURA ÖZELLİKLE BAK (L-TEK, 7 öğe).**
       Bu adım bu turun en kritik SWISS sınavı. Sebebi: 2026-09-02'de kod
       okumasıyla bulundu ki bir SWISS turnuvasının **1. turu ESKİ motordan**
@@ -347,9 +366,33 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
 - [ ] **2.5.c-2** Aynı sınavı n=5 ve n=9 ile tekrarla.
       **BEKLENEN (düzeltme sonrası):** n=5 → 2 maç + 1 bye; n=9 → 4 maç + 1 bye.
       **BUGÜN:** n=5 → 2 maç ve 1 öğe kayıp; n=9 → 4 maç ve 1 öğe kayıp.
+- [ ] **2.5.c-2b 🔴 n=3 İLE 30 SANİYELİK SINAV (en dramatik).** 3 öğelik liste
+      yapıp SWISS turnuvası aç. `half = 1` olduğu için 1. turda **1 maç** kurulur
+      ve **1 öğe düşer** — yani **listenin üçte biri**.
+      **BEKLENEN (bugünkü kod):** 1 maç görürsün, 3. öğe hiçbir yerde yok.
+      Kusuru en hızlı ve en ikna edici gösteren sınav budur.
+- [ ] **2.5.c-2c 🔴 DÜŞEN ÖĞE SIFIRLA SONRASI DEĞİŞİR.** Tek sayılı listeyle
+      SWISS aç, 1. turda kimin düştüğünü not et → **Sıfırla** (Ç12) → turnuva
+      baştan kurulunca 1. turda kimin düştüğüne yeniden bak.
+      **BEKLENEN (bugünkü kod):** büyük olasılıkla **başka bir öğe** düşer,
+      çünkü eski yol eşleştirmeye `shuffled()` ile başlıyor. Aynı öğe iki kez
+      üst üste düşerse şaşırma (1/n olasılık), üç dört deneme yeter.
+      📌 Not: bu **Ç13 (öldür-devam et) ile karışmasın** — orada 1. tur yeniden
+      ÜRETİLMEZ, veritabanındaki maçlar olduğu gibi geri yüklenir. Düşen öğenin
+      değişmesi yalnız turnuva YENİDEN KURULUNCA olur (Sıfırla ya da yeni
+      turnuva). Öldürüp devam ettiğinde kaybolan öğe aynı kalmalı; değişiyorsa
+      bu AYRI ve daha ağır bir sapmadır, mutlaka yaz.
 - [ ] **2.5.c-3** Çift sayıda kontrol (L-KÜÇÜK'e bir öğe ekleyip 6 yap ya da
       8 öğelik liste): **BEKLENEN:** 1. turda tüm öğeler eşleşmede görünür,
       kimse düşmez. Çift sayıda kusur YOK — düşme yalnız tek sayıda olur.
+- [ ] **2.5.c-4 🔴🔴 KUSURUN GERÇEK BEDELİ: FİNAL SIRALAMAYA BAK.** 7 öğelik
+      SWISS turnuvasını **sonuna kadar** oynat. 1. turda kaybolan öğeyi not et,
+      sonra final sıralamada onu ara.
+      **BEKLENEN (bugünkü kod — kusurun kendisi):** o öğe **en altta ya da en
+      alta yakın** çıkar; hiç maçı ve hiç puanı olmadığı için sonuç motoru onu
+      hak etmediği hâlde sona koyuyor. Yani bu kusur "bir tur eksik oynandı"
+      değil, **yanlış sıralama üretiyor** — uygulamanın tek işi bu.
+      Bu adım, bulgunun ağırlığını cihazda tek başına gösteren adımdır.
 
 ### 2.6 Lig (LEAGUE)
 
