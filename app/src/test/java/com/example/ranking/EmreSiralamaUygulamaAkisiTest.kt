@@ -190,6 +190,49 @@ class EmreSiralamaUygulamaAkisiTest {
     }
 
     @Test
+    fun macDagilimi_n200_takimBasinaKacMac() {
+        // Kullanıcı sorusu (2026-09-01): her takım en az/en çok kaç maç yapıyor?
+        val songs = ogeler(200, 777L)
+        val db = turnuvaOynat(songs, ::buyukKazanir)
+        val sayim = HashMap<Long, Int>()
+        db.forEach { m ->
+            sayim[m.songId1] = (sayim[m.songId1] ?: 0) + 1
+            sayim[m.songId2] = (sayim[m.songId2] ?: 0) + 1
+        }
+        val degerler = songs.map { sayim[it.id] ?: 0 }
+        println("EMRE_SIRALAMA maç dağılımı: min=%d max=%d ort=%.1f toplam=%d"
+            .format(degerler.min(), degerler.max(), degerler.average(), db.size))
+        // Gerçek değere (sayının kendisi) göre profil: uçlar vs orta
+        val siraliSayim = (200 downTo 1).map { v -> v to (sayim[v.toLong()] ?: 0) }
+        println("Sıra profili (değer=maç): " + listOf(200, 199, 195, 180, 150, 120, 100, 80, 50, 20, 5, 2, 1)
+            .joinToString("  ") { v -> "$v=${sayim[v.toLong()]}" })
+        val histogram = degerler.groupingBy { it / 3 * 3 }.eachCount().toSortedMap()
+        println("Histogram (3'lük kova): " + histogram.entries.joinToString("  ") { "${it.key}-${it.key + 2}:${it.value}" })
+        // Uçlar ortalamadan az mı oynuyor? (geçişlilik uçları erken çözer)
+        val ucOrt = (siraliSayim.take(10) + siraliSayim.takeLast(10)).map { it.second }.average()
+        val ortaOrt = siraliSayim.subList(80, 120).map { it.second }.average()
+        println("İlk10+son10 ort=%.1f  orta40 ort=%.1f".format(ucOrt, ortaOrt))
+        degerler.forEach { assertTrue("Maçsız takım", it >= 1) }
+
+        // Kıyas: İkili Karşılaştırmanın dağılımı (aynı diziliş)
+        val cevaplar = mutableListOf<com.example.ranking.data.Match>()
+        var id = 1L
+        while (true) {
+            val m = com.example.ranking.ranking.PairwiseComparisonSort
+                .createNextComparisonMatch(songs, cevaplar) ?: break
+            cevaplar.add(m.copy(id = id++, winnerId = maxOf(m.songId1, m.songId2), isCompleted = true))
+        }
+        val ikiliSayim = HashMap<Long, Int>()
+        cevaplar.forEach { m ->
+            ikiliSayim[m.songId1] = (ikiliSayim[m.songId1] ?: 0) + 1
+            ikiliSayim[m.songId2] = (ikiliSayim[m.songId2] ?: 0) + 1
+        }
+        val ikiliDegerler = songs.map { ikiliSayim[it.id] ?: 0 }
+        println("IKILI maç dağılımı:        min=%d max=%d ort=%.1f toplam=%d"
+            .format(ikiliDegerler.min(), ikiliDegerler.max(), ikiliDegerler.average(), cevaplar.size))
+    }
+
+    @Test
     fun sinirDurumlar_n0_n1_n2() {
         assertTrue(EmreSiralamaSistemi.createNextRoundMatches(emptyList(), emptyList()).isEmpty())
 
