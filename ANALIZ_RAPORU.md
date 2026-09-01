@@ -325,6 +325,14 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
   özeti) 1. turda okuyacak bir şey bulamıyor. Bu, "1. tur başka koddan geliyor"
   probleminin veri katmanındaki yüzü — düzeltme yalnız eşleştirmeyi değil, bye
   kaydının biçimini de hizalamalı.
+  🧩 **Kullanıcının gördüğü sonuç (üçüncü bir işçinin bağımsız ölçümü,
+  `RankingViewModel.kt:776-777` ve `:945`):** aynı turnuvada üç kod yolu
+  karışıyor — 1. tur üretimi ESKİ `RankingEngine`, 2+ tur üretimi YENİ
+  `SwissSystem.computeState/createNextRound`, nihai sonuç ise yine YENİ
+  `SwissSystem.calculateResults`. Sonuç motoru, bir bölümü eski yoldan gelen
+  maç kümesini okuyor: 1. turda düşen öğenin hiç maçı ve hiç puanı olmadığı
+  için o öğe final sıralamasında **hak etmediği hâlde en altta** çıkıyor.
+  Yani kusur yalnız "bir tur eksik oynandı" değil, **yanlış sıralama üretiyor**.
 
 ### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
 
