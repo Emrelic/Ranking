@@ -59,6 +59,18 @@ ve turnuvanın 1. sırasında bir sütun adı yarışır. Sessiz; hiçbir uyarı
 Not: 4. sütun sözleşmesi tek sütunlu dosyada geçerli değil, ama başlık sorunu
 tek sütunlu listelerin *hepsini* etkiliyor.
 
+**KAPSAM DARALTMASI (ölçüldü, HAZIR KITA 103'ün uyarısı üzerine):** gömülü
+`app/src/main/assets/hazir_listeler/` altındaki **31 listenin hiçbiri tek
+sütunlu değil** — hepsinin ilk satırında ayraç var. Yani K1:
+
+- ❌ `HazirListeler.kt` katalog sayılarını **etkilemiyor**
+- ❌ senkron bekçisi testini (`HazirListelerSenkronTest`) **yanıltmıyor**
+- ✅ yalnız **kullanıcının kendi içe aktardığı** tek sütunlu CSV'leri vuruyor
+  (düz "her satır bir öğe" listesi — en yaygın elle hazırlanan biçim)
+
+Şiddeti bu yüzden "kütüphaneyi zehirler" değil, "kullanıcı listesine sahte öğe
+sokar" düzeyinde. Yine de yüksek: sessiz ve kullanıcının en çok üreteceği biçim.
+
 ## K2 — Başlığı BOŞ olan sütunun değeri csvData'dan TÜMÜYLE düşüyor ⬛ orta-yüksek
 
 **Test:** `belgeleme_csvData_basligiBosSutun_degeriTumuylaDUSURUYOR`
