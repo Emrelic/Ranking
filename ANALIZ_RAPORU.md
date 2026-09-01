@@ -302,6 +302,44 @@ canlı puan durumu dalı yazılmamış. Üçü de EMRE_CORRECT'e özel yazılmı
 yardımcı katmanların taşınmamasından kaynaklanıyor — motorların kendi
 matematiği değil, çevre katman eksikliği.
 
+
+### 11.4 Yeni bulgu (2026-09-02): EMRE_CORRECT'in bitiş kuralı DURUMA değil, ÜRETİLEN EŞLEŞMEYE bakıyor
+
+Rapor gövdesi §4.1'de Emre'nin "eşleştirme motoru tam eşleştirmeyi kaçırabiliyor →
+turnuva matematiksel olarak devam edebilecekken bitebiliyor" diye bir madde
+taşıyor. 2026-09-02'de bunun **mekanizması** bulundu ve kaynakta doğrulandı:
+
+- `EmreSystemCorrect.createHybridPairingSystem` önce açgözlü/geri izlemeli
+  motoru koşturup bir eşleştirme (`pairingResult.AEG`) üretiyor, sonra
+  `candidates` listesini **doğrudan o AEG'den** türetiyor.
+- `analyzeTournamentContinuation(candidates, currentRound)` ise yalnız bu
+  listeye bakıp `samePointCount = candidates.count { team1.points == team2.points }`
+  sayıyor ve `canContinue = samePointCount > 0` diyor (1. tur ayrık).
+- Yani soru "**durumda** oynanmamış aynı puanlı çift var mı?" değil,
+  "**bu turda kurulan eşleşmelerin içinde** aynı puanlı çift var mı?". Aynı
+  puanlı takımlar eşleştirme sırasında farklı puanlı rakiplere harcanırsa,
+  sahada kanıt üretecek eşleşme dururken turnuva "aynı puanlı eşleşme kalmadı"
+  diyerek kapanıyor.
+
+İşçi ölçümü (EMRE_CORRECT değişmezler sınavı, commit `0102080` — ölçüm bana ait
+değil, kod doğrulaması bana ait): n=8..16 aralığında **n=13 dışında hepsi** bu
+kapıdan kapanıyor ve kapanış anında oynanmamış aynı puanlı çift duruyor —
+n=15'te 11 çift, n=12'de 8, n=16'da 7, n=14'te 5, n=9'da 4, n=8 ve n=11'de 3,
+n=10'da 2. Tek temiz bitiş n=13 (0 çift, %100 keskinlik). Giriş sırasına
+duyarlılık 5 tohumla n=12'de: 4/9/8/8/4 tur ve %45/%100/%81/%100/%36 kanıt.
+
+**Bu, CLAUDE.md'nin Emre bölümündeki iki iddiayı da geçersiz kılıyor:**
+"Çift sayıda sapma yok" (n=12'de 8 çift beklerken kapanıyor) ve erken bitişin
+"kusur değil, kuralın sonucu" olduğu savunması — motor kuralın kendisini değil,
+kuralın üretilen eşleşme kümesindeki gölgesini uyguluyor. (CLAUDE.md bu
+oturumun alanı değil; düzeltme dosyanın sahibinde. Aynı paragraftaki
+"n=3 → 1 tur" ayrışması için YAPILACAKLAR madde 18.)
+
+**Öneri (karar koordinatörün):** bitiş kararını aday kümesinden duruma taşımak —
+"oynanmamış aynı puanlı çift var mı?" diye state üzerinden sormak; ya da
+Hibrit'teki kanıt eşiği yaklaşımını kullanmak (`kesinlikRaporu().genelYuzde`
+düşükken kanıt turu zorlamak). Altyapı motorun içinde zaten var.
+
 *Ek sonu — 2026-09-01. Gövdedeki satır numaraları hâlâ HEAD `f70ea02`'ye
 göredir ve büyük ölçüde kaymıştır; madde bulmak için satır numarasına değil
 sembol adına (fonksiyon/sınıf) güvenin.*
