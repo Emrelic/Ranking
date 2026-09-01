@@ -1,5 +1,9 @@
 # RANKING PRO — KAPSAMLI SİSTEM ANALİZ RAPORU
 
+> **DURUM GÜNCELLEMESİ (2026-09-01):** Bu rapor 2026-07-25 denetiminin fotoğrafıdır.
+> Hangi bulgunun kapandığı, hangisinin açık kaldığı ve iki yeni motorun (HIBRIT,
+> EMRE_SIRALAMA) durumu için **Bölüm 11 — Güncelleme Eki**ne bakın.
+>
 > **DURUM GÜNCELLEMESİ (2026-07-25, aynı gün):** Bölüm 10'daki Faz 0-4 yol
 > haritası UYGULANDI (commit'ler: `002eccb`..HEAD). Derleme + tüm birim
 > testleri yeşil. Rapordaki bulgular denetim anının (HEAD `f70ea02`)
@@ -206,3 +210,64 @@ Aynı uygulamada üç farklı ölçek: Lig 2/1 (`RankingEngine.kt:95-125`), grup
 ---
 
 *Bu rapor 4 paralel denetim ajanının (algoritma, veri, UI, içerik/doküman) bulgularının birleştirilmiş halidir. Satır numaraları HEAD `f70ea02` + çalışma kopyasına göredir.*
+
+---
+
+## 11. GÜNCELLEME EKİ — 2026-09-01 (doküman senkron denetimi)
+
+Bu ek, raporun gövdesini YENİDEN YAZMAZ; gövde 2026-07-25'teki denetim anının
+fotoğrafı olarak kalır. Aşağıdaki maddeler, o fotoğraftaki iddiaların bugünkü
+kod karşısındaki durumudur. Her satır kod okunarak doğrulandı (grep + dosya
+okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
+
+### 11.1 Yanlışlanmış (artık geçerli olmayan) iddialar
+
+| Rapordaki madde | Bugünkü durum (2026-09-01 doğrulaması) |
+|---|---|
+| §0 + §1 "Derleme 🔴 KIRIK — `ExpandLess/ExpandMore` çözümlenmiyor" | Kapandı: bu iki ikona kod tabanında **0 referans** kaldı. |
+| §2.1 `fixture/...` rotası tanımsız → butona basan çöker | Kapandı: `fixture/` metnine **0 referans**. |
+| §2.2 `tournament_results/...` rotası tanımsız | Kapandı: `tournament_results` metnine **0 referans**. |
+| §2.3 DB migration crash (v14 öncesi) | Kapandı: şema **v18**, migration zinciri eksiksiz (fallback yok). |
+| §3.1 "Kriter değerlendirmesi hiçbir şey kaydetmiyor" | Kapandı: `RankingViewModel.saveCriteriaScores` `CriterionScore` kayıtlarını `criterionScoreDao().insertCriterionScores` ile yazıyor. |
+| §3.2 "`isResuming` hiçbir navigate çağrısında verilmiyor" | Kapandı: rota `ranking/{listId}/{method}?...&isResuming={isResuming}` ve "Devam Et" `isResuming=true` ile gidiyor (`RankingNavigation.kt`). |
+| §4.5 "MERGE_SORT'ta `submitDrawResult` hâlâ açık" | Kapandı: `submitDrawResult` başında MERGE_SORT bekçisi var (commit `3547cf6`), regresyon testi `IkiliKarsilastirmaKapsamliTest`. |
+| §5.1 `EmrePairingSettings` @Database listesinde yok | Kapandı: dosya silinmiş. |
+| §6.3 "MatchingsList'te AFGANİSTAN/ARNAVUTLUK demo verisi + debug metni" | Kapandı: bu metinlere **0 referans**. (Ama `TournamentRankingScreen`'de `"1. Placeholder Team"` DURUYOR — §3.4 kısmen açık.) |
+
+### 11.2 Ölçümü değişen, hâlâ açık maddeler
+
+- §6.7 **RankingViewModel god-object**: denetimde 1.619 satırdı, bugün **2.126**
+  (iki yeni motorun bağlanmasıyla büyüdü). Bölme işi ertelendikçe pahalılaşıyor.
+- §6.9 **`collectAsStateWithLifecycle`**: denetimde 22 çağrının hiçbiri
+  lifecycle-aware değildi; bugün **24 çağrı, hâlâ 0** lifecycle-aware.
+- §5.7 / §10 Faz 4 **Room migration testleri**: `app/src/androidTest` dizini
+  hâlâ **yok**; dışa aktarılmış şema JSON'ları yalnız 16/17/18 (1-15 yok).
+  Kısmi telafi: aynı gün STATİK bir zincir bekçisi yazıldı
+  (`RoomMigrationZinciriTest.kt`, JVM) — cihazlı testin yerini tutmaz.
+  Birim testi tarafı ise büyüdü
+  (`app/src/test/java/com/example/ranking/`: commit'li **26** dosya + aynı gün
+  paralel oturumların eklediği 13 yeni sınav dosyası = 39).
+- §7 **CSV kütüphanesi senkronu**: bu denetim turunda BİLEREK ölçülmedi —
+  aynı gün başka bir işçi oturumu (`HAZIR-LISTELER-GOREV.md`) o alanda
+  çalışıyor; çakışmamak için sayılar oraya bırakıldı.
+
+### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
+
+Rapor 2026-07-25'te yazıldığında aktif yöntemler MERGE_SORT / EMRE_CORRECT /
+LEAGUE / DIRECT_SCORING idi. 2026-09-01'de ikisi daha kullanıcı seçimine açıldı:
+
+| Yöntem | Dosya | Bağlandığı commit | Ölçüm (n=200, tohum 777) |
+|---|---|---|---|
+| HIBRIT (Hibrit İsviçre — Kanıt Turlu) | `ranking/HibritKanitSistemi.kt` (200 satır) | `680e461` | ~1.900 maç, garantili tam sıralama |
+| EMRE_SIRALAMA (Emre Sıralama Sistemi) | `ranking/EmreSiralamaSistemi.kt` (197 satır) | `850c3fe` | 18 tur / 1.365 maç, sıfır hata |
+
+Bu iki motor **bu raporun denetiminden geçmedi**. Bağlanma sırasında görülen
+boşluklar YAPILACAKLAR.md'nin "🆕 BUGÜN DOĞAN AÇIK İŞLER" bölümünde Y1-Y3
+olarak kayıtlı: erken bitirme (BİTİR) yok, keskinlik raporu üretilemiyor,
+canlı puan durumu dalı yazılmamış. Üçü de EMRE_CORRECT'e özel yazılmış
+yardımcı katmanların taşınmamasından kaynaklanıyor — motorların kendi
+matematiği değil, çevre katman eksikliği.
+
+*Ek sonu — 2026-09-01. Gövdedeki satır numaraları hâlâ HEAD `f70ea02`'ye
+göredir ve büyük ölçüde kaymıştır; madde bulmak için satır numarasına değil
+sembol adına (fonksiyon/sınıf) güvenin.*
