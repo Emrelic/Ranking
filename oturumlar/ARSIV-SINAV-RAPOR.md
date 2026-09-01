@@ -146,13 +146,25 @@ konusu.
 bye'lı, matchNumber=1..N) geliyor — üç farklı kod yolu (eski üretim / yeni
 üretim / yeni sonuç hesabı) aynı turnuvada karışık çalışıyor.
 
-🔴🔴 **ÖNEMLİ DÜZELTME — CLAUDE.md BAYATLAMIŞ, SWISS GİZLİ DEĞİL:**
-`NewTournamentScreen.kt:431-441` — yorum: *"SWISS 2026-08-28'de GERİ AÇILDI:
-yeni SwissSystem motoru yazıldı ... 59 test geçiyor"* ve `systemTypes`
-listesinde `"SWISS"` FİİLEN VAR (satır 441) — yani kullanıcı BUGÜN turnuva
-sihirbazından "İsviçre"yi SEÇEBİLİYOR. `RankingViewModel.kt:122`de de SWISS
-aktif yöntemler kümesinde. CLAUDE.md'nin "SWISS: UI'dan gizli" maddesi
-(2026-08-28 öncesi bir durumu yansıtıyor) ARTIK YANLIŞ/BAYAT.
+🔴 **ÖNEMLİ — SWISS CANLI, ama CLAUDE.md'nin gizli sandığı YANLIŞ (kendi
+hatam, düzeltiyorum):** İlk yazımda "CLAUDE.md hâlâ SWISS'i UI'dan gizli
+sanıyor" dedim — bu YANLIŞTI, `ranking-07` düzeltti (teşekkürler). CLAUDE.md
+GÜNCEL: SWISS artık aktif yöntemler tablosunda ("🟢 2026-08-28'de YENİ
+motorla geri açıldı ... 59 test") ve "UI'dan gizlenmiş" listesinde DEĞİL.
+Ben session başındaki ESKİ bir bağlam kopyasına bakmışım, dosyayı o anda
+diskten yeniden okumadım — B10/B4 dersi burada bana da işledi.
+
+Asıl belge sorunu FARKLI (ranking-07'nin ANALIZ_RAPORU 11.2'de yazdığı
+gibi): CLAUDE.md SWISS'i "gizli" SANMIYOR, tersine **fazla iyimser tarif
+ediyor** — "adil bye rotasyonu, 59 test" ifadesi yalnız 2+ turlar
+(`SwissSystem`) için doğru; 1. tur o motora hiç uğramıyor. Yani doğru
+ifade: "belge SWISS'i sağlam ilan ediyor, oysa giriş noktası (round 1) o
+motora bağlı değil" — "belge SWISS'i gizli sanıyor" DEĞİL.
+
+`NewTournamentScreen.kt:431-441` `systemTypes` listesinde `"SWISS"` FİİLEN
+VAR — kullanıcı BUGÜN turnuva sihirbazından "İsviçre"yi SEÇEBİLİYOR.
+`RankingViewModel.kt:122`de de SWISS aktif yöntemler kümesinde. Bu kısım
+DOĞRULANDI ve DEĞİŞMİYOR.
 
 Bu, ranking-07/8e/diğer oturumların "üretim tarafı kusuru" dediği şeyi
 **canlı kullanıcı etkisine** çeviriyor: SWISS'i seçen ve tek sayılı bir
