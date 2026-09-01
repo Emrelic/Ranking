@@ -144,11 +144,32 @@ konusu.
 **Doğrulanan sonuç:** aynı SWISS turnuvasında 1. tur eski/kırık motordan
 (rastgele, bye'sız, matchNumber=0), 2+ turlar yeni motordan (deterministik,
 bye'lı, matchNumber=1..N) geliyor — üç farklı kod yolu (eski üretim / yeni
-üretim / yeni sonuç hesabı) aynı turnuvada karışık çalışıyor. SWISS UI'dan
-gizli olduğu için normal kullanıcı bunu tetikleyemiyor, ama arşivlenmiş bir
-SWISS turnuvası geri okunursa 1. tur verisi (maç sayısı, matchNumber sırası,
-eksik öğe) beklenmedik çıkar. Düzeltme kararı ve test yazımı SWISS motor
-sınavının kapsamında (bu görevde DEĞİL).
+üretim / yeni sonuç hesabı) aynı turnuvada karışık çalışıyor.
+
+🔴🔴 **ÖNEMLİ DÜZELTME — CLAUDE.md BAYATLAMIŞ, SWISS GİZLİ DEĞİL:**
+`NewTournamentScreen.kt:431-441` — yorum: *"SWISS 2026-08-28'de GERİ AÇILDI:
+yeni SwissSystem motoru yazıldı ... 59 test geçiyor"* ve `systemTypes`
+listesinde `"SWISS"` FİİLEN VAR (satır 441) — yani kullanıcı BUGÜN turnuva
+sihirbazından "İsviçre"yi SEÇEBİLİYOR. `RankingViewModel.kt:122`de de SWISS
+aktif yöntemler kümesinde. CLAUDE.md'nin "SWISS: UI'dan gizli" maddesi
+(2026-08-28 öncesi bir durumu yansıtıyor) ARTIK YANLIŞ/BAYAT.
+
+Bu, ranking-07/8e/diğer oturumların "üretim tarafı kusuru" dediği şeyi
+**canlı kullanıcı etkisine** çeviriyor: SWISS'i seçen ve tek sayılı bir
+liste kullanan gerçek bir kullanıcı, 1. turda bir öğeyi sessizce kaybediyor
+(o öğenin hiç maçı/puanı olmuyor) ve o öğe **sonuç sıralamasında hak
+etmediği hâlde en altta** çıkıyor (sonuç motoru `SwissSystem.calculateResults`
+tüm maç geçmişini — eksik 1. tur dahil — okuyor, `RankingViewModel.kt:945`).
+Ayrıca `shuffled()` yüzünden hangi öğenin düşeceği her turnuva başlatmada
+DEĞİŞİYOR (determinizm yok).
+
+Bu bulgu benim kapsamımın (arşiv JSON) dışında ama CİDDİYETİ yüzünden
+BURADA vurgulanıyor: bu bir "gizli/ulaşılamayan kod" kusuru DEĞİL, bugün
+gerçek kullanıcıyı etkileyebilecek bir yanlış-sonuç kusuru. Düzeltme:
+`RankingViewModel.initializeSwiss()` (satır 519) round 1 için de
+`RankingEngine.createSwissMatches` yerine `SwissSystem.computeState` +
+`createNextRound` kullanmalı (round 2+ ile aynı motor). Karar ve uygulama
+koordinatörde/SWISS motor sınavı kapsamında.
 
 ## GRADLE KİLİDİ NOTU
 Bu görev sırasında filo çapında bir kilit sistemi (`oturumlar/GRADLE-KURALI.md`)
