@@ -401,6 +401,16 @@ oturumun alanı değil; düzeltme dosyanın sahibinde. Aynı paragraftaki
 Hibrit'teki kanıt eşiği yaklaşımını kullanmak (`kesinlikRaporu().genelYuzde`
 düşükken kanıt turu zorlamak). Altyapı motorun içinde zaten var.
 
+> 🧭 **İki okuma kuralı — bu ekin yazımı sırasında ikisi de canlı yaşandı:**
+> ① **Satır numarasına değil sembol adına güven.** Bu dosyalar gün içinde
+> paralel oturumların altından değişiyor; aynı fonksiyon bir turda 174, ertesi
+> turda 192 oluyor.
+> ② **Belgeyi diskten TAZELE.** Bir oturum CLAUDE.md'yi kendi açılış bağlam
+> kopyasından okuyup "belge bayat" diye rapor yazdı; oysa dosya aynı gün
+> düzeltilmişti. Bir belgenin bayatlığını iddia etmeden önce dosyayı yeniden
+> oku — yanlış bir "bayat" iddiası, gerçek bulgunun güvenilirliğini de zedeler.
+
+
 *Ek sonu — 2026-09-01. Gövdedeki satır numaraları hâlâ HEAD `f70ea02`'ye
 göredir ve büyük ölçüde kaymıştır; madde bulmak için satır numarasına değil
 sembol adına (fonksiyon/sınıf) güvenin.*
