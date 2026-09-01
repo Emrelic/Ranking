@@ -98,10 +98,24 @@ n=0 ve n=1 uçlarında çökme yok (maç üretilmiyor, n=1'de tek öğe 1. sıra
 
 ### 🔴 1. Bitiş kuralı "olabilirliğe" değil "aday kümesine" bakıyor — turnuva, elinde kanıt üretecek eşleşmeler dururken kapanıyor
 
-İlk ölçümde n=12 aykırı görünmüştü (n=11: 7 tur/%80, n=13: 11 tur/%100 iken
-n=12: 4 tur/%36). Tanı koşumu (`EmreCorrectN12TaniTest`, 2 test/0 hata,
-2026-09-02 01:17) aykırılığın **n=12'ye özgü olmadığını, kuralın kendisinde
-olduğunu** gösterdi.
+**En ağır vaka n=15: turnuva kapandığında 11 tane oynanmamış aynı puanlı çift
+duruyor** (n=12'de 8, n=16'da 7). İlk ölçümde n=12 aykırı görünmüştü
+(n=11: 7 tur/%80, n=13: 11 tur/%100 iken n=12: 4 tur/%36); tanı koşumu
+(`EmreCorrectN12TaniTest`, 2 test/0 hata, 2026-09-02 01:17) aykırılığın
+**n=12'ye özgü olmadığını, kuralın kendisinde olduğunu** gösterdi.
+
+Kod düzeyinde doğrulama (bağımsız olarak işçi 106/ranking-1f de teyit etti) —
+`EmreSystemCorrect.kt:631-655`, `analyzeTournamentContinuation`:
+```kotlin
+val samePointCount = candidateMatches.count { it.team1.points == it.team2.points }
+val hasSamePointMatches = if (currentRound == 1) true else samePointCount > 0
+```
+Fonksiyon **yalnız kendisine verilen aday kümesini** sayıyor; durumda oynanmamış
+aynı puanlı çift olup olmadığı hiç sorulmuyor. Fonksiyonun kendi doküman yorumu
+"en az bir aynı puanlı eşleşme varsa tur oynanır" diyor — **yorum ile kod
+arasındaki fark tam olarak kusurun kendisi.** Ayrıca `currentRound == 1` özel
+durumu, ilk turu koşulsuz oynatarak kuralı asimetrik yapıyor: bu satır zaten
+"aday kümesi yetersiz bir vekildir" itirafıdır ve düzeltmenin yeri de orasıdır.
 
 Motorun iki bitiş kapısı var: **(A)** tekrarsız tam eşleştirme kurulamadı,
 **(B)** `analyzeTournamentContinuation` "hiçbir aday eşleşme aynı puanlı değil"
@@ -138,6 +152,34 @@ kapanıyor. Tek "temiz" bitiş n=13'te, yani A kapısından (kanıt tükendiği 
 Aynı boyutta, aynı kurallarla, yalnız listenin sırası değiştiği için sonuç
 **4–9 tur ve %36–%100 kanıt** arasında savruluyor. Kullanıcı açısından bu,
 "aynı listeyi farklı sırayla girdim, biri 4 turda bitti biri 9" demektir.
+
+**Erken bitişin BEDELİ ölçüldü** (`erkenBitisinBedeli_gercekSapmaOlcumu`,
+n=8..16 × 5 tohum; gerçek sıra bilindiği için sapma = her öğenin doğru
+sırasından ortalama |kayma|):
+
+| n | ort. keskinlik | ort. sapma | en kötü sapma | tur aralığı |
+|---|---|---|---|---|
+| 8 | %88 | 0.15 | 0.50 | 4–7 |
+| 9 | %77 | 0.27 | 0.67 | 4–9 |
+| 10 | %81 | 0.36 | 0.80 | 5–9 |
+| 11 | %82 | 0.33 | 0.55 | 7–8 |
+| 12 | %72 | 0.50 | **1.17** | 4–9 |
+| 13 | %74 | 0.55 | 1.08 | 6–11 |
+| 14 | %79 | 0.57 | 0.86 | 7–11 |
+| **15** | %73 | **0.91** | **1.33** | 7–10 |
+| 16 | %85 | 0.15 | 0.25 | 8–13 |
+
+İki dürüst okuma, ikisi de rapora ait:
+1. **Kanıt raporu dürüst.** Keskinliğin %100 çıktığı her tohumda sapma tam
+   **0.00**; keskinlik düştükçe sapma tırmanıyor (n=12 tohum 1: %45 → 1.2 sıra,
+   tohum 4242: %36 → 1.0; n=15 tohum 777: %64 → 1.3). Yani `kesinlikRaporu()`
+   üzerine eşik kurmak sağlam bir zemin — ölçüm bunu destekliyor.
+2. **Hatanın büyüklüğü bu boyutlarda ölçülüdür ve abartılmamalıdır:** ortalama
+   sapma 0.15–0.91 sıra, en kötü 1.33 sıra (n=15). Kusur "sıralama çöpe gidiyor"
+   değil, "**motor kanıt üretebilecekken üretmeden kapanıyor ve sonuç giriş
+   sırasına göre savruluyor**"dur. n>16 için ölçüm yapılmadı; büyük listelerde
+   bedelin nasıl büyüdüğü açık sorudur (KesinlikRaporuTest n=100 eğrisi ayrı
+   bir başlangıç noktası olabilir).
 
 **Öneri (koordinatör kararı):**
 1. Bitiş kararını aday kümesinden alıp **duruma** taşımak: "sıralamada aynı puanlı

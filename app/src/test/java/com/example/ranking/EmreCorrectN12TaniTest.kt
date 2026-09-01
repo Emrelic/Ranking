@@ -47,9 +47,15 @@ class EmreCorrectN12TaniTest {
         val puanDagilimi: String
     )
 
-    private fun kosturVeTanila(n: Int, tohum: Long = 4242L): Bitis {
-        val songs = sarkilar(n, tohum)
-        var state = EmreSystemCorrect.initializeEmreTournament(songs)
+    private data class Kosum(
+        val state: EmreSystemCorrect.EmreState,
+        val tur: Int,
+        val macSayisi: Int
+    )
+
+    /** Turnuvayı sonuna kadar koşturur; "büyük sayı kazanır" (gerçek sıra bilinir). */
+    private fun kostur(n: Int, tohum: Long): Kosum {
+        var state = EmreSystemCorrect.initializeEmreTournament(sarkilar(n, tohum))
         val hepsi = mutableListOf<Match>()
         var nextId = 1L
         var tur = 0
@@ -69,6 +75,27 @@ class EmreCorrectN12TaniTest {
                 state, turunMaclari, pairing.byeTeam, allCompletedMatches = hepsi.toList()
             )
         }
+        return Kosum(state, tur, hepsi.size)
+    }
+
+    /**
+     * Gerçek sapma: öğe kimliği = sayı değeri, büyük kazanır ⇒ doğru sıra
+     * büyükten küçüğe. Ölçü, her öğenin doğru sırasından ortalama |kayma|sı.
+     */
+    private fun gercekSapma(state: EmreSystemCorrect.EmreState): Double {
+        val sira = RankingEngine.calculateCorrectEmreResults(state)
+            .sortedBy { it.position }.map { it.songId.toInt() }
+        val n = sira.size
+        if (n == 0) return 0.0
+        return sira.mapIndexed { i, deger -> kotlin.math.abs(i - (n - deger)) }
+            .sum() / n.toDouble()
+    }
+
+    private fun kosturVeTanila(n: Int, tohum: Long = 4242L): Bitis {
+        val kosum = kostur(n, tohum)
+        val state = kosum.state
+        val tur = kosum.tur
+        val hepsi = kosum.macSayisi
 
         // Bitiş anındaki son eşleştirme denemesi
         val son = EmreSystemCorrect.createHybridPairingSystem(state)
@@ -96,7 +123,7 @@ class EmreCorrectN12TaniTest {
             .joinToString(" ") { "${it.first}p:${it.second}" }
 
         return Bitis(
-            n = n, tur = tur, mac = hepsi.size,
+            n = n, tur = tur, mac = hepsi,
             keskinlik = EmreSystemCorrect.kesinlikRaporu(state).genelYuzde,
             kapi = kapi,
             adaySayisi = son.candidateMatches.size,
@@ -136,6 +163,39 @@ class EmreCorrectN12TaniTest {
      * başlangıç dizilişiyle) tekrar ölçülür. n=12 her tohumda erken bitiyorsa
      * kusur yapısaldır; yalnız 4242'de bitiyorsa senaryoya özgüdür.
      */
+    /**
+     * ERKEN BİTİŞİN BEDELİ: kanıt eksikliği kullanıcıya kaç sıra hata olarak
+     * yansıyor? Gerçek sıra bilindiği için (büyük sayı kazanır) her boyutta
+     * 5 tohumun ortalama/en kötü sapması ölçülür ve keskinlik raporuyla
+     * yan yana konur — rapor dürüstse düşük keskinlik yüksek sapmayla gelmeli.
+     */
+    @Test
+    fun erkenBitisinBedeli_gercekSapmaOlcumu() {
+        val tohumlar = listOf(1L, 7L, 31L, 777L, 4242L)
+        (8..16).forEach { n ->
+            val olcum = tohumlar.map { tohum ->
+                val k = kostur(n, tohum)
+                Triple(
+                    EmreSystemCorrect.kesinlikRaporu(k.state).genelYuzde,
+                    gercekSapma(k.state),
+                    k.tur
+                )
+            }
+            println(
+                "BEDEL n=%-3d ort keskinlik=%%%-4d ort sapma=%.2f en kotu sapma=%.2f (tur %d-%d) | tohum bazinda: %s"
+                    .format(
+                        n,
+                        olcum.map { it.first }.average().toInt(),
+                        olcum.map { it.second }.average(),
+                        olcum.maxOf { it.second },
+                        olcum.minOf { it.third }, olcum.maxOf { it.third },
+                        olcum.joinToString(" ") { "%%%d/%.1f".format(it.first, it.second) }
+                    )
+            )
+        }
+        assertTrue(true) // ölçüm testi — davranış iddiası yok
+    }
+
     @Test
     fun n11_n12_n13_tohumDuyarliligi() {
         listOf(11, 12, 13).forEach { n ->
