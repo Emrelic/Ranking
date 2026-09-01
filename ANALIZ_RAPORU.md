@@ -299,6 +299,23 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
   de birebir duruyor (kaynakta doğrulandı) — temizlik sırasında ikisi birden
   gitmeli. Düşen öğe `shuffled()` yüzünden her koşumda farklıdır: yazılacak
   test kimlik üzerinden değil **sayı** üzerinden kurulmalı, yoksa yanıp söner.
+  🧪 **ÖLÇÜT UYARISI (bir işçinin kendi önerisini geri çekmesiyle çıktı):**
+  "1. turda maç sayısı (n-1)/2 mi?" ölçütü bu kusuru **YAKALAMAZ**. Tam sayı
+  bölmesi yüzünden n tekken `n/2` zaten `(n-1)/2` ediyor (n=5→2, n=9→4,
+  n=15→7), yani maç sayısı DOĞRU çıkıyor ve kusur görünmüyor. Yakalayan tek
+  ölçüt **katılan öğe sayısı** (n yerine n-1). Test de cihaz sınavı da bunun
+  üzerine kurulmalı.
+  📎 **Aynı satırdan çıkan iki yan bulgu** (işçi ölçümü, kaynakta doğrulandı):
+  ① SWISS 1. turu **deterministik değil** — eski yol `shuffled()` ile başlıyor,
+  aynı liste iki kez başlatılınca farklı fikstür ve farklı düşen öğe çıkıyor.
+  ② **Aynı turnuvada iki matchNumber rejimi var:** eski yol 1. turda
+  `matchNumber` hiç atamıyor (Match varsayılanı 0, hepsi 0 kalıyor), 2. turdan
+  itibaren `SwissSystem` 1..N atıyor (bye kaydı 0). CLAUDE.md oylama sırasını
+  "matchNumber ASC" diye tanımladığı için 1. turun oylama sırası fiilen
+  tanımsız — hangi maçın önce sorulacağı sorgunun ikincil sırasına kalıyor.
+  💡 Rapora geçen ders: **bir kusurun "düzeltildi" diye yazılması, düzeltmenin
+  ÇAĞRILDIĞINI göstermez.** `NewTournamentScreen`'deki yorum yanlış değil,
+  EKSİK: yeni motor gerçekten bye dağıtıyor, ama turnuvanın 1. turu ona uğramıyor.
 
 ### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
 

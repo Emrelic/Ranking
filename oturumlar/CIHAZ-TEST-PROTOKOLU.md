@@ -327,6 +327,9 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
       📌 Düşen öğe **her koşumda farklı** (eşleştirme `shuffled()` ile başlıyor):
       "hangi öğe" değil **"kaç öğe"** sorusuna bak — 7 öğeden 6'sı görünüyorsa
       kusur oradadır.
+      🚫 **MAÇ SAYISINA BAKMA — o ölçüt kusuru göstermez.** Tek sayıda maç
+      sayısı zaten doğru çıkıyor (n=7 → 3, n=5 → 2, n=9 → 4); kusur yalnız
+      KATILAN ÖĞE sayımında görünür. "3 maç var, demek ki sağlam" deme.
 - [ ] **2.5.c-2** Aynı sınavı n=5 ve n=9 ile tekrarla.
       **BEKLENEN (düzeltme sonrası):** n=5 → 2 maç + 1 bye; n=9 → 4 maç + 1 bye.
       **BUGÜN:** n=5 → 2 maç ve 1 öğe kayıp; n=9 → 4 maç ve 1 öğe kayıp.
