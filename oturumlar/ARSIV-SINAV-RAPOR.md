@@ -111,24 +111,44 @@ olarak yakalayacak — bu, testin asıl kazandırdığı regresyon güvencesi.
   görevin kapsamı değildi — "arşivlenen sonuç geri okununca kayıpsız mı"
   sorusu JSON katmanında cevaplandı).
 
-## EK NOT (ranking-07'den geldi, koordinatör boşluğu sırasında)
+## EK NOT — ranking-07'nin bulgusu, kendim OKUYARAK doğruladım (ÖLÇÜLDÜ)
 
-`ranking-7d` kapandıktan sonra `ranking-07` (başka bir işçi) şu bulguyu
-paylaştı — kendim ölçmedim, DOĞRULANMADAN aktarılıyor (B10: aktaran hatanın
-sahibi olur, bu yüzden ayrı işaretliyorum):
+`ranking-7d` kapandıktan sonra `ranking-07` (başka bir işçi) bir bulgu
+paylaştı; kod okumasıyla DOĞRULADIM (B10: aktaran hatanın sahibi olur, bu
+yüzden kendi ölçümüm olarak ayrı işaretliyorum). Kendi kapsamımın (JSON
+gidiş-dönüşü) DIŞINDA olduğu için DÜZELTMEDİM, yalnız kayda geçiriyorum —
+SWISS motor/entegrasyon sınavının (ESKI-MOTORLAR-SINAV-GOREV.md kapsamı)
+konusu.
 
-> SWISS turnuvasının 1. turu eski motordan geliyor
-> (`RankingViewModel.initializeSwiss` → `RankingEngine.createSwissMatches`),
-> 2+ turlar yeni `SwissSystem`'den. Tek sayılı listede 1. turda bir öğe
-> sessizce düşüyor (ne maç, ne bye, ne puan) ve `shuffled()` yüzünden her
-> koşumda farklı öğe. Aynı turnuvada iki `matchNumber` rejimi var: 1. turda
-> hepsi 0, sonrakilerde 1..N.
+**Doğrulanan mekanizma:**
+1. `RankingViewModel.initializeSwiss()` (satır 502-523), satır 519:
+   `RankingEngine.createSwissMatches(songs, 1, emptyList())` — yalnız 1. tur
+   için.
+2. `RankingEngine.createSwissMatches` (satır 505-527), 1. tur dalı:
+   satır 509 `shuffledSongs = songs.shuffled()` (ORTAK.md'nin yasakladığı
+   rastgelelik, replay/determinizmi kırar); satır 510
+   `half = shuffledSongs.size / 2`; döngü (satır 512-524)
+   `for (i in 0 until half) { if (i + half < shuffledSongs.size) {...} }`.
+   **TEK sayılı `songs.size`'da son indeks hiç seçilmiyor**: örn. size=9 →
+   half=4, kullanılan indeksler {0..7}, indeks 8 hiçbir Match'e girmiyor,
+   bye kaydı da yok — o öğe turdan SESSİZCE düşüyor (ne maç ne puan).
+   Bu satırlarda `Match(...)` çağrısına `matchNumber` hiç verilmiyor →
+   Match.kt'deki varsayılan (0) kalıyor, yani 1. turun TÜM maçları
+   matchNumber=0.
+3. Round 2+ ise FARKLI bir motordan geliyor: `RankingViewModel` satır
+   776-777 `SwissSystem.computeState` + `SwissSystem.createNextRound`
+   çağırıyor; `SwissSystem.kt` satır 232 `matchNumber = index + 1` atıyor.
+   Sonuç hesaplaması da (satır 945) yine YENİ `SwissSystem.calculateResults`
+   kullanıyor.
 
-Bu doğruysa arşivlenen bir SWISS turnuvasını geri okurken maç sırası/sayısı
-beklenmedik çıkabilir — ama bu benim KAPSAMIMIN (JSON gidiş-dönüşü) DIŞINDA,
-motor/entegrasyon katmanında bir kusur. Doğrulamadım, düzeltmedim; sıradaki
-koordinatöre/ilgili motora devredilmesi gereken ayrı bir bulgu olarak
-kaydediyorum.
+**Doğrulanan sonuç:** aynı SWISS turnuvasında 1. tur eski/kırık motordan
+(rastgele, bye'sız, matchNumber=0), 2+ turlar yeni motordan (deterministik,
+bye'lı, matchNumber=1..N) geliyor — üç farklı kod yolu (eski üretim / yeni
+üretim / yeni sonuç hesabı) aynı turnuvada karışık çalışıyor. SWISS UI'dan
+gizli olduğu için normal kullanıcı bunu tetikleyemiyor, ama arşivlenmiş bir
+SWISS turnuvası geri okunursa 1. tur verisi (maç sayısı, matchNumber sırası,
+eksik öğe) beklenmedik çıkar. Düzeltme kararı ve test yazımı SWISS motor
+sınavının kapsamında (bu görevde DEĞİL).
 
 ## GRADLE KİLİDİ NOTU
 Bu görev sırasında filo çapında bir kilit sistemi (`oturumlar/GRADLE-KURALI.md`)
