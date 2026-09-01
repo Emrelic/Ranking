@@ -111,6 +111,25 @@ olarak yakalayacak — bu, testin asıl kazandırdığı regresyon güvencesi.
   görevin kapsamı değildi — "arşivlenen sonuç geri okununca kayıpsız mı"
   sorusu JSON katmanında cevaplandı).
 
+## EK NOT (ranking-07'den geldi, koordinatör boşluğu sırasında)
+
+`ranking-7d` kapandıktan sonra `ranking-07` (başka bir işçi) şu bulguyu
+paylaştı — kendim ölçmedim, DOĞRULANMADAN aktarılıyor (B10: aktaran hatanın
+sahibi olur, bu yüzden ayrı işaretliyorum):
+
+> SWISS turnuvasının 1. turu eski motordan geliyor
+> (`RankingViewModel.initializeSwiss` → `RankingEngine.createSwissMatches`),
+> 2+ turlar yeni `SwissSystem`'den. Tek sayılı listede 1. turda bir öğe
+> sessizce düşüyor (ne maç, ne bye, ne puan) ve `shuffled()` yüzünden her
+> koşumda farklı öğe. Aynı turnuvada iki `matchNumber` rejimi var: 1. turda
+> hepsi 0, sonrakilerde 1..N.
+
+Bu doğruysa arşivlenen bir SWISS turnuvasını geri okurken maç sırası/sayısı
+beklenmedik çıkabilir — ama bu benim KAPSAMIMIN (JSON gidiş-dönüşü) DIŞINDA,
+motor/entegrasyon katmanında bir kusur. Doğrulamadım, düzeltmedim; sıradaki
+koordinatöre/ilgili motora devredilmesi gereken ayrı bir bulgu olarak
+kaydediyorum.
+
 ## GRADLE KİLİDİ NOTU
 Bu görev sırasında filo çapında bir kilit sistemi (`oturumlar/GRADLE-KURALI.md`)
 kuruldu ve birkaç geçiş sancısı yaşandı (retroaktif kilit denemem geçersiz
