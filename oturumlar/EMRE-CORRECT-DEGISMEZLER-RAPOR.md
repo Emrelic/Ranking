@@ -96,16 +96,57 @@ n=0 ve n=1 uçlarında çökme yok (maç üretilmiyor, n=1'de tek öğe 1. sıra
 
 # BULGULAR (önem sırasıyla) — düzeltme YAPILMADI, karar koordinatörün
 
-### 🟠 1. n=12 aykırılığı: turnuva %36 kanıtla, 4 turda bitiyor
-Komşuları n=11 (7 tur, %80) ve n=13 (11 tur, %100) iken **n=12 yalnız 4 turda
-24 maçla bitiyor ve komşuluk sınırlarının ancak %36'sı kanıtlı** kalıyor —
-yani sıralamanın üçte ikisi tiebreaker tahmini. Bu, kullanıcının "12 öğe girdim,
-4 turda bitti ve sıralama tuhaf" diyeceği tipik vaka.
-Sebep hipotezi (doğrulanmadı): 12'de puan grupları öyle dağılıyor ki hiçbir aday
-eşleşme aynı puanlı kalmıyor, `analyzeTournamentContinuation` turnuvayı kapatıyor.
-**Öneri:** bitiş kuralına "kanıt eşiği" eklemek (ör. keskinlik < %60 ise kanıt turu
-zorla) — HİBRİT'teki kanıt turu mantığı burada da uygulanabilir. Ölçüm testte hazır:
-`turSayisiVeBitis_tekCiftUclari_olculur`.
+### 🔴 1. Bitiş kuralı "olabilirliğe" değil "aday kümesine" bakıyor — turnuva, elinde kanıt üretecek eşleşmeler dururken kapanıyor
+
+İlk ölçümde n=12 aykırı görünmüştü (n=11: 7 tur/%80, n=13: 11 tur/%100 iken
+n=12: 4 tur/%36). Tanı koşumu (`EmreCorrectN12TaniTest`, 2 test/0 hata,
+2026-09-02 01:17) aykırılığın **n=12'ye özgü olmadığını, kuralın kendisinde
+olduğunu** gösterdi.
+
+Motorun iki bitiş kapısı var: **(A)** tekrarsız tam eşleştirme kurulamadı,
+**(B)** `analyzeTournamentContinuation` "hiçbir aday eşleşme aynı puanlı değil"
+diyor. Ölçüm — kapanış anında **hâlâ oynanmamış aynı puanlı çift** sayısı:
+
+| n | tur | maç | keskinlik | kapı | aday (aynı puanlı) | **kapanışta oynanmamış aynı puanlı çift** |
+|---|---|---|---|---|---|---|
+| 8 | 4 | 16 | %71 | B | 4 (0) | **3** |
+| 9 | 4 | 16 | %75 | B | 4 (0) | **4** |
+| 10 | 6 | 30 | %77 | B | 5 (0) | **2** |
+| 11 | 7 | 35 | %80 | B | 5 (0) | **3** |
+| 12 | 4 | 24 | %36 | B | 6 (0) | **8** |
+| 13 | 11 | 66 | %100 | A | 5 (0) | 0 |
+| 14 | 8 | 56 | %76 | B | 7 (0) | **5** |
+| 15 | 7 | 49 | %71 | B | 7 (0) | **11** |
+| 16 | 9 | 72 | %73 | B | 8 (0) | **7** |
+
+Okunuşu: n=13 dışında **her boyutta** turnuva B kapısından kapanıyor ve kapanış
+anında oynanmamış aynı puanlı çiftler duruyor (n=15'te 11 tane!). Yani kural
+"aynı puanlı eşleşme **mümkün** mü?" diye sormuyor; **açgözlü hibrit eşleştirmenin
+o tur ürettiği aday kümesinde** aynı puanlı çift var mı diye soruyor. Eşleştirme
+motoru sıralamayı üstten-alttan tarayarak eşleştirdiği için aynı puanlı takımları
+farklı puanlı rakiplerle harcayabiliyor; sonra "aynı puanlı kalmadı" denip turnuva
+kapanıyor. Tek "temiz" bitiş n=13'te, yani A kapısından (kanıt tükendiği için).
+
+**Giriş sırasına duyarlılık** (aynı n, farklı başlangıç dizilişi):
+
+| n | tohum 1 | tohum 7 | tohum 31 | tohum 777 | tohum 4242 |
+|---|---|---|---|---|---|
+| 11 | 7 tur/%80 | 7/%70 | 8/%80 | 7/%100 | 7/%80 |
+| 12 | **4/%45** | 9/%100 | 8/%81 | 8/%100 | **4/%36** |
+| 13 | 7/%58 | 8/%66 | 6/%75 | 8/%75 | 11/%100 |
+
+Aynı boyutta, aynı kurallarla, yalnız listenin sırası değiştiği için sonuç
+**4–9 tur ve %36–%100 kanıt** arasında savruluyor. Kullanıcı açısından bu,
+"aynı listeyi farklı sırayla girdim, biri 4 turda bitti biri 9" demektir.
+
+**Öneri (koordinatör kararı):**
+1. Bitiş kararını aday kümesinden alıp **duruma** taşımak: "sıralamada aynı puanlı
+   ve henüz oynamamış çift VAR MI?" diye sormak (ölçüm zaten testte: kapanışta
+   n=15'te 11 çift). Varsa turnuva bitmemeli, eşleştirme o çiftleri öncelemeli.
+2. Ya da HİBRİT'teki gibi **kanıt eşiği**: `kesinlikRaporu().genelYuzde` düşükken
+   (ör. < %80) kanıt turu zorlamak. Altyapı hazır, motor zaten raporu üretiyor.
+Ölçüm testleri: `EmreCorrectN12TaniTest.n12_erkenBitisininKapisi_veKacirilanKanit`
+ve `n11_n12_n13_tohumDuyarliligi`.
 
 ### 🟡 2. CLAUDE.md'deki "n=3 → 1 tur" ölçümü artık geçerli değil
 CLAUDE.md (Geliştirilmiş İsviçre bölümü) "Ölçüldü: **n=3 → 1 tur**, n=5 → 2 tur"

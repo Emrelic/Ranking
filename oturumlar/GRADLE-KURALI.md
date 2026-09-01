@@ -43,3 +43,21 @@ rm -rf .gradle-kilit
   test-results'a düştü). Temizlikten sonra bu sorun kapanmış olmalı.
 - OneDrive/build sorunu için kalıcı öneri YAPILACAKLAR'a yazıldı
   (build dizinini senkron dışına almak — kullanıcı kararı).
+
+---
+
+## Ek kural — YARIM DOSYA FİLOYU BLOKE EDER (2026-09-02, işçi 103)
+
+Ölçülen olay: bir oturumun yarım kalmış `HazirListelerSenkronTest.kt` dosyası
+(tip çıkarımı hatası) yüzünden `:app:compileDebugUnitTestKotlin` düştü ve
+**11 dk 35 sn süren bir koşum boşa gitti**. Test derlemesi MODÜL GENELİDİR:
+bir işçinin derlenmeyen tek dosyası, kilit kuyruğunda bekleyen HERKESİ vurur.
+
+Kural:
+- Derlenmeyeceğini bildiğin yarım dosyayı `app/src/test/` altında `.kt`
+  uzantısıyla BIRAKMA. Ya tek seferde tam yaz, ya da bitene kadar
+  `.kt.wip` uzantısında tut (Kotlin derleyicisi görmez), bitince `.kt` yap.
+- Kilidi almadan önce kendi dosyanın derlendiğinden emin ol; kilit süresi
+  ortak kaynaktır, derleme hatası ayıklamak için kullanılmaz.
+- Derleme hatası SENİN dosyandan gelmiyorsa: kilidi bırak, sahibine haber ver,
+  kuyruğu tıkama.
