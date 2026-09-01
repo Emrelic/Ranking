@@ -2,6 +2,7 @@ package com.example.ranking
 
 import com.example.ranking.data.Match
 import com.example.ranking.data.Song
+import com.example.ranking.ranking.EmreSiralamaSistemi
 import com.example.ranking.ranking.EmreSystemCorrect
 import com.example.ranking.ranking.PairwiseComparisonSort
 import com.example.ranking.ranking.RankingEngine
@@ -135,6 +136,24 @@ class AltiSistemVeriUretimiTest {
         return Sonuc(sira.map { it.toInt() }, tur + faz2Tur, hepsi.size + faz2Mac)
     }
 
+    /** Emre Sıralama Sistemi: uygulamadaki gerçek motor, uygulama akışıyla */
+    private fun emreSiralamaKostur(songs: List<Song>): Sonuc {
+        val db = mutableListOf<Match>()
+        var tur = 0
+        while (tur < 2000) {
+            val yeni = EmreSiralamaSistemi.createNextRoundMatches(songs, db)
+            if (yeni.isEmpty()) break
+            tur++
+            yeni.sortedBy { it.matchNumber }.forEach { m ->
+                db.add(m.copy(id = mid++,
+                    winnerId = maxOf(m.songId1, m.songId2), isCompleted = true))
+            }
+        }
+        val sira = EmreSiralamaSistemi.calculateResults(songs, db)
+            .sortedBy { it.position }.map { it.songId.toInt() }
+        return Sonuc(sira, tur, db.size)
+    }
+
     /** Tam lig: herkes herkesle bir kez, 3/1/0 puan; circle-method tur sayısı n-1 */
     private fun ligKostur(songs: List<Song>): Sonuc {
         val puan = HashMap<Long, Int>()
@@ -194,6 +213,7 @@ class AltiSistemVeriUretimiTest {
         val songs = sarkilar()
         val sonuclar = linkedMapOf(
             "IKILI" to ikiliKostur(songs),
+            "EMRE_SIRALAMA" to emreSiralamaKostur(songs),
             "SWISS" to swissKostur(songs),
             "EMRE" to emreKostur(songs),
             "HIBRIT" to hibritKostur(songs),
