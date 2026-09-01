@@ -422,8 +422,11 @@ private fun SystemTypeSelectionStep(
     // Yarım/kırık sistemler tamamlanana kadar listeden çıkarıldı
     // (yarım özellik kırık deneyim yaratıyordu):
     // - SINGLE_ELIMINATION, DOUBLE_ELIMINATION: algoritma tamamlanmadı
-    // - ELIMINATION, FULL_ELIMINATION: puanlama ekranı stub, grup dağılımı
-    //   deterministik değil; yeni EliminationSystem motoru bitince açılacak
+    // - ELIMINATION, FULL_ELIMINATION: puanlama ekranı stub; grup dağılımı
+    //   artık deterministik (sortedBy id) AMA grup yapılandırması 93 tek-üs
+    //   kadronun 29'unda bracket kuramıyor (ölçüldü 2026-09-01, ELEME-DENETIM
+    //   raporu: eliminationsPerGroup=2 koşulsuz). Yol: EliminationSystem.kt
+    //   motoru bağlanınca bu ikisi emekliye ayrılıp yeniden açılacak
     //
     // SWISS 2026-08-28'de GERİ AÇILDI: yeni SwissSystem motoru yazıldı.
     // Eski yolda bye yoktu (tek takım sessizce turdan düşüyordu), tekrar

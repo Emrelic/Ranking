@@ -115,6 +115,16 @@ fun RankingScreen(
                         Kanıtlı = komşuların puanı farklı ya da aralarında maç oynanmış. Belirsiz komşuluklar tiebreaker tahminiyle sıralanır; devam ederseniz orta bölge keskinleşir.
                         """.trimIndent()
                     )
+                } else if (uiState.kesinlikYuzde != null) {
+                    // HIBRIT / EMRE_SIRALAMA: motor replay'inden gelen ölçü
+                    Text(
+                        """
+                        SIRALAMA KESKİNLİĞİ: %${uiState.kesinlikYuzde}
+                        (komşu sıraların bu kadarı kanıtlı)
+
+                        Şimdi bitirirseniz sıralama, o ana kadarki kanıtların kurduğu en iyi tahmindir. Devam ederseniz sistem yalnız belirsiz kalan çiftleri sorar ve %100'e ulaşınca kendiliğinden biter.
+                        """.trimIndent()
+                    )
                 } else {
                     Text("Şu anki sıralamayla turnuva bitirilecek.")
                 }
@@ -141,7 +151,10 @@ fun RankingScreen(
                 TextButton(
                     onClick = {
                         showResetConfirmDialog = false
-                        viewModel.deleteCurrentSession()
+                        // deleteCurrentSession yalnız oturumu siliyordu; maçlar
+                        // durunca kurtarma yolu turnuvayı geri diriltiyordu.
+                        // Gerçek sıfırlama: maçlar + sonuçlar + oturum + yeniden kur.
+                        viewModel.resetTournament()
                     },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error
@@ -218,7 +231,7 @@ fun RankingScreen(
                     // kimse sonuna kadar oynamaz; şampiyon log2(n) turda
                     // bellidir, kalan turlar orta sıraları keskinleştirir.
                     // Basınca keskinlik raporu gösterilir, karar kullanıcının.
-                    if (method == "EMRE_CORRECT" && !uiState.isComplete) {
+                    if (method in listOf("EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA") && !uiState.isComplete) {
                         val takimSayisi = uiState.allSongs.size
                         val onerilenTur = if (takimSayisi > 1)
                             kotlin.math.ceil(kotlin.math.log2(takimSayisi.toDouble())).toInt()
@@ -271,10 +284,14 @@ fun RankingScreen(
                         }
                     }
 
-                    if (method == "LEAGUE" || method == "EMRE_CORRECT") {
+                    if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")) {
                         var showStandings by remember { mutableStateOf(false) }
                         Button(
-                            onClick = { showStandings = !showStandings },
+                            onClick = {
+                                // Yeni motorlarda tablo her oyda değil, açılışta hesaplanır
+                                if (!showStandings) viewModel.puanDurumunuGuncelle()
+                                showStandings = !showStandings
+                            },
                             shape = RoundedCornerShape(6.dp),
                             modifier = Modifier.height(32.dp),
                             colors = ButtonDefaults.buttonColors(
@@ -330,7 +347,10 @@ fun RankingScreen(
                 onComplete = { onNavigateToResults(listId, method) },
                 showCriteriaDialog = showCriteriaDialog,
                 onShowCriteriaDialog = { showCriteriaDialog = it },
-                onShowStandingsDialog = { showStandingsDialog = it },
+                onShowStandingsDialog = {
+                    if (it) viewModel.puanDurumunuGuncelle()
+                    showStandingsDialog = it
+                },
                 showScoreDialog = showScoreDialog,
                 onShowScoreDialog = { showScoreDialog = it },
                 onResetRequest = { showResetConfirmDialog = true },
@@ -876,7 +896,7 @@ private fun MatchBasedContent(
                             }
                         )
                     }
-                    if (method == "LEAGUE" || method == "EMRE_CORRECT") {
+                    if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")) {
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.ranking_standings_menu)) },
                             onClick = {

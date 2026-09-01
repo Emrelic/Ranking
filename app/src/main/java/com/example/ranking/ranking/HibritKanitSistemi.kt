@@ -176,6 +176,23 @@ object HibritKanitSistemi {
         computeState(songs, completedMatches).sonrakiMaclar
 
     /**
+     * Sıralama keskinliği (erken bitirme dialogu için): güncel sıralamada
+     * KOMŞU çiftlerin yüzde kaçı gerçek bir maçla kanıtlı. %100 = her sıra
+     * farkı en az bir oynanmış maça dayanıyor (turnuvanın doğal bitişi).
+     */
+    fun kesinlikYuzdesi(songs: List<Song>, completedMatches: List<Match>): Int {
+        val durum = computeState(songs, completedMatches)
+        val sira = durum.siralama
+        if (sira.size < 2) return 100
+        val oynanmis = completedMatches.filter { it.isCompleted }
+            .map { anahtar(it.songId1, it.songId2) }.toHashSet()
+        val kanitli = (0 until sira.size - 1).count { i ->
+            anahtar(sira[i], sira[i + 1]) in oynanmis
+        }
+        return kanitli * 100 / (sira.size - 1)
+    }
+
+    /**
      * Final sonuçları: güncel sıralamadaki konum → pozisyon; skor = altında
      * kalan öğe sayısı. Turnuva bitmeden çağrılırsa (erken bitirme) o ana
      * kadarki kanıtların kurduğu sıralamayı verir.

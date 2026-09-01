@@ -6,7 +6,7 @@
 Liste şeklinde içeri atılmış veya teker teker girilmiş çeşitli öğeleri sıralamak, puanlamak, birbiri arasında kıyaslamak veya turnuva şeklinde eşleşmelerini ve karşılaşmalarını sağlamak, puan durumlarını, eşleştirmelerini yönetmek, kriterlere göre değerlendirilmesini sağlamak üzere oluşturulmuş bir sistemdir. (Android: Kotlin + Jetpack Compose + Room)
 
 ### Kullanım Amaçları
-Sportif turnuva/lig yönetimi, sübjektif tercih sıralamaları (şarkı, film, sanatçı...), çok kriterli değerlendirme, eğitim amaçlı sıralamalar (ülkeler, elementler...), matematiksel test sıralamaları, farkındalık ve eğlence. Gömülü hazır liste kütüphanesi: `liste_kutuphanesi/README.md` (31 liste, 1811 öğe, 742 görselli).
+Sportif turnuva/lig yönetimi, sübjektif tercih sıralamaları (şarkı, film, sanatçı...), çok kriterli değerlendirme, eğitim amaçlı sıralamalar (ülkeler, elementler...), matematiksel test sıralamaları, farkındalık ve eğlence. Gömülü hazır liste kütüphanesi: `liste_kutuphanesi/README.md` (40 liste, 2475 öğe, 742 görselli — sayılar `HazirListelerSenkronTest` bekçisiyle mühürlü, elle güncelleme gerekmez ama ayrışırsa test söyler).
 
 ---
 
@@ -18,11 +18,11 @@ Sportif turnuva/lig yönetimi, sübjektif tercih sıralamaları (şarkı, film, 
 | EMRE_SIRALAMA | Emre Sıralama Sistemi | 🟢 Kullanıcı icadı: üstünlük ağacı (geçişli kapanış) + her turda garantili-kazancı en yüksek ayrık eşleşmeler (`EmreSiralamaSistemi.kt`, Kahn–Saks ilkesi); n=200: 18 tur/1.365 maç, sıfır hata — turnuva formatlarının en verimlisi. ⚠️ Yöntem kodu "EMRE" OLAMAZ (eski göç EMRE→EMRE_CORRECT dönüştürüyor) |
 | HIBRIT | Hibrit İsviçre (Kanıt Turlu) | 🟢 4 tur İsviçre + kanıt turları (adım 20-6-2-1); replay tabanlı motor (`HibritKanitSistemi.kt`); n=200'de ~1.900 maçla garantili tam sıralama (tam Emre 10.200 maç/sapma 5) |
 | EMRE_CORRECT | Geliştirilmiş İsviçre (Emre Usulü) | 🟢 Canlı hibrit motor, Faz 1-2 düzeltmeleri uygulandı |
+| SWISS | İsviçre | 🟢 2026-08-28'de YENİ motorla geri açıldı (`SwissSystem.kt`): geri izlemeli tekrarsız tam eşleştirme, adil bye rotasyonu, 59 test |
 | LEAGUE | Lig | 🟢 Circle-method fikstür, 3/1/0 puan + averaj |
 | DIRECT_SCORING | Direkt Puanlama | 🟢 Çalışır |
 
 UI'dan çıkarılmış/gizlenmiş yarım özellikler (kodu duruyor, seçilemez):
-- **SWISS**: kural ihlalleri vardı (bye yok, tekrar eşleşme, çalışmayan persistence); EMRE_CORRECT aynı ihtiyacı karşılıyor
 - **ELIMINATION / FULL_ELIMINATION**: puanlama ekranı stub, grup dağılımı hatalı
 - **SINGLE / DOUBLE_ELIMINATION**: algoritmaları tamamlanmadı
 - **YouTube Analizi**: API anahtarı yok, yazılan veri geri okunmuyor (ana menü kartı gizli)

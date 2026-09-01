@@ -177,6 +177,22 @@ object EmreSiralamaSistemi {
         computeState(songs, completedMatches).sonrakiMaclar
 
     /**
+     * Sıralama keskinliği (erken bitirme dialogu için): güncel sıralamada
+     * KOMŞU çiftlerin yüzde kaçının ilişkisi biliniyor — doğrudan maç YA DA
+     * geçişli çıkarım (a>b>c zinciri) kanıt sayılır; sistemin doğası bu.
+     */
+    fun kesinlikYuzdesi(songs: List<Song>, completedMatches: List<Match>): Int {
+        if (songs.size < 2) return 100
+        val agac = Agac(songs)
+        agac.kur(completedMatches.filter { it.isCompleted })
+        val sira = agac.siralama()
+        val kanitli = (0 until sira.size - 1).count { i ->
+            agac.biliniyor(sira[i], sira[i + 1])
+        }
+        return kanitli * 100 / (sira.size - 1)
+    }
+
+    /**
      * Final sonuçları. Turnuva bitmeden çağrılırsa (erken durum) ağacın o
      * ana kadarki bilgisine göre en iyi tahmini sıralamayı verir.
      */

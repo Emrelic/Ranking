@@ -98,11 +98,13 @@ object RankingEngine {
         val points = mutableMapOf<Long, Double>()
         val goalsFor = mutableMapOf<Long, Int>()
         val goalsAgainst = mutableMapOf<Long, Int>()
+        val wins = mutableMapOf<Long, Int>()
 
         songs.forEach { song ->
             points[song.id] = 0.0
             goalsFor[song.id] = 0
             goalsAgainst[song.id] = 0
+            wins[song.id] = 0
         }
 
         matches.filter { it.isCompleted }.forEach { match ->
@@ -117,8 +119,14 @@ object RankingEngine {
             if (p1 == null || p2 == null) return@forEach
 
             when (match.winnerId) {
-                match.songId1 -> points[match.songId1] = p1 + 3.0
-                match.songId2 -> points[match.songId2] = p2 + 3.0
+                match.songId1 -> {
+                    points[match.songId1] = p1 + 3.0
+                    wins[match.songId1] = (wins[match.songId1] ?: 0) + 1
+                }
+                match.songId2 -> {
+                    points[match.songId2] = p2 + 3.0
+                    wins[match.songId2] = (wins[match.songId2] ?: 0) + 1
+                }
                 null -> { // Draw
                     points[match.songId1] = p1 + 1.0
                     points[match.songId2] = p2 + 1.0
@@ -135,11 +143,18 @@ object RankingEngine {
             }
         }
 
-        // Sıralama: puan > averaj > atılan gol
+        // Sıralama: puan > averaj > atılan gol > galibiyet > id.
+        // Zincir TOPLAM SIRALI olmalı: eskiden atılan golde bitiyordu ve
+        // eşitlikte sıra `songs` listesinin GELİŞ SIRASINA düşüyordu — canlı
+        // puan tablosu (RankingViewModel) ile final sonuç farklı çıkabiliyordu
+        // (ölçüldü: EskiMotorCaprazTutarlilikTest). ViewModel'in zinciriyle
+        // birebir aynı yapıldı.
         val sortedSongs = songs.sortedWith(
             compareByDescending<Song> { points[it.id] ?: 0.0 }
                 .thenByDescending { (goalsFor[it.id] ?: 0) - (goalsAgainst[it.id] ?: 0) }
                 .thenByDescending { goalsFor[it.id] ?: 0 }
+                .thenByDescending { wins[it.id] ?: 0 }
+                .thenBy { it.id }
         )
 
         return sortedSongs.mapIndexed { index, song ->

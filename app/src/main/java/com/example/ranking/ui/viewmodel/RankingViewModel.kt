@@ -71,6 +71,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         // Bu liste+yöntem için aktif turnuva kaydı (kriter dialogu bununla
         // kriterleri bulur; maçlarda tournamentId tutulmadığı için gerekli)
         val activeTournamentId: Long? = null,
+        // HIBRIT/EMRE_SIRALAMA erken bitirme dialogu: komşulukların yüzde
+        // kaçı kanıtlı (her tur başında motor replay'inden güncellenir)
+        val kesinlikYuzde: Int? = null,
         // Sonuçlar dialogu: tamamlanmış maçlar + hangileri düzenlenebilir
         val macSonuclari: List<MacSonucSatiri> = emptyList()
     )
@@ -405,10 +408,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             // dayanır, geriye dönük oy değişikliği artık güvenli değil
             undoYigini.clear()
             val kayitliMaclar = createMatchesForTournament(yeniMaclar)
+            val keskinlik = withContext(Dispatchers.Default) {
+                HibritKanitSistemi.kesinlikYuzdesi(songs, allMatches.filter { it.isCompleted })
+            }
             _uiState.value = _uiState.value.copy(
                 currentRound = yeniMaclar.first().round,
                 matchingsList = kayitliMaclar.sortedBy { it.matchNumber },
-                canUndo = false
+                canUndo = false,
+                kesinlikYuzde = keskinlik
             )
             loadNextMatch()
         } catch (e: Exception) {
@@ -451,10 +458,14 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             // Tur kapandı: sonraki turun eşleşmeleri bu sonuçlara dayanır
             undoYigini.clear()
             val kayitliMaclar = createMatchesForTournament(yeniMaclar)
+            val keskinlik = withContext(Dispatchers.Default) {
+                EmreSiralamaSistemi.kesinlikYuzdesi(songs, allMatches.filter { it.isCompleted })
+            }
             _uiState.value = _uiState.value.copy(
                 currentRound = yeniMaclar.first().round,
                 matchingsList = kayitliMaclar.sortedBy { it.matchNumber },
-                canUndo = false
+                canUndo = false,
+                kesinlikYuzde = keskinlik
             )
             loadNextMatch()
         } catch (e: Exception) {
@@ -1679,6 +1690,17 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     fun erkenBitir() {
         viewModelScope.launch {
             try {
+                // Replay tabanlı motorlarda (HIBRIT, EMRE_SIRALAMA) erken bitirme
+                // basittir: yarım turun oynanmış oyları zaten maç kayıtlarında,
+                // calculateResults kısmi durumdan en iyi sıralamayı üretir.
+                // Silinecek tek şey oynanmamış maçlardır. (Eskiden bu bekçi
+                // sessizce dönüyordu ve yeni yöntemlerde BİTİR yolu yoktu — Y1.)
+                if (currentMethod in setOf("HIBRIT", "EMRE_SIRALAMA")) {
+                    repository.deleteUncompletedMatches(currentListId, currentMethod)
+                    completeRanking()
+                    calculateCurrentStandings()
+                    return@launch
+                }
                 if (currentMethod != "EMRE_CORRECT") return@launch
                 val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
                 val state = emreState
@@ -1731,6 +1753,39 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
+    /**
+     * Turnuvayı gerçekten SIFIRLAR: oturum + maçlar + sonuçlar silinir ve
+     * yöntem baştan başlatılır.
+     *
+     * 🔴 Eskiden "Sıfırla" yalnız deleteCurrentSession() çağırıyordu — oturum
+     * siliniyor ama MAÇLAR duruyordu. Üstüne 2026-08-29'da eklenen kurtarma
+     * yolu ("oturum yok ama maç var → maçlardan devam et") bu yarım silmeyi
+     * geri dirilttiği için Sıfırla fiilen HİÇBİR ŞEY sıfırlamıyordu: kullanıcı
+     * onaylıyor, turnuva kaldığı yerden devam ediyordu. İki ayrı doğru
+     * düzeltme (kurtarma + sıfırlama onayı) birbirini etkisizleştirmişti.
+     */
+    fun resetTournament() {
+        viewModelScope.launch {
+            try {
+                currentVotingSession?.let { session ->
+                    if (currentMethod == "SWISS") {
+                        repository.deleteSwissState(session.id)
+                        repository.deleteAllSwissMatchStates(session.id)
+                    }
+                    votingSessionDao.deleteSession(session)
+                    currentVotingSession = null
+                }
+                repository.clearMatches(currentListId, currentMethod)
+                repository.clearRankingResults(currentListId, currentMethod)
+                // Baştan kur (forceNew maçları zaten temizler; burada önceden
+                // temizlemek "kurtarma" yolunun devreye girmemesi için şart)
+                initializeRanking(currentListId, currentMethod, forceNew = true)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(error = "Sıfırlama hatası: ${e.message}")
+            }
+        }
+    }
+
     fun deleteCurrentSession() {
         viewModelScope.launch {
             currentVotingSession?.let { session ->
@@ -1835,6 +1890,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         }
     }
     
+    /** Puan Durumu açılırken tabloyu tazeler (HIBRIT/EMRE_SIRALAMA'da tek
+     *  güncelleme noktası — bu yöntemlerde her oyda hesap yapılmaz). */
+    fun puanDurumunuGuncelle() {
+        viewModelScope.launch { calculateCurrentStandings() }
+    }
+
     private suspend fun calculateCurrentStandings() {
         try {
             val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
@@ -1892,6 +1953,39 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 }
                 
                 _uiState.value = _uiState.value.copy(currentStandings = standings)
+            } else if (currentMethod in setOf("HIBRIT", "EMRE_SIRALAMA")) {
+                // Yeni motorlar: galibiyet/beraberlik sayımı maçlardan, SIRA
+                // motorun kendi sıralamasından (puan bu sistemlerde eşleştirme
+                // aracı değil, yalnız bilgilendirme — sırayı motor belirler)
+                val motorSirasi = when (currentMethod) {
+                    "HIBRIT" -> HibritKanitSistemi.calculateResults(songs, completedMatches)
+                    else -> EmreSiralamaSistemi.calculateResults(songs, completedMatches)
+                }.associate { it.songId to it.position }
+
+                val standings = songs.map { song ->
+                    var points = 0.0
+                    var played = 0; var won = 0; var drawn = 0; var lost = 0
+                    completedMatches.forEach { match ->
+                        if (match.songId1 != song.id && match.songId2 != song.id) return@forEach
+                        // Yetim maç sayılmaz (bkz. LEAGUE/SWISS dalındaki not)
+                        val rakipId = if (match.songId1 == song.id) match.songId2 else match.songId1
+                        if (songs.none { it.id == rakipId }) return@forEach
+                        played++
+                        when (match.winnerId) {
+                            song.id -> { won++; points += 1.0 }
+                            null -> { drawn++; points += 0.5 }
+                            else -> lost++
+                        }
+                    }
+                    StandingEntry(
+                        position = motorSirasi[song.id] ?: songs.size,
+                        song = song,
+                        points = points,
+                        played = played, won = won, drawn = drawn, lost = lost
+                    )
+                }.sortedBy { it.position }
+
+                _uiState.value = _uiState.value.copy(currentStandings = standings)
             } else if (currentMethod == "LEAGUE" || currentMethod == "SWISS") {
                 // Lig ve İsviçre: canlı puan durumu maçlardan hesaplanır.
                 // Bu dal eskiden BOŞ bir yorum bloğuydu ("Bu kısım zaten var
@@ -1913,12 +2007,29 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         val ikinci = match.songId2 == song.id
                         if (!birinci && !ikinci) return@forEach
 
+                        // YETİM MAÇ: rakip listeden silinmişse maç sayılmaz.
+                        // Motor (calculateLeagueResults) ve SwissSystem böyle
+                        // davranıyor; burası sayarsa silinmiş rakibe karşı
+                        // "galibiyet + 3 puan" yazılıp canlı tablo final
+                        // sonuçtan ayrışıyordu (ölçüldü: 5 takımda silinen
+                        // takım 0 puan yerine İKİNCİ çıktı —
+                        // EskiMotorCaprazTutarlilikTest). Bye kaydında
+                        // songId1 == songId2 olduğundan bu kontrol bye'ı yemez.
+                        val rakipId = if (birinci) match.songId2 else match.songId1
+                        if (songs.none { it.id == rakipId }) return@forEach
+
                         played++
-                        // Skor girilmişse averaj için topla
+                        // Skor İKİ TARAF İÇİN DE girilmişse averaja sayılır.
+                        // Eskiden boş skor 0 sayılıyordu: "5-?" maçı "5-0" olup
+                        // olmayan +5 averaj doğuruyordu ve canlı tablo, motorun
+                        // final hesabından (yalnız çift skorlu maçları sayar)
+                        // ayrışıyordu (ölçüldü: EskiMotorCaprazTutarlilikTest).
                         val kendiSkor = if (birinci) match.score1 else match.score2
                         val rakipSkor = if (birinci) match.score2 else match.score1
-                        attilan += kendiSkor ?: 0
-                        yenilen += rakipSkor ?: 0
+                        if (kendiSkor != null && rakipSkor != null) {
+                            attilan += kendiSkor
+                            yenilen += rakipSkor
+                        }
 
                         when (match.winnerId) {
                             song.id -> { won++; points += ligPuani }
