@@ -166,3 +166,5 @@ okundu; başka türlü 3 hata listede kalırdı.
 
 `./gradlew :app:testDebugUnitTest --tests "*HazirListelerSenkronTest*"`
 → **10 test, 10 geçti** (40 listenin tamamı üzerinde).
+Son koşum: `BUILD SUCCESSFUL`, `tests="10" skipped="0" failures="0" errors="0"`.
+Commit: `50a8d5e` (18 dosya, kaynak + assets + katalog + README + test + rapor).
