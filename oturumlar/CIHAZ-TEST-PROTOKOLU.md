@@ -312,18 +312,27 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
       (`RankingEngine.createSwissMatches`), 2. ve sonraki turları YENİ motordan
       (`SwissSystem`) geliyor. Eski yolun 1. tur eşleştirmesinde tek takım
       sayısında **son öğe hiç kullanılmıyor**: o öğe maç da yapmıyor, bye de
-      almıyor. Birim testleri bunu yakalayamıyor çünkü hepsi `SwissSystem`'i
-      ölçüyor — 1. tur oradan gelmiyor. Cihazda yakalanır.
+      almıyor. 59 birim testi bunu yakalamıyor çünkü hepsi `SwissSystem`'i
+      ölçüyor — 1. tur oradan gelmiyor.
       **NASIL BAKILIR:** 7 öğelik listeyle SWISS turnuvası aç, **1. turda**
       eşleşmeleri say ve hangi öğelerin göründüğünü not et.
-      **BEKLENEN:** 3 maç (6 öğe) + 1 öğe **bye** — ve bye alan öğe puan
-      tablosunda **1 puanla** görünmeli.
-      **SAPMA (beklenen kusur budur):** 3 maç var ama 7. öğe hiçbir yerde yok —
-      ne maçta, ne bye'da, ne puan tablosunda. Böyleyse SAPMA formunu doldur ve
-      hangi öğenin kaybolduğunu yaz.
+      ⚠️ **BUGÜNKÜ KODDA BEKLENEN SONUÇ KUSURUN KENDİSİDİR:** 3 maç göreceksin
+      (6 öğe) ve **7. öğe hiçbir yerde olmayacak** — ne maçta, ne bye'da, ne
+      puan tablosunda. Bye kaydı bugün HİÇ üretilmiyor, yani "1 puanlık bye
+      satırı" düzeltme gelene kadar ASLA çıkmaz. Bunu görüyorsan protokol
+      yanlış değil, kusur doğrulanmış demektir — SAPMA formunu yine doldur,
+      düzeltmenin öncelik kanıtı olur.
+      ✅ **DÜZELTME SONRASI BEKLENEN (kod değişince bu satır geçerli olacak):**
+      3 maç + 1 **bye**, ve bye alan öğe puan tablosunda **1 puanla** görünür.
+      📌 Düşen öğe **her koşumda farklı** (eşleştirme `shuffled()` ile başlıyor):
+      "hangi öğe" değil **"kaç öğe"** sorusuna bak — 7 öğeden 6'sı görünüyorsa
+      kusur oradadır.
 - [ ] **2.5.c-2** Aynı sınavı n=5 ve n=9 ile tekrarla.
-      **BEKLENEN:** n=5 → 2 maç + 1 bye; n=9 → 4 maç + 1 bye. Bye kaydı yoksa
-      aynı kusurdur.
+      **BEKLENEN (düzeltme sonrası):** n=5 → 2 maç + 1 bye; n=9 → 4 maç + 1 bye.
+      **BUGÜN:** n=5 → 2 maç ve 1 öğe kayıp; n=9 → 4 maç ve 1 öğe kayıp.
+- [ ] **2.5.c-3** Çift sayıda kontrol (L-KÜÇÜK'e bir öğe ekleyip 6 yap ya da
+      8 öğelik liste): **BEKLENEN:** 1. turda tüm öğeler eşleşmede görünür,
+      kimse düşmez. Çift sayıda kusur YOK — düşme yalnız tek sayıda olur.
 
 ### 2.6 Lig (LEAGUE)
 

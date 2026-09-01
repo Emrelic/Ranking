@@ -284,6 +284,21 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
   bye adaleti ölçümü (n=9/11/15, max−min ≤ 1) `SwissSystem` üzerinde yapıldı,
   oysa 1. tur SwissSystem'den gelmiyor. Doğru ölçüm yolu `initializeSwiss` → 1.
   tur → tek n. Cihaz sınavında da yakalanır: `CIHAZ-TEST-PROTOKOLU.md` 2.5.c.
+  🔺 **ŞİDDET YÜKSELTMESİ (2026-09-02, ikinci işçi doğrulaması + kaynak kontrolü):**
+  bu gizli/yarım bir özellikte değil, **kullanıcının bugün seçebildiği bir
+  yöntemde**. SWISS `NewTournamentScreen.systemTypes` listesinde 5. kart olarak
+  duruyor. Üstelik hemen üstündeki kod yorumu tam bu kusuru "düzeltildi" ilan
+  ediyor: "Eski yolda bye yoktu (tek takım sessizce turdan düşüyordu) ... yeni
+  motorda ... bye adil rotasyonla dağıtılıyor. 59 test geçiyor." Yorumun
+  düzeldi dediği kusur 1. turda hâlâ canlı; 59 test onu görmüyor çünkü hepsi
+  `SwissSystem`'i besliyor, uygulamanın giriş noktası ise `RankingEngine`'e
+  gidiyor. CLAUDE.md'nin aktif yöntem tablosundaki "🟢 yeni motorla geri açıldı"
+  satırı da aynı sebeple giriş noktasıyla ayrışmış (o dosya bu oturumun alanı
+  değil — düzeltme sahibinde).
+  Ek: aynı hatalı 1. tur bloğu ÖLÜ yoldaki `createSwissMatchesAdvanced` içinde
+  de birebir duruyor (kaynakta doğrulandı) — temizlik sırasında ikisi birden
+  gitmeli. Düşen öğe `shuffled()` yüzünden her koşumda farklıdır: yazılacak
+  test kimlik üzerinden değil **sayı** üzerinden kurulmalı, yoksa yanıp söner.
 
 ### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
 
