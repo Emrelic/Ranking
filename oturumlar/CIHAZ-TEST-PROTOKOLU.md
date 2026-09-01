@@ -306,6 +306,11 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
 - [ ] **2.5.b 🔴 Bye adaleti (L-TEK, 7 öğe):** tam turnuva oyna, kimin kaç kez bye
       geçtiğini izle. **BEKLENEN:** bye sayıları arasında en çok 1 fark; herkes
       bir kez geçmeden kimse ikinci kez geçmemeli.
+      📌 **Bye ekranda nasıl görünür:** yeni motor bye'ı **kendisiyle eşleşen
+      bir maç kaydı** olarak tutuyor (`songId1 == songId2`, kazanan aynı öğe,
+      tamamlanmış). Yani Sonuçlar listesinde **"X vs X"** biçiminde bir satır
+      görebilirsin — bu bir kusur DEĞİL, bye'ın veri biçimi. Bye puanı (1 puan)
+      buradan geliyor.
 - [ ] **2.5.c 🔴🔴 KİMSE KAYBOLMUYOR — 1. TURA ÖZELLİKLE BAK (L-TEK, 7 öğe).**
       Bu adım bu turun en kritik SWISS sınavı. Sebebi: 2026-09-02'de kod
       okumasıyla bulundu ki bir SWISS turnuvasının **1. turu ESKİ motordan**
@@ -318,15 +323,24 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
       eşleşmeleri say ve hangi öğelerin göründüğünü not et.
       ⚠️ **BUGÜNKÜ KODDA BEKLENEN SONUÇ KUSURUN KENDİSİDİR:** 3 maç göreceksin
       (6 öğe) ve **7. öğe hiçbir yerde olmayacak** — ne maçta, ne bye'da, ne
-      puan tablosunda. Bye kaydı bugün HİÇ üretilmiyor, yani "1 puanlık bye
-      satırı" düzeltme gelene kadar ASLA çıkmaz. Bunu görüyorsan protokol
-      yanlış değil, kusur doğrulanmış demektir — SAPMA formunu yine doldur,
-      düzeltmenin öncelik kanıtı olur.
-      ✅ **DÜZELTME SONRASI BEKLENEN (kod değişince bu satır geçerli olacak):**
+      puan tablosunda. **1. TURDA** bye kaydı hiç üretilmiyor, yani "1 puanlık bye
+      satırı" 1. turda düzeltme gelene kadar ASLA çıkmaz (2+ turlarda çıkar,
+      aşağıdaki tur ayrımına bak). Bunu görüyorsan protokol yanlış değil, kusur
+      doğrulanmış demektir — SAPMA formunu yine doldur, öncelik kanıtı olur.
+      ✅ **DÜZELTME SONRASI BEKLENEN — 1. TUR (kod değişince geçerli olacak):**
       3 maç + 1 **bye**, ve bye alan öğe puan tablosunda **1 puanla** görünür.
       📌 Düşen öğe **her koşumda farklı** (eşleştirme `shuffled()` ile başlıyor):
       "hangi öğe" değil **"kaç öğe"** sorusuna bak — 7 öğeden 6'sı görünüyorsa
       kusur oradadır.
+      📅 **HANGİ TURDA NE BEKLENMELİ (karıştırmamak için):**
+      · **1. tur, TEK sayılı liste:** bye kaydı **YOK** — bir öğe hiçbir yerde
+        görünmez. Kusur budur.
+      · **2. tur ve sonrası, TEK sayılı liste:** bye kaydı **VAR**, "X vs X"
+        biçiminde (bkz. 2.5.b) ve bye alan öğe 1 puan alır. Bu normaldir.
+      · **ÇİFT sayılı liste:** hiçbir turda bye kaydı olmaz.
+      Yani aynı turnuvanın 1. turu ile 2. turu iki farklı veri sözleşmesi
+      kullanıyor: eski yol düşen öğe için HİÇBİR kayıt üretmiyor, yeni motor
+      kendisiyle eşleşen kayıt üretiyor.
       🚫 **MAÇ SAYISINA BAKMA — o ölçüt kusuru göstermez.** Tek sayıda maç
       sayısı zaten doğru çıkıyor (n=7 → 3, n=5 → 2, n=9 → 4); kusur yalnız
       KATILAN ÖĞE sayımında görünür. "3 maç var, demek ki sağlam" deme.

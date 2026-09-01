@@ -316,6 +316,15 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
   💡 Rapora geçen ders: **bir kusurun "düzeltildi" diye yazılması, düzeltmenin
   ÇAĞRILDIĞINI göstermez.** `NewTournamentScreen`'deki yorum yanlış değil,
   EKSİK: yeni motor gerçekten bye dağıtıyor, ama turnuvanın 1. turu ona uğramıyor.
+  🧾 **Üçüncü sonuç — aynı turnuvada İKİ VERİ SÖZLEŞMESİ:** yeni motor bye'ı
+  *kendisiyle eşleşen* bir maç kaydı olarak tutuyor (`SwissSystem`: `songId1 ==
+  songId2`, `winnerId` aynı öğe, `matchNumber = 0`, `isCompleted = true`) —
+  bye puanı oradan geliyor. Eski yol ise düşen öğe için **hiçbir kayıt**
+  üretmiyor. Yani bir SWISS turnuvasının 1. turu ile 2. turu farklı veri
+  sözleşmesi kullanıyor: bye'ı okuyan her kod (puan tablosu, arşiv, sonuç
+  özeti) 1. turda okuyacak bir şey bulamıyor. Bu, "1. tur başka koddan geliyor"
+  probleminin veri katmanındaki yüzü — düzeltme yalnız eşleştirmeyi değil, bye
+  kaydının biçimini de hizalamalı.
 
 ### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
 
