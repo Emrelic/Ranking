@@ -567,6 +567,7 @@ private fun getMethodDisplayName(method: String): String {
         "ELIMINATION" -> "Eleme"
         "SWISS" -> "İsviçre"
         "EMRE_CORRECT" -> "Geliştirilmiş İsviçre"
+        "HIBRIT" -> "Hibrit İsviçre"
         "DIRECT_SCORING" -> "Direkt Puanlama"
         else -> method
     }

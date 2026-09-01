@@ -70,6 +70,9 @@
     <string name="new_tournament_system_emre_title">Geliştirilmiş İsviçre</string>
     <string name="new_tournament_system_emre">Geliştirilmiş İsviçre sistemi. Aynı iki öğe bir daha eşleşmez, akıllı geri izleme ile adil eşleştirme yapılır.</string>
     <string name="new_tournament_system_emre_detail">İsviçre sisteminin geliştirilmiş varyasyonu. İki öğe birbiriyle yalnızca bir kez eşleşir; akıllı geri izleme ile en uygun eşleştirme bulunur.</string>
+    <string name="new_tournament_system_hibrit_title">Hibrit İsviçre (Kanıt Turlu)</string>
+    <string name="new_tournament_system_hibrit">Kısa İsviçre + kanıt turları: aralarında maç olmayan yakın sıralı çiftler eşleşir. Az maçla tam sıralama.</string>
+    <string name="new_tournament_system_hibrit_detail">Önce 4 tur Geliştirilmiş İsviçre ile kaba yerleşim, sonra kanıt turları: sıralamada yakın duran ama hiç eşleşmemiş çiftler azalan mesafelerle (20-6-2-1) karşılaşır, kaybeden aşağı iner. Bitişte her komşuluk gerçek bir maçla kanıtlıdır — tam Emre\'nin beşte biri maçla ondan iyi sonuç (ölçüldü: 200 öğede ~1.900 maç, sıfır hata).</string>
     <string name="new_tournament_system_elimination_title">Eleme Usulü</string>
     <string name="new_tournament_system_elimination">Çift eleme: kaybeden alt klasmanda devam eder. Kaybedenler arasındaki sıralama hakkında da fikir verir.</string>
     <string name="new_tournament_system_elimination_detail">Kaybedenlerin alt klasmanda devam ettiği sistem. Elenenler arasındaki sıralama da görülür.</string>

@@ -15,6 +15,7 @@ Sportif turnuva/lig yönetimi, sübjektif tercih sıralamaları (şarkı, film, 
 | Kod | Ad | Durum |
 |---|---|---|
 | MERGE_SORT | İkili Karşılaştırma | 🟢 En sağlam, en iyi testli (binary insertion + replay) |
+| HIBRIT | Hibrit İsviçre (Kanıt Turlu) | 🟢 4 tur İsviçre + kanıt turları (adım 20-6-2-1); replay tabanlı motor (`HibritKanitSistemi.kt`); n=200'de ~1.900 maçla garantili tam sıralama (tam Emre 10.200 maç/sapma 5) |
 | EMRE_CORRECT | Geliştirilmiş İsviçre (Emre Usulü) | 🟢 Canlı hibrit motor, Faz 1-2 düzeltmeleri uygulandı |
 | LEAGUE | Lig | 🟢 Circle-method fikstür, 3/1/0 puan + averaj |
 | DIRECT_SCORING | Direkt Puanlama | 🟢 Çalışır |

@@ -8,6 +8,7 @@ import com.example.ranking.data.*
 import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
 import com.example.ranking.ranking.EmreSystemCorrect
+import com.example.ranking.ranking.HibritKanitSistemi
 import com.example.ranking.ranking.PairwiseComparisonSort
 import com.example.ranking.ranking.SwissSystem
 import com.example.ranking.repository.RankingRepository
@@ -114,7 +115,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
      * hariç: orada "son maç" kavramı yok, puanlar tek tek kaydediliyor.
      */
     private fun undoSupported(): Boolean =
-        currentMethod in setOf("LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT")
+        currentMethod in setOf("LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT", "HIBRIT")
 
     /**
      * Maçları AKTİF TURNUVANIN kimliğiyle kaydeder.
@@ -264,6 +265,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "MERGE_SORT" -> {
                                     initializePairwiseSort()
                                 }
+                                "HIBRIT" -> {
+                                    initializeHibrit()
+                                }
                                 // SINGLE/DOUBLE_ELIMINATION kaldırıldı: algoritmaları
                                 // tamamlanmadı ve UI'dan seçilemiyorlar
                                 else -> {
@@ -361,6 +365,52 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             val matches = RankingEngine.createLeagueMatches(songs, doubleRoundRobin)
             createMatchesForTournament(matches)
             loadNextMatch()
+        }
+    }
+
+    private fun initializeHibrit() {
+        viewModelScope.launch {
+            // Bkz. initializeLeague: oturum kaydı olmadan her giriş "yeni
+            // turnuva" sayılıp maçları siliyordu
+            createOrUpdateSession()
+            createNextHibritRound()
+        }
+    }
+
+    /**
+     * Hibrit İsviçre'de sıradaki turu üretir (motor: HibritKanitSistemi).
+     *
+     * Motor durumsuzdur: tamamlanmış maçların replay'i sıradaki turu verir.
+     * Açık tur varken yeni tur üretilmez (Emre'deki katlanma dersinin aynısı).
+     */
+    private suspend fun createNextHibritRound() {
+        try {
+            val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+            if (allMatches.any { !it.isCompleted }) {
+                loadNextMatch()
+                return
+            }
+            val yeniMaclar = HibritKanitSistemi.createNextRoundMatches(
+                songs, allMatches.filter { it.isCompleted }
+            )
+            if (yeniMaclar.isEmpty()) {
+                completeRanking()
+                return
+            }
+            // Tur kapandı: sonraki turun eşleşmeleri bu turun sonuçlarına
+            // dayanır, geriye dönük oy değişikliği artık güvenli değil
+            undoYigini.clear()
+            val kayitliMaclar = createMatchesForTournament(yeniMaclar)
+            _uiState.value = _uiState.value.copy(
+                currentRound = yeniMaclar.first().round,
+                matchingsList = kayitliMaclar.sortedBy { it.matchNumber },
+                canUndo = false
+            )
+            loadNextMatch()
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                error = "Hibrit turu oluşturulamadı: ${e.message}"
+            )
         }
     }
 
@@ -518,6 +568,11 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     advancePairwiseSort()
                     return
                 }
+                "HIBRIT" -> {
+                    // Tur bitti — sıradaki kanıt turunu üret (kalmadıysa tamamlanır)
+                    createNextHibritRound()
+                    return
+                }
                 "ELIMINATION" -> {
                     // Check if we need to start knockout rounds after group stage
                     val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
@@ -574,7 +629,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         // tahmini toplam soru sayısı gösterilir (ilerleme çubuğu anlamlı olsun diye)
         // Turnuva kimliğiyle filtrelenir: paralel turnuvaların maçları sayacı
         // şişiriyordu (cihazda ölçüldü: tur içi 20 maç yerine "41/120")
-        val allMatchesForProgress = if (currentMethod == "EMRE_CORRECT") {
+        val allMatchesForProgress = if (currentMethod in setOf("EMRE_CORRECT", "HIBRIT")) {
             sonucMaclari()
         } else {
             emptyList()
@@ -590,13 +645,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val displayTotal = when (currentMethod) {
             "MERGE_SORT" ->
                 maxOf(PairwiseComparisonSort.estimatedTotalComparisons(safeSongs.size), completed + 1)
-            "EMRE_CORRECT" -> {
+            "EMRE_CORRECT", "HIBRIT" -> {
                 val buTur = nextMatch?.round ?: _uiState.value.currentRound
                 allMatchesForProgress.count { it.round == buTur }.coerceAtLeast(1)
             }
             else -> total
         }
-        val displayCompleted = if (currentMethod == "EMRE_CORRECT") {
+        val displayCompleted = if (currentMethod in setOf("EMRE_CORRECT", "HIBRIT")) {
             val buTur = nextMatch?.round ?: _uiState.value.currentRound
             allMatchesForProgress.count { it.round == buTur && it.isCompleted }
         } else {
@@ -849,6 +904,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "ELIMINATION" -> RankingEngine.calculateEliminationResults(songs, allMatches)
                 "FULL_ELIMINATION" -> RankingEngine.calculateFullEliminationResults(songs, allMatches)
                 "MERGE_SORT" -> PairwiseComparisonSort.calculateResults(songs, allMatches.filter { it.isCompleted })
+                "HIBRIT" -> HibritKanitSistemi.calculateResults(songs, allMatches.filter { it.isCompleted })
                 else -> emptyList()
             }
             
@@ -1058,7 +1114,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             // "En büyük tur numarası açık turdur" DENMEZ: cihazda ölçüldü,
             // paralel eski turnuvaların 0 oylu hayalet turları en büyük turu
             // yukarı çekip bu turun maçlarını yanlışlıkla kilitliyordu.
-            "EMRE_CORRECT", "SWISS" ->
+            "EMRE_CORRECT", "SWISS", "HIBRIT" ->
                 allMatches.any { it.round == m.round && !it.isCompleted }
             "LEAGUE" -> {
                 fun sonrakiMaciVar(teamId: Long) = allMatches.any { o ->
@@ -1518,6 +1574,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "FULL_ELIMINATION" -> "Tam Eleme"
                 "DIRECT_SCORING" -> "Direkt Puanlama"
                 "MERGE_SORT" -> "İkili Karşılaştırma"
+                "HIBRIT" -> "Hibrit İsviçre"
                 else -> currentMethod
             }
             

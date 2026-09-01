@@ -140,6 +140,7 @@ private fun TournamentCard(
                     text = when (tournament.systemType) {
                         "SWISS" -> stringResource(R.string.active_tournaments_swiss)
                         "EMRE_CORRECT" -> stringResource(R.string.active_tournaments_emre)
+                        "HIBRIT" -> "Hibrit İsviçre"
                         else -> tournament.systemType
                     },
                     style = MaterialTheme.typography.bodySmall,

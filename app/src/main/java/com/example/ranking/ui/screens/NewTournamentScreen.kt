@@ -111,6 +111,7 @@ fun NewTournamentScreen(
                 "LEAGUE" -> "lig"
                 "SWISS" -> "isviçre"
                 "EMRE_CORRECT" -> "geliştirilmiş isviçre"
+                "HIBRIT" -> "hibrit isviçre"
                 "MERGE_SORT" -> "ikili karşılaştırma"
                 "DIRECT_SCORING" -> "direkt puanlama"
                 "ELIMINATION" -> "eleme"
@@ -430,6 +431,7 @@ private fun SystemTypeSelectionStep(
     // dağıtılıyor. 59 test (14 kendi + 43 çapraz + 2 gerileme) geçiyor.
     val systemTypes = listOf(
         "MERGE_SORT",
+        "HIBRIT",
         "EMRE_CORRECT",
         "SWISS",
         "LEAGUE",
@@ -479,11 +481,12 @@ private fun SystemTypeCard(
     onClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    val isRecommended = type in setOf("MERGE_SORT", "EMRE_CORRECT")
+    val isRecommended = type in setOf("MERGE_SORT", "HIBRIT", "EMRE_CORRECT")
 
     val title = stringResource(
         when (type) {
             "MERGE_SORT" -> R.string.new_tournament_system_merge_sort_title
+            "HIBRIT" -> R.string.new_tournament_system_hibrit_title
             "EMRE_CORRECT" -> R.string.new_tournament_system_emre_title
             "SWISS" -> R.string.new_tournament_system_swiss_title
             "LEAGUE" -> R.string.new_tournament_system_league_title
@@ -495,6 +498,7 @@ private fun SystemTypeCard(
     val description = stringResource(
         when (type) {
             "MERGE_SORT" -> R.string.new_tournament_system_merge_sort
+            "HIBRIT" -> R.string.new_tournament_system_hibrit
             "EMRE_CORRECT" -> R.string.new_tournament_system_emre
             "SWISS" -> R.string.new_tournament_system_swiss
             "LEAGUE" -> R.string.new_tournament_system_league
@@ -506,6 +510,7 @@ private fun SystemTypeCard(
     val detailInfo = stringResource(
         when (type) {
             "MERGE_SORT" -> R.string.new_tournament_system_merge_sort_detail
+            "HIBRIT" -> R.string.new_tournament_system_hibrit_detail
             "EMRE_CORRECT" -> R.string.new_tournament_system_emre_detail
             "SWISS" -> R.string.new_tournament_system_swiss_detail
             "LEAGUE" -> R.string.new_tournament_system_league_detail
