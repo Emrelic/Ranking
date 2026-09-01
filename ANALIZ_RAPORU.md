@@ -88,7 +88,7 @@ NewTournamentScreen.kt:497: Unresolved reference 'ExpandMore'
 - 1. tur ile sonraki turlar iki farklı koddan geçiyor (`createSwissMatches` vs `createSwissMatchesAdvanced`).
 
 ### 4.3 ELIMINATION / FULL_ELIMINATION
-- Grup dağılımı **iki farklı `shuffled()`** ile iki kez yapılıyor (`RankingEngine.kt:146` vs `:269-289`) → kimin hangi grupta olduğu maçlarla alakasız, sonuçlar fiilen **rastgele**.
+- Grup dağılımı **iki farklı `shuffled()`** ile iki kez yapılıyor (`RankingEngine.kt:146` vs `:269-289`) → kimin hangi grupta olduğu maçlarla alakasız, sonuçlar fiilen **rastgele**. ⚠️ **2026-09-02: bu madde DARALDI — bkz. Bölüm 11.1** (ELIMINATION'da giderildi, FULL_ELIMINATION'da sürüyor).
 - Knockout zinciri yok: turnuva çeyrek finalde durur (`:228-252`, `RankingViewModel.kt:931-966`); sonuç listesi eksik (`:370-434` tek kazanan ekliyor).
 - FULL_ELIMINATION üçlü grup tespiti güvenilmez (`:1403-1429` tüm turların maçlarıyla çağrılıyor); takım hem elenen hem kalifiye listesine girebiliyor (`:825-873`).
 
@@ -220,7 +220,7 @@ fotoğrafı olarak kalır. Aşağıdaki maddeler, o fotoğraftaki iddiaların bu
 kod karşısındaki durumudur. Her satır kod okunarak doğrulandı (grep + dosya
 okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
 
-### 11.1 Yanlışlanmış (artık geçerli olmayan) iddialar
+### 11.1 Yanlışlanmış ya da daralması gereken iddialar
 
 | Rapordaki madde | Bugünkü durum (2026-09-01 doğrulaması) |
 |---|---|
@@ -233,6 +233,7 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
 | §4.5 "MERGE_SORT'ta `submitDrawResult` hâlâ açık" | Kapandı: `submitDrawResult` başında MERGE_SORT bekçisi var (commit `3547cf6`), regresyon testi `IkiliKarsilastirmaKapsamliTest`. |
 | §5.1 `EmrePairingSettings` @Database listesinde yok | Kapandı: dosya silinmiş. |
 | §6.3 "MatchingsList'te AFGANİSTAN/ARNAVUTLUK demo verisi + debug metni" | Kapandı: bu metinlere **0 referans**. (Ama `TournamentRankingScreen`'de `"1. Placeholder Team"` DURUYOR — §3.4 kısmen açık.) |
+| §4.3 birinci madde: "Grup dağılımı iki farklı `shuffled()` ile iki kez yapılıyor → sonuçlar fiilen rastgele" | **KISMEN geçersiz — madde silinmemeli, DARALTILMALI (2026-09-02).** ELIMINATION'da giderildi: hem `createEliminationMatches` hem `getGroupSongs` artık `sortedBy { it.id }` (`RankingEngine.kt:192` ve `:329`), gerekçesi kodda yazılı, aynı girdi aynı fikstürü veriyor. FULL_ELIMINATION'da DURUYOR: `createAdvancedPreEliminationMatches` hâlâ `shuffled()` (`:930`). Doğru hâli: "ELIMINATION'da giderildi; FULL_ELIMINATION'da sürüyor". |
 
 ### 11.2 Ölçümü değişen, hâlâ açık maddeler
 
@@ -250,6 +251,18 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
 - §7 **CSV kütüphanesi senkronu**: bu denetim turunda BİLEREK ölçülmedi —
   aynı gün başka bir işçi oturumu (`HAZIR-LISTELER-GOREV.md`) o alanda
   çalışıyor; çakışmamak için sayılar oraya bırakıldı.
+
+- §4.3'ün DİĞER iki maddesi (knockout zinciri yok · takım hem elenen hem
+  kalifiye listesine girebiliyor) 2026-09-02'de doğrulandı ve sayıya bağlandı:
+  eleme denetimi işçisinin ölçümü `oturumlar/ELEME-DENETIM-RAPOR.md`'de
+  (n=12'de 12 öğeden yalnız 9'u sonuç alıyor; kazanan ∩ kaybeden kesişimi boş
+  değil). Bu iki madde AÇIK. *(Ölçümü ben yapmadım; kodla doğruladığım tek şey
+  determinizm iddiasıydı — 11.1'deki satır.)*
+- Yan gözlem (denetlenmeli, iddia değil): `RankingEngine`'in ESKİ İsviçre
+  yolunda iki `shuffled()` daha duruyor (`:509` ve `:574`, `createSwissMatches`
+  ve `createSwissMatchesAdvanced`). Aktif SWISS artık `ranking/SwissSystem.kt`
+  motorunu kullandığına göre bu iki çağrı büyük olasılıkla ölü yolda; ölü ise
+  §10 Faz 3 temizliğine, değilse determinizm sorununa girer.
 
 ### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
 
