@@ -7,6 +7,7 @@ import android.util.Log
 import com.example.ranking.data.*
 import com.example.ranking.data.RankingDatabase
 import com.example.ranking.ranking.RankingEngine
+import com.example.ranking.ranking.EmreSiralamaSistemi
 import com.example.ranking.ranking.EmreSystemCorrect
 import com.example.ranking.ranking.HibritKanitSistemi
 import com.example.ranking.ranking.PairwiseComparisonSort
@@ -115,7 +116,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
      * hariç: orada "son maç" kavramı yok, puanlar tek tek kaydediliyor.
      */
     private fun undoSupported(): Boolean =
-        currentMethod in setOf("LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT", "HIBRIT")
+        currentMethod in setOf("LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT", "HIBRIT", "EMRE_SIRALAMA")
 
     /**
      * Maçları AKTİF TURNUVANIN kimliğiyle kaydeder.
@@ -268,6 +269,9 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                                 "HIBRIT" -> {
                                     initializeHibrit()
                                 }
+                                "EMRE_SIRALAMA" -> {
+                                    initializeEmreSiralama()
+                                }
                                 // SINGLE/DOUBLE_ELIMINATION kaldırıldı: algoritmaları
                                 // tamamlanmadı ve UI'dan seçilemiyorlar
                                 else -> {
@@ -410,6 +414,52 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         } catch (e: Exception) {
             _uiState.value = _uiState.value.copy(
                 error = "Hibrit turu oluşturulamadı: ${e.message}"
+            )
+        }
+    }
+
+    private fun initializeEmreSiralama() {
+        viewModelScope.launch {
+            createOrUpdateSession()
+            createNextEmreSiralamaRound()
+        }
+    }
+
+    /**
+     * Emre Sıralama Sisteminde sıradaki turu üretir (motor: EmreSiralamaSistemi).
+     *
+     * Motor durumsuzdur (replay); açık tur varken yeni tur üretilmez.
+     * Eşleştirme analizi (n² aday × kazanç hesabı) ana iş parçacığını
+     * kilitleyebilir; Default dispatcher'da koşturulur.
+     */
+    private suspend fun createNextEmreSiralamaRound() {
+        try {
+            val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
+            if (allMatches.any { !it.isCompleted }) {
+                loadNextMatch()
+                return
+            }
+            val yeniMaclar = withContext(Dispatchers.Default) {
+                EmreSiralamaSistemi.createNextRoundMatches(
+                    songs, allMatches.filter { it.isCompleted }
+                )
+            }
+            if (yeniMaclar.isEmpty()) {
+                completeRanking()
+                return
+            }
+            // Tur kapandı: sonraki turun eşleşmeleri bu sonuçlara dayanır
+            undoYigini.clear()
+            val kayitliMaclar = createMatchesForTournament(yeniMaclar)
+            _uiState.value = _uiState.value.copy(
+                currentRound = yeniMaclar.first().round,
+                matchingsList = kayitliMaclar.sortedBy { it.matchNumber },
+                canUndo = false
+            )
+            loadNextMatch()
+        } catch (e: Exception) {
+            _uiState.value = _uiState.value.copy(
+                error = "Emre Sıralama turu oluşturulamadı: ${e.message}"
             )
         }
     }
@@ -573,6 +623,10 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     createNextHibritRound()
                     return
                 }
+                "EMRE_SIRALAMA" -> {
+                    createNextEmreSiralamaRound()
+                    return
+                }
                 "ELIMINATION" -> {
                     // Check if we need to start knockout rounds after group stage
                     val allMatches = repository.getMatchesByListAndMethodSync(currentListId, currentMethod)
@@ -629,7 +683,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         // tahmini toplam soru sayısı gösterilir (ilerleme çubuğu anlamlı olsun diye)
         // Turnuva kimliğiyle filtrelenir: paralel turnuvaların maçları sayacı
         // şişiriyordu (cihazda ölçüldü: tur içi 20 maç yerine "41/120")
-        val allMatchesForProgress = if (currentMethod in setOf("EMRE_CORRECT", "HIBRIT")) {
+        val allMatchesForProgress = if (currentMethod in setOf("EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")) {
             sonucMaclari()
         } else {
             emptyList()
@@ -645,13 +699,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
         val displayTotal = when (currentMethod) {
             "MERGE_SORT" ->
                 maxOf(PairwiseComparisonSort.estimatedTotalComparisons(safeSongs.size), completed + 1)
-            "EMRE_CORRECT", "HIBRIT" -> {
+            "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA" -> {
                 val buTur = nextMatch?.round ?: _uiState.value.currentRound
                 allMatchesForProgress.count { it.round == buTur }.coerceAtLeast(1)
             }
             else -> total
         }
-        val displayCompleted = if (currentMethod in setOf("EMRE_CORRECT", "HIBRIT")) {
+        val displayCompleted = if (currentMethod in setOf("EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")) {
             val buTur = nextMatch?.round ?: _uiState.value.currentRound
             allMatchesForProgress.count { it.round == buTur && it.isCompleted }
         } else {
@@ -905,6 +959,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "FULL_ELIMINATION" -> RankingEngine.calculateFullEliminationResults(songs, allMatches)
                 "MERGE_SORT" -> PairwiseComparisonSort.calculateResults(songs, allMatches.filter { it.isCompleted })
                 "HIBRIT" -> HibritKanitSistemi.calculateResults(songs, allMatches.filter { it.isCompleted })
+                "EMRE_SIRALAMA" -> EmreSiralamaSistemi.calculateResults(songs, allMatches.filter { it.isCompleted })
                 else -> emptyList()
             }
             
@@ -1114,7 +1169,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
             // "En büyük tur numarası açık turdur" DENMEZ: cihazda ölçüldü,
             // paralel eski turnuvaların 0 oylu hayalet turları en büyük turu
             // yukarı çekip bu turun maçlarını yanlışlıkla kilitliyordu.
-            "EMRE_CORRECT", "SWISS", "HIBRIT" ->
+            "EMRE_CORRECT", "SWISS", "HIBRIT", "EMRE_SIRALAMA" ->
                 allMatches.any { it.round == m.round && !it.isCompleted }
             "LEAGUE" -> {
                 fun sonrakiMaciVar(teamId: Long) = allMatches.any { o ->
@@ -1575,6 +1630,7 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                 "DIRECT_SCORING" -> "Direkt Puanlama"
                 "MERGE_SORT" -> "İkili Karşılaştırma"
                 "HIBRIT" -> "Hibrit İsviçre"
+                "EMRE_SIRALAMA" -> "Emre Sıralama Sistemi"
                 else -> currentMethod
             }
             

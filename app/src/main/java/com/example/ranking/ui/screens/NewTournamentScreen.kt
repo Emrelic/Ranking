@@ -112,6 +112,7 @@ fun NewTournamentScreen(
                 "SWISS" -> "isviçre"
                 "EMRE_CORRECT" -> "geliştirilmiş isviçre"
                 "HIBRIT" -> "hibrit isviçre"
+                "EMRE_SIRALAMA" -> "emre sıralama"
                 "MERGE_SORT" -> "ikili karşılaştırma"
                 "DIRECT_SCORING" -> "direkt puanlama"
                 "ELIMINATION" -> "eleme"
@@ -431,6 +432,7 @@ private fun SystemTypeSelectionStep(
     // dağıtılıyor. 59 test (14 kendi + 43 çapraz + 2 gerileme) geçiyor.
     val systemTypes = listOf(
         "MERGE_SORT",
+        "EMRE_SIRALAMA",
         "HIBRIT",
         "EMRE_CORRECT",
         "SWISS",
@@ -481,11 +483,12 @@ private fun SystemTypeCard(
     onClick: () -> Unit
 ) {
     var isExpanded by remember { mutableStateOf(false) }
-    val isRecommended = type in setOf("MERGE_SORT", "HIBRIT", "EMRE_CORRECT")
+    val isRecommended = type in setOf("MERGE_SORT", "EMRE_SIRALAMA", "HIBRIT", "EMRE_CORRECT")
 
     val title = stringResource(
         when (type) {
             "MERGE_SORT" -> R.string.new_tournament_system_merge_sort_title
+            "EMRE_SIRALAMA" -> R.string.new_tournament_system_emre_siralama_title
             "HIBRIT" -> R.string.new_tournament_system_hibrit_title
             "EMRE_CORRECT" -> R.string.new_tournament_system_emre_title
             "SWISS" -> R.string.new_tournament_system_swiss_title
@@ -498,6 +501,7 @@ private fun SystemTypeCard(
     val description = stringResource(
         when (type) {
             "MERGE_SORT" -> R.string.new_tournament_system_merge_sort
+            "EMRE_SIRALAMA" -> R.string.new_tournament_system_emre_siralama
             "HIBRIT" -> R.string.new_tournament_system_hibrit
             "EMRE_CORRECT" -> R.string.new_tournament_system_emre
             "SWISS" -> R.string.new_tournament_system_swiss
@@ -510,6 +514,7 @@ private fun SystemTypeCard(
     val detailInfo = stringResource(
         when (type) {
             "MERGE_SORT" -> R.string.new_tournament_system_merge_sort_detail
+            "EMRE_SIRALAMA" -> R.string.new_tournament_system_emre_siralama_detail
             "HIBRIT" -> R.string.new_tournament_system_hibrit_detail
             "EMRE_CORRECT" -> R.string.new_tournament_system_emre_detail
             "SWISS" -> R.string.new_tournament_system_swiss_detail

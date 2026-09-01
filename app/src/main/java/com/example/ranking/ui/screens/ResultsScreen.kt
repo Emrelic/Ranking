@@ -598,7 +598,7 @@ private fun formatScore(score: Double, method: String): String {
         "DIRECT_SCORING" -> "${score.toInt()}/100"
         "LEAGUE", "SWISS" -> "${score.toInt()} puan"
         "EMRE_CORRECT" -> if (score % 1.0 == 0.0) "${score.toInt()}" else "$score"
-        "MERGE_SORT", "HIBRIT" -> "${score.toInt()}"
+        "MERGE_SORT", "HIBRIT", "EMRE_SIRALAMA" -> "${score.toInt()}"
         else -> score.toString()
     }
 }
@@ -609,7 +609,7 @@ private fun getScoreLabel(method: String): String {
         "LEAGUE" -> "lig puanı"
         "SWISS" -> "turnuva puanı"
         "EMRE_CORRECT" -> "sıra puanı"
-        "MERGE_SORT", "HIBRIT" -> "sıra puanı"
+        "MERGE_SORT", "HIBRIT", "EMRE_SIRALAMA" -> "sıra puanı"
         else -> ""
     }
 }

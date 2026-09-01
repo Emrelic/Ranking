@@ -71,7 +71,7 @@ fun RankingScreen(
 
     // Kriter değerlendirmesi maç tabanlı yöntemlerde anlamlı; MERGE_SORT
     // ikili karşılaştırma sorar ve dialoga verilecek bir "maç" yoktur.
-    val kriterDesteklenir = method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT")
+    val kriterDesteklenir = method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")
     val kriterMaci = if (kriterDesteklenir) uiState.currentMatch else null
 
     // 🔴 Dialog ancak GÖSTERİLEBİLİYORSA ana içerik gizlenir. Aksi hâlde
@@ -85,7 +85,7 @@ fun RankingScreen(
     // "Kriter panelini otomatik aç": yeni maç ekrana gelince dialog kendiliğinden açılır
     LaunchedEffect(uiState.currentMatch?.id, autoOpenCriteriaPanel) {
         if (autoOpenCriteriaPanel && uiState.currentMatch != null && !uiState.isComplete &&
-            method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT")
+            method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")
         ) {
             showCriteriaDialog = true
         }
@@ -174,7 +174,7 @@ fun RankingScreen(
                 val aktifMac = uiState.currentMatch
                 if (aktifMac != null && !uiState.isComplete) {
                     val sayac = "${(uiState.completedMatches + 1).coerceAtMost(uiState.totalMatches.coerceAtLeast(1))}/${uiState.totalMatches}"
-                    val tur = if (method == "SWISS" || method == "EMRE_CORRECT" || method == "HIBRIT") {
+                    val tur = if (method in listOf("SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")) {
                         "${aktifMac.round}. Tur "
                     } else ""
                     Text("$tur$sayac")
@@ -241,7 +241,7 @@ fun RankingScreen(
 
                     // Yerine SONUÇLAR: oylanmış maçlar görülür ve tur bitmeden
                     // (yalnız takımın son maçıysa) sonuç değiştirilebilir.
-                    if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT")) {
+                    if (method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")) {
                         Button(
                             onClick = {
                                 viewModel.macSonuclariniYukle()
@@ -321,7 +321,7 @@ fun RankingScreen(
                 onScoreUpdate = viewModel::updateScoreInSession,
                 onComplete = { onNavigateToResults(listId, method) }
             )
-            "LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT", "HIBRIT" -> MatchBasedContent(
+            "LEAGUE", "SWISS", "EMRE_CORRECT", "MERGE_SORT", "HIBRIT", "EMRE_SIRALAMA" -> MatchBasedContent(
                 uiState = uiState,
                 method = method,
                 viewModel = viewModel,
@@ -413,7 +413,7 @@ fun RankingScreen(
         if (showScoreDialog) {
             ScoreInputDialog(
                 match = when (method) {
-                    "LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT" -> uiState.currentMatch
+                    "LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA" -> uiState.currentMatch
                     else -> null
                 },
                 song1 = uiState.song1,
@@ -768,7 +768,7 @@ private fun MatchBasedContent(
 ) {
     // Kriter değerlendirmesi yalnız maç tabanlı yöntemlerde anlamlı;
     // MERGE_SORT ikili karşılaştırma sorar, dialoga verilecek maç yoktur.
-    val kriterDesteklenir = method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT")
+    val kriterDesteklenir = method in listOf("LEAGUE", "SWISS", "EMRE_CORRECT", "HIBRIT", "EMRE_SIRALAMA")
 
     // Eşleştirmeler listesini göster (EMRE_CORRECT için) - currentMatch yoksa
     if (method == "EMRE_CORRECT" && uiState.showMatchingsList && uiState.currentMatch == null) {

@@ -73,6 +73,9 @@
     <string name="new_tournament_system_hibrit_title">Hibrit İsviçre (Kanıt Turlu)</string>
     <string name="new_tournament_system_hibrit">Kısa İsviçre + kanıt turları: aralarında maç olmayan yakın sıralı çiftler eşleşir. Az maçla tam sıralama.</string>
     <string name="new_tournament_system_hibrit_detail">Önce 4 tur Geliştirilmiş İsviçre ile kaba yerleşim, sonra kanıt turları: sıralamada yakın duran ama hiç eşleşmemiş çiftler azalan mesafelerle (20-6-2-1) karşılaşır, kaybeden aşağı iner. Bitişte her komşuluk gerçek bir maçla kanıtlıdır — tam Emre\'nin beşte biri maçla ondan iyi sonuç (ölçüldü: 200 öğede ~1.900 maç, sıfır hata).</string>
+    <string name="new_tournament_system_emre_siralama_title">Emre Sıralama Sistemi</string>
+    <string name="new_tournament_system_emre_siralama">Üstünlük ağacı: a>b ve b>c ise a>c sorulmaz. Her tur en çok bilgi garantileyen eşleşmeler seçilir. En az maçla tam sıralama.</string>
+    <string name="new_tournament_system_emre_siralama_detail">Her sonuç geçişli üstünlük ağacına işlenir; mantıken çıkarılabilen eşleşme bir daha sorulmaz. Her turda "iki sonucun da garantilediği öğrenme" en yüksek ayrık eşleşmeler oynatılır. Ölçüldü: 200 öğe 18 turda ~1.400 maçla sıfır hatayla sıralandı — teorik en aza en yakın turnuva formatı.</string>
     <string name="new_tournament_system_elimination_title">Eleme Usulü</string>
     <string name="new_tournament_system_elimination">Çift eleme: kaybeden alt klasmanda devam eder. Kaybedenler arasındaki sıralama hakkında da fikir verir.</string>
     <string name="new_tournament_system_elimination_detail">Kaybedenlerin alt klasmanda devam ettiği sistem. Elenenler arasındaki sıralama da görülür.</string>

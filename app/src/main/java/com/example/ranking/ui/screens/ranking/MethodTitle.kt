@@ -23,6 +23,7 @@ internal fun methodTitle(method: String): String {
         "EMRE_CORRECT" -> "İsviçre+"
         // Aynı yer darlığı: "Hibrit İsviçre (Kanıt Turlu)" sığmıyor
         "HIBRIT" -> "Hibrit"
+        "EMRE_SIRALAMA" -> "Emre Sıralama"
         "ELIMINATION" -> stringResource(R.string.new_tournament_system_elimination_title)
         "FULL_ELIMINATION" -> stringResource(R.string.new_tournament_system_full_elimination_title)
         else -> stringResource(R.string.method_title_fallback)

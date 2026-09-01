@@ -141,6 +141,7 @@ private fun TournamentCard(
                         "SWISS" -> stringResource(R.string.active_tournaments_swiss)
                         "EMRE_CORRECT" -> stringResource(R.string.active_tournaments_emre)
                         "HIBRIT" -> "Hibrit İsviçre"
+                        "EMRE_SIRALAMA" -> "Emre Sıralama Sistemi"
                         else -> tournament.systemType
                     },
                     style = MaterialTheme.typography.bodySmall,
