@@ -333,6 +333,18 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
   maç kümesini okuyor: 1. turda düşen öğenin hiç maçı ve hiç puanı olmadığı
   için o öğe final sıralamasında **hak etmediği hâlde en altta** çıkıyor.
   Yani kusur yalnız "bir tur eksik oynandı" değil, **yanlış sıralama üretiyor**.
+  ✅ **TESTLE MÜHÜRLENDİ** (`app/src/test/.../SwissBirinciTurGirisNoktasiTest.kt`,
+  10 test / 0 hata, commit `dd4fe79`): eski yol tek n'de (3/5/7/9/15/41/199)
+  tam **1 öğe** düşürüyor, kapsama n-1; düşen öğe için ne bye ne kendisiyle
+  eşleşme kaydı var; düşen öğe 60 koşumda değişiyor (determinist değil); çift
+  n'de (2/4/8/16/40/200) kusur yok, kapsama tam; `createSwissMatchesWithState`
+  yolu aynı kusuru taşıyor; karşıtlık testi aynı girdide `SwissSystem`'in
+  kimseyi düşürmediğini ve farkın **tam 1 öğe** olduğunu ölçüyor — yani kusur
+  motorda değil **giriş noktasında**.
+  ⚠️ **DÜZELTMEYİ YAPACAK KİŞİYE:** bu testler bugünkü KUSURLU davranışı
+  sabitliyor. Giriş noktası `SwissSystem`'e bağlanınca `belgeleme_` önekli 5
+  test KIRMIZIYA DÖNER — bu beklenen ve istenen sonuçtur. O an yapılacak şey
+  onları silmek değil, "düzeltme sonrası" beklentisine çevirmektir.
 
 ### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
 
