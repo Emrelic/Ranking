@@ -1,0 +1,51 @@
+No,Paradigma,Çıkış Yılı,Dil,Tasarımcı,Tipleme,Başlıca Kullanım Alanı,Çalışma Biçimi
+1,Yordamsal,1957,Fortran,John Backus,Statik,Bilimsel hesaplama,Derlenir
+2,Fonksiyonel,1958,Lisp,John McCarthy,Dinamik,Yapay zeka ve sembolik hesap,Yorumlanır
+3,Yordamsal,1958,ALGOL,Uluslararası komite,Statik,Algoritma tanımı,Derlenir
+4,Yordamsal,1959,COBOL,CODASYL komitesi,Statik,Ticari veri işleme,Derlenir
+5,Yordamsal,1964,BASIC,John Kemeny ve Thomas Kurtz,Dinamik,Öğretim,Yorumlanır
+6,Yordamsal,1964,PL/I,IBM,Statik,Genel amaçlı,Derlenir
+7,Nesne yönelimli,1967,Simula,Ole-Johan Dahl ve Kristen Nygaard,Statik,Benzetim,Derlenir
+8,Yordamsal,1967,Logo,Seymour Papert,Dinamik,Eğitim,Yorumlanır
+9,Yordamsal,1970,Pascal,Niklaus Wirth,Statik,Öğretim ve uygulama,Derlenir
+10,Yığın tabanlı,1970,Forth,Charles Moore,Dinamik,Gömülü sistemler,Yorumlanır
+11,Yordamsal,1972,C,Dennis Ritchie,Statik,Sistem programlama,Derlenir
+12,Mantıksal,1972,Prolog,Alain Colmerauer,Dinamik,Mantık programlama,Yorumlanır
+13,Nesne yönelimli,1972,Smalltalk,Alan Kay,Dinamik,Nesne yönelimli araştırma,Sanal makine
+14,Fonksiyonel,1973,ML,Robin Milner,Statik,Kanıt sistemleri,Derlenir
+15,Bildirimsel,1974,SQL,Donald Chamberlin ve Raymond Boyce,Statik,Veritabanı sorgulama,Yorumlanır
+16,Fonksiyonel,1975,Scheme,Gerald Sussman ve Guy Steele,Dinamik,Öğretim ve araştırma,Yorumlanır
+17,Yordamsal,1980,Ada,Jean Ichbiah,Statik,Havacılık ve savunma,Derlenir
+18,Yordamsal,1984,MATLAB,Cleve Moler,Dinamik,Sayısal hesaplama,Yorumlanır
+19,Nesne yönelimli,1984,Objective-C,Brad Cox,Karma,Apple uygulamaları,Derlenir
+20,Çok paradigmalı,1985,C++,Bjarne Stroustrup,Statik,Sistem ve oyun,Derlenir
+21,Fonksiyonel,1986,Erlang,Joe Armstrong,Dinamik,Telekom ve dağıtık sistem,Sanal makine
+22,Çok paradigmalı,1987,Perl,Larry Wall,Dinamik,Metin işleme,Yorumlanır
+23,Yordamsal,1988,Tcl,John Ousterhout,Dinamik,Betikleme,Yorumlanır
+24,Saf fonksiyonel,1990,Haskell,Akademik komite,Statik,Fonksiyonel programlama,Derlenir
+25,Çok paradigmalı,1991,Python,Guido van Rossum,Dinamik,Genel amaçlı ve veri bilimi,Yorumlanır
+26,Olay güdümlü,1991,Visual Basic,Microsoft,Statik,Windows uygulamaları,Derlenir
+27,Betik,1993,Lua,Roberto Ierusalimschy,Dinamik,Oyun betikleme,Yorumlanır
+28,Betik,1993,R,Ross Ihaka ve Robert Gentleman,Dinamik,İstatistik,Yorumlanır
+29,Nesne yönelimli,1995,Ruby,Yukihiro Matsumoto,Dinamik,Web uygulamaları,Yorumlanır
+30,Nesne yönelimli,1995,Java,James Gosling,Statik,Kurumsal yazılım,Sanal makine
+31,Çok paradigmalı,1995,JavaScript,Brendan Eich,Dinamik,Web tarayıcısı,Yorumlanır
+32,Betik,1995,PHP,Rasmus Lerdorf,Dinamik,Web sunucusu,Yorumlanır
+33,Nesne yönelimli,1995,Delphi,Anders Hejlsberg,Statik,Masaüstü uygulama,Derlenir
+34,Fonksiyonel,1996,OCaml,Xavier Leroy,Statik,Derleyici ve finans,Derlenir
+35,Çok paradigmalı,2000,C#,Anders Hejlsberg,Statik,NET uygulamaları,Sanal makine
+36,Fonksiyonel-nesne,2003,Scala,Martin Odersky,Statik,Büyük veri,Sanal makine
+37,Çok paradigmalı,2003,Groovy,James Strachan,Dinamik,Betikleme ve derleme araçları,Sanal makine
+38,Fonksiyonel,2005,F#,Don Syme,Statik,Fonksiyonel NET,Sanal makine
+39,Fonksiyonel,2007,Clojure,Rich Hickey,Dinamik,Eşzamanlı programlama,Sanal makine
+40,Çok paradigmalı,2008,Nim,Andreas Rumpf,Statik,Sistem programlama,Derlenir
+41,Yordamsal,2009,Go,"Robert Griesemer, Rob Pike ve Ken Thompson",Statik,Sunucu ve bulut,Derlenir
+42,Çok paradigmalı,2010,Rust,Graydon Hoare,Statik,Güvenli sistem programlama,Derlenir
+43,Çok paradigmalı,2011,Kotlin,JetBrains,Statik,Android uygulamaları,Sanal makine
+44,Nesne yönelimli,2011,Dart,Google,Statik,Flutter arayüzleri,Derlenir
+45,Çok paradigmalı,2012,Julia,Jeff Bezanson ve ekibi,Dinamik,Bilimsel hesaplama,Anında derlenir
+46,Çok paradigmalı,2012,TypeScript,Anders Hejlsberg,Statik,Büyük web projeleri,Derlenir
+47,Fonksiyonel,2012,Elixir,Jose Valim,Dinamik,Ölçeklenebilir web servisleri,Sanal makine
+48,Çok paradigmalı,2014,Swift,Chris Lattner,Statik,Apple uygulamaları,Derlenir
+49,Nesne yönelimli,2014,Crystal,Ary Borenszweig,Statik,Web servisleri,Derlenir
+50,Yordamsal,2016,Zig,Andrew Kelley,Statik,Düşük seviye sistem,Derlenir

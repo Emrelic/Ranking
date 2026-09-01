@@ -56,6 +56,7 @@ object HazirListeler {
                 HazirListe("20_bitkiler.csv", "Bitkiler", 55, true, "Familya, tip ve kullanımlarıyla bitkiler"),
                 HazirListe("21_mikroplar_hastaliklar.csv", "Mikroplar ve Hastalıklar", 45, false, "Etken, bulaşma ve belirtileriyle hastalıklar"),
                 HazirListe("15_yiyecekler.csv", "Yiyecekler", 60, false, "Kalori, protein ve lif değerleriyle yiyecekler"),
+                HazirListe("37_gunes_sistemi.csv", "Güneş Sistemi", 35, false, "Çap, keşif yılı ve uzaklıklarıyla gök cisimleri"),
                 // Sıralama sistemini sınamak için: 1-100 karışık. Büyük sayıyı
                 // seçerek oynanır, sonuç 100'den 1'e sıralı çıkmalı.
                 HazirListe("33_sayilar_1_100_test.csv", "Sayılar 1-100 (Test)", 100, false, "Sistemi sınamak için karışık 100 sayı"),
@@ -76,14 +77,19 @@ object HazirListeler {
                 HazirListe("30_yapilar.csv", "Yapılar", 70, true, "Mimari açıdan önemli yapılar"),
                 HazirListe("31_muzik_aletleri.csv", "Müzik Aletleri", 35, true, "Türk ve dünya müzik aletleri"),
                 HazirListe("02_sebnem_ferah_sarkilari.csv", "Şebnem Ferah Şarkıları", 85, false, "Albümleriyle Şebnem Ferah şarkıları"),
-                HazirListe("32_sebnem_ferah_sozleriyle.csv", "Şebnem Ferah — Sözleriyle", 80, false, "Şarkı sözleri okunabilir 80 şarkı")
+                HazirListe("32_sebnem_ferah_sozleriyle.csv", "Şebnem Ferah — Sözleriyle", 80, false, "Şarkı sözleri okunabilir 80 şarkı"),
+                HazirListe("38_klasik_besteciler.csv", "Klasik Besteciler", 52, false, "Dönem, ülke ve ünlü eserleriyle besteciler"),
+                HazirListe("36_nobel_edebiyat_odulleri.csv", "Nobel Edebiyat Ödülleri", 51, false, "1975-2025 arası Nobel Edebiyat ödüllü yazarlar")
             )
         ),
         HazirListeKategorisi(
             "Teknoloji ve Spor",
             listOf(
                 HazirListe("17_otomobil_markalari.csv", "Otomobil Markaları", 50, false, "Kuruluş ve grup bilgileriyle markalar"),
-                HazirListe("16_avrupa_futbol_kulupleri.csv", "Avrupa Futbol Kulüpleri", 55, true, "Kuruluş ve kupalarıyla kulüpler")
+                HazirListe("16_avrupa_futbol_kulupleri.csv", "Avrupa Futbol Kulüpleri", 55, true, "Kuruluş ve kupalarıyla kulüpler"),
+                HazirListe("40_programlama_dilleri.csv", "Programlama Dilleri", 50, false, "Çıkış yılı, tasarımcı ve paradigmalarıyla diller"),
+                HazirListe("35_dunya_kupasi_turnuvalari.csv", "Dünya Kupası Turnuvaları", 23, false, "1930-2026 arası bütün Dünya Kupaları"),
+                HazirListe("39_yaz_olimpiyatlari.csv", "Yaz Olimpiyatları", 30, false, "1896-2024 arası bütün yaz olimpiyatları")
             )
         )
     )

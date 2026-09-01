@@ -1,0 +1,36 @@
+No,Tür,Çap (km),Gök Cismi,Yörüngesinde Olduğu,Keşif Yılı,Bilinen Uydu Sayısı,Güneş'e Ortalama Uzaklık (milyon km),Kâşifi
+1,Yıldız,1392700,Güneş,-,Antik çağ,-,0,-
+2,Gezegen,4879,Merkür,Güneş,Antik çağ,0,57.9,-
+3,Gezegen,12104,Venüs,Güneş,Antik çağ,0,108.2,-
+4,Gezegen,12742,Dünya,Güneş,-,1,149.6,-
+5,Gezegen,6779,Mars,Güneş,Antik çağ,2,227.9,-
+6,Gezegen,139820,Jüpiter,Güneş,Antik çağ,95,778.5,-
+7,Gezegen,116460,Satürn,Güneş,Antik çağ,146,1434,-
+8,Gezegen,50724,Uranüs,Güneş,1781,28,2871,William Herschel
+9,Gezegen,49244,Neptün,Güneş,1846,16,4495,Johann Galle
+10,Uydu,3475,Ay,Dünya,Antik çağ,-,149.6,-
+11,Cüce gezegen,940,Ceres,Güneş,1801,0,414,Giuseppe Piazzi
+12,Cüce gezegen,2377,Plüton,Güneş,1930,5,5906,Clyde Tombaugh
+13,Cüce gezegen,2326,Eris,Güneş,2005,1,10120,Michael Brown
+14,Cüce gezegen,1544,Haumea,Güneş,2004,2,6452,Michael Brown
+15,Cüce gezegen,1430,Makemake,Güneş,2005,1,6850,Michael Brown
+16,Uydu,3643,Io,Jüpiter,1610,-,778.5,Galileo Galilei
+17,Uydu,3122,Europa,Jüpiter,1610,-,778.5,Galileo Galilei
+18,Uydu,5268,Ganymede,Jüpiter,1610,-,778.5,Galileo Galilei
+19,Uydu,4821,Callisto,Jüpiter,1610,-,778.5,Galileo Galilei
+20,Uydu,5150,Titan,Satürn,1655,-,1434,Christiaan Huygens
+21,Uydu,1527,Rhea,Satürn,1672,-,1434,Giovanni Cassini
+22,Uydu,1469,Iapetus,Satürn,1671,-,1434,Giovanni Cassini
+23,Uydu,1123,Dione,Satürn,1684,-,1434,Giovanni Cassini
+24,Uydu,1062,Tethys,Satürn,1684,-,1434,Giovanni Cassini
+25,Uydu,504,Enceladus,Satürn,1789,-,1434,William Herschel
+26,Uydu,396,Mimas,Satürn,1789,-,1434,William Herschel
+27,Uydu,471,Miranda,Uranüs,1948,-,2871,Gerard Kuiper
+28,Uydu,1158,Ariel,Uranüs,1851,-,2871,William Lassell
+29,Uydu,1169,Umbriel,Uranüs,1851,-,2871,William Lassell
+30,Uydu,1578,Titania,Uranüs,1787,-,2871,William Herschel
+31,Uydu,1523,Oberon,Uranüs,1787,-,2871,William Herschel
+32,Uydu,2707,Triton,Neptün,1846,-,4495,William Lassell
+33,Uydu,1212,Charon,Plüton,1978,-,5906,James Christy
+34,Uydu,22,Phobos,Mars,1877,-,227.9,Asaph Hall
+35,Uydu,12,Deimos,Mars,1877,-,227.9,Asaph Hall

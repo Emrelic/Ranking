@@ -50,8 +50,35 @@ Bu klasör, Ranking uygulaması için hazırlanmış **eğitici CSV liste kütü
 | 32 | 32_sebnem_ferah_sozleriyle.csv | 80 | No, Sanatçı, Albüm, **Şarkı Adı**, Şarkı Sözleri |
 | 33 | 33_sayilar_1_100_test.csv | 100 | No, Grup, Beklenen Sıra, **Sayı**, Basamak — *sıralama sınavı için* |
 | 34 | 34_sayilar_1_200_test.csv | 200 | No, Grup, Beklenen Sıra, **Sayı**, Basamak — *İsviçre varyantı kıyası* |
+| 35 | 35_dunya_kupasi_turnuvalari.csv | 23 | No, Şampiyon, Yıl, **Turnuva**, Ev Sahibi, Finalist, Final Skoru, Takım Sayısı, Gol Kralı, Kıta |
+| 36 | 36_nobel_edebiyat_odulleri.csv | 51 | No, Ülke, Yıl, **Yazar**, Yazdığı Dil, Öne Çıkan Eseri, Başlıca Türü |
+| 37 | 37_gunes_sistemi.csv | 35 | No, Tür, Çap (km), **Gök Cismi**, Yörüngesinde Olduğu, Keşif Yılı, Bilinen Uydu Sayısı, Güneş'e Ortalama Uzaklık (milyon km), Kâşifi |
+| 38 | 38_klasik_besteciler.csv | 52 | No, Dönem, Yaşadığı Yıllar, **Besteci**, Ülke, Ünlü Eseri, Başlıca Türü, Doğum Yeri |
+| 39 | 39_yaz_olimpiyatlari.csv | 30 | No, Ev Sahibi Ülke, Yıl, **Olimpiyat**, Şehir, Katılan Ülke Sayısı, Madalya Sıralaması Lideri, Kıta, Öne Çıkan Özelliği |
+| 40 | 40_programlama_dilleri.csv | 50 | No, Paradigma, Çıkış Yılı, **Dil**, Tasarımcı, Tipleme, Başlıca Kullanım Alanı, Çalışma Biçimi |
 
-Toplam **34 liste**, **2234 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
+Toplam **40 liste**, **2475 öğe** — bunların **742 tanesi görselli** (🖼 işaretli listeler).
+
+## Senkron Kuralı ve Bekçi Testi
+
+Bir listenin **dört** ayrı kaydı vardır ve dördü **tek commit'te** değişir:
+
+1. `liste_kutuphanesi/NN_ad.csv` — kaynak
+2. `app/src/main/assets/hazir_listeler/NN_ad.csv` — uygulamaya gömülen birebir kopya
+3. `app/src/main/java/com/example/ranking/data/HazirListeler.kt` — katalog kaydı (ad + öğe sayısı)
+4. Bu README'nin tablosu ve özet satırı
+
+Bu dördü bir kez ayrıştı ve ortada üç farklı öğe sayısı dolaştı. Artık
+`app/src/test/java/com/example/ranking/HazirListelerSenkronTest.kt` dördünü
+birbirinden bağımsız okuyup karşılaştırıyor; ayrışma derlemede değil **testte**
+patlar:
+
+```
+./gradlew :app:testDebugUnitTest --tests "*HazirListelerSenkronTest*"
+```
+
+Test ayrıca her CSV'nin parser'dan geçtiğini, boş öğe adı olmadığını, en az
+dört sütunlu olduğunu ve beklenmeyen mükerrer öğe adı bulunmadığını denetler.
 
 ## Görsel Desteği
 
