@@ -306,9 +306,24 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
 - [ ] **2.5.b 🔴 Bye adaleti (L-TEK, 7 öğe):** tam turnuva oyna, kimin kaç kez bye
       geçtiğini izle. **BEKLENEN:** bye sayıları arasında en çok 1 fark; herkes
       bir kez geçmeden kimse ikinci kez geçmemeli.
-- [ ] **2.5.c 🔴 Kimse kaybolmuyor:** her turda maç sayısı tek takımda (n-1)/2 +
-      1 bye olmalı. **BEKLENEN:** hiçbir öğe sessizce turdan düşmez (eski motorda
-      düşüyordu).
+- [ ] **2.5.c 🔴🔴 KİMSE KAYBOLMUYOR — 1. TURA ÖZELLİKLE BAK (L-TEK, 7 öğe).**
+      Bu adım bu turun en kritik SWISS sınavı. Sebebi: 2026-09-02'de kod
+      okumasıyla bulundu ki bir SWISS turnuvasının **1. turu ESKİ motordan**
+      (`RankingEngine.createSwissMatches`), 2. ve sonraki turları YENİ motordan
+      (`SwissSystem`) geliyor. Eski yolun 1. tur eşleştirmesinde tek takım
+      sayısında **son öğe hiç kullanılmıyor**: o öğe maç da yapmıyor, bye de
+      almıyor. Birim testleri bunu yakalayamıyor çünkü hepsi `SwissSystem`'i
+      ölçüyor — 1. tur oradan gelmiyor. Cihazda yakalanır.
+      **NASIL BAKILIR:** 7 öğelik listeyle SWISS turnuvası aç, **1. turda**
+      eşleşmeleri say ve hangi öğelerin göründüğünü not et.
+      **BEKLENEN:** 3 maç (6 öğe) + 1 öğe **bye** — ve bye alan öğe puan
+      tablosunda **1 puanla** görünmeli.
+      **SAPMA (beklenen kusur budur):** 3 maç var ama 7. öğe hiçbir yerde yok —
+      ne maçta, ne bye'da, ne puan tablosunda. Böyleyse SAPMA formunu doldur ve
+      hangi öğenin kaybolduğunu yaz.
+- [ ] **2.5.c-2** Aynı sınavı n=5 ve n=9 ile tekrarla.
+      **BEKLENEN:** n=5 → 2 maç + 1 bye; n=9 → 4 maç + 1 bye. Bye kaydı yoksa
+      aynı kusurdur.
 
 ### 2.6 Lig (LEAGUE)
 

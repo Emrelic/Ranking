@@ -258,11 +258,32 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
   (n=12'de 12 öğeden yalnız 9'u sonuç alıyor; kazanan ∩ kaybeden kesişimi boş
   değil). Bu iki madde AÇIK. *(Ölçümü ben yapmadım; kodla doğruladığım tek şey
   determinizm iddiasıydı — 11.1'deki satır.)*
-- Yan gözlem (denetlenmeli, iddia değil): `RankingEngine`'in ESKİ İsviçre
-  yolunda iki `shuffled()` daha duruyor (`:509` ve `:574`, `createSwissMatches`
-  ve `createSwissMatchesAdvanced`). Aktif SWISS artık `ranking/SwissSystem.kt`
-  motorunu kullandığına göre bu iki çağrı büyük olasılıkla ölü yolda; ölü ise
-  §10 Faz 3 temizliğine, değilse determinizm sorununa girer.
+- 🔴 **YENİ CANLI BULGU (2026-09-02) — SWISS'in 1. TURU eski motordan geliyor ve
+  tek takım sayısında bir takımı sessizce atlıyor.** Bu bölüme önce "denetlenmeli,
+  iddia değil" diye yan gözlem olarak girmişti; eleme denetimi işçisi izini sürdü,
+  ben de kaynaktan doğruladım. Üç parça:
+  1. `createSwissMatchesAdvanced` (`RankingEngine.kt:565`) **ÖLÜ** — tek çağıranı
+     `createSwissMatchesWithState` (`:500`), onun da canlı çağıranı yok (kaynak
+     ağacında yalnız `RankingViewModel.kt:764`'teki YORUM ve `SwissSystem.kt`
+     başlığındaki atıf). §10 Faz 3 temizliğine girer.
+  2. `createSwissMatches` (`:505`) **CANLI**: `RankingViewModel.initializeSwiss`
+     (`:519`) doğrudan `RankingEngine.createSwissMatches(songs, 1, emptyList())`
+     çağırıyor; 2. ve sonraki turlar ise `createNextSwissRound` üzerinden yeni
+     `SwissSystem`'den geliyor. Yani **bir SWISS turnuvasının 1. turu ESKİ, geri
+     kalanı YENİ motordan**. §4.2'nin eski motorda kusur diye saydığı "1. tur ile
+     sonraki turlar iki farklı koddan geçiyor" deseni, motor değişmesine rağmen
+     duruyor — SWISS 2026-08-28'de UI'ya geri açıldığı için bu artık canlı yol.
+  3. O canlı yolda **bye kusuru** var: `half = n / 2`, döngü `0 until half` ve
+     eşleşme `i` ile `i + half` arasında — kullanılan indeksler `0..2*half-1`.
+     n TEK ise **son indeks (n-1) hiç kullanılmaz**: o takım 1. turda ne maç
+     oynar, ne bye kaydı alır, ne puan. Bu projede bye = 1 puandır; burada bye
+     yok, sessiz atlama var. (Aritmetik tek yönlü olduğu için kod okumasıyla
+     kesin; **testi yok** — SWISS bu oturumun görev alanı değil, ana koda
+     dokunulmadı.)
+  ⚠️ **Bu kusur birim sınavlarından KAÇAR:** `ESKI-MOTORLAR-SINAV-RAPOR.md`'nin
+  bye adaleti ölçümü (n=9/11/15, max−min ≤ 1) `SwissSystem` üzerinde yapıldı,
+  oysa 1. tur SwissSystem'den gelmiyor. Doğru ölçüm yolu `initializeSwiss` → 1.
+  tur → tek n. Cihaz sınavında da yakalanır: `CIHAZ-TEST-PROTOKOLU.md` 2.5.c.
 
 ### 11.3 Raporun hiç tanımadığı yeni alan: iki yeni motor
 
