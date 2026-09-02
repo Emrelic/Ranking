@@ -327,9 +327,13 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
       görebilirsin — bu bir kusur DEĞİL, bye'ın veri biçimi. Bye puanı (1 puan)
       buradan geliyor.
       📍 **NEREDE ARAYACAKSIN:** bye kaydının maç numarası **0**, gerçek
-      maçlarınki 1..N. Sonuçlar listesi tur ve maç numarasına göre BÜYÜKTEN
-      KÜÇÜĞE sıralandığı için bye satırı, ait olduğu turun **EN SONUNDA**
-      görünür (en başta değil). Aradığın satırı bulamıyorsan turun sonuna bak.
+      maçlarınki 1..N. Bu yüzden bye satırı gerçek maçların ARASINDA değil,
+      turun **bir ucunda** durur. Hangi uçta olduğu **ekrana göre değişir**:
+      · **Maç Sonuçları** listesi maç numarasına göre AZALAN sıralı → bye
+        satırı turun **EN SONUNDA**.
+      · **Fikstür / eşleşmeler paneli** ARTAN sıralı → bye satırı turun
+        **EN BAŞINDA**.
+      Aradığını bulamıyorsan turun iki ucuna da bak; ortada arama.
 - [ ] **2.5.c 🔴🔴 KİMSE KAYBOLMUYOR — 1. TURA ÖZELLİKLE BAK (L-TEK, 7 öğe).**
       Bu adım bu turun en kritik SWISS sınavı. Sebebi: 2026-09-02'de kod
       okumasıyla bulundu ki bir SWISS turnuvasının **1. turu ESKİ motordan**
