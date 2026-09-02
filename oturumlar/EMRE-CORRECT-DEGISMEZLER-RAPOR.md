@@ -3,9 +3,16 @@
 İşçi: OPUS HAZIR KITA 103 (`ranking-6a [686cfc]`) · Koordinatör: `ranking-7d`
 Tarih: 2026-09-02 · Motor koduna DOKUNULMADI (yalnız `app/src/test/` altına yeni dosya).
 
-**Sonuç: 9 test / 9 YEŞİL, 0 kırmızı.** Dosya:
-`app/src/test/java/com/example/ranking/EmreCorrectDegismezlerTest.kt`
-Koşum: `./gradlew testDebugUnitTest --tests "*EmreCorrectDegismezlerTest*"` → BUILD SUCCESSFUL (1 dk 8 sn, toplam test süresi 5.6 sn).
+**Sonuç: 15 test / 15 YEŞİL, 0 kırmızı.** Üç dosya (`app/src/test/java/com/example/ranking/`):
+
+| Dosya | Test | Ne ölçüyor |
+|---|---|---|
+| `EmreCorrectDegismezlerTest.kt` | 9 | Beraberlikli uzun koşumda puan korunumu, bye adaleti, determinizm, kırmızı çizgi, tur/bitiş tablosu |
+| `EmreCorrectN12TaniTest.kt` | 3 | Erken bitişin KAPISI (aday kümesi mi, olabilirlik mi), giriş sırasına duyarlılık, erken bitişin sapma bedeli |
+| `EmreCorrectYenidenHesaplamaYoluTest.kt` | 3 | ViewModel'in replay yolu: sağlam yolun korunması + bye çıkarımının kırıldığı iki hâl |
+
+Koşum: `./gradlew testDebugUnitTest --tests "*EmreCorrect*"` → BUILD SUCCESSFUL
+(son koşum 2026-09-02 02:55, 1 dk 22 sn).
 
 ## Sınavın yeni yükü — neden beraberlik?
 
@@ -190,13 +197,55 @@ sırasından ortalama |kayma|):
 Ölçüm testleri: `EmreCorrectN12TaniTest.n12_erkenBitisininKapisi_veKacirilanKanit`
 ve `n11_n12_n13_tohumDuyarliligi`.
 
-### 🟡 2. CLAUDE.md'deki "n=3 → 1 tur" ölçümü artık geçerli değil
+### 🟠 2. Yeniden hesaplama (replay) yolu bye'ı ÇIKARIMLA buluyor — iki hâlde sessizce yanlış puan yazıyor
+
+Kusur motorda değil, motora giden yolda: `RankingViewModel.completeRanking`
+`emreState == null` iken (süreç ölümü sonrası devam / oturum yeniden kurulumu)
+nihai sıralamayı maç kayıtlarından yeniden üretir ve bye'ı
+`findByeTeamFromMatches` (`RankingViewModel.kt:931-938`) ile **çıkarır**:
+
+```kotlin
+if (songs.size % 2 == 0) return null
+val playedTeamIds = matches.flatMap { listOf(it.songId1, it.songId2) }.toSet()
+val byeSong = songs.find { it.id !in playedTeamIds }
+```
+
+Motorun kendi bye kaydı (`EmreTeam.byeCount` / `byePassed`) hiç kullanılmıyor;
+"o turda görünmeyen **İLK** öğe bye'dır" varsayımı iki hâlde kırılıyor.
+Ölçüm: `EmreCorrectYenidenHesaplamaYoluTest` (3 test / 0 hata, 2026-09-02 02:55).
+
+**(a) Sağlam yol korumaya alındı (assert):** tam kayıtla replay, canlı sonucu
+n=9 (4 tur/16 maç/4 bye), n=15 (7/49/7) ve n=41 (22/440/22) için **birebir**
+üretiyor — puanlar, sıra ve çıkarılan bye'ların hepsi aynı. Bu sözleşme artık testli.
+
+**(b) Yarım maç kaydı varsa yanlış takıma bye puanı yazılıyor.**
+`filter { isCompleted }` yarım maçı süzdüğü için o turda maçı olan iki takım da
+"oynamamış" görünür ve çıkarım listede önce geleni bye sayar. Ölçülen vaka
+(n=9, tur 2, yarım maç 2–9): **gerçek bye 5 iken çıkarım 2 dedi** → 2 numaralı
+öğeye hak etmediği +1 puan; nihai sıralamanın 5. sırası değişti
+(canlı `9,8,6,7,3` → replay `9,8,6,7,4`). Yarım maç kayıtlarının ağaçta
+kalabildiği "tur katlanması" gerilemesinde zaten belgeli (`EmreTurKatlanmasiTest`).
+
+**(c) Bir öğe silinince geçmişteki bye puanları sessizce yok oluyor.** Tek sayılı
+turnuvada bir öğe silinirse `songs.size` çift olur ve fonksiyon **peşinen null**
+döner: o ana kadarki bütün bye'lar puansız kalır. Ölçülen vaka (n=9 → 8):
+kalan 13 maç + hak edilen 3 bye puanı beklenirken replay toplamı 13.0,
+**kayıp 3.0 puan** — üç ayrı öğenin hak ettiği puan siliniyor.
+
+**Öneri (koordinatör kararı):** bye'ı çıkarımla bulmak yerine KAYITTAN okumak —
+tur kapanışında bye geçen öğeyi ayırt edilebilir bir satır olarak maç tablosuna
+yazmak, böylece replay tahmin etmek zorunda kalmasın. Asgari düzeltme:
+`songs.size % 2` varsayımını kaldırıp "o turda oynamamış öğe **tam olarak bir**
+ise bye say, değilse bye yazma" demek — (b) ve (c)'de sessiz yanlış puan yerine
+eksik puan bırakır, sıralamayı bozmaz.
+
+### 🟡 3. CLAUDE.md'deki "n=3 → 1 tur" ölçümü artık geçerli değil
 CLAUDE.md (Geliştirilmiş İsviçre bölümü) "Ölçüldü: **n=3 → 1 tur**, n=5 → 2 tur"
 diyor. Bugünkü ölçüm: **n=3 → 2 tur (2 maç, 2 bye)**, n=5 → 2 tur (doğru).
 Motor mu değişti, doküman mı eskidi belirlenmeli; ikisinden biri düzeltilmeli
 (dokümantasyon kararı koordinatörün).
 
-### 🟡 3. Beraberlik turnuvayı KISALTIYOR (sezgiye aykırı)
+### 🟡 4. Beraberlik turnuvayı KISALTIYOR (sezgiye aykırı)
 Aynı n'de berabersiz → her 3. maç berabere:
 n=16: 9 tur/72 maç → **7 tur/56 maç** · n=41: 22/440 → **19/380** · n=80: 41/1640 → **40/1600**.
 Yarım puanlar puan uzayını genişletiyor, "aynı puanlı eşleşme" bulmak zorlaşıyor ve
@@ -205,7 +254,7 @@ n=9 → berabersiz 4 tur, her 3. berabere 4 tur, her 4. berabere **8 tur**.
 Beraberliğin serbest olduğu kullanımda (kullanıcı "eşit" diyebiliyor) turnuva
 uzunluğu öngörülemez oluyor. Kanıt/keskinlik eşiği (bulgu 1) bunu da düzeltir.
 
-### ℹ️ 4. Verimlilik kaydı (kıyas için)
+### ℹ️ 5. Verimlilik kaydı (kıyas için)
 n=80'de EMRE_CORRECT **1640 maç** harcayıp %82 kanıta ulaşıyor (tam round-robin 3160).
 Karşılaştırma: EMRE_SIRALAMA n=200'de 1365 maçla sıfır hata (CLAUDE.md).
 EMRE_CORRECT'in maliyeti yüksek, kanıtı eksik — yöntem seçimi ekranında bu fark
