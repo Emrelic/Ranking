@@ -45,6 +45,26 @@ import org.junit.Test
  *
  * ⚠️ `RankingEngine.kt` ve `SwissSystem.kt` yalnız OKUNDU, yazılmadı.
  * Düzeltme kararı koordinatörde.
+ *
+ * ## Süreç bulgusu: "motor testi var" ≠ "yol test edildi"
+ *
+ * Bu kusur tek başına bir SWISS hatası değil, bir denetim boşluğunun örneği.
+ * 2026-09-02'de üç oturum bağımsız çalışıp aynı deseni üç noktada buldu:
+ *
+ *  1. SWISS'in GİRİŞ yolu eski motora bağlı — bu dosya (`dd4fe79`).
+ *  2. EMRE_CORRECT'in girişi doğru bağlı ama ÇIKIŞ/replay yolu test edilmemiş:
+ *     `RankingViewModel.findByeTeamFromMatches` bye'ı motorun kaydından değil
+ *     ÇIKARIMLA buluyor; yarım maçta yanlış takıma +1 puan yazıp nihai sıralamayı
+ *     değiştiriyor, öğe silinince `songs.size % 2 == 0` dalı bye puanlarını
+ *     sessizce düşürüyor (`a82a6ab`, HAZIR KITA 103).
+ *  3. Her iki kusuru da mevcut 59+ birim testi yakalamıyor, çünkü hepsi
+ *     MOTORLARI besliyor; uygulamanın giriş ve çıkış yolları ölçülmüyor.
+ *
+ * Yani bu projede "motorun testi var" cümlesi, "kullanıcının gördüğü sonuç
+ * test edildi" anlamına GELMİYOR. Yeni motor bağlanırken sorulacak soru
+ * "motor doğru mu" değil, "giriş ve çıkış yolları o motora mı gidiyor".
+ *
+ * Ayrıntı: `ANALIZ_RAPORU.md` § 11.2 · cihaz protokolü § 2.5.
  */
 class SwissBirinciTurGirisNoktasiTest {
 
