@@ -334,6 +334,12 @@ Liste: **L-KÜÇÜK (5)**, **L-TEK (7)** ve **L-SAYI**.
       · **Fikstür / eşleşmeler paneli** ARTAN sıralı → bye satırı turun
         **EN BAŞINDA**.
       Aradığını bulamıyorsan turun iki ucuna da bak; ortada arama.
+      🔢 **1. TURDA MAÇ NUMARASI YOK:** eski yol 1. turda maç numarası hiç
+      atamıyor (hepsi 0), `SwissSystem` ise 2. turdan itibaren 1..N veriyor.
+      Yani 1. turda "1. maç / 2. maç" numaralandırması beklemeyin ve maçların
+      sırası koşumdan koşuma değişebilir — bu, 2.5.c'deki kusurun aynı
+      kökten gelen bir başka yüzü, ayrı bir hata değil. 2. turdan itibaren
+      numaralandırma düzgün olmalı; DEĞİLSE onu yaz.
 - [ ] **2.5.c 🔴🔴 KİMSE KAYBOLMUYOR — 1. TURA ÖZELLİKLE BAK (L-TEK, 7 öğe).**
       Bu adım bu turun en kritik SWISS sınavı. Sebebi: 2026-09-02'de kod
       okumasıyla bulundu ki bir SWISS turnuvasının **1. turu ESKİ motordan**

@@ -323,6 +323,15 @@ okuma); "kapandı" denen hiçbir madde varsayımla işaretlenmedi.
   üretmiyor. Yani bir SWISS turnuvasının 1. turu ile 2. turu farklı veri
   sözleşmesi kullanıyor: bye'ı okuyan her kod (puan tablosu, arşiv, sonuç
   özeti) 1. turda okuyacak bir şey bulamıyor. Bu, "1. tur başka koddan geliyor"
+  🦵 **Sözleşme farkının ÜÇ ayağı var** (üçüncüsü `ranking-8e`'nin ölçümü,
+  `uygulamaAkisi_ilkTurMatchNumberAtamiyor_belgelenmisKusur`; kaynakta
+  doğrulandı — eski yolun 1. tur dalı `Match(...)` kurarken `matchNumber`
+  parametresini hiç vermiyor, hepsi varsayılan **0** ile doğuyor):
+  ① eşleştirme (eski yol vs `SwissSystem`), ② bye kaydı (yok vs kendisiyle
+  eşleşen tamamlanmış maç), ③ maç numaralandırması (1. turda hepsi 0; 2.
+  turdan itibaren 1..N). ③'ün pratik sonucu: 1. turda hem artan hem azalan
+  sıralayan ekranlarda `matchNumber` hiçbir şey sıralamıyor, sıra fiilen
+  ekleme/veritabanı sırasına düşüyor.
   probleminin veri katmanındaki yüzü — düzeltme yalnız eşleştirmeyi değil, bye
   kaydının biçimini de hizalamalı.
   🧩 **Kullanıcının gördüğü sonuç (üçüncü bir işçinin bağımsız ölçümü,
