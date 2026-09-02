@@ -11,7 +11,10 @@ object RankingEngine {
     
     fun createDirectScoringResults(songs: List<Song>, scores: Map<Long, Double>): List<RankingResult> {
         return songs.mapIndexed { index, song ->
-            val score = scores[song.id] ?: 0.0
+            // Sonlu olmayan puan (NaN/∞) 0 sayılır: Kotlin'in Double
+            // karşılaştırıcısı NaN'ı en büyük saydığı için NaN puanlı öğe
+            // sessizce BİRİNCİ çıkıyordu (EskiMotorDirektPuanlamaSinaviTest)
+            val score = scores[song.id]?.takeIf { it.isFinite() } ?: 0.0
             RankingResult(
                 songId = song.id,
                 listId = song.listId,
@@ -19,10 +22,14 @@ object RankingEngine {
                 score = score,
                 position = index + 1
             )
-        }.sortedByDescending { it.score }
-            .mapIndexed { index, result ->
-                result.copy(position = index + 1)
-            }
+        }.sortedWith(
+            // Eşitlik bozucu: id. Yoksa eşit puanlarda sıra `songs` listesinin
+            // geliş sırasına düşüyordu — aynı puanlar, farklı girdi sırası,
+            // farklı sonuç (Lig'de aynı kusur B2'de kapatılmıştı)
+            compareByDescending<RankingResult> { it.score }.thenBy { it.songId }
+        ).mapIndexed { index, result ->
+            result.copy(position = index + 1)
+        }
     }
     
     fun createLeagueMatches(songs: List<Song>, doubleRoundRobin: Boolean = false): List<Match> {
@@ -61,12 +68,17 @@ object RankingEngine {
                             songId1 = homeTeam.id,
                             songId2 = awayTeam.id,
                             winnerId = null,
-                            round = round
+                            round = round,
+                            // Tur içi 1..N — sözleşme gereği (ORTAK.md) 0
+                            // bırakılmaz; sonucDuzenlenebilirMi'nin LEAGUE
+                            // dalı da (tur, matchNumber) karşılaştırmasını
+                            // ancak bu atamayla doğru yapabiliyor
+                            matchNumber = roundMatches.size + 1
                         )
                     )
                 }
             }
-            
+
             matches.addAll(roundMatches)
         }
         
@@ -83,7 +95,8 @@ object RankingEngine {
                         songId1 = originalMatch.songId2, // Yer değişimi
                         songId2 = originalMatch.songId1, // Yer değişimi
                         winnerId = null,
-                        round = originalMatch.round + numRounds // İkinci devreye round ekle
+                        round = originalMatch.round + numRounds, // İkinci devreye round ekle
+                        matchNumber = originalMatch.matchNumber // Tur içi sıra korunur
                     )
                 )
             }
@@ -117,6 +130,15 @@ object RankingEngine {
             val p1 = points[match.songId1]
             val p2 = points[match.songId2]
             if (p1 == null || p2 == null) return@forEach
+
+            // BOZUK KAZANAN: winnerId ne songId1 ne songId2 ne null ise kayıt
+            // bozuktur ve maç TÜMÜYLE atlanır. Eskiden puan uydurulmuyordu ama
+            // skorlar averaja yazılmaya devam ediyordu — bozuk maç puanı değil
+            // SIRALAMAYI etkiliyordu (ölçüldü: EskiMotorLigSinaviTest, 3
+            // takımda bozuk 5-0 maçı sırayı değiştirdi). Bye kaydında
+            // winnerId == songId1 == songId2 olduğundan bu kontrol bye'ı yemez.
+            val w = match.winnerId
+            if (w != null && w != match.songId1 && w != match.songId2) return@forEach
 
             when (match.winnerId) {
                 match.songId1 -> {

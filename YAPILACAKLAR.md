@@ -11,6 +11,30 @@ Kapsamlı denetim bulguları ve yapılan işlerin kaydı: **ANALIZ_RAPORU.md**
 2. **Sihirbaz kısayolları**: liste adımında "Yeni Liste Oluştur" → oluştur → dönüşte otomatik seçim; kriter adımında aynı akış
 3. **Image #6 oylama layout'u**: 6 katmanlı düzen, VS popup menüsü, yeşil/sarı/yeşil buton çubuğu — görsel/UX beğeni kontrolü
 
+### 🟠 Performans: HIBRIT n≥350'de pratik dışı (ölçüldü 2026-09-02)
+PERFORMANS-OLCUM-RAPOR.md (işçi Sonnet 101, commit eb3d5d9): HIBRIT n=350'de
+tek tur 7,3 sn / toplam turnuva 207 sn; n=500'de tek tur 10 sn'yi aşıp
+kesiliyor. EMRE_SIRALAMA n=500'de eşik aşımı (3,5 sn tur). Kök neden çağrı
+deseni: FAZ 2 her süpürmede yalnız İLK kanıtsız pariteyi döndürüyor (n=200'de
+176 ayrı computeState çağrısı, her biri tüm geçmişi sıfırdan replay ediyor).
+Çözüm çekirdeği raporda: kanıtsız çiftleri TEK turda toplu döndürmek + replay
+önbelleği. Bu dalgada davranış değişikliği riski yüzünden yapılmadı.
+Kullanım rehberi (kod değişene dek): n≤200 her motor sorunsuz; n>200'de
+İkili Karşılaştırma veya Emre Sıralama önerilir; n>350'de Hibrit SEÇİLMEMELİ.
+
+### 🟡 Eski motor sınavı kalanları (ESKI-MOTORLAR-SINAV-RAPOR.md, karar verildi)
+- B6: mükerrer maç kaydı çift sayılıyor → kalıcı çözüm DB benzersizlik kısıtı
+  (şema v19 + migration; kullanıcı kararı)
+- B5: puanlanmamış öğe 0 sayılıyor (0-100 aralığında zararsız; aralık
+  negatife açılırsa düzeltilmeli)
+- B7: Lig motoru rankingMethod süzmüyor (bugün zararsız; süzgeç mevcut test
+  sözleşmelerini değiştirir — bilinçli erteleme)
+- Room: şema export yalnız 16/17/18 (1-15 yok); androidTest kaynak seti ve
+  Room-testing bağımlılığı yok → gerçek migration koşumu imkânsız
+  (CSV-MIGRATION-SINAV-RAPOR.md)
+- app/build dizinini OneDrive senkronu dışına almak (build süreleri +
+  "Could not delete" hataları — kullanıcı kararı)
+
 ## 🆕 BUGÜN DOĞAN İŞLER VE DURUMLARI (2026-09-01 — iki yeni motor bağlandı)
 
 2026-09-01'de iki sistem daha kullanıcı seçimine açıldı: **HIBRIT** (Hibrit
@@ -103,6 +127,49 @@ Durum (2026-09-01 doğrulandı): henüz BAŞLANMADI — `AndroidManifest.xml`'de
     ```
     Yapısal olarak belirsiz bir durum — hiçbir sezgi güvenilir çözmez; çözdüğünü iddia eden sezgi sessiz kaybı başka bir sessiz kayıpla değiştirir. Tek dürüst çözüm: içe aktarma ekranında sor, varsayılanı sezgiyle doldur.
     Test: `belgeleme_basliksizIkiSutunluListe_ilkSatirYUTULUYOR` (CsvReaderDeepTest) — bilinçli olarak yeşil, davranışı sabitliyor.
+
+    🔬 **2026-09-02 uç durum sınavı** (`oturumlar/CSVREADER-SINAV-RAPOR.md`, 33 test / 0 hata)
+    bu maddeyi genişletti — üç bulgu kod okunarak doğrulandı:
+    - **K1 (YÜKSEK, bu maddeye girer):** tek sütunlu dosyada başlık tespiti HİÇ
+      çalışmıyor — `hasHeader = ilkSatir.size >= 2 && ...` (`CsvReader.kt:75`).
+      100 şarkılık tek sütunlu liste **101 öğe** veriyor ve turnuvanın 1.
+      sırasında bir sütun adı yarışıyor. İki sütunlu sessiz kaybın tek sütunlu
+      kardeşi; çözümü de aynı: içe aktarmada sor.
+      📏 **Kapsam daraldı** (CsvReader sınavı işçisinin ölçümü, 2026-09-02,
+      `CSVREADER-SINAV-RAPOR.md` commit `02bce78` — ben tekrar saymadım):
+      gömülü 31 hazır listenin HİÇBİRİ tek sütunlu değil, hepsinin ilk satırında
+      ayraç var. Yani K1 katalog sayılarını ve senkron bekçisini ETKİLEMİYOR;
+      yalnız kullanıcının kendi içe aktardığı tek sütunlu CSV'yi vuruyor.
+      Şiddet "kütüphaneyi zehirler"den "kullanıcı listesine sahte öğe sokar"a
+      indi. Madde kapanmıyor: düz "her satır bir öğe" listesi elle hazırlanan
+      listenin en yaygın biçimi.
+    - **K2 (ORTA-YÜKSEK, UCUZ):** başlığı BOŞ olan sütunun değeri csvData'dan
+      tümüyle düşüyor (`headers[i].isNotBlank()`, `CsvReader.kt:168`). Excel
+      çıktılarında görsel sütunu sık sık başlıksız → 742 görselli kütüphane riskte.
+    - **K5 (ORTA, UCUZ):** tekrarlı başlık adı önceki sütunu eziyor (csvData
+      JSONObject). İki "Not" sütunundan biri sessizce yok oluyor.
+    K2 + K5 yedek ad üreterek ucuz ve güvenli kapatılabilir ("Sütun 3", "Not (2)").
+    K6 (tırnak asimetrisi, `currentField.isBlank()` `CsvReader.kt:141`) bilinçli
+    seçim ister: `isEmpty`'ye çevirmek mevcut bir testi KIRAR, iki davranış
+    birbirini dışlıyor.
+
+18. 📄 **CLAUDE.md ↔ ölçüm ayrışması: "n=3 → 1 tur"** (2026-09-02, EMRE_CORRECT
+    değişmezler sınavı bildirdi — `oturumlar/EMRE-CORRECT-DEGISMEZLER-RAPOR.md`,
+    commit `3aead4f`). CLAUDE.md'nin Emre bölümünde "Ölçüldü: **n=3 → 1 tur**,
+    n=5 → 2 tur" yazıyor; işçi ölçümü **n=3 → 2 tur** diyor. Kural üzerinden
+    kontrol ölçümü destekliyor: 1. turdan sonra puanlar {1, 1, 0} olur (galip 1,
+    bye 1) ve galip ile bye geçen HENÜZ EŞLEŞMEMİŞTİR — yani aynı puanlı,
+    tekrarsız bir eşleşme kurulabilir, turnuva bitemez. Ya belge yanlış ya da
+    motor bu satır yazıldıktan sonra değişti.
+    ⚠️ CLAUDE.md bu oturumun alanı DEĞİL — düzeltmeyi dosyanın sahibi yapmalı.
+    Not: n=5 → 2 tur iddiası ayrıca doğrulanmadı; aynı koşumda ölçülmeli.
+    ➕ **Aynı paragrafın İKİNCİ yanlışı** (2026-09-02): "Çift sayıda sapma yok
+    (n=4 → 3 tur)" ve erken bitişin "kusur değil, kuralın sonucu" olduğu
+    savunması da ölçümle çelişiyor — n=12'de turnuva 8 oynanmamış aynı puanlı
+    çift dururken kapanıyor. Mekanizma kaynakta doğrulandı ve ANALIZ_RAPORU
+    **Bölüm 11.4**'e yazıldı: bitiş kuralı duruma değil, o turda ÜRETİLEN
+    eşleşme kümesine bakıyor. CLAUDE.md'nin o paragrafı bir bütün olarak
+    elden geçirilmeli (dosyanın sahibi tarafından).
 
 ## 💡 FİKİR DEPOSU
 (Gelecek için fikirler burada)

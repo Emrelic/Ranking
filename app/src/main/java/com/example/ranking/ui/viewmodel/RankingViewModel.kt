@@ -501,24 +501,18 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     
     private fun initializeSwiss() {
         viewModelScope.launch {
-            
-            // Initialize Swiss state for first round
-            currentVotingSession?.let { session ->
-                val maxRounds = RankingEngine.getSwissRoundCount(songs.size)
-                val initialStandings = songs.associate { it.id to 0.0 }
-                repository.saveSwissState(
-                    sessionId = session.id,
-                    currentRound = 1,
-                    maxRounds = maxRounds,
-                    standings = initialStandings,
-                    pairingHistory = emptySet(),
-                    roundHistory = emptyList()
-                )
-            }
-            
-            val matches = RankingEngine.createSwissMatches(songs, 1, emptyList())
-            createMatchesForTournament(matches)
-            loadNextMatch()
+            createOrUpdateSession()
+            // 🔴 1. TUR DA YENİ MOTORDAN (SwissSystem) ÜRETİLİR.
+            //
+            // Eskiden yalnız 1. tur ESKİ yoldan geliyordu
+            // (RankingEngine.createSwissMatches): `half = size / 2` aritmetiği
+            // tek sayıda SON ÖĞEYİ hiçbir çifte sokmuyordu — ne maç, ne bye,
+            // ne puan; `shuffled()` yüzünden düşen öğe her koşumda farklıydı
+            // ve final sıralamada haksız yere sonuncu çıkıyordu. matchNumber
+            // da hiç atanmıyordu. Üç işçi bağımsız ölçtü (dd4fe79, ae6c11f,
+            // 825fb32): aynı turnuvada üç kod yolu karışıyordu — 1. tur eski
+            // motor, 2+ turlar ve sonuç hesabı yeni motor.
+            createNextSwissRound(1)
         }
     }
     
@@ -924,17 +918,22 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
     /**
      * Bir turun bye geçen takımını maç kayıtlarından bulur.
      *
-     * Bye YALNIZCA tek sayıda takım varken oluşur. Çift takımda "maç
-     * oynamamış takım" aramak, yarım kalmış bir turda oynamamış takımı
-     * bye sanıp ona hayalet puan verir.
+     * Kural: o turda oynamamış öğe TAM OLARAK BİR ise bye odur; değilse bye
+     * yok sayılır. İki eski kusur bu kuralla kapandı (a82a6ab ölçümü):
+     * · Eski "çift sayıda takımda bye yok" ön şartı, turnuva sürerken öğe
+     *   silinince (kalan sayı çift) HAK EDİLMİŞ bye puanlarını sessizce
+     *   düşürüyordu (ölçüldü: toplam 13.0, beklenen 16.0).
+     * · Eski "oynamayan İLK öğe bye'dir" seçimi, yarım kalmış turda oynamamış
+     *   ilk öğeye HAYALET +1 yazıyordu (gerçek bye 5 iken çıkarım 2 dedi,
+     *   final sıralaması değişti).
+     * "Tam olarak bir" şartı iki yönde de güvenli: emin olunamayan durumda
+     * eksik puan yazılır, yanlış puan asla (yanlış > eksik).
      */
     private fun findByeTeamFromMatches(state: EmreSystemCorrect.EmreState, matches: List<Match>, songs: List<Song>): EmreSystemCorrect.EmreTeam? {
-        if (songs.size % 2 == 0) return null
         val playedTeamIds = matches.flatMap { listOf(it.songId1, it.songId2) }.toSet()
-        val byeSong = songs.find { it.id !in playedTeamIds }
-        return byeSong?.let { song ->
-            state.teams.find { it.song.id == song.id }
-        }
+        val oynamayanlar = songs.filter { it.id !in playedTeamIds }
+        if (oynamayanlar.size != 1) return null
+        return state.teams.find { it.song.id == oynamayanlar[0].id }
     }
     
     private suspend fun completeRanking() {
@@ -1967,9 +1966,12 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                     var played = 0; var won = 0; var drawn = 0; var lost = 0
                     completedMatches.forEach { match ->
                         if (match.songId1 != song.id && match.songId2 != song.id) return@forEach
-                        // Yetim maç sayılmaz (bkz. LEAGUE/SWISS dalındaki not)
+                        // Yetim maç ve bozuk kazanan sayılmaz (bkz. LEAGUE/SWISS dalı)
                         val rakipId = if (match.songId1 == song.id) match.songId2 else match.songId1
                         if (songs.none { it.id == rakipId }) return@forEach
+                        val bozukKazanan = match.winnerId
+                        if (bozukKazanan != null && bozukKazanan != match.songId1 &&
+                            bozukKazanan != match.songId2) return@forEach
                         played++
                         when (match.winnerId) {
                             song.id -> { won++; points += 1.0 }
@@ -2017,6 +2019,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
                         // songId1 == songId2 olduğundan bu kontrol bye'ı yemez.
                         val rakipId = if (birinci) match.songId2 else match.songId1
                         if (songs.none { it.id == rakipId }) return@forEach
+
+                        // Bozuk kazanan (ne taraflardan biri ne beraberlik):
+                        // maç sayılmaz — motorla aynı kural (bkz.
+                        // calculateLeagueResults'taki not; bye'ı yemez)
+                        val bozukKazanan = match.winnerId
+                        if (bozukKazanan != null && bozukKazanan != match.songId1 &&
+                            bozukKazanan != match.songId2) return@forEach
 
                         played++
                         // Skor İKİ TARAF İÇİN DE girilmişse averaja sayılır.
