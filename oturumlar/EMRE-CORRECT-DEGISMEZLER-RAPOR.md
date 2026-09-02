@@ -239,6 +239,29 @@ yazmak, böylece replay tahmin etmek zorunda kalmasın. Asgari düzeltme:
 ise bye say, değilse bye yazma" demek — (b) ve (c)'de sessiz yanlış puan yerine
 eksik puan bırakır, sıralamayı bozmaz.
 
+#### DÜZELTME SONRASI ÖLÇÜM (2026-09-02 03:38, işçi ranking-d4 asgari düzeltmeyi uyguladı)
+
+`findByeTeamFromMatches` artık "oynamayan **tam olarak bir** ise bye"
+(`RankingViewModel.kt:932-937`). Testler yeni sözleşmeye çevrildi, 3/3 yeşil:
+
+| Vaka | Düzeltme öncesi | Düzeltme sonrası |
+|---|---|---|
+| (a) tam kayıt | replay birebir | **birebir** (n=9/15/41 korunuyor) |
+| (b) yarım maç | gerçek bye 5 iken **2'ye hayalet +1**, sıra bozuluyordu (`…7,4`) | çıkarım **null**, hayalet puan yok, sıra canlıyla **aynı** (`9,8,6,7,3`) |
+| (c) öğe silme | 3 bye puanı sessizce kayıp | hayalet yok ama **3 bye puanı hâlâ yazılamıyor** (replay toplam 13.0) |
+
+🔎 **Düzeltmenin sınırı — kayda değer:** ViewModel'deki yeni doküman yorumu
+(c) için "beklenen 16.0" diyor; **ölçüm 13.0 veriyor ve bu doğrudur.** Sebep:
+silinen öğenin OYNADIĞI turlarda rakibi de "oynamamış" görünür, yani oynamayan
+sayısı 2 olur ve kural gereği bye yazılmaz. Ölçülen vakada silinen öğe (id 3)
+kendi bye'ını 1. turda geçmiş; hak edilen 3 bye (tur 2→5, 3→4, 4→1) ise onun
+oynadığı turlarda olduğu için hiçbiri yazılamıyor (`yazilan bye=0`).
+Yani düzeltme **yanlış puanı kaldırdı** (asıl kusur), **eksik puanı kaldırmadı**.
+Tam çözüm için bye'ın kayıttan okunması gerekir; yorumun "beklenen 16.0" ifadesi
+düzeltilmeli, aksi halde ileride "düzeltildi ama tutmuyor" izlenimi yaratır.
+Test bu sınırı rakamla basıyor (`hala yazilamayan=3`), sabit sayıya değil
+davranışa bağlı olduğu için kayıttan okuma yapılınca da geçerli kalır.
+
 ### 🟡 3. CLAUDE.md'deki "n=3 → 1 tur" ölçümü artık geçerli değil
 CLAUDE.md (Geliştirilmiş İsviçre bölümü) "Ölçüldü: **n=3 → 1 tur**, n=5 → 2 tur"
 diyor. Bugünkü ölçüm: **n=3 → 2 tur (2 maç, 2 bye)**, n=5 → 2 tur (doğru).

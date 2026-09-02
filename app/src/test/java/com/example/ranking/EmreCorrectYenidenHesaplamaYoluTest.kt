@@ -5,6 +5,7 @@ import com.example.ranking.data.Song
 import com.example.ranking.ranking.EmreSystemCorrect
 import com.example.ranking.ranking.RankingEngine
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -33,16 +34,21 @@ import org.junit.Test
  */
 class EmreCorrectYenidenHesaplamaYoluTest {
 
-    /** RankingViewModel.kt:931-938'in birebir karşılığı. */
+    /**
+     * RankingViewModel.kt:932-937'nin birebir karşılığı (düzeltilmiş hâli).
+     * Kural: o turda oynamamış öğe TAM OLARAK BİR ise bye odur; değilse bye yok.
+     * Eski hâli "çift sayıda bye yok" + "oynamayan İLK öğe bye'dir" idi ve
+     * iki sessiz hataya yol açıyordu (bu dosyanın (b) ve (c) vakaları).
+     */
     private fun findByeTeamFromMatches(
         state: EmreSystemCorrect.EmreState,
         matches: List<Match>,
         songs: List<Song>
     ): EmreSystemCorrect.EmreTeam? {
-        if (songs.size % 2 == 0) return null
         val playedTeamIds = matches.flatMap { listOf(it.songId1, it.songId2) }.toSet()
-        val byeSong = songs.find { it.id !in playedTeamIds }
-        return byeSong?.let { song -> state.teams.find { it.song.id == song.id } }
+        val oynamayanlar = songs.filter { it.id !in playedTeamIds }
+        if (oynamayanlar.size != 1) return null
+        return state.teams.find { it.song.id == oynamayanlar[0].id }
     }
 
     /** completeRanking'in fallback dalının birebir karşılığı. */
@@ -151,11 +157,16 @@ class EmreCorrectYenidenHesaplamaYoluTest {
     /**
      * Ağaçta yarım kalmış bir maç kaydı varsa (katlanma gerilemesinde görüldüğü
      * gibi bu mümkün), `filter { isCompleted }` o maçı süzer; o turda maçı olan
-     * İKİ takım da "hiç oynamamış" görünür. Çıkarım "görünmeyen İLK öğeyi" bye
-     * sayar — bu, gerçek bye yerine listede önce gelen takım olabilir.
+     * İKİ takım da "hiç oynamamış" görünür — yani oynamayan sayısı 3 olur.
+     *
+     * ESKİ davranış: "görünmeyen İLK öğe" bye sayılıyordu → gerçek bye 5 iken
+     * çıkarım 2 diyor, hak edilmeyen +1 puan yazılıyor, final sıralaması
+     * değişiyordu (ölçüldü, a82a6ab).
+     * YENİ kural ("tam olarak bir" şartı): o turda bye YAZILMAZ. Hayalet puan
+     * yok; emin olunamayan turda eksik puan kalır — yanlış puandan iyidir.
      */
     @Test
-    fun yarimMacVarsa_byeCikarimiYanlisTakimaPuanYazabilir() {
+    fun yarimMacVarsa_hayaletByePuaniYazilmaz() {
         val n = 9
         val k = kostur(n)
         val hedefTur = 2
@@ -167,8 +178,10 @@ class EmreCorrectYenidenHesaplamaYoluTest {
         var state = EmreSystemCorrect.initializeEmreTournament(k.songs)
         val tamamlanan = bozuk.filter { it.isCompleted }
         var cikarilanBye: Long? = null
+        var yazilanByeSayisi = 0
         tamamlanan.groupBy { it.round }.toSortedMap().forEach { (tur, maclar) ->
             val bye = findByeTeamFromMatches(state, maclar, k.songs)
+            if (bye != null) yazilanByeSayisi++
             if (tur == hedefTur) cikarilanBye = bye?.id
             state = RankingEngine.processCorrectEmreResults(
                 state, maclar, bye, allCompletedMatches = tamamlanan
@@ -179,17 +192,43 @@ class EmreCorrectYenidenHesaplamaYoluTest {
         val yarimMac = k.allMatches.first { it.round == hedefTur }
         println(
             "YARIM-MAC n=$n tur=$hedefTur: yarim birakilan mac=${yarimMac.songId1}-${yarimMac.songId2}, " +
-                "gercek bye=$gercekBye, cikarilan bye=$cikarilanBye  " +
-                (if (cikarilanBye != gercekBye) "=> YANLIS TAKIMA +1 PUAN" else "=> tesadufen dogru")
+                "gercek bye=$gercekBye, cikarilan bye=$cikarilanBye (null olmali) | " +
+                "yazilan bye=$yazilanByeSayisi/${tamamlanan.groupBy { it.round }.size} tur"
         )
-        println("YARIM-MAC sira farki: canli=${sira(k.state).take(5)} replay=${sira(state).take(5)}")
+        println("YARIM-MAC sira: canli=${sira(k.state).take(5)} replay=${sira(state).take(5)}")
 
-        // Çerçeve: yol çökmemeli ve puan kasası kendi içinde tutarlı olmalı
-        val beklenenToplam = tamamlanan.size + (if (n % 2 == 1) tamamlanan.groupBy { it.round }.size else 0)
+        // ① Yarım maçlı turda bye YAZILMAMALI (hayalet puan yasağı)
+        assertNull(
+            "Yarim macli turda bye cikarilamaz; cikarilirsa hak etmeyen takima +1 yazilir " +
+                "(eski kusur: gercek bye $gercekBye iken cikarim 2 diyordu)",
+            cikarilanBye
+        )
+
+        // ② Hiçbir takım maçlardan + yazılan bye'lardan fazlasını kazanmamalı
+        val beklenenToplam = (tamamlanan.size + yazilanByeSayisi).toDouble()
         assertEquals(
             "Replay kasasi kendi kayitlariyla tutarsiz",
-            beklenenToplam.toDouble(), state.teams.sumOf { it.points }, 1e-9
+            beklenenToplam, state.teams.sumOf { it.points }, 1e-9
         )
+
+        // ③ Yarım kalan maçın taraflarına o turdan puan sızmamalı
+        val yarimTaraflar = setOf(yarimMac.songId1, yarimMac.songId2)
+        val macPuani = HashMap<Long, Double>()
+        tamamlanan.forEach { m ->
+            val w = m.winnerId
+            if (w == null) {
+                macPuani.merge(m.songId1, 0.5, Double::plus); macPuani.merge(m.songId2, 0.5, Double::plus)
+            } else macPuani.merge(w, 1.0, Double::plus)
+        }
+        yarimTaraflar.forEach { id ->
+            val motor = state.teams.first { it.id == id }.points
+            val kayit = macPuani[id] ?: 0.0
+            assertTrue(
+                "Yarim macin tarafi $id, mac kayitlarindan fazla puan almis (motor=$motor kayit=$kayit) " +
+                    "— hayalet bye puani sizmis olmali",
+                motor <= kayit + 1e-9
+            )
+        }
     }
 
     // ==========================================================
@@ -197,12 +236,19 @@ class EmreCorrectYenidenHesaplamaYoluTest {
     // ==========================================================
 
     /**
-     * Tek sayılı turnuvada bir öğe silinirse `songs.size` ÇİFT olur ve çıkarım
-     * peşinen null döner: geçmişteki TÜM bye puanları yok olur. Motorun kendi
-     * bye kaydı kullanılmadığı için bu sessizce olur.
+     * ESKİ davranış: tek sayılı turnuvada bir öğe silinince `songs.size` çift
+     * olur, çıkarım peşinen null döner ve geçmişteki TÜM bye puanları yok olurdu
+     * (ölçüldü: 13.0, hak edilen 16.0).
+     * YENİ kural: tek/çift ön şartı yok. Silinen öğenin OYNAMADIĞI turlarda
+     * oynamayan tam olarak bir kalır → hak edilen bye puanı yazılır. Silinen
+     * öğenin oynadığı turlarda rakibi de "oynamamış" görüneceği için oynamayan
+     * sayısı 2'dir → o turlarda bye yazılmaz (eksik puan, yanlış puan değil).
+     *
+     * Bu test yazılan her bye'ın GERÇEK bye olduğunu doğrular ve kalan boşluğu
+     * (hâlâ yazılamayan hak edilmiş bye sayısını) rakamla rapora taşır.
      */
     @Test
-    fun ogeSilinince_gecmisteki_byePuanlariKaybolabilir() {
+    fun ogeSilinince_yazilanByelerGercek_hayaletYok() {
         val n = 9
         val k = kostur(n)
         val silinen = k.songs.last()
@@ -211,24 +257,47 @@ class EmreCorrectYenidenHesaplamaYoluTest {
             it.songId1 == silinen.id || it.songId2 == silinen.id
         }
 
-        val yeniden = viewModelYoluylaYenidenHesapla(kalanSongs, kalanMaclar)
+        // Tur tur çıkarımı izle
+        var state = EmreSystemCorrect.initializeEmreTournament(kalanSongs)
+        val tamamlanan = kalanMaclar.filter { it.isCompleted }
+        val yazilan = mutableMapOf<Int, Long>()
+        tamamlanan.groupBy { it.round }.toSortedMap().forEach { (tur, maclar) ->
+            val bye = findByeTeamFromMatches(state, maclar, kalanSongs)
+            if (bye != null) yazilan[tur] = bye.id
+            state = RankingEngine.processCorrectEmreResults(
+                state, maclar, bye, allCompletedMatches = tamamlanan
+            )
+        }
 
-        // Silinen öğe dışındaki gerçek bye sayısı
-        val kalanByeSayisi = k.byeler.values.count { it != silinen.id }
-        val replayToplam = yeniden.teams.sumOf { it.points }
-        val macToplam = kalanMaclar.count { it.isCompleted }.toDouble()
+        val hakEdilen = k.byeler.filterValues { it != silinen.id }   // silinenin byesi sayılmaz
+        val macToplam = tamamlanan.size.toDouble()
+        val replayToplam = state.teams.sumOf { it.points }
 
         println(
-            "SILME n=$n: silinen=${silinen.id} | kalan oge=${kalanSongs.size} (cift => cikarim null) | " +
-                "kalan mac=${macToplam.toInt()} | hakedilen bye puani=$kalanByeSayisi | " +
-                "replay toplam puan=$replayToplam | KAYIP=${(macToplam + kalanByeSayisi) - replayToplam}"
+            "SILME n=$n: silinen=${silinen.id} | kalan oge=${kalanSongs.size} | kalan mac=${macToplam.toInt()} | " +
+                "hak edilen bye=${hakEdilen.size} ${hakEdilen} | yazilan bye=${yazilan.size} ${yazilan} | " +
+                "replay toplam=$replayToplam | hala yazilamayan=${hakEdilen.size - yazilan.size}"
         )
 
-        // Çerçeve: yol çökmemeli, kalan öğeler eksiksiz sıralanmalı
-        val sonuc = RankingEngine.calculateCorrectEmreResults(yeniden)
+        // ① Yazılan her bye GERÇEK bye olmalı (hayalet puan yasağı)
+        yazilan.forEach { (tur, id) ->
+            assertEquals(
+                "Tur $tur icin yanlis takima bye puani yazildi (gercek=${k.byeler[tur]})",
+                k.byeler[tur], id
+            )
+        }
+        // ② Kasa: maç + yazılan bye
+        assertEquals("Replay kasasi tutmuyor",
+            macToplam + yazilan.size, replayToplam, 1e-9)
+        // ③ Fazla puan yazılamaz (üst sınır: hak edilen bye sayısı)
+        assertTrue(
+            "Yazilan bye sayisi hak edilenden fazla: ${yazilan.size} > ${hakEdilen.size}",
+            yazilan.size <= hakEdilen.size
+        )
+        // ④ Yol çökmemeli, kalan öğeler eksiksiz sıralanmalı
+        val sonuc = RankingEngine.calculateCorrectEmreResults(state)
         assertEquals("Silme sonrasi oge kaybi/tekrari", kalanSongs.size, sonuc.map { it.songId }.toSet().size)
         assertEquals("Pozisyonlar 1..n olmali",
             (1..kalanSongs.size).toList(), sonuc.map { it.position }.sorted())
-        assertTrue("Replay toplam puani mac sayisindan kucuk olamaz", replayToplam >= macToplam)
     }
 }
