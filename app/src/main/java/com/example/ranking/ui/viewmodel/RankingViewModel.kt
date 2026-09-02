@@ -920,9 +920,13 @@ class RankingViewModel(application: Application) : AndroidViewModel(application)
      *
      * Kural: o turda oynamamış öğe TAM OLARAK BİR ise bye odur; değilse bye
      * yok sayılır. İki eski kusur bu kuralla kapandı (a82a6ab ölçümü):
-     * · Eski "çift sayıda takımda bye yok" ön şartı, turnuva sürerken öğe
-     *   silinince (kalan sayı çift) HAK EDİLMİŞ bye puanlarını sessizce
-     *   düşürüyordu (ölçüldü: toplam 13.0, beklenen 16.0).
+     * · Eski "çift sayıda takımda bye yok" ön şartı, öğe silinince (kalan
+     *   sayı çift) bye aramayı PEŞİNEN kapatıyordu. Yeni kural aramayı açık
+     *   tutar ama tam çözüm DEĞİLDİR: silinen öğenin OYNADIĞI turlarda rakibi
+     *   de "oynamamış" göründüğünden (2 aday) bye yine yazılamaz — yanlış
+     *   puan kaldırıldı, eksik puan kalabilir (ölçüldü, 01cdb13: 13.0 kalır
+     *   ve bu doğrudur). Tam çözüm bye'ı çıkarımla değil KAYITTAN okumak
+     *   (YAPILACAKLAR adayı).
      * · Eski "oynamayan İLK öğe bye'dir" seçimi, yarım kalmış turda oynamamış
      *   ilk öğeye HAYALET +1 yazıyordu (gerçek bye 5 iken çıkarım 2 dedi,
      *   final sıralaması değişti).

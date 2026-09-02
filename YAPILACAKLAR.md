@@ -34,6 +34,10 @@ Kullanım rehberi (kod değişene dek): n≤200 her motor sorunsuz; n>200'de
   (CSV-MIGRATION-SINAV-RAPOR.md)
 - app/build dizinini OneDrive senkronu dışına almak (build süreleri +
   "Could not delete" hataları — kullanıcı kararı)
+- EMRE_CORRECT bye'ı çıkarımla değil KAYITTAN okumak: "oynamayan tam bir öğe"
+  kuralı yanlış puanı kaldırdı ama silinen öğenin oynadığı turlarda bye hâlâ
+  yazılamıyor (eksik puan; ölçüldü 01cdb13, 13.0 doğru kalış). Kalıcı çözüm
+  bye'ı maç kaydı/oturum verisi olarak tutmak (şema değişikliği ister)
 
 ## 🆕 BUGÜN DOĞAN İŞLER VE DURUMLARI (2026-09-01 — iki yeni motor bağlandı)
 

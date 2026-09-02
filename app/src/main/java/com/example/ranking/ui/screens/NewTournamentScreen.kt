@@ -428,11 +428,13 @@ private fun SystemTypeSelectionStep(
     //   raporu: eliminationsPerGroup=2 koşulsuz). Yol: EliminationSystem.kt
     //   motoru bağlanınca bu ikisi emekliye ayrılıp yeniden açılacak
     //
-    // SWISS 2026-08-28'de GERİ AÇILDI: yeni SwissSystem motoru yazıldı.
-    // Eski yolda bye yoktu (tek takım sessizce turdan düşüyordu), tekrar
-    // eşleşme serbestti ve matchNumber atanmıyordu. Yeni motorda tekrarsız
-    // tam eşleştirme geri izlemeyle garanti ediliyor, bye adil rotasyonla
-    // dağıtılıyor. 59 test (14 kendi + 43 çapraz + 2 gerileme) geçiyor.
+    // SWISS 2026-08-28'de GERİ AÇILDI (yeni SwissSystem motoru) — ama 1. tur
+    // 2026-09-02'ye dek ESKİ yoldan geliyordu ve tek sayıda bir öğe sessizce
+    // düşüyordu; denetim dalgasında yakalandı, initializeSwiss artık 1. turu
+    // da SwissSystem'den üretiyor ve eski yol koddan SİLİNDİ. Ders: yorumda
+    // "düzeltildi" yazması düzeltmenin ÇAĞRILDIĞINI göstermez. Test kaydı
+    // güncel sayısıyla ESKI-MOTORLAR-SINAV-RAPOR.md'de (sayı buraya yazılmaz,
+    // bayatlıyor).
     val systemTypes = listOf(
         "MERGE_SORT",
         "EMRE_SIRALAMA",
